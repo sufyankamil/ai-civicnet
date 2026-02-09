@@ -1,0 +1,78 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+class PrivacyPolicyScreen extends StatelessWidget {
+  const PrivacyPolicyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Privacy Policy', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Privacy Policy for Community Net',
+              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Last updated: February 09, 2026',
+              style: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 24),
+            _buildSection(
+              '1. Information We Collect',
+              'We collect information you provide directly to us, such as when you create an account, update your profile, request help, or communicate with other users. This may include your name, email address, location, and photos.',
+            ),
+            _buildSection(
+              '2. How We Use Your Information',
+              'We use the information we collect to provide, maintain, and improve our services, facilitate connections between users, and ensure community safety. Your location data is used to show relevant help requests nearby.',
+            ),
+            _buildSection(
+              '3. Sharing of Information',
+              'We do not share your personal information with third parties except as described in this policy. Your profile information (name, avatar, skills) is visible to other users of the app.',
+            ),
+            _buildSection(
+              '4. Data Security',
+              'We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration and destruction.',
+            ),
+            _buildSection(
+              '5. Contact Us',
+              'If you have any questions about this Privacy Policy, please contact us at support@communitynet.com.',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSection(String title, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            content,
+            style: GoogleFonts.poppins(fontSize: 14, height: 1.5, color: Colors.grey[800]),
+          ),
+        ],
+      ),
+    );
+  }
+}
