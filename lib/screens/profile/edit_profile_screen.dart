@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../services/supabase_service.dart';
 import '../../theme/app_theme.dart';
-import '../../models/models.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -179,7 +178,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     runSpacing: 8,
                     children: _skills.map((skill) => Chip(
                       label: Text(skill),
-                      backgroundColor: AppColors.primaryLight.withOpacity(0.1),
+                      backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
                       labelStyle: const TextStyle(color: AppColors.primaryLight),
                       deleteIcon: const Icon(Icons.close, size: 18),
                       onDeleted: () => _removeSkill(skill),

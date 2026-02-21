@@ -4,26 +4,26 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Light Mode
-  static const Color primaryLight = Color(0xFF4A90E2); // Trustworthy Blue
-  static const Color secondaryLight = Color(0xFF50E3C2); // Friendly Teal
+  static const Color primaryLight = Color(0xFF7B61FF); // Vivid Violet (profile gradient)
+  static const Color secondaryLight = Color(0xFFB388FF); // Soft Lavender
   static const Color accentLight = Color(0xFFFF6B6B); // Warm Alert/Action
-  static const Color backgroundLight = Color(0xFFF5F7FA); // Soft White/Grey
+  static const Color backgroundLight = Color(0xFFF5F4FF); // Tinted white
   static const Color surfaceLight = Colors.white;
-  static const Color textPrimaryLight = Color(0xFF2D3436);
+  static const Color textPrimaryLight = Color(0xFF2D2436);
   static const Color textSecondaryLight = Color(0xFF636E72);
 
   // Dark Mode
-  static const Color primaryDark = Color(0xFF5C9DFF); // Brighter Blue for Dark
-  static const Color secondaryDark = Color(0xFF64FFDA); // Neon Teal
+  static const Color primaryDark = Color(0xFF9D85FF); // Lighter violet for dark bg
+  static const Color secondaryDark = Color(0xFFCDB4FF); // Pale lavender
   static const Color accentDark = Color(0xFFFF8787); // Soft Red
-  static const Color backgroundDark = Color(0xFF1E1E2E); // Deep Navy/Black
-  static const Color surfaceDark = Color(0xFF2D2D44);
-  static const Color textPrimaryDark = Color(0xFFF5F7FA);
+  static const Color backgroundDark = Color(0xFF1A1825); // Deep purple-black
+  static const Color surfaceDark = Color(0xFF2A2640);
+  static const Color textPrimaryDark = Color(0xFFF5F4FF);
   static const Color textSecondaryDark = Color(0xFFB2BEC3);
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primaryLight, secondaryLight],
+    colors: [Color(0xFF9D85FF), Color(0xFF7B61FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -51,7 +51,7 @@ class AppTheme {
           backgroundColor: AppColors.primaryLight,
           foregroundColor: Colors.white,
           elevation: 4,
-          shadowColor: AppColors.primaryLight.withOpacity(0.4),
+          shadowColor: AppColors.primaryLight.withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
@@ -97,7 +97,7 @@ class AppTheme {
           backgroundColor: AppColors.primaryDark,
           foregroundColor: AppColors.backgroundDark,
           elevation: 4,
-          shadowColor: AppColors.primaryDark.withOpacity(0.4),
+          shadowColor: AppColors.primaryDark.withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),

@@ -18,10 +18,10 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     // Determine the current index based on the route location
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/home')) _selectedIndex = 0;
-    else if (location.startsWith('/map')) _selectedIndex = 1;
-    else if (location.startsWith('/chat')) _selectedIndex = 3;
-    else if (location.startsWith('/profile')) _selectedIndex = 4;
+    if (location.startsWith('/home')) { _selectedIndex = 0; }
+    else if (location.startsWith('/map')) { _selectedIndex = 1; }
+    else if (location.startsWith('/chat')) { _selectedIndex = 3; }
+    else if (location.startsWith('/profile')) { _selectedIndex = 4; }
     
     return Scaffold(
       body: widget.child,
@@ -30,11 +30,11 @@ class _MainScaffoldState extends State<MainScaffold> {
         margin: const EdgeInsets.all(24),
         height: 70,
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withOpacity(0.9),
+          color: Theme.of(context).cardColor.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             )
@@ -66,7 +66,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).primaryColor.withOpacity(0.1) 
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1) 
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -92,7 +92,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryLight.withOpacity(0.4),
+              color: AppColors.primaryLight.withValues(alpha: 0.4),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

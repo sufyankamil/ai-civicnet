@@ -5,6 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../models/models.dart';
 
 import '../../services/supabase_service.dart';
+import 'package:community_net/services/logger_service.dart';
 import '../../theme/app_theme.dart';
 import '../../components/helper_card.dart';
 import '../../components/primary_button.dart';
@@ -28,7 +29,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   List<RequestApplication> _applications = [];
   bool _isLoadingApplications = false;
   bool _hasFetchedApplications = false;
-  RequestApplication? _myApplication; // To track if current user applied
   bool _hasRated = false; // Track if user has rated for this request
 
 
@@ -41,16 +41,16 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
   Future<void> _loadApplications(String requesterId) async {
     if (SupabaseService().currentUserId != requesterId) {
-      print('DEBUG: Current user is not requester. Skipping load.');
+      logger.d('DEBUG: Current user is not requester. Skipping load.');
       return;
     }
     if (_isLoadingApplications) return;
 
-    print('DEBUG: Loading applications for request ${widget.requestId}...');
+    logger.d('DEBUG: Loading applications for request ${widget.requestId}...');
     setState(() => _isLoadingApplications = true);
     try {
       final apps = await SupabaseService().getApplicationsForRequest(widget.requestId);
-      print('DEBUG: Loaded ${apps.length} applications.');
+      logger.d('DEBUG: Loaded ${apps.length} applications.');
       if (mounted) {
         setState(() {
            _applications = apps;
@@ -58,7 +58,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         });
       }
     } catch (e) {
-      print('DEBUG: Error loading applications: $e');
+      logger.e('DEBUG: Error loading applications: $e');
     } finally {
       if (mounted) setState(() => _isLoadingApplications = false);
     }
@@ -81,7 +81,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         });
       }
     } catch (e) {
-      print('Error checking application status or fetching request/rating: $e');
+      logger.e('Error checking application status or fetching request/rating: $e');
       if (mounted) {
         setState(() {
           _isCheckingStatus = false;
@@ -131,9 +131,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
              Future.microtask(() => _loadApplications(request.requesterId));
           }
 
-          final currentUserId = SupabaseService().currentUserId;
-          final isOwner = currentUserId == request.requesterId;
-          final isHelper = currentUserId == request.helperId;
 
           return CustomScrollView(
             slivers: [
@@ -160,9 +157,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withOpacity(0.3),
+                              Colors.black.withValues(alpha: 0.3),
                               Colors.transparent,
-                              Colors.black.withOpacity(0.6),
+                              Colors.black.withValues(alpha: 0.6),
                             ],
                           ),
                         ),
@@ -184,7 +181,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.secondaryLight.withOpacity(0.1),
+                              color: AppColors.secondaryLight.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -227,7 +224,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: _statusColor(request.status).withOpacity(0.1),
+                                  color: _statusColor(request.status).withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(color: _statusColor(request.status)),
                                 ),
@@ -255,7 +252,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: _statusColor(request.status).withOpacity(0.1),
+                                color: _statusColor(request.status).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: _statusColor(request.status)),
                               ),
@@ -279,7 +276,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.green),
                           ),
@@ -352,7 +349,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         request.description,
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                           height: 1.5,
                         ),
                       ),
@@ -439,8 +436,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 decoration: BoxDecoration(
                                   color: _applicationStatus == ApplicationStatus.accepted 
-                                      ? Colors.green.withOpacity(0.1) 
-                                      : Colors.orange.withOpacity(0.1),
+                                      ? Colors.green.withValues(alpha: 0.1) 
+                                      : Colors.orange.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: _applicationStatus == ApplicationStatus.accepted 
@@ -624,7 +621,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             if (_hasRated) {
               return Container(
                 padding: const EdgeInsets.all(16),
-                color: Colors.green.withOpacity(0.1),
+                color: Colors.green.withValues(alpha: 0.1),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -644,7 +641,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     color: Theme.of(context).cardColor,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.grey.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, -5),
                       ),
@@ -838,7 +835,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     if (!confirm) return;
 
     try {
-      print('DEBUG: Completing request ${widget.requestId} with helper ${app.applicantId}');
+      logger.d('DEBUG: Completing request ${widget.requestId} with helper ${app.applicantId}');
       await SupabaseService().completeHelpRequest(widget.requestId.trim(), app.applicantId.trim());
       
       setState(() {

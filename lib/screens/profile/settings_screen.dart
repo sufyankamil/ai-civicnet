@@ -40,9 +40,9 @@ class SettingsScreen extends StatelessWidget {
                 DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
                 DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
               ],
-              onChanged: (ThemeMode? mode) {
+              onChanged: (ThemeMode? mode) async {
                 if (mode != null) {
-                  themeService.toggleTheme(mode);
+                  await themeService.toggleTheme(mode);
                 }
               },
             ),
@@ -51,6 +51,23 @@ class SettingsScreen extends StatelessWidget {
 
           _buildSectionHeader('Support'),
           const SizedBox(height: 8),
+          ListTile(
+            title: const Text('How TaskNet Works'),
+            subtitle: Text(
+              'Interactive data-flow canvas',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+            leading: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.route_rounded, color: Colors.white, size: 18),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/how-it-works'),
+          ),
           ListTile(
             title: const Text('FAQ'),
             leading: const Icon(Icons.help_outline, color: AppColors.primaryLight),
@@ -72,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Test Crash (Crashlytics)'),
             leading: const Icon(Icons.bug_report, color: Colors.red),
             onTap: () {
-              throw Exception('Test Crash for Community Net!');
+              throw Exception('Test Crash for Civic Net!');
             },
           ),
           const Divider(height: 32),

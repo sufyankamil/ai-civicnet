@@ -1,6 +1,5 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
+import 'package:community_net/services/logger_service.dart';
 
 class FirebaseService {
   static final FirebaseService _instance = FirebaseService._internal();
@@ -18,28 +17,28 @@ class FirebaseService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
+      logger.i('User granted permission');
       
       // Get the token
       try {
         String? token = await _messaging.getToken();
-        print('FCM Token: $token');
+        logger.i('FCM Token: $token');
       } catch (e) {
-        print('FCM Token Error: $e');
-        print('Note: FCM on iOS requires a real device and "Push Notifications" capability in Xcode.');
+        logger.e('FCM Token Error: $e');
+        logger.w('Note: FCM on iOS requires a real device and "Push Notifications" capability in Xcode.');
       }
       
       // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print('Got a message whilst in the foreground!');
-        print('Message data: ${message.data}');
+        logger.i('Got a message whilst in the foreground!');
+        logger.d('Message data: ${message.data}');
 
         if (message.notification != null) {
-          print('Message also contained a notification: ${message.notification}');
+          logger.i('Message also contained a notification: ${message.notification}');
         }
       });
     } else {
-      print('User declined or has not accepted permission');
+      logger.w('User declined or has not accepted permission');
     }
   }
 }

@@ -57,7 +57,7 @@ class _MapScreenState extends State<MapScreen> {
               ) : null,
             ),
             child: hasPermission 
-              ? Container(color: Colors.black.withOpacity(0.1)) // Overlay
+              ? Container(color: Colors.black.withValues(alpha: 0.1)) // Overlay
               : Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -95,7 +95,7 @@ class _MapScreenState extends State<MapScreen> {
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                   ),
                 ],
@@ -128,7 +128,7 @@ class _MapScreenState extends State<MapScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -140,7 +140,7 @@ class _MapScreenState extends State<MapScreen> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: AppColors.accentLight.withOpacity(0.1),
+                      color: AppColors.accentLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(Icons.warning, color: AppColors.accentLight),
@@ -248,13 +248,13 @@ class _ChatScreenState extends State<ChatScreen> {
                     decoration: BoxDecoration(
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                      border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
                     ),
                     child: Row(
                       children: [
                         CircleAvatar(
                           radius: 24,
-                          backgroundColor: AppColors.primaryLight.withOpacity(0.2),
+                          backgroundColor: AppColors.primaryLight.withValues(alpha: 0.2),
                           backgroundImage: chat.otherUserAvatar.isNotEmpty 
                              ? NetworkImage(chat.otherUserAvatar) 
                              : null,
@@ -301,203 +301,6 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-// --- ProfileScreen ---
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  Future<User?>? _profileFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshProfile();
-  }
-
-  void _refreshProfile() {
-    setState(() {
-      _profileFuture = SupabaseService().getCurrentUserProfile();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder<User?>(
-        future: _profileFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator.adaptive());
-          }
-          
-          final user = snapshot.data;
-          
-          if (user == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('User not found.'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _refreshProfile,
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              _refreshProfile();
-              await _profileFuture;
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      Container(
-                        height: 200,
-                        decoration: const BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -50,
-                        child: CircleAvatar(
-                          radius: 60,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 56,
-                            backgroundImage: NetworkImage(user.avatarUrl.isNotEmpty 
-                              ? user.avatarUrl 
-                              : 'https://i.pravatar.cc/150?u=${user.id}'), // Fallback
-                            onBackgroundImageError: (_, __) {},
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 60),
-                  Text(
-                    user.name.isEmpty || user.name == 'Unknown' ? 'No Name Set' : user.name,
-                    style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    user.email.isEmpty ? 'No Email' : user.email, 
-                    style: GoogleFonts.poppins(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _buildStatItem('Helps', user.helpCount.toString()),
-                      Container(height: 30, width: 1, color: Colors.grey[300]),
-                      _buildStatItem('Rating', user.rating.toStringAsFixed(1)),
-                      Container(height: 30, width: 1, color: Colors.grey[300]),
-                      _buildStatItem('Points', user.points.toString()),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'My Skills',
-                          style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        if (user.skills.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 16.0),
-                            child: Text('No skills added yet. Edit profile to add some.', style: TextStyle(color: Colors.grey)),
-                          ),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: user.skills.map((skill) => Chip(
-                            label: Text(skill),
-                            backgroundColor: AppColors.primaryLight.withOpacity(0.1),
-                            labelStyle: const TextStyle(color: AppColors.primaryLight),
-                          )).toList(),
-                        ),
-                        const SizedBox(height: 32),
-                        const Divider(),
-                        // Moved Edit Profile up and made it more prominent
-                        ListTile(
-                          leading: const Icon(Icons.settings, color: Colors.grey),
-                          title: const Text('App Settings'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () => context.push('/settings'),
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.edit, color: AppColors.primaryLight),
-                          title: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold)),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () async {
-                            await context.push('/edit-profile');
-                            if (mounted) {
-                              _refreshProfile(); // Refresh data after editing
-                            }
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.history),
-                          title: const Text('Help History'),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () {},
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.logout, color: Colors.red),
-                          title: const Text('Logout', style: TextStyle(color: Colors.red)),
-                          onTap: () async {
-                             await SupabaseService().signOut();
-                             if (context.mounted) context.go('/login');
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            label,
-            style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12),
-          ),
-        ],
       ),
     );
   }

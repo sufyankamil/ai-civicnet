@@ -1,5 +1,7 @@
 
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:community_net/services/logger_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   String _searchQuery = '';
+  late Future<List<HelpRequest>> _requestsFuture;
 
   @override
   void dispose() {
@@ -84,10 +87,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _requestsFuture = SupabaseService().getHelpRequests();
+    
     // Subscribe to changes in help_requests
     _subscription = SupabaseService().subscribeToHelpRequests(() {
       if (mounted && !_isDisposed) {
-        setState(() {}); // Trigger rebuild to fetch new data
+        setState(() {
+          _requestsFuture = SupabaseService().getHelpRequests();
+        });
       }
     });
     
@@ -120,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           content: const Text(
-            'To show accurate help requests and matches near you, Community Net needs access to your location.',
+            'To show accurate help requests and matches near you, Civic Net needs access to your location.',
           ),
           actions: [
             TextButton(
@@ -168,7 +175,9 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location updated successfully!')));
       
       // Refresh home data
-      setState(() {});
+      setState(() {
+        _requestsFuture = SupabaseService().getHelpRequests();
+      });
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating location: $e')));
     }
@@ -176,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _checkWarnings() async {
     final user = await SupabaseService().getCurrentUserProfile();
+    logger.i('Checking warnings for user ${user?.id}, report count: ${user?.reportCount}');
     if (user != null && user.reportCount > 2) {
       if (mounted) {
         showDialog(
@@ -265,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                              radius: 20,
                              backgroundColor: Colors.grey[200],
                              backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty) 
-                                ? NetworkImage(avatarUrl) 
+                                ? CachedNetworkImageProvider(avatarUrl) 
                                 : null,
                              child: (avatarUrl == null || avatarUrl.isEmpty) 
                                 ? const Icon(Icons.person, color: Colors.grey) 
@@ -317,10 +327,12 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  setState(() {}); // Triggers rebuild and new future
+                  setState(() {
+                    _requestsFuture = SupabaseService().getHelpRequests();
+                  }); 
                 },
                 child: FutureBuilder<List<HelpRequest>>(
-                  future: SupabaseService().getHelpRequests(),
+                  future: _requestsFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator.adaptive());
@@ -377,10 +389,10 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.transparent,
         shape: StadiumBorder(
           side: BorderSide(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withOpacity(0.3),
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withValues(alpha: 0.3),
           ),
         ),
-        selectedColor: Theme.of(context).primaryColor.withOpacity(0.1),
+        selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         labelStyle: TextStyle(
           color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

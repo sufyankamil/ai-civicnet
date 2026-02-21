@@ -283,7 +283,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -4))],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
               ),
               child: Row(
                 children: [
@@ -305,7 +305,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: _isListening ? Colors.red.withOpacity(0.1) : Colors.grey[100],
+                        fillColor: _isListening ? Colors.red.withValues(alpha: 0.1) : Colors.grey[100],
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       ),
                       textCapitalization: TextCapitalization.sentences,

@@ -76,7 +76,7 @@ class HelperCard extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.05),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

@@ -1,8 +1,20 @@
 
-import 'dart:math' show cos, sqrt, asin;
+import 'dart:math' show cos, sqrt, asin, Random;
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+import 'package:flutter/foundation.dart'; // For compute
 import '../models/models.dart';
+import 'package:community_net/services/logger_service.dart';
+import 'package:community_net/services/cache_service.dart';
+
+// Top-level function for isolate
+List<HelpRequest> parseHelpRequests(List<dynamic> data) {
+  return data.map((json) => HelpRequest.fromJson(json)).toList();
+}
 
 class SupabaseService {
   // Service for Supabase interactions
@@ -34,6 +46,112 @@ class SupabaseService {
 
   Future<void> signOut() async {
     await _client.auth.signOut();
+  }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
+  // --- Social Auth ---
+
+  /// Signs in with Google via the native Google Sign-In SDK,
+  /// then exchanges the ID token with Supabase.
+  Future<void> signInWithGoogle() async {
+    const webClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID'; // TODO: replace
+    const iosClientId = 'YOUR_GOOGLE_IOS_CLIENT_ID'; // TODO: replace
+
+    final GoogleSignIn googleSignIn = GoogleSignIn(
+      clientId: iosClientId,
+      serverClientId: webClientId,
+    );
+
+    final googleUser = await googleSignIn.signIn();
+    if (googleUser == null) throw Exception('Google sign-in cancelled');
+
+    final googleAuth = await googleUser.authentication;
+    final accessToken = googleAuth.accessToken;
+    final idToken = googleAuth.idToken;
+
+    if (accessToken == null || idToken == null) {
+      throw Exception('Google auth tokens missing');
+    }
+
+    await _client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
+    );
+
+    await _upsertOAuthProfile();
+  }
+
+  /// Signs in with Apple via the native Apple Sign-In sheet (iOS/macOS),
+  /// then exchanges the credential with Supabase.
+  Future<void> signInWithApple() async {
+    final rawNonce = _generateNonce();
+    final nonce = _sha256ofString(rawNonce);
+
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: nonce,
+    );
+
+    final idToken = credential.identityToken;
+    if (idToken == null) throw Exception('Apple identity token missing');
+
+    await _client.auth.signInWithIdToken(
+      provider: OAuthProvider.apple,
+      idToken: idToken,
+      nonce: rawNonce,
+    );
+
+    await _upsertOAuthProfile();
+  }
+
+  /// Upserts the authenticated user's basic info into the profiles table.
+  /// Safe to call on both first sign-up and subsequent sign-ins.
+  Future<void> _upsertOAuthProfile() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    final meta = user.userMetadata ?? {};
+    final name = meta['full_name'] ??
+        meta['name'] ??
+        user.email?.split('@').first ??
+        'User';
+    final avatar = meta['avatar_url'] ?? meta['picture'] ?? '';
+
+    try {
+      await _client.from('profiles').upsert({
+        'id': user.id,
+        'name': name,
+        'avatar_url': avatar,
+        'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'id');
+      logger.i('OAuth profile upserted for ${user.id}');
+    } catch (e) {
+      logger.e('Failed to upsert OAuth profile: $e');
+    }
+  }
+
+  /// Generates a cryptographically random nonce string.
+  String _generateNonce([int length = 32]) {
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = List.generate(
+        length, (_) => charset[_secureRandom.nextInt(charset.length)]);
+    return random.join();
+  }
+
+  final _secureRandom = _SecureRandom();
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   sb.User? get currentUser => _client.auth.currentUser;
@@ -73,13 +191,30 @@ class SupabaseService {
 
   // Fetch requests (future)
   Future<List<HelpRequest>> getHelpRequests() async {
-    final response = await _client
-        .from('help_requests')
-        .select('*, profiles:requester_id(name, avatar_url)')
-        .order('created_at', ascending: false);
+    try {
+      final response = await _client
+          .from('help_requests')
+          .select('*, profiles:requester_id(name, avatar_url)')
+          .order('created_at', ascending: false);
 
-    final List<dynamic> data = response as List<dynamic>;
-    return data.map((json) => HelpRequest.fromJson(json)).toList();
+      final List<dynamic> data = response as List<dynamic>;
+      
+      // Cache the data
+      await CacheService().put('help_requests', data);
+      
+      // Parse in background isolate
+      return await compute(parseHelpRequests, data);
+    } catch (e) {
+      logger.e('Error fetching help requests from network', error: e);
+      // Fallback to cache
+      final cachedData = await CacheService().get('help_requests');
+      if (cachedData != null) {
+        logger.i('Returning cached help requests');
+        final List<dynamic> data = cachedData as List<dynamic>;
+        return await compute(parseHelpRequests, data);
+      }
+      rethrow;
+    }
   }
 
   Future<HelpRequest?> getHelpRequest(String id) async {
@@ -89,8 +224,19 @@ class SupabaseService {
           .select('*, profiles:requester_id(name, avatar_url)')
           .eq('id', id)
           .single();
+          
+      // Cache individual request
+      await CacheService().put('help_request_$id', response);
+      
       return HelpRequest.fromJson(response);
     } catch (e) {
+       logger.e('Error fetching help request $id from network', error: e);
+       // Fallback to cache
+       final cachedData = await CacheService().get('help_request_$id');
+       if (cachedData != null) {
+         logger.i('Returning cached help request $id');
+         return HelpRequest.fromJson(cachedData);
+       }
       return null;
     }
   }
@@ -105,6 +251,9 @@ class SupabaseService {
           .eq('id', userId)
           .single();
       
+      // Cache profile
+      await CacheService().put('user_profile_$userId', data);
+
       final skillsList = (data['skills'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
       return User(
@@ -122,7 +271,29 @@ class SupabaseService {
         lng: (data['lng'] ?? 0.0).toDouble(),
       );
     } catch (e) {
-      print('Error fetching user profile $userId: $e');
+      logger.e('Error fetching user profile $userId: $e');
+      
+      // Fallback
+      final cachedData = await CacheService().get('user_profile_$userId');
+      if (cachedData != null) {
+         logger.i('Returning cached profile for $userId');
+         final data = cachedData;
+         final skillsList = (data['skills'] as List?)?.map((e) => e.toString()).toList() ?? [];
+         return User(
+            id: data['id'],
+            name: data['name'] ?? 'Unknown',
+            email: '',
+            avatarUrl: data['avatar_url'] ?? '',
+            rating: (data['rating'] ?? 0.0).toDouble(),
+            helpCount: data['help_count'] ?? 0,
+            reportCount: data['report_count'] ?? 0,
+            ratingCount: (data['rating_count'] ?? 0).toInt(),
+            points: data['points'] ?? 0,
+            skills: skillsList,
+            lat: (data['lat'] ?? 0.0).toDouble(),
+            lng: (data['lng'] ?? 0.0).toDouble(),
+         );
+      }
       return null;
     }
   }
@@ -139,9 +310,9 @@ class SupabaseService {
           .single();
 
 
-      print('DEBUG: Raw profile data: $data'); // DEBUG LOG
+      logger.d('DEBUG: Raw profile data: $data'); // DEBUG LOG
       final skillsData = data['skills'];
-       print('DEBUG: Skills data type: ${skillsData.runtimeType}, Value: $skillsData');
+       logger.d('DEBUG: Skills data type: ${skillsData.runtimeType}, Value: $skillsData');
 
       final skillsList = (skillsData as List?)?.map((e) => e.toString()).toList() ?? [];
 
@@ -160,7 +331,7 @@ class SupabaseService {
         lng: (data['lng'] ?? 0.0).toDouble(),
       );
     } catch (e, stack) {
-        print('DEBUG: Error parsing profile: $e\n$stack'); // DEBUG LOG
+        logger.e('DEBUG: Error parsing profile: $e\n$stack'); // DEBUG LOG
         // If profile fetch fails (e.g. no row), return basic auth info
         return User(
           id: user.id,
@@ -211,7 +382,7 @@ class SupabaseService {
       
       return response != null;
     } catch (e) {
-      print('Error checking if user rated: $e');
+      logger.e('Error checking if user rated: $e');
       return false;
     }
   }
@@ -312,27 +483,19 @@ class SupabaseService {
 
       return helpers.take(5).toList(); // Return top 5
     } catch (e) {
-      print('Error fetching helpers: $e');
+      logger.e('Error fetching helpers: $e');
       return [];
     }
   }
 
-  // Haversine formula for distance
+  // Haversine formula — returns distance in km
   double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
-    var p = 0.017453292519943295;
-    var c = (a) => 1 - (a).abs().cos(); // Simplified cos function access isn't standard in dart:math, using manual math
-    // Standard implementation:
-    // import 'dart:math' show cos, sqrt, asin;
-    // but we can't easily add import here without updating file top.
-    // Let's use a simpler approximation or assume dart:math is available.
-    // Since I can't guarantee import, I'll use a very rough Euclidean approximation for now 
-    // which is okay for small distances, multiplying by ~111km per degree.
-    // OR better, I'll add the import in a separate step.
-    // For this step, I will use a placeholder calculation that doesn't need bad math imports
-    // euclidean distance in degrees * 111km
-    double dx = (lng2 - lng1) * (1 - 0.008 * ((lat1+lat2)/2).abs()); // mild longitude correction
-    double dy = lat2 - lat1;
-    return 111.0 * sqrt(dx*dx+dy*dy); // Fixed sqrt usage
+    const toRad = 0.017453292519943295; // pi / 180
+    final dLat = (lat2 - lat1) * toRad;
+    final dLng = (lng2 - lng1) * toRad;
+    final a = (dLat / 2) * (dLat / 2) +
+        cos(lat1 * toRad) * cos(lat2 * toRad) * (dLng / 2) * (dLng / 2);
+    return 6371.0 * 2 * asin(sqrt(a)); // Earth radius 6371 km
   }
 
   // --- Chat ---
@@ -361,7 +524,7 @@ class SupabaseService {
         
         return response['id'];
     } catch (e) {
-        print('Error creating conversation: $e');
+        logger.e('Error creating conversation: $e');
         rethrow;
     }
   }
@@ -409,7 +572,7 @@ class SupabaseService {
         }
         return conversations;
     } catch (e) {
-        print('Error fetching conversations: $e');
+        logger.e('Error fetching conversations: $e');
         return [];
     }
   }
@@ -471,7 +634,7 @@ class SupabaseService {
         orElse: () => ApplicationStatus.pending,
       );
     } catch (e) {
-      print('Error checking application status: $e');
+      logger.e('Error checking application status: $e');
       return null;
     }
   }
@@ -485,13 +648,13 @@ class SupabaseService {
           .order('created_at', ascending: false);
       
       final List<dynamic> data = response as List<dynamic>;
-      print('DEBUG: Fetched ${data.length} applications for request $requestId'); // DEBUG LOG
+      logger.d('DEBUG: Fetched ${data.length} applications for request $requestId'); // DEBUG LOG
       return data.map((json) {
-        print('DEBUG: App JSON: $json'); // DEBUG LOG
+        logger.d('DEBUG: App JSON: $json'); // DEBUG LOG
         return RequestApplication.fromJson(json);
       }).toList();
     } catch (e) {
-      print('Error fetching applications: $e');
+      logger.e('Error fetching applications: $e');
       return [];
     }
   }
@@ -512,7 +675,7 @@ class SupabaseService {
         schema: 'public',
         table: 'help_requests',
         callback: (payload) {
-          print('Realtime update detected in help_requests');
+          logger.i('Realtime update detected in help_requests');
           callback();
         },
       )
@@ -595,4 +758,10 @@ class SupabaseService {
       'p_helper_id': helperId,
     });
   }
+}
+
+// Wraps dart:math Random.secure() for cryptographically safe nonce generation.
+class _SecureRandom {
+  final _rng = Random.secure();
+  int nextInt(int max) => _rng.nextInt(max);
 }

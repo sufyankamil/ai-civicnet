@@ -81,7 +81,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
             children: [
               const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
               const SizedBox(width: 8),
-              Text('Auto-categorized as ${_categoryName(detected!)}'),
+              Text('Auto-categorized as ${_categoryName(detected)}'),
             ],
           ),
           backgroundColor: AppColors.secondaryLight,
@@ -216,7 +216,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     label: Text(_categoryName(cat)),
                     selected: isSelected,
                     onSelected: (selected) => setState(() => _selectedCategory = selected ? cat : null),
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                    selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     backgroundColor: Theme.of(context).cardColor,
                     side: BorderSide(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300),
                     labelStyle: TextStyle(
@@ -251,7 +251,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4)],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,

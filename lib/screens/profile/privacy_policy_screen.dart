@@ -21,7 +21,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Privacy Policy for Community Net',
+              'Privacy Policy for Civic Net',
               style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),

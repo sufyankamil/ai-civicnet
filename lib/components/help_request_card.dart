@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/models.dart';
 import '../theme/app_theme.dart';
@@ -18,7 +19,7 @@ class HelpRequestCard extends StatelessWidget {
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
       ),
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
@@ -33,7 +34,7 @@ class HelpRequestCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    backgroundImage: NetworkImage(request.requesterAvatarUrl),
+                    backgroundImage: CachedNetworkImageProvider(request.requesterAvatarUrl),
                     radius: 20,
                   ),
                   const SizedBox(width: 12),
@@ -120,7 +121,7 @@ class HelpRequestCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
