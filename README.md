@@ -26,7 +26,7 @@ CivicNet doesn't just list tasks; it actively finds the best people for the job.
 ### 📍 Real-Time Geolocation & Maps
 Integrated with Google Maps and Flutter Map, CivicNet visualizes help requests on an interactive map. You can see real-time distance calculations using the **Haversine formula** to find nearby tasks instantly.
 
-### 🎨 Liquid Glass & Antigravity UI
+### 🎨 Liquid Glass UI
 The app features a custom "Liquid Glass" design system:
 - **Adaptive Theming:** Deep purples and neon accents (`#7B61FF`) create a modern, trust-building environment.
 - **Sliver Animations:** Collapsing app bars with smooth cross-fades and parallax Hero banners.
