@@ -20,6 +20,7 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   LocationPermission? _permission;
+  Position? _currentPosition;
 
   @override
   void initState() {
@@ -35,7 +36,20 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    setState(() => _permission = permission);
+    
+    Position? pos;
+    if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+      try {
+        pos = await Geolocator.getCurrentPosition();
+      } catch (e) {
+        // Fallback or ignore
+      }
+    }
+
+    setState(() {
+      _permission = permission;
+      _currentPosition = pos;
+    });
   }
 
   @override
@@ -51,8 +65,8 @@ class _MapScreenState extends State<MapScreen> {
             width: double.infinity,
              decoration: BoxDecoration(
               color: Colors.grey[200],
-              image: hasPermission ? const DecorationImage(
-                image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=37.7749,-122.4194&zoom=13&size=800x1200&key=AIzaSyBObagDSkGta1Jv7hwRgL9DX2UxvLQQJnY'),
+              image: hasPermission && _currentPosition != null ? DecorationImage(
+                image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=${_currentPosition!.latitude},${_currentPosition!.longitude}&zoom=13&size=800x1200&key=AIzaSyBObagDSkGta1Jv7hwRgL9DX2UxvLQQJnY'),
                 fit: BoxFit.cover,
               ) : null,
             ),

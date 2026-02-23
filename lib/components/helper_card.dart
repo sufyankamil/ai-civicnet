@@ -57,10 +57,16 @@ class HelperCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          helper.user.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        Expanded(
+                          child: Text(
+                            helper.user.name,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         AiMatchBadge(score: helper.matchScore),
                       ],
                     ),

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../../services/storage_service.dart';
+import '../../services/toast_service.dart';
 import '../../services/supabase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -14,9 +18,10 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
-  final _avatarController = TextEditingController();
   final _skillController = TextEditingController();
   List<String> _skills = [];
+  String _currentAvatarUrl = '';
+  File? _selectedImage;
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -32,7 +37,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         setState(() {
           _nameController.text = user.name;
-          _avatarController.text = user.avatarUrl;
+          _currentAvatarUrl = user.avatarUrl;
           _skills = List.from(user.skills);
           _isLoading = false;
         });
@@ -46,22 +51,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() => _isSaving = true);
 
     try {
+      final user = await SupabaseService().getCurrentUserProfile();
+      if (user == null) throw Exception("User not found");
+
+      String avatarToSave = _currentAvatarUrl;
+      if (_selectedImage != null) {
+        final uploadedUrl = await StorageService().uploadAvatar(_selectedImage!, user.id);
+        if (uploadedUrl != null) {
+          avatarToSave = uploadedUrl;
+        } else {
+           if (mounted) {
+             ToastService.showError(context, 'Failed to upload image. Keeping previous avatar.');
+           }
+        }
+      }
+
       await SupabaseService().updateUserProfile(
         _nameController.text.trim(),
-        _avatarController.text.trim(),
+        avatarToSave,
         _skills,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
+        ToastService.showSuccess(context, 'Profile updated successfully!');
         context.pop(); // Go back to profile screen
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating profile: $e')),
-        );
+        ToastService.showError(context, 'Error updating profile: $e');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -82,6 +98,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     setState(() {
       _skills.remove(skill);
     });
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: source,
+      maxWidth: 800,
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+        _currentAvatarUrl = '';
+      });
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Photo Gallery'),
+                onTap: () {
+                  _pickImage(ImageSource.gallery);
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_camera),
+                title: const Text('Camera'),
+                onTap: () {
+                  _pickImage(ImageSource.camera);
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -120,28 +185,65 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _avatarController,
-                    decoration: InputDecoration(
-                      labelText: 'Avatar URL',
-                      hintText: 'https://example.com/image.jpg',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.image),
-                    ),
-                    onChanged: (value) => setState(() {}), // Refresh preview
-                  ),
-                  if (_avatarController.text.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Center(
-                      child: CircleAvatar(
-                        radius: 40,
-                        backgroundImage: NetworkImage(_avatarController.text),
-                        onBackgroundImageError: (_, __) {},
-                        child: _avatarController.text.isEmpty ? const Icon(Icons.person, size: 40) : null,
+                  const SizedBox(height: 24),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _showImageSourceDialog,
+                      child: Stack(
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey.shade200,
+                              border: Border.all(
+                                color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                                width: 3,
+                              ),
+                            ),
+                            child: _selectedImage != null
+                                ? ClipOval(
+                                    child: Image.file(
+                                      _selectedImage!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : (_currentAvatarUrl.isNotEmpty
+                                    ? ClipOval(
+                                        child: Image.network(
+                                          _currentAvatarUrl,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              Icon(Icons.person, size: 60, color: Colors.grey.shade400),
+                                        ),
+                                      )
+                                    : Icon(Icons.person, size: 60, color: Colors.grey.shade400)),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).primaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Text(
+                      'Tap to change photo',
+                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                    ),
+                  ),
                   const SizedBox(height: 32),
                   Text(
                     'Skills & Expertise',

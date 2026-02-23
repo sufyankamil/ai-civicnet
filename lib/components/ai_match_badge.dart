@@ -41,7 +41,7 @@ class AiMatchBadge extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
-            '${(score * 100).toInt()}% $text',
+            '${(score.isFinite ? score * 100 : 0).toInt()}% $text',
             style: TextStyle(
               color: color,
               fontSize: 12,

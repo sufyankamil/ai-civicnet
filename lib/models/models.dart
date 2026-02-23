@@ -1,3 +1,7 @@
+String sanitizeAvatarUrl(String? url) {
+  if (url == null || url.isEmpty) return '';
+  return url.contains('?t=') ? url.split('?t=').first : url;
+}
 
 enum HelpCategory {
   errands,
@@ -6,7 +10,7 @@ enum HelpCategory {
   education,
   transport,
   household,
-  other
+  other, health
 }
 
 enum UrgencyLevel {
@@ -105,6 +109,30 @@ class HelpRequest {
     this.helperId,
   });
 
+  HelpRequest copyWith({
+    String? distance,
+    double? aiRelevanceScore,
+  }) {
+    return HelpRequest(
+      id: id,
+      requesterId: requesterId,
+      requesterName: requesterName,
+      requesterAvatarUrl: requesterAvatarUrl,
+      title: title,
+      description: description,
+      category: category,
+      urgency: urgency,
+      postedAt: postedAt,
+      distance: distance ?? this.distance,
+      aiRelevanceScore: aiRelevanceScore ?? this.aiRelevanceScore,
+      locationName: locationName,
+      lat: lat,
+      lng: lng,
+      status: status,
+      helperId: helperId,
+    );
+  }
+
   factory HelpRequest.fromJson(Map<String, dynamic> json) {
     // Handle potential nulls or missing fields comfortably
     var profileData = json['profiles'];
@@ -117,7 +145,7 @@ class HelpRequest {
       id: json['id'].toString(),
       requesterId: json['requester_id'] ?? '',
       requesterName: profile['name'] ?? 'Unknown',
-      requesterAvatarUrl: profile['avatar_url'] ?? 'https://i.pravatar.cc/150', // Fallback
+      requesterAvatarUrl: sanitizeAvatarUrl(profile['avatar_url']) == '' ? 'https://i.pravatar.cc/150' : sanitizeAvatarUrl(profile['avatar_url']), // Fallback
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       category: HelpCategory.values.firstWhere(
@@ -129,7 +157,7 @@ class HelpRequest {
         orElse: () => UrgencyLevel.medium,
       ),
       postedAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
-      distance: '0.5 km', 
+      distance: 'Unknown', 
       aiRelevanceScore: (json['ai_score'] ?? 0.85).toDouble(), // Use real score if available
       locationName: json['location_name'] ?? 'Unknown Location',
       lat: (json['lat'] ?? 0).toDouble(),
@@ -228,12 +256,47 @@ class RequestApplication {
       requestId: json['request_id'].toString(),
       applicantId: json['applicant_id'],
       applicantName: profile['name'] ?? 'Unknown User',
-      applicantAvatarUrl: profile['avatar_url'] ?? '',
+      applicantAvatarUrl: sanitizeAvatarUrl(profile['avatar_url']),
       status: ApplicationStatus.values.firstWhere(
         (e) => e.toString().split('.').last == json['status'],
         orElse: () => ApplicationStatus.pending,
       ),
       createdAt: DateTime.parse(json['created_at']),
+    );
+  }
+}
+
+class AppNotification {
+  final String id;
+  final String userId;
+  final String title;
+  final String body;
+  final String type;
+  final String? relatedId;
+  final bool isRead;
+  final DateTime createdAt;
+
+  AppNotification({
+    required this.id,
+    required this.userId,
+    required this.title,
+    required this.body,
+    required this.type,
+    this.relatedId,
+    required this.isRead,
+    required this.createdAt,
+  });
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: json['id'],
+      userId: json['user_id'] ?? '',
+      title: json['title'] ?? '',
+      body: json['body'] ?? '',
+      type: json['type'] ?? 'info',
+      relatedId: json['related_id'],
+      isRead: json['is_read'] ?? false,
+      createdAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
     );
   }
 }

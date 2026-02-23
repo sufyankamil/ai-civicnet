@@ -1,5 +1,5 @@
 
-import 'dart:math' show cos, sqrt, asin, Random;
+import 'dart:math' show cos, sin, sqrt, asin, Random;
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart'; // For compute
 import '../models/models.dart';
 import 'package:community_net/services/logger_service.dart';
 import 'package:community_net/services/cache_service.dart';
+import 'package:community_net/services/notification_service.dart';
 
 // Top-level function for isolate
 List<HelpRequest> parseHelpRequests(List<dynamic> data) {
@@ -20,9 +21,48 @@ class SupabaseService {
   // Service for Supabase interactions
   static final SupabaseService _instance = SupabaseService._internal();
   factory SupabaseService() => _instance;
-  SupabaseService._internal();
+  SupabaseService._internal() {
+    _client.auth.onAuthStateChange.listen((data) {
+      if (data.session != null) {
+        _setupNotificationListener();
+      } else {
+        _notificationChannel?.unsubscribe();
+        _notificationChannel = null;
+      }
+    });
+  }
 
   final SupabaseClient _client = Supabase.instance.client;
+  RealtimeChannel? _notificationChannel;
+
+  void _setupNotificationListener() {
+    final userId = currentUserId;
+    if (userId == null) return;
+    
+    _notificationChannel?.unsubscribe();
+    
+    _notificationChannel = _client.channel('public:notifications_$userId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'notifications',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'user_id',
+          value: userId,
+        ),
+        callback: (payload) {
+          final newRecord = payload.newRecord;
+          final notification = AppNotification.fromJson(newRecord);
+          NotificationService().showLocalNotification(
+            id: notification.id.hashCode,
+            title: notification.title,
+            body: notification.body,
+          );
+        }
+      )
+      .subscribe();
+  }
 
   String? get currentUserId => _client.auth.currentUser?.id;
 
@@ -50,6 +90,12 @@ class SupabaseService {
 
   Future<void> sendPasswordResetEmail(String email) async {
     await _client.auth.resetPasswordForEmail(email);
+  }
+
+  Future<void> deleteUserAccount() async {
+    // Requires secure Postgres function "delete_user_account()" to exist
+    await _client.rpc('delete_user_account');
+    await signOut();
   }
 
   // --- Social Auth ---
@@ -157,6 +203,23 @@ class SupabaseService {
   sb.User? get currentUser => _client.auth.currentUser;
   // --- Data ---
 
+  // Notifications
+  Stream<List<AppNotification>> getNotificationsStream() {
+    final userId = currentUserId;
+    if (userId == null) return const Stream.empty();
+    
+    return _client
+        .from('notifications')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', userId)
+        .order('created_at', ascending: false)
+        .map((data) => data.map((json) => AppNotification.fromJson(json)).toList());
+  }
+
+  Future<void> markNotificationAsRead(String notificationId) async {
+    await _client.from('notifications').update({'is_read': true}).eq('id', notificationId);
+  }
+
   // Create a new request
   Future<void> createHelpRequest(HelpRequest request) async {
     await _client.from('help_requests').insert({
@@ -203,7 +266,30 @@ class SupabaseService {
       await CacheService().put('help_requests', data);
       
       // Parse in background isolate
-      return await compute(parseHelpRequests, data);
+      List<HelpRequest> requests = await compute(parseHelpRequests, data);
+      
+      // Post-processing: Filter own requests and inject true distance
+      final currentUserProfile = await getCurrentUserProfile();
+      
+      if (currentUserProfile != null) {
+        // Calculate dynamic distances
+        if (currentUserProfile.lat != null && currentUserProfile.lng != null && 
+            currentUserProfile.lat != 0 && currentUserProfile.lng != 0) {
+          
+          requests = requests.map((r) {
+            if (r.lat != 0 && r.lng != 0) { // Valid request location check
+              double distKm = _calculateDistance(r.lat, r.lng, currentUserProfile.lat!, currentUserProfile.lng!);
+              return r.copyWith(distance: '${distKm.toStringAsFixed(1)} km');
+            }
+            return r.copyWith(distance: 'Unknown');
+          }).toList();
+        } else {
+           // User location is unknown, all distances should be unknown
+           requests = requests.map((r) => r.copyWith(distance: 'Unknown')).toList();
+        }
+      }
+
+      return requests;
     } catch (e) {
       logger.e('Error fetching help requests from network', error: e);
       // Fallback to cache
@@ -214,6 +300,25 @@ class SupabaseService {
         return await compute(parseHelpRequests, data);
       }
       rethrow;
+    }
+  }
+
+  Future<List<HelpRequest>> getMyHelpRequests() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return [];
+
+    try {
+      final response = await _client
+          .from('help_requests')
+          .select('*, profiles:requester_id(name, avatar_url)')
+          .eq('requester_id', user.id)
+          .order('created_at', ascending: false);
+
+      final List<dynamic> data = response as List<dynamic>;
+      return await compute(parseHelpRequests, data);
+    } catch (e) {
+      logger.e('Error fetching my help requests', error: e);
+      return [];
     }
   }
 
@@ -260,7 +365,7 @@ class SupabaseService {
         id: data['id'],
         name: data['name'] ?? 'Unknown',
         email: '', // Email is not public
-        avatarUrl: data['avatar_url'] ?? '',
+        avatarUrl: sanitizeAvatarUrl(data['avatar_url']),
         rating: (data['rating'] ?? 0.0).toDouble(),
         helpCount: data['help_count'] ?? 0,
         reportCount: data['report_count'] ?? 0,
@@ -283,7 +388,7 @@ class SupabaseService {
             id: data['id'],
             name: data['name'] ?? 'Unknown',
             email: '',
-            avatarUrl: data['avatar_url'] ?? '',
+            avatarUrl: sanitizeAvatarUrl(data['avatar_url']),
             rating: (data['rating'] ?? 0.0).toDouble(),
             helpCount: data['help_count'] ?? 0,
             reportCount: data['report_count'] ?? 0,
@@ -320,7 +425,7 @@ class SupabaseService {
         id: data['id'],
         name: data['name'] ?? user.userMetadata?['name'] ?? 'Unknown',
         email: user.email ?? '',
-        avatarUrl: data['avatar_url'] ?? '',
+        avatarUrl: sanitizeAvatarUrl(data['avatar_url']),
         rating: (data['rating'] ?? 0.0).toDouble(),
         helpCount: data['help_count'] ?? 0,
         reportCount: data['report_count'] ?? 0,
@@ -394,7 +499,7 @@ class SupabaseService {
     final updates = {
       'id': user.id,
       'name': name,
-      'avatar_url': avatarUrl,
+      'avatar_url': sanitizeAvatarUrl(avatarUrl),
       'skills': skills,
       'updated_at': DateTime.now().toIso8601String(),
     };
@@ -433,7 +538,7 @@ class SupabaseService {
           id: json['id'],
           name: json['name'] ?? 'Unknown',
           email: '', // Email not public
-          avatarUrl: json['avatar_url'] ?? '',
+          avatarUrl: sanitizeAvatarUrl(json['avatar_url']),
           rating: (json['rating'] ?? 0.0).toDouble(),
           helpCount: json['help_count'] ?? 0,
           skills: skillsList,
@@ -493,9 +598,10 @@ class SupabaseService {
     const toRad = 0.017453292519943295; // pi / 180
     final dLat = (lat2 - lat1) * toRad;
     final dLng = (lng2 - lng1) * toRad;
-    final a = (dLat / 2) * (dLat / 2) +
-        cos(lat1 * toRad) * cos(lat2 * toRad) * (dLng / 2) * (dLng / 2);
-    return 6371.0 * 2 * asin(sqrt(a)); // Earth radius 6371 km
+    final a = sin(dLat / 2) * sin(dLat / 2) +
+        cos(lat1 * toRad) * cos(lat2 * toRad) * sin(dLng / 2) * sin(dLng / 2);
+    final clampedA = a > 1.0 ? 1.0 : a;
+    return 6371.0 * 2 * asin(sqrt(clampedA)); // Earth radius 6371 km
   }
 
   // --- Chat ---

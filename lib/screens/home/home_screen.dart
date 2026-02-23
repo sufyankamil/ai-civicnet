@@ -13,7 +13,9 @@ import '../../services/supabase_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String? initialFilter;
+  
+  const HomeScreen({super.key, this.initialFilter});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Removed local _requests list
-  String _selectedFilter = 'All';
+  late String _selectedFilter;
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
   String _searchQuery = '';
@@ -87,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _selectedFilter = widget.initialFilter ?? 'All';
     _requestsFuture = SupabaseService().getHelpRequests();
     
     // Subscribe to changes in help_requests
@@ -258,7 +261,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ],
                   ),
-                  const Spacer(),
+                   const Spacer(),
+                   // Notifications Icon
+                   IconButton(
+                     onPressed: () => context.push('/notifications'),
+                     icon: Badge(
+                       label: const Text('2'), // Example count
+                       backgroundColor: Colors.red,
+                       child: const Icon(Icons.notifications_outlined, size: 28),
+                     ),
+                   ),
+                   const SizedBox(width: 8),
                    // Real User Avatar
                    FutureBuilder<User?>( // Use specific User type if needed, or rely on inference
                      future: SupabaseService().getCurrentUserProfile(),
@@ -267,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                        final avatarUrl = user?.avatarUrl;
                        
                        return InkWell( // Use InkWell for better touch feedback
-                         onTap: () => context.go('/profile'), 
+                         onTap: () => context.push('/profile'), 
                          borderRadius: BorderRadius.circular(20),
                          child: Padding( // Add padding to increase hit area
                            padding: const EdgeInsets.all(4.0),
@@ -394,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         labelStyle: TextStyle(
-          color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
+          color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87),
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         ),
         showCheckmark: false,

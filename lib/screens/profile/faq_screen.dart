@@ -59,7 +59,7 @@ class FAQScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Text(
                     faq['answer']!,
-                    style: GoogleFonts.poppins(color: Colors.grey[700]),
+                    style: GoogleFonts.poppins(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700]),
                   ),
                 ),
               ],

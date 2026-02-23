@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/models.dart';
 import '../theme/app_theme.dart';
+import '../services/supabase_service.dart';
 import 'ai_match_badge.dart';
 
 class HelpRequestCard extends StatelessWidget {
@@ -73,18 +74,51 @@ class HelpRequestCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${request.distance} • ${request.locationName}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                  ),
-                  const Spacer(),
-                  AiMatchBadge(score: request.aiRelevanceScore),
-                ],
-              ),
+              if (request.requesterId == SupabaseService().currentUserId)
+                Row(
+                  children: [
+                    Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      request.locationName,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                            const SizedBox(width: 4),
+                            Text(
+                              request.distance,
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              request.locationName,
+                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    AiMatchBadge(score: request.aiRelevanceScore),
+                  ],
+                ),
             ],
           ),
         ),

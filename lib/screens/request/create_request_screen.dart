@@ -26,6 +26,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   bool _isCategorizing = false;
   bool _isLoading = false;
   LocationPermission? _permission;
+  Position? _currentPosition;
 
   @override
   void initState() {
@@ -41,7 +42,20 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    setState(() => _permission = permission);
+    
+    Position? pos;
+    if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+      try {
+        pos = await Geolocator.getCurrentPosition();
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    setState(() {
+      _permission = permission;
+      _currentPosition = pos;
+    });
   }
 
   // Mock auto-categorization based on title/desc
@@ -101,10 +115,14 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       setState(() => _isLoading = true);
       try {
         Position position;
-        try {
-          position = await Geolocator.getCurrentPosition();
-        } catch (e) {
-          position = Position(longitude: -122.4194, latitude: 37.7749, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0, altitudeAccuracy: 0, headingAccuracy: 0); // Fallback if location fails
+        if (_currentPosition != null) {
+          position = _currentPosition!;
+        } else {
+          try {
+            position = await Geolocator.getCurrentPosition();
+          } catch (e) {
+            position = Position(longitude: 0.0, latitude: 0.0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0, altitudeAccuracy: 0, headingAccuracy: 0); // Fallback to 0,0
+          }
         }
 
         final newRequest = HelpRequest(
@@ -218,9 +236,9 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     onSelected: (selected) => setState(() => _selectedCategory = selected ? cat : null),
                     selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     backgroundColor: Theme.of(context).cardColor,
-                    side: BorderSide(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300),
+                    side: BorderSide(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withValues(alpha: 0.3)),
                     labelStyle: TextStyle(
-                      color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
+                      color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   );
@@ -238,9 +256,9 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(16),
-                  image: (_permission == LocationPermission.always || _permission == LocationPermission.whileInUse) 
-                  ? const DecorationImage(
-                    image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=37.7749,-122.4194&zoom=14&size=600x300&markers=color:red%7C37.7749,-122.4194&key=AIzaSyBObagDSkGta1Jv7hwRgL9DX2UxvLQQJnY'),
+                  image: (_permission == LocationPermission.always || _permission == LocationPermission.whileInUse) && _currentPosition != null
+                  ? DecorationImage(
+                    image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=${_currentPosition!.latitude},${_currentPosition!.longitude}&zoom=14&size=600x300&markers=color:red%7C${_currentPosition!.latitude},${_currentPosition!.longitude}&key=AIzaSyBObagDSkGta1Jv7hwRgL9DX2UxvLQQJnY'),
                     fit: BoxFit.cover,
                   ) : null,
                 ),
@@ -324,7 +342,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       style: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.black87,
+        color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
       ),
     );
   }

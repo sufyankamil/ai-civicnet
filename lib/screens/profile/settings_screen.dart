@@ -24,7 +24,7 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 100),
         children: [
           _buildSectionHeader('Appearance'),
           const SizedBox(height: 8),
@@ -82,6 +82,16 @@ class SettingsScreen extends StatelessWidget {
               context.push('/privacy-policy');
             },
           ),
+          const Divider(height: 32),
+
+          _buildSectionHeader('Account'),
+          ListTile(
+            title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
+            leading: const Icon(Icons.person_remove, color: Colors.red),
+            trailing: const Icon(Icons.chevron_right, color: Colors.red),
+            onTap: () => context.push('/delete-account'),
+          ),
+
           const Divider(height: 32),
 
           _buildSectionHeader('Diagnostics'),

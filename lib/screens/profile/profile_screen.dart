@@ -130,9 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   Widget _buildHeroSliver(User user, bool isDark) {
     final displayName =
         user.name.isEmpty || user.name == 'Unknown' ? 'No Name Set' : user.name;
-    final avatarUrl = user.avatarUrl.isNotEmpty
-        ? user.avatarUrl
-        : 'https://i.pravatar.cc/150?u=${user.id}';
+    final avatarUrl = user.avatarUrl;
 
     return SliverAppBar(
       expandedHeight: 280,
@@ -151,8 +149,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               CircleAvatar(
                 radius: 16,
                 backgroundColor: AppColors.primaryLight.withValues(alpha: 0.15),
-                backgroundImage: NetworkImage(avatarUrl),
-                onBackgroundImageError: (_, __) {},
+                backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                onBackgroundImageError: avatarUrl.isNotEmpty ? (_, __) {} : null,
+                child: avatarUrl.isEmpty
+                    ? Icon(Icons.person, size: 20, color: AppColors.primaryLight)
+                    : null,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -272,8 +273,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                         child: CircleAvatar(
                           radius: 38,
                           backgroundColor: Colors.grey.shade200,
-                          backgroundImage: NetworkImage(avatarUrl),
-                          onBackgroundImageError: (_, __) {},
+                          backgroundImage: avatarUrl.isNotEmpty ? NetworkImage(avatarUrl) : null,
+                          onBackgroundImageError: avatarUrl.isNotEmpty ? (_, __) {} : null,
+                          child: avatarUrl.isEmpty
+                              ? Icon(Icons.person, size: 40, color: Colors.grey.shade400)
+                              : null,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -319,7 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                       color: Colors.white, size: 13),
                                   const SizedBox(width: 4),
                                   Text(
-                                    _trustLevel(user.rating),
+                                    _trustLevel(user),
                                     style: GoogleFonts.poppins(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
@@ -677,10 +681,10 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  String _trustLevel(double rating) {
-    if (rating >= 4.5) return 'Elite Helper';
-    if (rating >= 3.5) return 'Trusted Helper';
-    if (rating >= 2.0) return 'Active Member';
+  String _trustLevel(User user) {
+    if (user.points >= 350 && user.helpCount >= 25) return 'Elite Helper';
+    if (user.points >= 150 && user.helpCount >= 10) return 'Trusted Helper';
+    if (user.points >= 50 && user.helpCount >= 2) return 'Active Member';
     return 'New Member';
   }
 }

@@ -264,62 +264,66 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           
           // Input Area
           if (_isBlockedByMe)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              color: Colors.grey[100],
-              child: Column(
-                children: [
-                   Text('You have blocked this user.', style: GoogleFonts.poppins(color: Colors.grey[600])),
-                   TextButton(
-                     onPressed: _unblockUser,
-                     child: const Text('Unblock to chat'),
-                   ),
-                ],
+            SafeArea(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                color: Colors.grey[100],
+                child: Column(
+                  children: [
+                     Text('You have blocked this user.', style: GoogleFonts.poppins(color: Colors.grey[600])),
+                     TextButton(
+                       onPressed: _unblockUser,
+                       child: const Text('Unblock to chat'),
+                     ),
+                  ],
+                ),
               ),
             )
           else
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      _isListening ? Icons.mic : Icons.mic_none,
-                      color: _isListening ? Colors.red : Colors.grey,
-                    ),
-                    onPressed: _listen,
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: _isListening ? 'Listening...' : 'Type a message...',
-                        hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: _isListening ? Colors.red.withValues(alpha: 0.1) : Colors.grey[100],
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            SafeArea(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: _isListening ? Colors.red : Colors.grey,
                       ),
-                      textCapitalization: TextCapitalization.sentences,
-                      onSubmitted: (_) => _sendMessage(),
+                      onPressed: _listen,
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: _isSending 
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
-                      : const Icon(Icons.send, color: AppColors.primaryLight),
-                    onPressed: _sendMessage,
-                  ),
-                ],
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        decoration: InputDecoration(
+                          hintText: _isListening ? 'Listening...' : 'Type a message...',
+                          hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: _isListening ? Colors.red.withValues(alpha: 0.1) : Colors.grey[100],
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        ),
+                        textCapitalization: TextCapitalization.sentences,
+                        onSubmitted: (_) => _sendMessage(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: _isSending 
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
+                        : const Icon(Icons.send, color: AppColors.primaryLight),
+                      onPressed: _sendMessage,
+                    ),
+                  ],
+                ),
               ),
             ),
         ],

@@ -53,5 +53,9 @@
 	<string>This app needs access to location to show help requests near you.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to location to show help requests near you.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Community Net needs access to your photo library to let you upload a profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Community Net needs access to your camera to let you snap a profile picture.</string>
 </dict>
 </plist>

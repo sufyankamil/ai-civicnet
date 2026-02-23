@@ -8,6 +8,7 @@ import 'services/theme_service.dart';
 import 'services/startup_service.dart';
 import 'widgets/connectivity_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:toastification/toastification.dart';
 
 // Screens
 import 'screens/profile/privacy_policy_screen.dart';
@@ -15,15 +16,21 @@ import 'screens/onboarding/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
+import 'screens/auth/auth_check_screen.dart';
+import 'screens/auth/complete_profile_screen.dart';
 import 'screens/main_scaffold.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/request/create_request_screen.dart';
 import 'screens/request/request_detail_screen.dart';
 import 'screens/secondary_screens.dart';
 import 'screens/profile/edit_profile_screen.dart';
+import 'screens/profile/delete_account_screen.dart';
 import 'screens/profile/settings_screen.dart';
 import 'screens/profile/faq_screen.dart';
 import 'screens/chat/chat_detail_screen.dart';
+import 'screens/discover/discover_screen.dart';
+import 'screens/activity/activity_screen.dart';
+import 'screens/notifications/notifications_screen.dart';
 import 'screens/profile/how_tasknet_works_screen.dart';
 import 'screens/auth/forgot_password_screen.dart';
 import 'screens/profile/profile_screen.dart';
@@ -50,7 +57,6 @@ class _RootAppState extends State<RootApp> {
   }
 
   Future<void> _initApp() async {
-    // Artificial delay for splash visibility (optional)
     final minSplash = Future.delayed(const Duration(seconds: 2));
     
     // Initialize Hive before any services use it
@@ -72,15 +78,13 @@ class _RootAppState extends State<RootApp> {
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
-      // Show pure Splash Screen without routing
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme, // Use theme for colors
+        theme: AppTheme.lightTheme,
         home: const SplashScreen(),
       );
     }
 
-    // App is ready
     return ChangeNotifierProvider(
       create: (_) => ThemeService(),
       child: const CommunityHelpApp(),
@@ -96,16 +100,16 @@ class CommunityHelpApp extends StatefulWidget {
 }
 
 class _CommunityHelpAppState extends State<CommunityHelpApp> {
-  // Router is created once and cached — not rebuilt on every theme change.
   late final GoRouter _router = _createRouter();
 
   @override
   Widget build(BuildContext context) {
     final themeService = Provider.of<ThemeService>(context);
 
-    return MaterialApp.router(
-      title: 'CivicNet',
-      debugShowCheckedModeBanner: false,
+    return ToastificationWrapper(
+      child: MaterialApp.router(
+        title: 'CivicNet',
+        debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeService.themeMode,
@@ -113,11 +117,10 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
       builder: (context, child) {
         return ConnectivityWrapper(child: child!);
       },
-    );
+    ));
   }
 }
 
-// Router Creation
 GoRouter _createRouter() {
   final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
   final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
@@ -131,8 +134,6 @@ GoRouter _createRouter() {
       final loggedIn = session != null;
       
       // Determine if we should go to onboarding/login or home
-      // Note: We don't have a 'splash' route anymore as the root, effectively.
-      // But we can map '/' to Home or Onboarding logic.
       
       final currentPath = state.uri.toString();
       
@@ -142,7 +143,7 @@ GoRouter _createRouter() {
          }
       } else {
          if (currentPath == '/' || currentPath == '/login' || currentPath == '/signup' || currentPath == '/onboarding') {
-           return '/home';
+           return '/auth-check'; // Send to auth check interceptor
          }
       }
       return null;
@@ -164,6 +165,14 @@ GoRouter _createRouter() {
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
       ),
+      GoRoute(
+        path: '/auth-check',
+        builder: (context, state) => const AuthCheckScreen(),
+      ),
+      GoRoute(
+        path: '/complete-profile',
+        builder: (context, state) => const CompleteProfileScreen(),
+      ),
       ShellRoute(
         navigatorKey: shellNavigatorKey,
         builder: (context, state, child) {
@@ -172,11 +181,18 @@ GoRouter _createRouter() {
         routes: [
           GoRoute(
             path: '/home',
-            builder: (context, state) => const HomeScreen(),
+            builder: (context, state) {
+              final filter = state.uri.queryParameters['filter'];
+              return HomeScreen(initialFilter: filter);
+            }
           ),
           GoRoute(
-            path: '/map',
-            builder: (context, state) => const MapScreen(),
+            path: '/discover',
+            builder: (context, state) => const DiscoverScreen(),
+          ),
+          GoRoute(
+            path: '/activity',
+            builder: (context, state) => const ActivityScreen(),
           ),
           GoRoute(
             path: '/chat',
@@ -221,6 +237,11 @@ GoRouter _createRouter() {
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
+        path: '/delete-account',
+        builder: (context, state) => const DeleteAccountScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
       ),
@@ -252,6 +273,11 @@ GoRouter _createRouter() {
         parentNavigatorKey: rootNavigatorKey,
         path: '/how-it-works',
         builder: (context, state) => const HowTaskNetWorksScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,

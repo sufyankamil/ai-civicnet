@@ -16,39 +16,39 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    // Determine the current index based on the route location
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) { _selectedIndex = 0; }
-    else if (location.startsWith('/map')) { _selectedIndex = 1; }
-    else if (location.startsWith('/chat')) { _selectedIndex = 3; }
-    else if (location.startsWith('/profile')) { _selectedIndex = 4; }
+    else if (location.startsWith('/discover')) { _selectedIndex = 1; }
+    else if (location.startsWith('/activity')) { _selectedIndex = 3; }
+    else if (location.startsWith('/chat')) { _selectedIndex = 4; }
     
     return Scaffold(
       body: widget.child,
-      extendBody: true,
-      bottomNavigationBar: Container(
-        margin: const EdgeInsets.all(24),
-        height: 70,
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-             _buildNavItem(Icons.home_rounded, 0, '/home'),
-             _buildNavItem(Icons.map_rounded, 1, '/map'),
-             _buildFabItem(),
-             _buildNavItem(Icons.chat_bubble_rounded, 3, '/chat'),
-             _buildNavItem(Icons.person_rounded, 4, '/profile'),
-          ],
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.only(left: 24, right: 24, bottom: 8),
+          height: 70,
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              )
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+               _buildNavItem(Icons.home_rounded, 0, '/home'),
+               _buildNavItem(Icons.explore_rounded, 1, '/discover'),
+               _buildFabItem(),
+               _buildNavItem(Icons.local_activity_rounded, 3, '/activity'),
+               _buildNavItem(Icons.chat_bubble_rounded, 4, '/chat'),
+            ],
+          ),
         ),
       ),
     );
