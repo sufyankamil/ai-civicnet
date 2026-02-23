@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:community_net/services/logger_service.dart';
+import 'package:civic_net/services/logger_service.dart';
 
 class StorageService {
   static final StorageService _instance = StorageService._internal();

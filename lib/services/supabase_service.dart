@@ -8,9 +8,9 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:flutter/foundation.dart'; // For compute
 import '../models/models.dart';
-import 'package:community_net/services/logger_service.dart';
-import 'package:community_net/services/cache_service.dart';
-import 'package:community_net/services/notification_service.dart';
+import 'package:civic_net/services/logger_service.dart';
+import 'package:civic_net/services/cache_service.dart';
+import 'package:civic_net/services/notification_service.dart';
 
 // Top-level function for isolate
 List<HelpRequest> parseHelpRequests(List<dynamic> data) {

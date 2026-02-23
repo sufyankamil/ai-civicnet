@@ -5,7 +5,7 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../models/models.dart';
 
 import '../../services/supabase_service.dart';
-import 'package:community_net/services/logger_service.dart';
+import 'package:civic_net/services/logger_service.dart';
 import '../../theme/app_theme.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../components/helper_card.dart';

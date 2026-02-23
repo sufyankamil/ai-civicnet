@@ -5,9 +5,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:community_net/services/firebase_service.dart';
-import 'package:community_net/services/cache_service.dart';
-import 'package:community_net/services/logger_service.dart';
+import 'package:civic_net/services/firebase_service.dart';
+import 'package:civic_net/services/cache_service.dart';
+import 'package:civic_net/services/logger_service.dart';
 
 class StartupService {
   static final StartupService _instance = StartupService._internal();

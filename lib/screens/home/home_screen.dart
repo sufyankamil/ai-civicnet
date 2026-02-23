@@ -1,7 +1,7 @@
 
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:community_net/services/logger_service.dart';
+import 'package:civic_net/services/logger_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

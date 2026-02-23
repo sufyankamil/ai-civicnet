@@ -1,5 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:community_net/services/logger_service.dart';
+import 'package:civic_net/services/logger_service.dart';
 
 class CacheService {
   static final CacheService _instance = CacheService._internal();

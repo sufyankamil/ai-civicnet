@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:community_net/services/logger_service.dart';
-import 'package:community_net/services/notification_service.dart';
+import 'package:civic_net/services/logger_service.dart';
+import 'package:civic_net/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 @pragma('vm:entry-point')
