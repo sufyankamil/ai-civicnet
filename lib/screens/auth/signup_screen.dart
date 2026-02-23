@@ -6,6 +6,7 @@ import '../../components/custom_textfield.dart';
 import '../../components/primary_button.dart';
 import '../../components/social_login_button.dart';
 import '../../services/supabase_service.dart';
+import '../../services/toast_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../components/social_icons.dart';
 
@@ -45,15 +46,7 @@ class _SignupScreenState extends State<SignupScreen> {
         );
         if (mounted) {
           context.go('/home');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Account created! Welcome to CivicNet.'),
-              backgroundColor: Colors.green.shade600,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-          );
+          ToastService.showSuccess(context, 'Account created! Welcome to CivicNet.');
         }
       } on AuthException catch (e) {
         _showError(e.message);
@@ -101,14 +94,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    ToastService.showError(context, message);
   }
 
   @override

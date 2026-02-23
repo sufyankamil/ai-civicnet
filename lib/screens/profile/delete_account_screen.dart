@@ -68,9 +68,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       await launchUrl(emailLaunchUri);
     } else {
       if (mounted) {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('Could not open email client.')),
-         );
+         ToastService.showError(context, 'Could not open email client.');
       }
     }
   }

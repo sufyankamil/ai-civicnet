@@ -6,6 +6,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
 import '../../models/models.dart';
 import '../../services/supabase_service.dart';
+import '../../services/toast_service.dart';
 import '../../theme/app_theme.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -75,7 +76,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (!_speechEnabled) {
       bool permission = await Permission.microphone.request().isGranted;
       if (!permission) {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Microphone permission denied')));
+        if (mounted) ToastService.showInfo(context, 'Microphone permission denied');
         return;
       }
       _initSpeech(); // Retry init
@@ -346,7 +347,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       await SupabaseService().sendMessage(widget.conversationId, content);
       _messageController.clear();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error sending: $e')));
+      if (mounted) ToastService.showError(context, 'Error sending: $e');
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -438,9 +439,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     try {
       await SupabaseService().blockUser(widget.otherUserId);
       await _checkBlockStatus();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User blocked')));
+      if (mounted) ToastService.showInfo(context, 'User blocked');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ToastService.showError(context, 'Error: $e');
     }
   }
 
@@ -448,9 +449,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     try {
       await SupabaseService().unblockUser(widget.otherUserId);
       await _checkBlockStatus();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User unblocked')));
+      if (mounted) ToastService.showSuccess(context, 'User unblocked');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ToastService.showError(context, 'Error: $e');
     }
   }
 
@@ -495,11 +496,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     try {
       await SupabaseService().reportUser(widget.otherUserId, reason);
       await _checkBlockStatus();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User reported and blocked')));
+      if (mounted) ToastService.showInfo(context, 'User reported and blocked');
       // Requirement: "blocked user id will be saved along with the id of user that have blocked along with a count.. like how many user has reported.."
       // Handled by SupabaseService and Triggers.
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) ToastService.showError(context, 'Error: $e');
     }
   }
 }

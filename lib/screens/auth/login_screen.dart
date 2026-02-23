@@ -6,6 +6,7 @@ import '../../components/primary_button.dart';
 import '../../components/social_login_button.dart';
 import '../../components/social_icons.dart';
 import '../../services/supabase_service.dart';
+import '../../services/toast_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -86,14 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red.shade600,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    ToastService.showError(context, message);
   }
 
   @override

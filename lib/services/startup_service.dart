@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart'; // For WidgetsFlutterBinding
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:community_net/services/firebase_service.dart';
 import 'package:community_net/services/cache_service.dart';
 import 'package:community_net/services/logger_service.dart';
@@ -34,8 +35,8 @@ class StartupService {
 
     // 3. Supabase
     await Supabase.initialize(
-      url: 'https://zofkjhpfeqkvajglltlf.supabase.co',
-      anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvZmtqaHBmZXFrdmFqZ2xsdGxmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MTAzOTEsImV4cCI6MjA4NjA4NjM5MX0.Btd6hVkBrspTnlchcbS-gsyoLD2Bwcbb5pocZJ_LchI',
+      url: dotenv.env['SUPABASE_URL']!,
+      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     );
     logger.i('Supabase initialized (${stopwatch.elapsedMilliseconds}ms)');
 

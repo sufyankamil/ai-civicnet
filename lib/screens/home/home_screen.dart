@@ -10,6 +10,7 @@ import '../../components/help_request_card.dart';
 import '../../theme/app_theme.dart';
 
 import '../../services/supabase_service.dart';
+import '../../services/toast_service.dart';
 import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -153,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _requestLocationUpdates() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+      if (mounted) ToastService.showInfo(context, 'Location services are disabled.');
       return;
     }
 
@@ -161,13 +162,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permission denied.')));
+         if (mounted) ToastService.showInfo(context, 'Location permission denied.');
          return;
       }
     }
     
     if (permission == LocationPermission.deniedForever) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied, we cannot request permissions.')));
+      if (mounted) ToastService.showInfo(context, 'Location permissions are permanently denied, we cannot request permissions.');
       return;
     }
 
@@ -175,14 +176,14 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final position = await Geolocator.getCurrentPosition();
       await SupabaseService().updateUserLocation(position.latitude, position.longitude);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location updated successfully!')));
+      if (mounted) ToastService.showSuccess(context, 'Location updated successfully!');
       
       // Refresh home data
       setState(() {
         _requestsFuture = SupabaseService().getHelpRequests();
       });
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating location: $e')));
+      if (mounted) ToastService.showError(context, 'Error updating location: $e');
     }
   }
 

@@ -5,9 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../components/custom_textfield.dart';
 import '../../components/primary_button.dart';
-import '../../theme/app_theme.dart';
 import '../../models/models.dart';
 import '../../services/supabase_service.dart';
+import '../../services/toast_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CreateRequestScreen extends StatefulWidget {
   const CreateRequestScreen({super.key});
@@ -62,9 +63,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   void _detectCategory() async {
     final text = '${_titleController.text} ${_descController.text}'.toLowerCase();
     if (text.length < 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter more details to auto-categorize.')),
-      );
+      ToastService.showInfo(context, 'Please enter more details to auto-categorize.');
       return;
     }
 
@@ -89,24 +88,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         _selectedCategory = detected;
         _isCategorizing = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.auto_awesome, color: Colors.white, size: 16),
-              const SizedBox(width: 8),
-              Text('Auto-categorized as ${_categoryName(detected)}'),
-            ],
-          ),
-          backgroundColor: AppColors.secondaryLight,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      ToastService.showSuccess(context, 'Auto-categorized as ${_categoryName(detected)}');
     } else {
       setState(() => _isCategorizing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not auto-categorize. Please select manually.')),
-      );
+      ToastService.showInfo(context, 'Could not auto-categorize. Please select manually.');
     }
   }
 
@@ -147,23 +132,17 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
 
         if (mounted) {
           context.pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Request posted successfully!')),
-          );
+          ToastService.showSuccess(context, 'Request posted successfully!');
         }
       } catch (e) {
         if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-          );
+           ToastService.showError(context, 'Error: $e');
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
     } else if (_selectedCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a category')),
-      );
+      ToastService.showInfo(context, 'Please select a category');
     }
   }
 
@@ -258,7 +237,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   borderRadius: BorderRadius.circular(16),
                   image: (_permission == LocationPermission.always || _permission == LocationPermission.whileInUse) && _currentPosition != null
                   ? DecorationImage(
-                    image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=${_currentPosition!.latitude},${_currentPosition!.longitude}&zoom=14&size=600x300&markers=color:red%7C${_currentPosition!.latitude},${_currentPosition!.longitude}&key=AIzaSyBObagDSkGta1Jv7hwRgL9DX2UxvLQQJnY'),
+                    image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=${_currentPosition!.latitude},${_currentPosition!.longitude}&zoom=14&size=600x300&markers=color:red%7C${_currentPosition!.latitude},${_currentPosition!.longitude}&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}'),
                     fit: BoxFit.cover,
                   ) : null,
                 ),

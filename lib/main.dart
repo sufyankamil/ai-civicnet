@@ -9,6 +9,7 @@ import 'services/startup_service.dart';
 import 'widgets/connectivity_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:toastification/toastification.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Screens
 import 'screens/profile/privacy_policy_screen.dart';
@@ -22,7 +23,7 @@ import 'screens/main_scaffold.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/request/create_request_screen.dart';
 import 'screens/request/request_detail_screen.dart';
-import 'screens/secondary_screens.dart';
+import 'screens/chat/chat_screen.dart';
 import 'screens/profile/edit_profile_screen.dart';
 import 'screens/profile/delete_account_screen.dart';
 import 'screens/profile/settings_screen.dart';
@@ -59,8 +60,9 @@ class _RootAppState extends State<RootApp> {
   Future<void> _initApp() async {
     final minSplash = Future.delayed(const Duration(seconds: 2));
     
-    // Initialize Hive before any services use it
+    // Initialize Hive & Dotenv before any services use it
     await Hive.initFlutter();
+    await dotenv.load(fileName: ".env");
     
     await Future.wait([
       StartupService().initialize(),

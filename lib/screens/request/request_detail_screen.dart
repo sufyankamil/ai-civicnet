@@ -7,9 +7,11 @@ import '../../models/models.dart';
 import '../../services/supabase_service.dart';
 import 'package:community_net/services/logger_service.dart';
 import '../../theme/app_theme.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../components/helper_card.dart';
 import '../../components/primary_button.dart';
-import '../../components/rating_dialog.dart'; // Import RatingDialog
+import '../../components/rating_dialog.dart'; 
+import '../../services/toast_service.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final String requestId;
@@ -103,9 +105,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       context.push('/chat-detail?id=$conversationId&name=$encodedName&uid=$userId');
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error starting chat: $e')),
-        );
+        ToastService.showError(context, 'Error starting chat: $e');
       }
     } finally {
       if (mounted) setState(() => _isStartingChat = false);
@@ -147,7 +147,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     fit: StackFit.expand,
                     children: [
                       Image.network(
-                        'https://maps.googleapis.com/maps/api/staticmap?center=${request.lat},${request.lng}&zoom=15&size=600x400&markers=color:red%7C${request.lat},${request.lng}&key=AIzaSyBObagDSkGta1Jv7hwRgL9DX2UxvLQQJnY', 
+                        'https://maps.googleapis.com/maps/api/staticmap?center=${request.lat},${request.lng}&zoom=15&size=600x400&markers=color:red%7C${request.lat},${request.lng}&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}', 
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300]),
                       ),
@@ -417,9 +417,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             children: helpers.map((helper) => HelperCard(
                               helper: helper,
                               onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Viewing ${helper.user.name}\'s profile')),
-                                );
+                                ToastService.showSuccess(context, 'Viewing ${helper.user.name}\'s profile');
                               },
                             )).toList(),
                           );
@@ -505,9 +503,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 isLoading: _isApplying || _isCheckingStatus,
                                 onPressed: request.status == RequestStatus.open
                                     ? () => _applyToRequest()
-                                    : () => ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('This request is no longer open for applications.')),
-                                      ),
+                                    : () => ToastService.showInfo(context, 'This request is no longer open for applications.'),
                               ),
                             ),
                       ] else ...[
@@ -671,9 +667,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   Future<void> _startChat(HelpRequest request) async {
     if (_isStartingChat) return;
     if (SupabaseService().currentUserId == request.requesterId) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You cannot chat with yourself')),
-      );
+      ToastService.showInfo(context, 'You cannot chat with yourself');
       return;
     }
 
@@ -686,9 +680,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error starting chat: $e')),
-        );
+        ToastService.showError(context, 'Error starting chat: $e');
       }
     } finally {
       if (mounted) setState(() => _isStartingChat = false);
@@ -700,15 +692,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       await SupabaseService().applyToRequest(widget.requestId);
       if (mounted) {
         setState(() => _applicationStatus = ApplicationStatus.pending);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Interest sent! Waiting for requester to accept.')),
-        );
+        ToastService.showSuccess(context, 'Interest sent! Waiting for requester to accept.');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error applying: $e')),
-        );
+        ToastService.showError(context, 'Error applying: $e');
       }
     } finally {
       if (mounted) setState(() => _isApplying = false);
@@ -723,15 +711,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         await _loadApplications(request.requesterId);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Application ${status.name}!')),
-        );
+        ToastService.showSuccess(context, 'Application ${status.name}!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating status: $e')),
-        );
+        ToastService.showError(context, 'Error updating status: $e');
       }
     }
   }
@@ -747,15 +731,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         _requestFuture = SupabaseService().getHelpRequest(widget.requestId);
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Request status updated to ${status.toString().split('.').last}!')),
-        );
+        ToastService.showSuccess(context, 'Request status updated to ${status.toString().split('.').last}!');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating status: $e')),
-        );
+        ToastService.showError(context, 'Error updating status: $e');
       }
     }
   }
@@ -767,9 +747,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     if (!mounted) return;
 
     if (applications.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No applicants to mark as helper. Wait for someone to apply.')),
-      );
+       ToastService.showInfo(context, 'No applicants to mark as helper. Wait for someone to apply.');
       return;
     }
 
@@ -854,7 +832,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ToastService.showError(context, 'Error: $e');
       }
     }
   }
@@ -894,7 +872,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         ratedUserName: ratedUserName,
         ratedUserAvatar: ratedUserAvatar,
         onRate: (rating) async {
-          final messenger = ScaffoldMessenger.of(context);
           try {
             await SupabaseService().rateUser(
               requestId: widget.requestId,
@@ -902,20 +879,14 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               rating: rating,
             );
             
-            if (mounted) {
-              setState(() {
-                _hasRated = true;
-              });
-              messenger.showSnackBar(
-                const SnackBar(content: Text('Rating submitted!')),
-              );
-            }
+            if (!context.mounted) return;
+            setState(() {
+              _hasRated = true;
+            });
+            ToastService.showSuccess(context, 'Rating submitted!');
           } catch (e) {
-            if (mounted) {
-              messenger.showSnackBar(
-                SnackBar(content: Text('Error submitting rating: $e')),
-              );
-            }
+            if (!context.mounted) return;
+            ToastService.showError(context, 'Error submitting rating: $e');
           }
         },
       ),

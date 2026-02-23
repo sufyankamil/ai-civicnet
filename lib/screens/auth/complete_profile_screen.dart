@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../components/primary_button.dart';
-import '../../components/custom_textfield.dart';
 import '../../services/supabase_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/toast_service.dart';
