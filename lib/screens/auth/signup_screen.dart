@@ -1,7 +1,8 @@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/logger_service.dart';
 import '../../components/custom_textfield.dart';
 import '../../components/primary_button.dart';
 import '../../components/social_login_button.dart';
@@ -27,6 +28,26 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isAppleLoading = false;
   bool _obscurePassword = true;
 
+  // Password requirement flags (updated live as user types)
+  bool _hasMinLength = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasDigit = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordController.addListener(() {
+      final pw = _passwordController.text;
+      setState(() {
+        _hasMinLength = pw.length >= 8;
+        _hasUppercase = pw.contains(RegExp(r'[A-Z]'));
+        _hasLowercase = pw.contains(RegExp(r'[a-z]'));
+        _hasDigit    = pw.contains(RegExp(r'[0-9]'));
+      });
+    });
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -45,13 +66,16 @@ class _SignupScreenState extends State<SignupScreen> {
           _nameController.text.trim(),
         );
         if (mounted) {
-          context.go('/home');
+          // Route via auth-check so complete-profile is shown for new users
+          context.go('/auth-check');
           ToastService.showSuccess(context, 'Account created! Welcome to CivicNet.');
         }
       } on AuthException catch (e) {
-        _showError(e.message);
-      } catch (_) {
-        _showError('Unexpected error. Please try again.');
+        logger.e('Signup AuthException: ${e.message}');
+        _showError('Registration failed. Please check your information or try again later.');
+      } catch (e) {
+        logger.e('Signup generic error: $e');
+        _showError('An unexpected error occurred. Please try again.');
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -62,11 +86,13 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isGoogleLoading = true);
     try {
       await SupabaseService().signInWithGoogle();
-      if (mounted) context.go('/home');
+      if (mounted) context.go('/auth-check');
     } on AuthException catch (e) {
-      _showError(e.message);
+      logger.e('Google Signup AuthException: ${e.message}');
+      _showError('Google sign-in failed. Please try again.');
     } catch (e) {
       final msg = e.toString();
+      logger.e('Google Signup error: $msg');
       if (!msg.contains('cancelled') && !msg.contains('cancel')) {
         _showError('Google sign-in failed. Please try again.');
       }
@@ -79,11 +105,13 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() => _isAppleLoading = true);
     try {
       await SupabaseService().signInWithApple();
-      if (mounted) context.go('/home');
+      if (mounted) context.go('/auth-check');
     } on AuthException catch (e) {
-      _showError(e.message);
+      logger.e('Apple Signup AuthException: ${e.message}');
+      _showError('Apple sign-in failed. Please try again.');
     } catch (e) {
       final msg = e.toString();
+      logger.e('Apple Signup error: $msg');
       if (!msg.contains('cancelled') && !msg.contains('cancel') && !msg.contains('AuthorizationErrorCode')) {
         _showError('Apple sign-in failed. Please try again.');
       }
@@ -157,9 +185,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   obscureText: _obscurePassword,
                   controller: _passwordController,
                   validator: (value) {
-                    if (value == null || value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
+                    if (value == null || value.isEmpty) return 'Please enter a password';
+                    if (value.length < 8) return 'At least 8 characters required';
+                    if (!value.contains(RegExp(r'[A-Z]'))) return 'Needs an uppercase letter';
+                    if (!value.contains(RegExp(r'[a-z]'))) return 'Needs a lowercase letter';
+                    if (!value.contains(RegExp(r'[0-9]'))) return 'Needs a number';
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -170,6 +200,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
+                // Live password requirements widget
+                if (_passwordController.text.isNotEmpty) ...
+                  _buildPasswordRequirements(),
                 const SizedBox(height: 32),
                 PrimaryButton(
                   text: 'Sign Up',
@@ -216,22 +249,68 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildSocialButtons() {
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
+    
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SocialLoginButton(
-          icon: googleIcon(),
-          label: 'Google',
-          isLoading: _isGoogleLoading,
-          onTap: _handleGoogleSignIn,
-        ),
-        const SizedBox(width: 12),
-        SocialLoginButton(
-          icon: appleIcon(),
-          label: 'Apple',
-          isLoading: _isAppleLoading,
-          onTap: _handleAppleSignIn,
-        ),
+        if (isAndroid)
+          SocialLoginButton(
+            icon: googleIcon(),
+            label: 'Google',
+            isLoading: _isGoogleLoading,
+            onTap: _handleGoogleSignIn,
+          ),
+        if (isIOS)
+          SocialLoginButton(
+            icon: appleIcon(),
+            label: 'Apple',
+            isLoading: _isAppleLoading,
+            onTap: _handleAppleSignIn,
+          ),
       ],
+    );
+  }
+
+  // ─── Password requirements rows ──────────────────────────────────────────
+
+  List<Widget> _buildPasswordRequirements() {
+    return [
+      const SizedBox(height: 10),
+      _reqRow('At least 8 characters', _hasMinLength),
+      _reqRow('At least one uppercase letter (A–Z)', _hasUppercase),
+      _reqRow('At least one lowercase letter (a–z)', _hasLowercase),
+      _reqRow('At least one number (0–9)', _hasDigit),
+      const SizedBox(height: 4),
+    ];
+  }
+
+  Widget _reqRow(String label, bool met) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: Icon(
+              met ? Icons.check_circle : Icons.radio_button_unchecked,
+              key: ValueKey(met),
+              size: 16,
+              color: met ? const Color(0xFF1B5E20) : Colors.grey.shade400,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.5,
+              color: met ? const Color(0xFF1B5E20) : Colors.grey.shade500,
+              fontWeight: met ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

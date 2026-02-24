@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/logger_service.dart';
 import '../../components/custom_textfield.dart';
 import '../../components/primary_button.dart';
 import '../../components/social_login_button.dart';
@@ -42,9 +44,11 @@ class _LoginScreenState extends State<LoginScreen> {
         );
         if (mounted) context.go('/home');
       } on AuthException catch (e) {
-        _showError(e.message);
-      } catch (_) {
-        _showError('Unexpected error. Please try again.');
+        logger.e('Login AuthException: ${e.message}');
+        _showError('Invalid login credentials or connection issue.');
+      } catch (e) {
+        logger.e('Login error: $e');
+        _showError('An unexpected error occurred. Please try again.');
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
@@ -57,9 +61,11 @@ class _LoginScreenState extends State<LoginScreen> {
       await SupabaseService().signInWithGoogle();
       if (mounted) context.go('/home');
     } on AuthException catch (e) {
-      _showError(e.message);
+      logger.e('Google Login AuthException: ${e.message}');
+      _showError('Google sign-in failed. Please try again.');
     } catch (e) {
       final msg = e.toString();
+      logger.e('Google Login Error: $msg');
       if (!msg.contains('cancelled') && !msg.contains('cancel')) {
         _showError('Google sign-in failed. Please try again.');
       }
@@ -74,9 +80,11 @@ class _LoginScreenState extends State<LoginScreen> {
       await SupabaseService().signInWithApple();
       if (mounted) context.go('/home');
     } on AuthException catch (e) {
-      _showError(e.message);
+      logger.e('Apple Login AuthException: ${e.message}');
+      _showError('Apple sign-in failed. Please try again.');
     } catch (e) {
       final msg = e.toString();
+      logger.e('Apple Login Error: $msg');
       if (!msg.contains('cancelled') && !msg.contains('cancel') && !msg.contains('AuthorizationErrorCode')) {
         _showError('Apple sign-in failed. Please try again.');
       }
@@ -200,21 +208,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialButtons() {
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
+    
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SocialLoginButton(
-          icon: googleIcon(),
-          label: 'Google',
-          isLoading: _isGoogleLoading,
-          onTap: _handleGoogleSignIn,
-        ),
-        const SizedBox(width: 12),
-        SocialLoginButton(
-          icon: appleIcon(),
-          label: 'Apple',
-          isLoading: _isAppleLoading,
-          onTap: _handleAppleSignIn,
-        ),
+        if (isAndroid)
+          SocialLoginButton(
+            icon: googleIcon(),
+            label: 'Google',
+            isLoading: _isGoogleLoading,
+            onTap: _handleGoogleSignIn,
+          ),
+        if (isIOS)
+          SocialLoginButton(
+            icon: appleIcon(),
+            label: 'Apple',
+            isLoading: _isAppleLoading,
+            onTap: _handleAppleSignIn,
+          ),
       ],
     );
   }

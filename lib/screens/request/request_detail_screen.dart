@@ -105,7 +105,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       context.push('/chat-detail?id=$conversationId&name=$encodedName&uid=$userId');
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error starting chat: $e');
+        logger.e('Error starting chat', error: e);
+        ToastService.showError(context, 'Unable to start chat. Please try again later.');
       }
     } finally {
       if (mounted) setState(() => _isStartingChat = false);
@@ -680,7 +681,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error starting chat: $e');
+        logger.e('Error starting chat', error: e);
+        ToastService.showError(context, 'Unable to start chat with this user.');
       }
     } finally {
       if (mounted) setState(() => _isStartingChat = false);
@@ -696,7 +698,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error applying: $e');
+        logger.e('Error applying to request', error: e);
+        ToastService.showError(context, 'Failed to apply. Please try again later.');
       }
     } finally {
       if (mounted) setState(() => _isApplying = false);
@@ -715,7 +718,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error updating status: $e');
+        logger.e('Error updating status', error: e);
+        ToastService.showError(context, 'Failed to update status. Please check your connection.');
       }
     }
   }
@@ -735,7 +739,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error updating status: $e');
+        logger.e('Error updating status', error: e);
+        ToastService.showError(context, 'Failed to update status. Please check your connection.');
       }
     }
   }
@@ -832,7 +837,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error: $e');
+        logger.e('Error updating request status', error: e);
+        ToastService.showError(context, 'Action failed. Please try again.');
       }
     }
   }
@@ -886,7 +892,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             ToastService.showSuccess(context, 'Rating submitted!');
           } catch (e) {
             if (!context.mounted) return;
-            ToastService.showError(context, 'Error submitting rating: $e');
+            logger.e('Error submitting rating', error: e);
+            ToastService.showError(context, 'Failed to submit rating. Please try again later.');
           }
         },
       ),

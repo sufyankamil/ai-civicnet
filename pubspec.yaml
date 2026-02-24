@@ -39,6 +39,7 @@ dependencies:
   image_picker: ^1.2.1
   toastification: ^3.0.3
   flutter_dotenv: ^6.0.0
+  timezone: ^0.10.1
 
 dev_dependencies:
   flutter_test:

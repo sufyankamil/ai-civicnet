@@ -10,7 +10,7 @@ class ToastService {
       title: const Text('Success'),
       description: Text(message),
       alignment: Alignment.topCenter,
-      icon: const Icon(Icons.check_circle, color: Colors.white),
+      icon: const Icon(Icons.check_circle, color: Color(0xFF1B5E20)),
       autoCloseDuration: const Duration(seconds: 3),
       borderRadius: BorderRadius.circular(12),
       showProgressBar: false,

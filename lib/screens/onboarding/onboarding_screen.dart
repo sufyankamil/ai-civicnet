@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../components/primary_button.dart';
+import '../../services/pending_toast_service.dart';
+import '../../services/toast_service.dart';
 import '../../theme/app_theme.dart';
 
 // ─── Flow step data (self-contained so no import needed) ────────────────────
@@ -80,6 +82,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   void initState() {
     super.initState();
+    // Consume any pending toast (e.g. account deletion success queued before auth redirect)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final msg = PendingToastService().consumeSuccess();
+      if (msg != null && mounted) {
+        ToastService.showSuccess(context, msg);
+      }
+    });
+
     _flowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),

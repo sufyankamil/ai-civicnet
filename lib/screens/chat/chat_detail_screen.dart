@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../models/models.dart';
 import '../../services/supabase_service.dart';
 import '../../services/toast_service.dart';
+import '../../services/logger_service.dart';
 import '../../theme/app_theme.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -347,7 +348,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       await SupabaseService().sendMessage(widget.conversationId, content);
       _messageController.clear();
     } catch (e) {
-      if (mounted) ToastService.showError(context, 'Error sending: $e');
+      if (mounted) {
+        logger.e('Error sending message', error: e);
+        ToastService.showError(context, 'Failed to send message.');
+      }
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -441,7 +445,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       await _checkBlockStatus();
       if (mounted) ToastService.showInfo(context, 'User blocked');
     } catch (e) {
-      if (mounted) ToastService.showError(context, 'Error: $e');
+      if (mounted) {
+        logger.e('Error blocking user', error: e);
+        ToastService.showError(context, 'Failed to block user.');
+      }
     }
   }
 
@@ -451,7 +458,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       await _checkBlockStatus();
       if (mounted) ToastService.showSuccess(context, 'User unblocked');
     } catch (e) {
-      if (mounted) ToastService.showError(context, 'Error: $e');
+      if (mounted) {
+        logger.e('Error unblocking user', error: e);
+        ToastService.showError(context, 'Failed to unblock user.');
+      }
     }
   }
 
@@ -498,9 +508,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       await _checkBlockStatus();
       if (mounted) ToastService.showInfo(context, 'User reported and blocked');
       // Requirement: "blocked user id will be saved along with the id of user that have blocked along with a count.. like how many user has reported.."
-      // Handled by SupabaseService and Triggers.
-    } catch (e) {
-      if (mounted) ToastService.showError(context, 'Error: $e');
+      } catch (e) {
+      if (mounted) {
+        logger.e('Error reporting user', error: e);
+        ToastService.showError(context, 'Failed to report user.');
+      }
     }
   }
 }

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../services/storage_service.dart';
 import '../../services/toast_service.dart';
 import '../../services/supabase_service.dart';
+import '../../services/logger_service.dart';
 import '../../theme/app_theme.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -77,7 +78,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Error updating profile: $e');
+        logger.e('Error updating profile: $e');
+        ToastService.showError(context, 'Unable to update profile. Please try again later.');
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

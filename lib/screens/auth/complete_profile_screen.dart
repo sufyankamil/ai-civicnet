@@ -7,6 +7,7 @@ import '../../components/primary_button.dart';
 import '../../services/supabase_service.dart';
 import '../../services/storage_service.dart';
 import '../../services/toast_service.dart';
+import '../../services/logger_service.dart';
 import '../../models/models.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -122,7 +123,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, 'Failed to update profile: $e');
+        logger.e('Failed to update profile: $e');
+        ToastService.showError(context, 'Could not save profile setup. Please try again.');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../services/supabase_service.dart';
 import '../../services/logger_service.dart';
 import '../../services/toast_service.dart';
+import '../../services/pending_toast_service.dart';
 
 class DeleteAccountScreen extends StatefulWidget {
   const DeleteAccountScreen({super.key});
@@ -40,17 +41,21 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Queue the toast BEFORE deletion — auth redirect fires immediately on signOut,
+      // so we store it in a singleton and display it on the next screen.
+      PendingToastService().setSuccess('Your account has been deleted successfully.');
+
       await SupabaseService().deleteUserAccount();
+      // GoRouter's refreshListenable now redirects to /onboarding automatically.
+      // The pending toast will be consumed there.
+    } catch (e) {
+      // Clear the pending toast since deletion failed
+      PendingToastService().consumeSuccess();
+      logger.e('Failed to delete account: $e');
       if (mounted) {
-        // After successful deletion, signOut has likely been called internally
-        // or we can call it explicitly, then navigate to login
-        context.go('/login');
-      }
-      if (mounted) {
-        logger.e('Failed to delete account', error: 'Account deletion API call did not throw an error but did not succeed');
         ToastService.showError(
           context,
-          'Failed to delete account. Please try again later or contact support.',
+          'Failed to delete account. Please try again later.',
         );
       }
     } finally {

@@ -1,6 +1,8 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz_init;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -14,6 +16,9 @@ class NotificationService {
 
   Future<void> initialize() async {
     if (_isInitialized) return;
+
+    // Initialize timezone for scheduled notifications
+    tz_init.initializeTimeZones();
 
     // Android initialization
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -110,6 +115,37 @@ class NotificationService {
       title: title,
       body: body,
       notificationDetails: notificationDetails,
+      payload: payload,
+    );
+  }
+
+  Future<void> scheduleNotification({
+    required int id,
+    required String title,
+    required String body,
+    required Duration delay,
+    String? payload,
+  }) async {
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'high_importance_channel',
+      'High Importance Notifications',
+      channelDescription: 'This channel is used for important notifications.',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/launcher_icon',
+    );
+
+    const NotificationDetails notificationDetails =
+        NotificationDetails(android: androidNotificationDetails);
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.now(tz.local).add(delay),
+      notificationDetails: notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: payload,
     );
   }

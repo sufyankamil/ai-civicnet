@@ -5,6 +5,7 @@ import '../../components/custom_textfield.dart';
 import '../../components/primary_button.dart';
 import '../../services/supabase_service.dart';
 import '../../services/toast_service.dart';
+import '../../services/logger_service.dart';
 import '../../theme/app_theme.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -36,7 +37,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (mounted) setState(() => _emailSent = true);
     } catch (e) {
       if (mounted) {
-        ToastService.showError(context, e.toString().replaceFirst('Exception: ', ''));
+        logger.e('Forgot Password error: $e');
+        ToastService.showError(context, 'Failed to send reset link. Please verify your email.');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -8,6 +8,7 @@ import '../../components/primary_button.dart';
 import '../../models/models.dart';
 import '../../services/supabase_service.dart';
 import '../../services/toast_service.dart';
+import '../../services/logger_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CreateRequestScreen extends StatefulWidget {
@@ -136,7 +137,8 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         }
       } catch (e) {
         if (mounted) {
-           ToastService.showError(context, 'Error: $e');
+           logger.e('Error creating request: $e');
+           ToastService.showError(context, 'Failed to post request. Please try again later.');
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);

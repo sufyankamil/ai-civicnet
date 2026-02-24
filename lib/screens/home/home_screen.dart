@@ -183,7 +183,10 @@ class _HomeScreenState extends State<HomeScreen> {
         _requestsFuture = SupabaseService().getHelpRequests();
       });
     } catch (e) {
-      if (mounted) ToastService.showError(context, 'Error updating location: $e');
+      if (mounted) {
+        logger.e('Error updating location: $e');
+        ToastService.showError(context, 'Unable to update location. Please try again.');
+      }
     }
   }
 
