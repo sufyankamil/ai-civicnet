@@ -40,6 +40,9 @@ dependencies:
   toastification: ^3.0.3
   flutter_dotenv: ^6.0.0
   timezone: ^0.10.1
+  get: ^4.7.3
+  dartz: ^0.10.1
+  equatable: ^2.0.8
 
 dev_dependencies:
   flutter_test:

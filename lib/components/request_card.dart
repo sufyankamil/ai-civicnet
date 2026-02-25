@@ -1,17 +1,17 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import '../models/models.dart';
+import '../features/request/domain/entities/help_request_entity.dart';
+import '../features/request/domain/entities/request_enums.dart';
 import '../theme/app_theme.dart';
 import '../services/supabase_service.dart';
 import 'ai_match_badge.dart';
 
-class HelpRequestCard extends StatelessWidget {
-  final HelpRequest request;
+class RequestCard extends StatelessWidget {
+  final HelpRequestEntity request;
 
-  const HelpRequestCard({super.key, required this.request});
+  const RequestCard({super.key, required this.request});
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +34,9 @@ class HelpRequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
+                    backgroundImage: CachedNetworkImageProvider(request.requesterAvatarUrl),
                     radius: 20,
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, color: Colors.white),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -81,45 +80,45 @@ class HelpRequestCard extends StatelessWidget {
                     Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      request.locationName,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                       request.locationName,
+                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 )
               else
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
-                            const SizedBox(width: 4),
-                            Text(
-                              request.distance,
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(
-                              request.locationName,
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    AiMatchBadge(score: request.aiRelevanceScore),
-                  ],
-                ),
+                 Row(
+                   crossAxisAlignment: CrossAxisAlignment.end,
+                   children: [
+                     Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                          Row(
+                            children: [
+                              Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                request.distance,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                              const SizedBox(width: 4),
+                              Text(
+                                request.locationName,
+                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                       ],
+                     ),
+                     const Spacer(),
+                     AiMatchBadge(score: request.aiRelevanceScore),
+                   ],
+                 ),
             ],
           ),
         ),

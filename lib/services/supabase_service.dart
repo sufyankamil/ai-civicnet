@@ -322,6 +322,26 @@ class SupabaseService {
     }
   }
 
+  /// Fetches all help requests the current user has shown interest in (applied to).
+  Future<List<Map<String, dynamic>>> getMyApplications() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return [];
+
+    try {
+      // Get the user's applications, joined with the help_request details
+      final response = await _client
+          .from('request_applications')
+          .select('id, status, created_at, help_requests(*, profiles:requester_id(name, avatar_url))')
+          .eq('applicant_id', user.id)
+          .order('created_at', ascending: false);
+
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      logger.e('Error fetching my applications: $e');
+      return [];
+    }
+  }
+
   Future<HelpRequest?> getHelpRequest(String id) async {
     try {
       final response = await _client
@@ -649,13 +669,16 @@ class SupabaseService {
         final List<ChatConversation> conversations = [];
         
         for (final conv in response) {
-            final participants = List<String>.from(conv['participant_ids']);
+            final rawParticipants = conv['participant_ids'];
+            if (rawParticipants == null) continue;
+            
+            final participants = List<String>.from(rawParticipants);
             final otherId = participants.firstWhere((id) => id != user.id, orElse: () => '');
             
             if (otherId.isEmpty) continue;
             
             final profile = await _client.from('profiles').select().eq('id', otherId).maybeSingle();
-            final name = profile?['name'] ?? 'Unknown';
+            final name = profile?['name'] ?? 'Unknown User';
             final avatar = profile?['avatar_url'] ?? '';
 
             final lastMsgRes = await _client
@@ -665,20 +688,23 @@ class SupabaseService {
                 .order('created_at', ascending: false)
                 .limit(1)
                 .maybeSingle();
+
+            final String? dateString = lastMsgRes?['created_at'] ?? conv['updated_at'] ?? conv['created_at'];
+            final DateTime messageTime = DateTime.tryParse(dateString ?? '') ?? DateTime.now();
                 
             conversations.add(ChatConversation(
-                id: conv['id'],
+                id: conv['id'].toString(),
                 otherUserId: otherId,
                 otherUserName: name,
                 otherUserAvatar: avatar,
                 lastMessage: lastMsgRes?['content'] ?? 'No messages yet',
-                lastMessageTime: DateTime.parse(lastMsgRes?['created_at'] ?? conv['created_at']),
+                lastMessageTime: messageTime,
                 unreadCount: 0,
             ));
         }
         return conversations;
-    } catch (e) {
-        logger.e('Error fetching conversations: $e');
+    } catch (e, stack) {
+        logger.e('Error fetching conversations: $e\n$stack');
         return [];
     }
   }
@@ -859,10 +885,47 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
+    // 1. Mark the request as completed and award points to both parties
     await _client.rpc('complete_help_request', params: {
       'p_request_id': requestId,
       'p_helper_id': helperId,
     });
+
+    // 2. Increment the helper's help_count and award bonus points
+    //    Uses a Postgres RPC to safely do an atomic increment.
+    //    Run this in your Supabase SQL Editor if not already created:
+    //
+    //    CREATE OR REPLACE FUNCTION increment_helper_stats(p_helper_id uuid, p_points int)
+    //    RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+    //    BEGIN
+    //      UPDATE profiles
+    //      SET help_count = help_count + 1,
+    //          points = points + p_points
+    //      WHERE id = p_helper_id;
+    //    END;
+    //    $$;
+    try {
+      await _client.rpc('increment_helper_stats', params: {
+        'p_helper_id': helperId,
+        'p_points': 10, // Same bonus points awarded for helping
+      });
+    } catch (e) {
+      // Fallback: direct update if the RPC doesn't exist yet
+      logger.w('increment_helper_stats RPC not found, falling back to direct update: $e');
+      await _client.rpc('increment', params: {
+        'table': 'profiles',
+        'id': helperId,
+      }).catchError((_) async {
+        // Last resort: raw update
+        final current = await _client.from('profiles').select('help_count, points').eq('id', helperId).maybeSingle();
+        if (current != null) {
+          await _client.from('profiles').update({
+            'help_count': (current['help_count'] ?? 0) + 1,
+            'points': (current['points'] ?? 0) + 10,
+          }).eq('id', helperId);
+        }
+      });
+    }
   }
 }
 

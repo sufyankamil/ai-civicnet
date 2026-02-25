@@ -33,15 +33,25 @@ class _RatingDialogState extends State<RatingDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundImage: widget.ratedUserAvatar.isNotEmpty 
-                ? NetworkImage(widget.ratedUserAvatar) 
-                : null,
-            child: widget.ratedUserAvatar.isEmpty 
-                ? Text(widget.ratedUserName.isNotEmpty ? widget.ratedUserName[0] : '?') 
-                : null,
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
+          child: const CircleAvatar(
+            radius: 40,
+            backgroundColor: Colors.grey,
+            child: Icon(Icons.person, size: 40, color: Colors.white),
+          ),
+        ),
           const SizedBox(height: 12),
           Text(
             'How was your experience with ${widget.ratedUserName}?',

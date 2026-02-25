@@ -31,9 +31,17 @@ class HelperCard extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                   CircleAvatar(
-                    radius: 24,
-                    backgroundImage: NetworkImage(helper.user.avatarUrl),
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
                   ),
                   Positioned(
                     right: 0,

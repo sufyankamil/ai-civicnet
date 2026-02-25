@@ -12,29 +12,35 @@ import 'package:toastification/toastification.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Screens
-import 'screens/profile/privacy_policy_screen.dart';
-import 'screens/onboarding/splash_screen.dart';
-import 'screens/onboarding/onboarding_screen.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/auth/signup_screen.dart';
-import 'screens/auth/auth_check_screen.dart';
-import 'screens/auth/complete_profile_screen.dart';
-import 'screens/main_scaffold.dart';
-import 'screens/home/home_screen.dart';
-import 'screens/request/create_request_screen.dart';
-import 'screens/request/request_detail_screen.dart';
-import 'screens/chat/chat_screen.dart';
-import 'screens/profile/edit_profile_screen.dart';
-import 'screens/profile/delete_account_screen.dart';
-import 'screens/profile/settings_screen.dart';
-import 'screens/profile/faq_screen.dart';
-import 'screens/chat/chat_detail_screen.dart';
-import 'screens/discover/discover_screen.dart';
-import 'screens/activity/activity_screen.dart';
-import 'screens/notifications/notifications_screen.dart';
-import 'screens/profile/how_tasknet_works_screen.dart';
-import 'screens/auth/forgot_password_screen.dart';
-import 'screens/profile/profile_screen.dart';
+import 'features/profile/presentation/screens/privacy_policy_screen.dart';
+import 'features/onboarding/presentation/screens/splash_screen.dart';
+import 'features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
+import 'features/auth/presentation/screens/signup_screen.dart';
+import 'features/auth/presentation/screens/auth_check_screen.dart';
+import 'features/auth/presentation/screens/complete_profile_screen.dart';
+import 'features/auth/presentation/screens/forgot_password_screen.dart';
+import 'features/home/presentation/screens/home_screen.dart';
+import 'features/auth/di/auth_binding.dart';
+import 'features/home/di/home_binding.dart';
+import 'features/request/di/request_binding.dart';
+import 'features/map/di/map_binding.dart';
+import 'core/presentation/layouts/main_scaffold.dart';
+import 'features/map/presentation/screens/map_screen.dart';
+import 'features/request/presentation/screens/create_request_screen.dart';
+import 'features/request/presentation/screens/request_detail_screen.dart';
+import 'features/discover/presentation/screens/discover_screen.dart';
+import 'features/activity/presentation/screens/activity_screen.dart';
+import 'features/chat/presentation/screens/chat_screen.dart';
+import 'features/chat/presentation/screens/chat_detail_screen.dart';
+import 'features/chat/di/chat_binding.dart';
+import 'features/profile/presentation/screens/edit_profile_screen.dart';
+import 'features/profile/presentation/screens/delete_account_screen.dart';
+import 'features/profile/presentation/screens/settings_screen.dart';
+import 'features/profile/presentation/screens/faq_screen.dart';
+import 'features/notifications/presentation/screens/notifications_screen.dart';
+import 'features/profile/presentation/screens/how_tasknet_works_screen.dart';
+import 'features/profile/presentation/screens/profile_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +70,13 @@ class _RootAppState extends State<RootApp> {
     await Hive.initFlutter();
     await dotenv.load(fileName: ".env");
     
+    // Initialize Dependencies
+    await initAuthDI();
+    HomeBinding().dependencies();
+    await initRequestDI();
+    await initMapDI();
+    await initChatDI();
+
     await Future.wait([
       StartupService().initialize(),
       ThemeService().init(),
@@ -136,7 +149,6 @@ GoRouter _createRouter() {
       final loggedIn = session != null;
       
       // Determine if we should go to onboarding/login or home
-      
       final currentPath = state.uri.toString();
       
       if (!loggedIn) {
@@ -195,6 +207,10 @@ GoRouter _createRouter() {
           GoRoute(
             path: '/activity',
             builder: (context, state) => const ActivityScreen(),
+          ),
+          GoRoute(
+            path: '/map',
+            builder: (context, state) => const MapScreen(),
           ),
           GoRoute(
             path: '/chat',
