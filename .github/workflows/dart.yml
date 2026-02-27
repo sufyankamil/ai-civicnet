@@ -21,9 +21,9 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo "API_URL=${{ secrets.SUPABASE_URL }}" >> .env
-          echo "API_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
-          echo "API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
 
       - name: Install dependencies
         run: flutter pub get
