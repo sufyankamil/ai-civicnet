@@ -159,18 +159,61 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             SliverAppBar(
               expandedHeight: 200,
               pinned: true,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => context.pop(),
+              leading: Container(
+                margin: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => context.pop(),
+                ),
               ),
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      'https://maps.googleapis.com/maps/api/staticmap?center=${request.lat},${request.lng}&zoom=15&size=600x400&markers=color:red%7C${request.lat},${request.lng}&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}', 
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[300]),
+                    Container(
+                      color: AppColors.primaryDark,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Opacity(
+                            opacity: 0.1,
+                            child: Image.network(
+                              'https://maps.googleapis.com/maps/api/staticmap?center=${request.lat},${request.lng}&zoom=12&size=600x400&style=feature:all|element:labels|visibility:off&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (context, error, stackTrace) => Container(color: AppColors.primaryDark),
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                                ),
+                                child: const Icon(Icons.location_on, color: AppColors.secondaryLight, size: 40),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Approximate Location',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -178,10 +221,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.3),
+                            Colors.black.withValues(alpha: 0.4),
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.6),
+                            Theme.of(context).scaffoldBackgroundColor,
                           ],
+                          stops: const [0.0, 0.5, 1.0],
                         ),
                       ),
                     ),
@@ -213,14 +257,16 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          request.distance,
-                          style: GoogleFonts.poppins(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                        if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                          const SizedBox(width: 8),
+                          Text(
+                            request.distance,
+                            style: GoogleFonts.poppins(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 12),
