@@ -1,4 +1,4 @@
-name: Dart CI
+name: Flutter CI
 
 on:
   push:
@@ -14,19 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
-
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
         with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
+          flutter-version: 'stable'
+          cache: true
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Analyze project source
-        run: dart analyze --fatal-infos
+        run: flutter analyze
