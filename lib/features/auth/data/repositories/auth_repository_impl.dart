@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
@@ -32,8 +33,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    } on SocketException catch (_) {
+      return const Left(ServerFailure('Network connection error. Please try again.'));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      final errorStr = e.toString();
+      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
+        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      }
+      return Left(ServerFailure(errorStr));
     }
   }
 
@@ -46,8 +53,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    } on SocketException catch (_) {
+      return const Left(ServerFailure('Network connection error. Please try again.'));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      final errorStr = e.toString();
+      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
+        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      }
+      return Left(ServerFailure(errorStr));
     }
   }
 
@@ -72,8 +85,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    } on SocketException catch (_) {
+      return const Left(ServerFailure('Network connection error. Please try again.'));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+       final errorStr = e.toString();
+      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
+        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      }
+      return Left(ServerFailure(errorStr));
     }
   }
 
@@ -86,8 +105,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(AuthFailure(e.message));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
+    } on SocketException catch (_) {
+      return const Left(ServerFailure('Network connection error. Please try again.'));
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      final errorStr = e.toString();
+      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
+        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      }
+      return Left(ServerFailure(errorStr));
     }
   }
 

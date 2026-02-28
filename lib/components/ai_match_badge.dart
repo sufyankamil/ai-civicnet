@@ -14,14 +14,18 @@ class AiMatchBadge extends StatelessWidget {
     String text;
     IconData icon;
 
-    if (score >= 0.9) {
+    if (score >= 0.99) {
       color = AppColors.secondaryLight;
       text = 'Best Match';
       icon = Icons.stars;
     } else if (score >= 0.7) {
-      color = Colors.orangeAccent;
+      color = Colors.green;
       text = 'Good Match';
       icon = Icons.thumb_up;
+    } else if (score >= 0.4) {
+      color = Colors.orange;
+      text = 'Match';
+      icon = Icons.check_circle_outline;
     } else {
       color = Colors.grey;
       text = 'Match';

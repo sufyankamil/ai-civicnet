@@ -8,6 +8,7 @@ import '../../../../services/toast_service.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../theme/app_theme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -213,10 +214,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   )
                                 : (_currentAvatarUrl.isNotEmpty
                                     ? ClipOval(
-                                        child: Image.network(
-                                          _currentAvatarUrl,
+                                        child: CachedNetworkImage(
+                                          imageUrl: _currentAvatarUrl,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
+                                          errorWidget: (context, url, error) =>
                                               Icon(Icons.person, size: 60, color: Colors.grey.shade400),
                                         ),
                                       )

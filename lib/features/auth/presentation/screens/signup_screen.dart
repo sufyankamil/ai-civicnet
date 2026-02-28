@@ -131,7 +131,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   prefixIcon: Icons.person_outline,
                   controller: _nameController,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your name';
+                    if (value == null || value.trim().isEmpty) return 'Please enter your name';
+                    if (value.trim().length < 3) return 'Name must be at least 3 characters';
                     return null;
                   },
                 ),

@@ -481,7 +481,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           children: helpers.map((helper) => HelperCard(
                             helper: helper,
                             onTap: () {
-                              ToastService.showSuccess(context, 'Viewing ${helper.user.name}\'s profile');
+                              context.push('/profile/${helper.user.id}');
                             },
                           )).toList(),
                         );

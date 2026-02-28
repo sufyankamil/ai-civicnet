@@ -34,10 +34,24 @@ class RequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    backgroundImage: CachedNetworkImageProvider(request.requesterAvatarUrl),
-                    radius: 20,
-                  ),
+                  request.requesterAvatarUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: request.requesterAvatarUrl,
+                          imageBuilder: (context, imageProvider) => CircleAvatar(
+                            radius: 20,
+                            backgroundImage: imageProvider,
+                          ),
+                          errorWidget: (context, url, error) => const CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, color: Colors.white),
+                          ),
+                        )
+                      : const CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

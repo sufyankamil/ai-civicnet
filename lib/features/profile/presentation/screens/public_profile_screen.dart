@@ -5,15 +5,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../services/toast_service.dart';
 
-class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+class PublicProfileScreen extends StatefulWidget {
+  final String userId;
+
+  const PublicProfileScreen({super.key, required this.userId});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  State<PublicProfileScreen> createState() => _PublicProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen>
+class _PublicProfileScreenState extends State<PublicProfileScreen>
     with SingleTickerProviderStateMixin {
   Future<User?>? _profileFuture;
   late final AnimationController _bannerController;
@@ -21,17 +24,15 @@ class _ProfileScreenState extends State<ProfileScreen>
   final ScrollController _scrollController = ScrollController();
   bool _isCollapsed = false;
 
-  // Hero is fully collapsed once we've scrolled past
-  // expandedHeight (280) - kToolbarHeight (56) = 224
   static const double _collapseOffset = 224.0;
+  bool _isStartingChat = false;
 
   @override
   void initState() {
     super.initState();
     _bannerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..forward();
+        vsync: this, duration: const Duration(milliseconds: 900))
+      ..forward();
     _bannerAnim =
         CurvedAnimation(parent: _bannerController, curve: Curves.easeOutCubic);
     _scrollController.addListener(() {
@@ -43,8 +44,34 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _refreshProfile() {
     setState(() {
-      _profileFuture = SupabaseService().getCurrentUserProfile();
+      _profileFuture = SupabaseService().getUserProfile(widget.userId);
     });
+  }
+
+  Future<void> _startChat(User user) async {
+    if (_isStartingChat) return;
+    if (SupabaseService().currentUserId == user.id) {
+      ToastService.showInfo(context, 'You cannot chat with yourself');
+      return;
+    }
+
+    setState(() => _isStartingChat = true);
+    try {
+      final conversationId =
+          await SupabaseService().createConversation(user.id);
+      if (mounted) {
+        final encodedName = Uri.encodeComponent(user.name);
+        context.push(
+            '/chat-detail?id=$conversationId&name=$encodedName&uid=${user.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastService.showError(
+            context, 'Unable to start chat with ${user.name}.');
+      }
+    } finally {
+      if (mounted) setState(() => _isStartingChat = false);
+    }
   }
 
   @override
@@ -73,15 +100,22 @@ class _ProfileScreenState extends State<ProfileScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                   Container(
+                    margin: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => context.pop(),
+                    ),
+                  ),
                   const Icon(Icons.person_off_outlined,
                       size: 56, color: Colors.grey),
                   const SizedBox(height: 16),
-                  Text('Could not load profile',
+                  Text('User not found',
                       style: GoogleFonts.poppins(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                      onPressed: _refreshProfile,
-                      child: const Text('Retry')),
                 ],
               ),
             );
@@ -107,13 +141,28 @@ class _ProfileScreenState extends State<ProfileScreen>
                       _buildStatsRow(user, isDark),
                       const SizedBox(height: 28),
                       _buildSkillsSection(user, isDark),
-                      const SizedBox(height: 28),
-                      _buildActionsSection(context, isDark),
-                      // Extra clearance so content scrolls above the bottom nav bar
+                      const SizedBox(height: 32),
+                      
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _isStartingChat ? null : () => _startChat(user),
+                            icon: _isStartingChat 
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(strokeWidth: 2, backgroundColor: Colors.white))
+                                : const Icon(Icons.chat_bubble_outline),
+                            label: const Text('Send Message'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                          ),
+                        ),
+                      ),
+                      
+                      // Extra clearance
                       SizedBox(
-                        height: MediaQuery.of(context).padding.bottom +
-                            kBottomNavigationBarHeight +
-                            24,
+                        height: MediaQuery.of(context).padding.bottom + 24,
                       ),
                     ],
                   ),
@@ -126,11 +175,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ─── Hero Sliver ─────────────────────────────────────────────────────────
-
   Widget _buildHeroSliver(User user, bool isDark) {
     final displayName =
-        user.name.isEmpty || user.name == 'Unknown' ? 'No Name Set' : user.name;
+        user.name.isEmpty || user.name == 'Unknown' ? 'Community Member' : user.name;
 
     return SliverAppBar(
       expandedHeight: 280,
@@ -138,7 +185,17 @@ class _ProfileScreenState extends State<ProfileScreen>
       stretch: true,
       backgroundColor: isDark ? AppColors.backgroundDark : Colors.white,
       elevation: 0,
-      // ── Collapsed AppBar content — only visible when banner is scrolled away
+      leading: Container(
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.2),
+          shape: BoxShape.circle,
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => context.pop(),
+        ),
+      ),
       title: AnimatedOpacity(
         opacity: _isCollapsed ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
@@ -188,28 +245,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
         ),
       ),
-      actions: [
-        AnimatedOpacity(
-          opacity: _isCollapsed ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          child: IgnorePointer(
-            ignoring: !_isCollapsed,
-            child: IconButton(
-              tooltip: 'Edit Profile',
-              icon: Icon(
-                Icons.edit_rounded,
-                color: AppColors.primaryLight,
-                size: 22,
-              ),
-              onPressed: () async {
-                await context.push('/edit-profile');
-                if (context.mounted) _refreshProfile();
-              },
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-      ],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
         background: FadeTransition(
@@ -217,7 +252,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Gradient banner
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -227,7 +261,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 ),
               ),
-              // Subtle circle accents
               Positioned(
                 top: -40,
                 right: -40,
@@ -252,7 +285,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 ),
               ),
-              // Name + email overlay at bottom
               Positioned(
                 bottom: 0,
                 left: 0,
@@ -272,7 +304,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   child: Row(
                     children: [
-                      // Avatar with ring
                       Container(
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
@@ -327,18 +358,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              user.email.isEmpty ? 'No email' : user.email,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.8),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
                             const SizedBox(height: 8),
-                            // Trust badge
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
@@ -368,24 +388,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ],
                         ),
                       ),
-                      // Edit avatar button
-                      IconButton(
-                        onPressed: () async {
-                          await context.push('/edit-profile');
-                          if (mounted) _refreshProfile();
-                        },
-                        icon: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4)),
-                          ),
-                          child: const Icon(Icons.edit_rounded,
-                              color: Colors.white, size: 18),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -396,8 +398,6 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
     );
   }
-
-  // ─── Stats Row ────────────────────────────────────────────────────────────
 
   Widget _buildStatsRow(User user, bool isDark) {
     final stats = [
@@ -459,264 +459,64 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
-  // ─── Skills ───────────────────────────────────────────────────────────────
-
   Widget _buildSkillsSection(User user, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Skills',
-                style: GoogleFonts.poppins(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const Spacer(),
-              TextButton.icon(
-                onPressed: () async {
-                  await context.push('/edit-profile');
-                  if (mounted) _refreshProfile();
-                },
-                icon: const Icon(Icons.add_rounded, size: 16),
-                label: const Text('Add'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primaryLight,
-                  textStyle: GoogleFonts.poppins(
-                      fontSize: 13, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (user.skills.isEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.surfaceDark : Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                    color: AppColors.primaryLight.withValues(alpha: 0.2),
-                    style: BorderStyle.solid),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.lightbulb_outline_rounded,
-                      color: AppColors.primaryLight.withValues(alpha: 0.6), size: 20),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Add skills so helpers can find you faster',
-                    style: GoogleFonts.poppins(
-                        fontSize: 13, color: Colors.grey),
-                  ),
-                ],
-              ),
-            )
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: user.skills.map((skill) {
-                return Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryLight.withValues(alpha: 0.25),
-                        blurRadius: 8,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    skill,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // ─── Actions ──────────────────────────────────────────────────────────────
-
-  Widget _buildActionsSection(BuildContext context, bool isDark) {
+    if (user.skills.isEmpty) return const SizedBox.shrink();
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Account',
+            'Skills',
             style: GoogleFonts.poppins(
               fontSize: 17,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: user.skills.map((skill) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryLight.withValues(alpha: 0.25),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                _buildActionTile(
-                  icon: Icons.edit_rounded,
-                  iconColor: AppColors.primaryLight,
-                  label: 'Edit Profile',
-                  onTap: () async {
-                    await context.push('/edit-profile');
-                    if (mounted) _refreshProfile();
-                  },
-                  isDark: isDark,
+                child: Text(
+                  skill,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
-                _buildDivider(isDark),
-                _buildActionTile(
-                  icon: Icons.history_rounded,
-                  iconColor: const Color(0xFF7B61FF),
-                  label: 'Help History',
-                  onTap: () {},
-                  isDark: isDark,
-                ),
-                _buildDivider(isDark),
-                _buildActionTile(
-                  icon: Icons.settings_rounded,
-                  iconColor: Colors.grey,
-                  label: 'App Settings',
-                  onTap: () => context.push('/settings'),
-                  isDark: isDark,
-                ),
-                _buildDivider(isDark),
-                _buildActionTile(
-                  icon: Icons.logout_rounded,
-                  iconColor: Colors.red,
-                  label: 'Logout',
-                  labelColor: Colors.red,
-                  onTap: () async {
-                    final confirmed = await showAdaptiveDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog.adaptive(
-                        title: const Text('Log out?'),
-                        content: const Text(
-                            'Are you sure you want to log out of CivicNet?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            style: TextButton.styleFrom(
-                                foregroundColor: Colors.red),
-                            child: const Text(
-                              'Logout',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirmed == true) {
-                      await SupabaseService().signOut();
-                      if (context.mounted) context.go('/login');
-                    }
-                  },
-                  isDark: isDark,
-                  showChevron: false,
-                ),
-              ],
-            ),
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionTile({
-    required IconData icon,
-    required Color iconColor,
-    required String label,
-    required VoidCallback onTap,
-    required bool isDark,
-    Color? labelColor,
-    bool showChevron = true,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: iconColor, size: 20),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: labelColor,
-                ),
-              ),
-            ),
-            if (showChevron)
-              Icon(Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDivider(bool isDark) {
-    return Divider(
-      height: 1,
-      indent: 56,
-      endIndent: 16,
-      color: isDark ? Colors.white10 : Colors.grey.shade100,
-    );
-  }
-
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-
   String _trustLevel(User user) {
     if (user.points >= 350 && user.helpCount >= 25) return 'Elite Helper';
     if (user.points >= 150 && user.helpCount >= 10) return 'Trusted Helper';
     if (user.points >= 50 && user.helpCount >= 2) return 'Active Member';
-    return 'New Member';
+    return 'Community Member';
   }
 }
