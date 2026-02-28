@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -7,6 +8,21 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../../../core/errors/exceptions.dart';
 import '../models/user_model.dart';
 import '../../../../services/logger_service.dart';
+
+String _parseAuthExceptionMessage(String message) {
+  try {
+    // Supabase sometimes returns a JSON string in the AuthException message
+    if (message.startsWith('{') && message.endsWith('}')) {
+      final decoded = jsonDecode(message);
+      if (decoded is Map<String, dynamic> && decoded.containsKey('message')) {
+        return decoded['message'].toString();
+      }
+    }
+  } catch (_) {
+    // Ignore parsing errors and just return the original message
+  }
+  return message;
+}
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> signIn(String email, String password);
@@ -48,8 +64,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       return UserModel.fromSupabaseUser(response.user!);
     } on sb.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(_parseAuthExceptionMessage(e.message));
+    } on SocketException catch (e) {
+      logger.e('Network error during login: $e');
+      throw const ServerException('Network connection error. Please try again.');
     } catch (e) {
+      if (e.toString().contains('SocketException')) {
+        logger.e('Network error during login: $e');
+        throw const ServerException('A network error occurred. Please check your internet connection.');
+      }
       throw ServerException(e.toString());
     }
   }
@@ -67,8 +90,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
       return UserModel.fromSupabaseUser(response.user!);
     } on sb.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(_parseAuthExceptionMessage(e.message));
+    } on SocketException catch (e) {
+      logger.e('Network error during signup: $e');
+      throw const ServerException('Network connection error. Please try again.');
     } catch (e) {
+      if (e.toString().contains('SocketException')) {
+        logger.e('Network error during signup: $e');
+        throw const ServerException('A network error occurred. Please check your internet connection.');
+      }
       throw ServerException(e.toString());
     }
   }
@@ -113,8 +143,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await _upsertOAuthProfile(response.user);
       return UserModel.fromSupabaseUser(response.user!);
     } on sb.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(_parseAuthExceptionMessage(e.message));
+    } on SocketException catch (e) {
+      logger.e('Network error during Google sign-in: $e');
+      throw const ServerException('Network connection error. Please try again.');
     } catch (e) {
+      if (e.toString().contains('SocketException')) {
+        logger.e('Network error during Google sign-in: $e');
+        throw const ServerException('A network error occurred. Please check your internet connection.');
+      }
       throw ServerException(e.toString());
     }
   }
@@ -145,8 +182,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       await _upsertOAuthProfile(response.user);
       return UserModel.fromSupabaseUser(response.user!);
     } on sb.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(_parseAuthExceptionMessage(e.message));
+    } on SocketException catch (e) {
+      logger.e('Network error during Apple sign-in: $e');
+      throw const ServerException('Network connection error. Please try again.');
     } catch (e) {
+      if (e.toString().contains('SocketException')) {
+        logger.e('Network error during Apple sign-in: $e');
+        throw const ServerException('A network error occurred. Please check your internet connection.');
+      }
       throw ServerException(e.toString());
     }
   }

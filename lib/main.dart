@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -41,10 +42,15 @@ import 'features/profile/presentation/screens/faq_screen.dart';
 import 'features/notifications/presentation/screens/notifications_screen.dart';
 import 'features/profile/presentation/screens/how_tasknet_works_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
+import 'features/profile/presentation/screens/public_profile_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const RootApp());
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
+    _,
+  ) {
+    runApp(const RootApp());
+  });
 }
 
 class RootApp extends StatefulWidget {
@@ -65,11 +71,11 @@ class _RootAppState extends State<RootApp> {
 
   Future<void> _initApp() async {
     final minSplash = Future.delayed(const Duration(seconds: 2));
-    
+
     // Initialize Hive & Dotenv before any services use it
     await Hive.initFlutter();
     await dotenv.load(fileName: ".env");
-    
+
     // Initialize Dependencies
     await initAuthDI();
     HomeBinding().dependencies();
@@ -125,56 +131,60 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
       child: MaterialApp.router(
         title: 'CivicNet',
         debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeService.themeMode,
-      routerConfig: _router,
-      builder: (context, child) {
-        return ConnectivityWrapper(child: child!);
-      },
-    ));
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeService.themeMode,
+        routerConfig: _router,
+        builder: (context, child) {
+          return ConnectivityWrapper(child: child!);
+        },
+      ),
+    );
   }
 }
 
 GoRouter _createRouter() {
-  final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
-  final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
+  final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'root',
+  );
+  final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>(
+    debugLabel: 'shell',
+  );
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/',
-    refreshListenable: GoRouterRefreshStream(Supabase.instance.client.auth.onAuthStateChange),
+    refreshListenable: GoRouterRefreshStream(
+      Supabase.instance.client.auth.onAuthStateChange,
+    ),
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final loggedIn = session != null;
-      
+
       // Determine if we should go to onboarding/login or home
       final currentPath = state.uri.toString();
-      
+
       if (!loggedIn) {
-         if (currentPath == '/' || currentPath.startsWith('/home')) {
-           return '/onboarding';
-         }
+        if (currentPath == '/' || currentPath.startsWith('/home')) {
+          return '/onboarding';
+        }
       } else {
-         if (currentPath == '/' || currentPath == '/login' || currentPath == '/signup' || currentPath == '/onboarding') {
-           return '/auth-check'; // Send to auth check interceptor
-         }
+        if (currentPath == '/' ||
+            currentPath == '/login' ||
+            currentPath == '/signup' ||
+            currentPath == '/onboarding') {
+          return '/auth-check'; // Send to auth check interceptor
+        }
       }
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const SplashScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/signup',
         builder: (context, state) => const SignupScreen(),
@@ -198,7 +208,7 @@ GoRouter _createRouter() {
             builder: (context, state) {
               final filter = state.uri.queryParameters['filter'];
               return HomeScreen(initialFilter: filter);
-            }
+            },
           ),
           GoRoute(
             path: '/discover',
@@ -208,10 +218,7 @@ GoRouter _createRouter() {
             path: '/activity',
             builder: (context, state) => const ActivityScreen(),
           ),
-          GoRoute(
-            path: '/map',
-            builder: (context, state) => const MapScreen(),
-          ),
+          GoRoute(path: '/map', builder: (context, state) => const MapScreen()),
           GoRoute(
             path: '/chat',
             builder: (context, state) => const ChatScreen(),
@@ -223,7 +230,15 @@ GoRouter _createRouter() {
         ],
       ),
       // Routes outside Shell
-       GoRoute(
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/profile/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return PublicProfileScreen(userId: id);
+        },
+      ),
+      GoRoute(
         parentNavigatorKey: rootNavigatorKey,
         path: '/create-request',
         pageBuilder: (context, state) => CustomTransitionPage(

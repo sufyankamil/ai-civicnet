@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import 'ai_match_badge.dart';
@@ -37,11 +39,24 @@ class HelperCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
-                    child: const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.grey,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
+                    child: helper.user.avatarUrl.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: helper.user.avatarUrl,
+                            imageBuilder: (context, imageProvider) => CircleAvatar(
+                              radius: 20,
+                              backgroundImage: imageProvider,
+                            ),
+                            errorWidget: (context, url, error) => const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.person, color: Colors.white),
+                            ),
+                          )
+                        : const CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, color: Colors.white),
+                          ),
                   ),
                   Positioned(
                     right: 0,
