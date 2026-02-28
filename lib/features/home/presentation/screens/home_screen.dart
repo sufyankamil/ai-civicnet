@@ -159,16 +159,19 @@ class _HomeScreenState extends State<HomeScreen> {
                    FutureBuilder(
                      future: SupabaseService().getCurrentUserProfile(),
                      builder: (context, snapshot) {
+                       final user = snapshot.data;
+                       final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
                        
                        return InkWell(
                          onTap: () => context.push('/profile'), 
                          borderRadius: BorderRadius.circular(20),
                          child: Padding(
                            padding: const EdgeInsets.all(4.0),
-                           child: const CircleAvatar(
+                           child: CircleAvatar(
                              radius: 20,
                              backgroundColor: Colors.grey,
-                             child: Icon(Icons.person, color: Colors.white),
+                             backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
+                             child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white),
                            ),
                          ),
                        );
