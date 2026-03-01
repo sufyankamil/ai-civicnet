@@ -167,6 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildDivider() {
     return Row(
       children: [
@@ -180,6 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSocialButtons() {
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final isIOS = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
