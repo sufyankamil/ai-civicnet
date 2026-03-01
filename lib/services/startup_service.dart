@@ -34,8 +34,10 @@ class StartupService {
     };
 
     // 3. Supabase
+    final supabaseUrl = dotenv.env['SUPABASE_URL']!;
+    logger.i('Supabase URL: $supabaseUrl');
     await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
+      url: supabaseUrl,
       anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
     );
     logger.i('Supabase initialized (${stopwatch.elapsedMilliseconds}ms)');
