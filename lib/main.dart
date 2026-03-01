@@ -11,6 +11,7 @@ import 'widgets/connectivity_wrapper.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:toastification/toastification.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Screens
 import 'features/profile/presentation/screens/privacy_policy_screen.dart';
@@ -44,6 +45,8 @@ import 'features/profile/presentation/screens/how_tasknet_works_screen.dart';
 import 'features/profile/presentation/screens/profile_screen.dart';
 import 'features/profile/presentation/screens/public_profile_screen.dart';
 
+SharedPreferences? prefsGlobal;
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
@@ -75,6 +78,7 @@ class _RootAppState extends State<RootApp> {
     // Initialize Hive & Dotenv before any services use it
     await Hive.initFlutter();
     await dotenv.load(fileName: ".env");
+    prefsGlobal = await SharedPreferences.getInstance();
 
     // Initialize Dependencies
     await initAuthDI();
@@ -166,7 +170,15 @@ GoRouter _createRouter() {
 
       if (!loggedIn) {
         if (currentPath == '/' || currentPath.startsWith('/home')) {
+          // Check if onboarding was seen
+          final prefs = prefsGlobal;
+          final hasSeenOnboarding = prefs?.getBool('has_seen_onboarding') ?? false;
+          if (hasSeenOnboarding) {
+            return '/login';
+          }
           return '/onboarding';
+        } else if (currentPath.startsWith('/profile') || currentPath == '/chat' || currentPath == '/activity' || currentPath == '/discover' || currentPath == '/map') {
+            return '/login';
         }
       } else {
         if (currentPath == '/' ||

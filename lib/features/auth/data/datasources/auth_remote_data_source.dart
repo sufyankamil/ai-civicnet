@@ -115,24 +115,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInWithGoogle() async {
     try {
-      const webClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID'; // TODO: replace
-      const iosClientId = 'YOUR_GOOGLE_IOS_CLIENT_ID'; // TODO: replace
+      const webClientId = '283190655136-dhb3i7mfvpv97ssa3tjmne9484vircsc.apps.googleusercontent.com';
 
-      final GoogleSignIn googleSignIn = GoogleSignIn(
-        clientId: iosClientId,
+      const iosClientId = 'YOUR_IOS_CLIENT_ID.apps.googleusercontent.com';
+
+      await GoogleSignIn.instance.initialize(
         serverClientId: webClientId,
+        clientId: iosClientId, 
       );
 
-      final googleUser = await googleSignIn.signIn();
-      if (googleUser == null) throw const AuthException('Google sign-in cancelled');
+      final googleUser = await GoogleSignIn.instance.authenticate();
 
-      final googleAuth = await googleUser.authentication;
-      final accessToken = googleAuth.accessToken;
+      final googleAuth = googleUser.authentication;
       final idToken = googleAuth.idToken;
 
-      if (accessToken == null || idToken == null) {
-        throw const AuthException('Google auth tokens missing');
+      if (idToken == null) {
+        throw const AuthException('Google auth ID Token missing');
       }
+
+      final authorization = await googleUser.authorizationClient.authorizeScopes([
+        'email',
+        'profile',
+        'openid', // Required to use signInWithIdToken with Supabase securely
+      ]);
+      final accessToken = authorization.accessToken;
 
       final response = await supabaseClient.auth.signInWithIdToken(
         provider: sb.OAuthProvider.google,
@@ -199,7 +205,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await supabaseClient.auth.resetPasswordForEmail(email);
+    } on sb.AuthException catch (e) {
+      // Provide a friendly error message for rate limiting
+      if (e.message.contains('For security purposes, you can only request this after')) {
+        throw const AuthException('Please wait a moment before requesting another reset link.');
+      }
+      throw AuthException(_parseAuthExceptionMessage(e.message));
+    } on SocketException catch (e) {
+      logger.e('Network error during password reset: $e');
+      throw const ServerException('Network connection error. Please try again.');
     } catch (e) {
+      if (e.toString().contains('SocketException')) {
+        logger.e('Network error during password reset: $e');
+        throw const ServerException('A network error occurred. Please check your internet connection.');
+      }
       throw ServerException(e.toString());
     }
   }

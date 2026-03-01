@@ -153,10 +153,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                _buildDivider(),
-                const SizedBox(height: 24),
-                _buildSocialButtons(),
+                // TODO: Re-enable social login in next release
+                // const SizedBox(height: 24),
+                // _buildDivider(),
+                // const SizedBox(height: 24),
+                // _buildSocialButtons(),
                 const SizedBox(height: 16),
               ],
             ),
@@ -166,6 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildDivider() {
     return Row(
       children: [
@@ -179,6 +181,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildSocialButtons() {
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
     final isIOS = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;

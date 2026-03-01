@@ -1,9 +1,7 @@
 
-import 'dart:math' show cos, sin, sqrt, asin, Random;
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'dart:math' show cos, sin, sqrt, asin;
+
+
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:flutter/foundation.dart'; // For compute
@@ -99,106 +97,6 @@ class SupabaseService {
   }
 
   // --- Social Auth ---
-
-  /// Signs in with Google via the native Google Sign-In SDK,
-  /// then exchanges the ID token with Supabase.
-  Future<void> signInWithGoogle() async {
-    const webClientId = 'YOUR_GOOGLE_WEB_CLIENT_ID'; // TODO: replace
-    const iosClientId = 'YOUR_GOOGLE_IOS_CLIENT_ID'; // TODO: replace
-
-    final GoogleSignIn googleSignIn = GoogleSignIn(
-      clientId: iosClientId,
-      serverClientId: webClientId,
-    );
-
-    final googleUser = await googleSignIn.signIn();
-    if (googleUser == null) throw Exception('Google sign-in cancelled');
-
-    final googleAuth = await googleUser.authentication;
-    final accessToken = googleAuth.accessToken;
-    final idToken = googleAuth.idToken;
-
-    if (accessToken == null || idToken == null) {
-      throw Exception('Google auth tokens missing');
-    }
-
-    await _client.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: idToken,
-      accessToken: accessToken,
-    );
-
-    await _upsertOAuthProfile();
-  }
-
-  /// Signs in with Apple via the native Apple Sign-In sheet (iOS/macOS),
-  /// then exchanges the credential with Supabase.
-  Future<void> signInWithApple() async {
-    final rawNonce = _generateNonce();
-    final nonce = _sha256ofString(rawNonce);
-
-    final credential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-      nonce: nonce,
-    );
-
-    final idToken = credential.identityToken;
-    if (idToken == null) throw Exception('Apple identity token missing');
-
-    await _client.auth.signInWithIdToken(
-      provider: OAuthProvider.apple,
-      idToken: idToken,
-      nonce: rawNonce,
-    );
-
-    await _upsertOAuthProfile();
-  }
-
-  /// Upserts the authenticated user's basic info into the profiles table.
-  /// Safe to call on both first sign-up and subsequent sign-ins.
-  Future<void> _upsertOAuthProfile() async {
-    final user = _client.auth.currentUser;
-    if (user == null) return;
-
-    final meta = user.userMetadata ?? {};
-    final name = meta['full_name'] ??
-        meta['name'] ??
-        user.email?.split('@').first ??
-        'User';
-    final avatar = meta['avatar_url'] ?? meta['picture'] ?? '';
-
-    try {
-      await _client.from('profiles').upsert({
-        'id': user.id,
-        'name': name,
-        'avatar_url': avatar,
-        'updated_at': DateTime.now().toIso8601String(),
-      }, onConflict: 'id');
-      logger.i('OAuth profile upserted for ${user.id}');
-    } catch (e) {
-      logger.e('Failed to upsert OAuth profile: $e');
-    }
-  }
-
-  /// Generates a cryptographically random nonce string.
-  String _generateNonce([int length = 32]) {
-    const charset =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
-    final random = List.generate(
-        length, (_) => charset[_secureRandom.nextInt(charset.length)]);
-    return random.join();
-  }
-
-  final _secureRandom = _SecureRandom();
-
-  String _sha256ofString(String input) {
-    final bytes = utf8.encode(input);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
 
   sb.User? get currentUser => _client.auth.currentUser;
   // --- Data ---
@@ -926,10 +824,4 @@ class SupabaseService {
       });
     }
   }
-}
-
-// Wraps dart:math Random.secure() for cryptographically safe nonce generation.
-class _SecureRandom {
-  final _rng = Random.secure();
-  int nextInt(int max) => _rng.nextInt(max);
 }

@@ -45,6 +45,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
+  Future<void> _handleResend() async {
+    final error = await _authViewModel.sendPasswordResetEmail(
+      _emailController.text.trim(),
+    );
+    
+    if (mounted) {
+      if (error == null) {
+        ToastService.showSuccess(context, 'Reset link resent successfully!');
+      } else {
+        ToastService.showError(context, error);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -216,7 +230,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 20),
         TextButton(
-          onPressed: _handleReset,
+          onPressed: _handleResend,
           child: Text(
             "Didn't receive it? Resend",
             style: TextStyle(color: Theme.of(context).primaryColor),
