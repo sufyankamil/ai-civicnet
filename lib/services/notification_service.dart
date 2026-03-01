@@ -175,13 +175,13 @@ class NotificationService {
       id: id,
       title: title,
       body: body,
-      scheduledDate: _nextInstanceOfTime(11, 25), // Schedule for 11:25 AM daily
+      scheduledDate: _nextInstanceOfTime(11, 50), // Schedule for 11:50 AM daily
       notificationDetails: notificationDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
     );
 
-    logger.i('Daily check-in notification scheduled for 11:25 AM');
+    logger.i('Daily check-in notification scheduled for 11:50 AM');
   }
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
