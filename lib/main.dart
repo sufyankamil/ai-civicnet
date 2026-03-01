@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'dart:io';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -22,7 +23,25 @@ import 'features/chat/di/chat_binding.dart';
 import 'features/onboarding/presentation/screens/splash_screen.dart';
 SharedPreferences? prefsGlobal;
 
+class Ipv4HttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    var client = super.createHttpClient(context);
+    client.connectionFactory = (Uri uri, String? proxyHost, int? proxyPort) async {
+      final addresses = await InternetAddress.lookup(uri.host);
+      // Prefer IPv4 to avoid Android hanging on broken ISP IPv6 routes
+      final ipv4 = addresses.where((a) => a.type == InternetAddressType.IPv4);
+      if (ipv4.isNotEmpty) {
+        return await Socket.startConnect(ipv4.first, uri.port);
+      }
+      return await Socket.startConnect(addresses.first, uri.port);
+    };
+    return client;
+  }
+}
+
 void main() {
+  HttpOverrides.global = Ipv4HttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
     _,
