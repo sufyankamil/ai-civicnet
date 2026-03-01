@@ -6,6 +6,7 @@ import '../../../../components/primary_button.dart';
 import '../../../../services/pending_toast_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ─── Flow step data (self-contained so no import needed) ────────────────────
 
@@ -141,7 +142,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             Align(
               alignment: Alignment.topRight,
               child: TextButton(
-                onPressed: () => context.go('/login'),
+                onPressed: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setBool('has_seen_onboarding', true);
+                  if (context.mounted) context.go('/login');
+                },
                 child: Text(
                   'Skip',
                   style: TextStyle(color: Theme.of(context).primaryColor),
@@ -195,14 +200,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     text: _currentPage == _totalPages - 1
                         ? 'Get Started 🚀'
                         : 'Next',
-                    onPressed: () {
+                    onPressed: () async {
                       if (_currentPage < _totalPages - 1) {
                         _pageController.nextPage(
                           duration: const Duration(milliseconds: 350),
                           curve: Curves.easeInOut,
                         );
                       } else {
-                        context.go('/login');
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('has_seen_onboarding', true);
+                        if (context.mounted) context.go('/login');
                       }
                     },
                   ),

@@ -205,7 +205,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       await supabaseClient.auth.resetPasswordForEmail(email);
+    } on sb.AuthException catch (e) {
+      // Provide a friendly error message for rate limiting
+      if (e.message.contains('For security purposes, you can only request this after')) {
+        throw const AuthException('Please wait a moment before requesting another reset link.');
+      }
+      throw AuthException(_parseAuthExceptionMessage(e.message));
+    } on SocketException catch (e) {
+      logger.e('Network error during password reset: $e');
+      throw const ServerException('Network connection error. Please try again.');
     } catch (e) {
+      if (e.toString().contains('SocketException')) {
+        logger.e('Network error during password reset: $e');
+        throw const ServerException('A network error occurred. Please check your internet connection.');
+      }
       throw ServerException(e.toString());
     }
   }
