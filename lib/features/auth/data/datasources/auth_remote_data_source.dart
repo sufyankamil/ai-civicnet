@@ -16,12 +16,18 @@ String _parseAuthExceptionMessage(String message) {
     if (message.startsWith('{') && message.endsWith('}')) {
       final decoded = jsonDecode(message);
       if (decoded is Map<String, dynamic> && decoded.containsKey('message')) {
-        return decoded['message'].toString();
+        message = decoded['message'].toString();
       }
     }
   } catch (_) {
-    // Ignore parsing errors and just return the original message
+    // Ignore parsing errors
   }
+
+  // Catch unhandled network texts that leak from gotrue
+  if (message.contains('SocketException') || message.contains('ClientException') || message.contains('Failed host lookup') || message.contains('Connection timed out')) {
+    return 'Unable to reach server. Please check your internet connection and try again.';
+  }
+
   return message;
 }
 
