@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../../../core/errors/exceptions.dart';
 import '../models/help_request_model.dart';
 import '../../domain/entities/request_enums.dart';
+import '../../../../core/utils/timeout_extension.dart';
 
 abstract class RequestRemoteDataSource {
   Future<List<dynamic>> getRawHelpRequests();
@@ -26,7 +27,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
       final response = await supabaseClient
           .from('help_requests')
           .select('*, profiles:requester_id(name, avatar_url)')
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .withServerTimeout();
 
       return response as List<dynamic>;
     } catch (e) {
@@ -41,7 +43,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .from('help_requests')
           .select('*, profiles:requester_id(name, avatar_url)')
           .eq('requester_id', userId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .withServerTimeout();
 
       return response as List<dynamic>;
     } catch (e) {
@@ -56,7 +59,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .from('help_requests')
           .select('*, profiles:requester_id(name, avatar_url)')
           .eq('id', id)
-          .single();
+          .single()
+          .withServerTimeout();
           
       return response;
     } catch (e) {
@@ -81,7 +85,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
         'location_name': request.locationName,
         'created_at': DateTime.now().toIso8601String(),
         'status': 'open',
-      });
+      }).withServerTimeout();
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -92,7 +96,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
     try {
       await supabaseClient.from('help_requests').update({
         'status': status.toString().split('.').last,
-      }).eq('id', requestId);
+      }).eq('id', requestId).withServerTimeout();
     } catch (e) {
       throw ServerException(e.toString());
     }

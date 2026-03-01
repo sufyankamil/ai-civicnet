@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import '../../../../core/errors/exceptions.dart';
 import '../models/user_model.dart';
 import '../../../../services/logger_service.dart';
+import '../../../../core/utils/timeout_extension.dart';
 
 String _parseAuthExceptionMessage(String message) {
   try {
@@ -15,12 +16,18 @@ String _parseAuthExceptionMessage(String message) {
     if (message.startsWith('{') && message.endsWith('}')) {
       final decoded = jsonDecode(message);
       if (decoded is Map<String, dynamic> && decoded.containsKey('message')) {
-        return decoded['message'].toString();
+        message = decoded['message'].toString();
       }
     }
   } catch (_) {
-    // Ignore parsing errors and just return the original message
+    // Ignore parsing errors
   }
+
+  // Catch unhandled network texts that leak from gotrue
+  if (message.contains('SocketException') || message.contains('ClientException') || message.contains('Failed host lookup') || message.contains('Connection timed out')) {
+    return 'Unable to reach server. Please check your internet connection and try again.';
+  }
+
   return message;
 }
 
@@ -58,7 +65,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final response = await supabaseClient.auth.signInWithPassword(
         email: email,
         password: password,
-      );
+      ).withServerTimeout();
       if (response.user == null) {
         throw const ServerException('Login failed');
       }
@@ -84,7 +91,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         email: email,
         password: password,
         data: {'name': name},
-      );
+      ).withServerTimeout();
       if (response.user == null) {
         throw const ServerException('Signup failed');
       }
@@ -106,7 +113,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await supabaseClient.auth.signOut();
+      await supabaseClient.auth.signOut().withServerTimeout();
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -144,7 +151,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         provider: sb.OAuthProvider.google,
         idToken: idToken,
         accessToken: accessToken,
-      );
+      ).withServerTimeout();
 
       await _upsertOAuthProfile(response.user);
       return UserModel.fromSupabaseUser(response.user!);
@@ -183,7 +190,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         provider: sb.OAuthProvider.apple,
         idToken: idToken,
         nonce: rawNonce,
-      );
+      ).withServerTimeout();
 
       await _upsertOAuthProfile(response.user);
       return UserModel.fromSupabaseUser(response.user!);
@@ -204,7 +211,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await supabaseClient.auth.resetPasswordForEmail(email);
+      await supabaseClient.auth.resetPasswordForEmail(email).withServerTimeout();
     } on sb.AuthException catch (e) {
       // Provide a friendly error message for rate limiting
       if (e.message.contains('For security purposes, you can only request this after')) {
@@ -226,7 +233,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> deleteUserAccount() async {
     try {
-      await supabaseClient.rpc('delete_user_account');
+      await supabaseClient.rpc('delete_user_account').withServerTimeout();
       await signOut();
     } catch (e) {
       throw ServerException(e.toString());
@@ -244,7 +251,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'name': name,
         'avatar_url': avatar,
         'updated_at': DateTime.now().toIso8601String(),
-      }, onConflict: 'id');
+      }, onConflict: 'id').withServerTimeout();
     } catch (e) {
       logger.e('Failed to upsert OAuth profile: $e');
     }

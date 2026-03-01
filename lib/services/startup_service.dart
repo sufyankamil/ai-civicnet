@@ -8,7 +8,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:civic_net/services/firebase_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/logger_service.dart';
-
+import 'package:civic_net/services/notification_service.dart';
 class StartupService {
   static final StartupService _instance = StartupService._internal();
   factory StartupService() => _instance;
@@ -45,6 +45,9 @@ class StartupService {
       FirebaseService().initialize(),
       CacheService().initialize(),
     ]);
+
+    // Schedule the daily notification after other services are up
+    await NotificationService().scheduleDailyCheckInNotification();
 
     logger.i('All Services initialized in ${stopwatch.elapsedMilliseconds}ms');
     _isInitialized = true;

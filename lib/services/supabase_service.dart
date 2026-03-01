@@ -9,6 +9,7 @@ import '../models/models.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/notification_service.dart';
+import 'package:civic_net/core/utils/timeout_extension.dart';
 
 // Top-level function for isolate
 List<HelpRequest> parseHelpRequests(List<dynamic> data) {
@@ -71,7 +72,7 @@ class SupabaseService {
       email: email,
       password: password,
       data: {'name': name},
-    );
+    ).withServerTimeout();
     return response;
   }
 
@@ -79,20 +80,20 @@ class SupabaseService {
     return await _client.auth.signInWithPassword(
       email: email,
       password: password,
-    );
+    ).withServerTimeout();
   }
 
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await _client.auth.signOut().withServerTimeout();
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    await _client.auth.resetPasswordForEmail(email).withServerTimeout();
   }
 
   Future<void> deleteUserAccount() async {
     // Requires secure Postgres function "delete_user_account()" to exist
-    await _client.rpc('delete_user_account');
+    await _client.rpc('delete_user_account').withServerTimeout();
     await signOut();
   }
 
@@ -115,7 +116,7 @@ class SupabaseService {
   }
 
   Future<void> markNotificationAsRead(String notificationId) async {
-    await _client.from('notifications').update({'is_read': true}).eq('id', notificationId);
+    await _client.from('notifications').update({'is_read': true}).eq('id', notificationId).withServerTimeout();
   }
 
   // Create a new request
@@ -132,13 +133,13 @@ class SupabaseService {
 
       'created_at': DateTime.now().toIso8601String(),
       'status': 'open',
-    });
+    }).withServerTimeout();
   }
 
   Future<void> updateHelpRequestStatus(String requestId, RequestStatus status) async {
     await _client.from('help_requests').update({
       'status': status.toString().split('.').last,
-    }).eq('id', requestId);
+    }).eq('id', requestId).withServerTimeout();
   }
 
   // Fetch requests (real-time stream or list)
@@ -156,7 +157,7 @@ class SupabaseService {
       final response = await _client
           .from('help_requests')
           .select('*, profiles:requester_id(name, avatar_url)')
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false).withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
       
@@ -210,7 +211,7 @@ class SupabaseService {
           .from('help_requests')
           .select('*, profiles:requester_id(name, avatar_url)')
           .eq('requester_id', user.id)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false).withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
       return await compute(parseHelpRequests, data);
@@ -231,7 +232,7 @@ class SupabaseService {
           .from('request_applications')
           .select('id, status, created_at, help_requests(*, profiles:requester_id(name, avatar_url))')
           .eq('applicant_id', user.id)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false).withServerTimeout();
 
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
@@ -246,7 +247,7 @@ class SupabaseService {
           .from('help_requests')
           .select('*, profiles:requester_id(name, avatar_url)')
           .eq('id', id)
-          .single();
+          .single().withServerTimeout();
           
       // Cache individual request
       await CacheService().put('help_request_$id', response);
@@ -272,7 +273,7 @@ class SupabaseService {
           .from('profiles')
           .select()
           .eq('id', userId)
-          .single();
+          .single().withServerTimeout();
       
       // Cache profile
       await CacheService().put('user_profile_$userId', data);
@@ -330,7 +331,7 @@ class SupabaseService {
           .from('profiles')
           .select()
           .eq('id', user.id)
-          .single();
+          .single().withServerTimeout();
 
 
       logger.d('DEBUG: Raw profile data: $data'); // DEBUG LOG
@@ -388,7 +389,7 @@ class SupabaseService {
       'rater_id': user.id,
       'rated_id': ratedUserId,
       'rating': rating,
-    });
+    }).withServerTimeout();
   }
 
   Future<bool> hasUserRated(String requestId) async {
@@ -401,7 +402,7 @@ class SupabaseService {
           .select('id')
           .eq('request_id', requestId)
           .eq('rater_id', user.id)
-          .maybeSingle();
+          .maybeSingle().withServerTimeout();
       
       return response != null;
     } catch (e) {
@@ -422,7 +423,7 @@ class SupabaseService {
       'updated_at': DateTime.now().toIso8601String(),
     };
 
-    await _client.from('profiles').upsert(updates);
+    await _client.from('profiles').upsert(updates).withServerTimeout();
   }
 
   Future<void> updateUserLocation(double lat, double lng) async {
@@ -433,7 +434,7 @@ class SupabaseService {
       'lat': lat,
       'lng': lng,
       'updated_at': DateTime.now().toIso8601String(),
-    }).eq('id', user.id);
+    }).eq('id', user.id).withServerTimeout();
   }
 
 
@@ -543,7 +544,7 @@ class SupabaseService {
     
         final response = await _client.from('conversations').insert({
             'participant_ids': [user.id, otherUserId]
-        }).select().single();
+        }).select().single().withServerTimeout();
         
         return response['id'];
     } catch (e) {
@@ -561,7 +562,7 @@ class SupabaseService {
             .from('conversations')
             .select()
             .contains('participant_ids', [user.id])
-            .order('updated_at', ascending: false);
+            .order('updated_at', ascending: false).withServerTimeout();
             
         final List<ChatConversation> conversations = [];
         
@@ -574,7 +575,7 @@ class SupabaseService {
             
             if (otherId.isEmpty) continue;
             
-            final profile = await _client.from('profiles').select().eq('id', otherId).maybeSingle();
+            final profile = await _client.from('profiles').select().eq('id', otherId).maybeSingle().withServerTimeout();
             final name = profile?['name'] ?? 'Unknown User';
             final avatar = profile?['avatar_url'] ?? '';
 
@@ -584,7 +585,7 @@ class SupabaseService {
                 .eq('conversation_id', conv['id'])
                 .order('created_at', ascending: false)
                 .limit(1)
-                .maybeSingle();
+                .maybeSingle().withServerTimeout();
 
             final String? dateString = lastMsgRes?['created_at'] ?? conv['updated_at'] ?? conv['created_at'];
             final DateTime messageTime = DateTime.tryParse(dateString ?? '') ?? DateTime.now();
@@ -624,11 +625,11 @@ class SupabaseService {
       'sender_id': user.id,
       'content': content,
       'message_type': type,
-    });
+    }).withServerTimeout();
     
     await _client.from('conversations').update({
         'updated_at': DateTime.now().toIso8601String(),
-    }).eq('id', conversationId);
+    }).eq('id', conversationId).withServerTimeout();
   }
 
   // --- Interest / Applications ---
@@ -641,7 +642,7 @@ class SupabaseService {
       'request_id': requestId,
       'applicant_id': user.id,
       'status': 'pending',
-    });
+    }).withServerTimeout();
   }
 
   Future<ApplicationStatus?> getApplicationStatus(String requestId) async {
@@ -654,7 +655,7 @@ class SupabaseService {
           .select('status')
           .eq('request_id', requestId)
           .eq('applicant_id', user.id)
-          .maybeSingle();
+          .maybeSingle().withServerTimeout();
 
       if (response == null) return null;
 
@@ -674,7 +675,7 @@ class SupabaseService {
           .from('request_applications')
           .select('*, profiles:applicant_id(name, avatar_url)')
           .eq('request_id', requestId)
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false).withServerTimeout();
       
       final List<dynamic> data = response as List<dynamic>;
       logger.d('DEBUG: Fetched ${data.length} applications for request $requestId'); // DEBUG LOG
@@ -691,7 +692,7 @@ class SupabaseService {
   Future<void> updateApplicationStatus(String applicationId, ApplicationStatus status) async {
     await _client.from('request_applications').update({
       'status': status.toString().split('.').last,
-    }).eq('id', applicationId);
+    }).eq('id', applicationId).withServerTimeout();
   }
 
   // --- Realtime ---
@@ -720,7 +721,7 @@ class SupabaseService {
     await _client.from('blocked_users').insert({
       'blocker_id': user.id,
       'blocked_id': userId,
-    });
+    }).withServerTimeout();
   }
 
   Future<void> unblockUser(String userId) async {
@@ -730,7 +731,7 @@ class SupabaseService {
     await _client.from('blocked_users').delete().match({
       'blocker_id': user.id,
       'blocked_id': userId,
-    });
+    }).withServerTimeout();
   }
 
   Future<bool> isUserBlocked(String userId) async {
@@ -742,7 +743,7 @@ class SupabaseService {
         .select()
         .eq('blocker_id', user.id)
         .eq('blocked_id', userId)
-        .maybeSingle();
+        .maybeSingle().withServerTimeout();
     
     return response != null;
   }
@@ -775,7 +776,7 @@ class SupabaseService {
       'reporter_id': user.id,
       'reported_id': userId,
       'reason': reason,
-    });
+    }).withServerTimeout();
   }
 
   Future<void> completeHelpRequest(String requestId, String helperId) async {
@@ -786,7 +787,7 @@ class SupabaseService {
     await _client.rpc('complete_help_request', params: {
       'p_request_id': requestId,
       'p_helper_id': helperId,
-    });
+    }).withServerTimeout();
 
     // 2. Increment the helper's help_count and award bonus points
     //    Uses a Postgres RPC to safely do an atomic increment.
@@ -805,7 +806,7 @@ class SupabaseService {
       await _client.rpc('increment_helper_stats', params: {
         'p_helper_id': helperId,
         'p_points': 10, // Same bonus points awarded for helping
-      });
+      }).withServerTimeout();
     } catch (e) {
       // Fallback: direct update if the RPC doesn't exist yet
       logger.w('increment_helper_stats RPC not found, falling back to direct update: $e');
@@ -814,12 +815,12 @@ class SupabaseService {
         'id': helperId,
       }).catchError((_) async {
         // Last resort: raw update
-        final current = await _client.from('profiles').select('help_count, points').eq('id', helperId).maybeSingle();
+        final current = await _client.from('profiles').select('help_count, points').eq('id', helperId).maybeSingle().withServerTimeout();
         if (current != null) {
           await _client.from('profiles').update({
             'help_count': (current['help_count'] ?? 0) + 1,
             'points': (current['points'] ?? 0) + 10,
-          }).eq('id', helperId);
+          }).eq('id', helperId).withServerTimeout();
         }
       });
     }
