@@ -91,17 +91,6 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right, color: Colors.red),
             onTap: () => context.push('/delete-account'),
           ),
-
-          const Divider(height: 32),
-
-          _buildSectionHeader('Diagnostics'),
-          ListTile(
-            title: const Text('Test Crash (Crashlytics)'),
-            leading: const Icon(Icons.bug_report, color: Colors.red),
-            onTap: () {
-              throw Exception('Test Crash for Civic Net!');
-            },
-          ),
           const Divider(height: 32),
 
           _buildSectionHeader('About'),

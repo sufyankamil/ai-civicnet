@@ -66,7 +66,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   Future<void> _contactSupport() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@civicnet.app',
+      path: 'civicnet.app@gmail.com',
       queryParameters: {'subject': 'Feedback / Support Request'},
     );
     if (await canLaunchUrl(emailLaunchUri)) {

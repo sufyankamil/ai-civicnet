@@ -53,7 +53,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               context,
               '5. Contact Us',
-              'If you have any questions about this Privacy Policy, please contact us at support@communitynet.com.',
+              'If you have any questions about this Privacy Policy, please contact us at civicnet.app@gmail.com.',
             ),
           ],
         ),
