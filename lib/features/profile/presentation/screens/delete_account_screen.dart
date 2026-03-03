@@ -69,13 +69,33 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
       path: 'civicnet.app@gmail.com',
       queryParameters: {'subject': 'Feedback / Support Request'},
     );
-    if (await canLaunchUrl(emailLaunchUri)) {
-      await launchUrl(emailLaunchUri);
-    } else {
-      if (mounted) {
-         ToastService.showError(context, 'Could not open email client.');
-      }
+    try {
+      final launched = await launchUrl(
+        emailLaunchUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) _showEmailFallback();
+    } catch (_) {
+      if (mounted) _showEmailFallback();
     }
+  }
+
+  void _showEmailFallback() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Contact Support'),
+        content: const SelectableText(
+          'civicnet.app@gmail.com\n\nTap and hold to copy this address, then send us an email.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

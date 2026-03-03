@@ -36,9 +36,10 @@ import '../../features/notifications/presentation/screens/notifications_screen.d
 import '../../features/profile/presentation/screens/how_tasknet_works_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/public_profile_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 
 
-GoRouter createRouter() {
+GoRouter createRouter({String initialLocation = '/'}) {
   final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
     debugLabel: 'root',
   );
@@ -48,7 +49,7 @@ GoRouter createRouter() {
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: initialLocation,
     refreshListenable: GoRouterRefreshStream(
       Supabase.instance.client.auth.onAuthStateChange,
     ),
@@ -219,6 +220,11 @@ GoRouter createRouter() {
         parentNavigatorKey: rootNavigatorKey,
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
       ),
     ],
   );

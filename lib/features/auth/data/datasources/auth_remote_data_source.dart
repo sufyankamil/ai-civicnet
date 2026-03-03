@@ -211,7 +211,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      await supabaseClient.auth.resetPasswordForEmail(email).withServerTimeout();
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'https://privacypolicy-ruddy.vercel.app/reset',
+      ).withServerTimeout();
     } on sb.AuthException catch (e) {
       // Provide a friendly error message for rate limiting
       if (e.message.contains('For security purposes, you can only request this after')) {

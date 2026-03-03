@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
+import 'package:app_links/app_links.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -41,6 +42,7 @@ class RootApp extends StatefulWidget {
 
 class _RootAppState extends State<RootApp> {
   bool _isInitialized = false;
+  String _initialLocation = '/';
 
   @override
   void initState() {
@@ -63,6 +65,20 @@ class _RootAppState extends State<RootApp> {
     await initMapDI();
     await initChatDI();
 
+    // Read the initial deep-link URI BEFORE Supabase.initialize() so we can
+    // detect a password-recovery link. The PASSWORD_RECOVERY auth event fires
+    // INSIDE Supabase.initialize() and cannot be caught by a stream listener
+    // added afterward, so we check the URI directly here instead.
+    try {
+      final initialUri = await AppLinks().getInitialLink();
+      if (initialUri != null) {
+        final uriStr = initialUri.toString();
+        if (uriStr.contains('type=recovery') ||
+            uriStr.startsWith('civicnet://reset-password')) {
+          _initialLocation = '/reset-password';
+        }
+      }
+    } catch (_) {}
     await Future.wait([
       StartupService().initialize(),
       ThemeService().init(),
@@ -88,20 +104,40 @@ class _RootAppState extends State<RootApp> {
 
     return ChangeNotifierProvider(
       create: (_) => ThemeService(),
-      child: const CommunityHelpApp(),
+      child: CommunityHelpApp(initialLocation: _initialLocation),
     );
   }
 }
 
 class CommunityHelpApp extends StatefulWidget {
-  const CommunityHelpApp({super.key});
+  final String initialLocation;
+  const CommunityHelpApp({super.key, this.initialLocation = '/'});
 
   @override
   State<CommunityHelpApp> createState() => _CommunityHelpAppState();
 }
 
 class _CommunityHelpAppState extends State<CommunityHelpApp> {
-  late final GoRouter _router = createRouter();
+  late final GoRouter _router = createRouter(initialLocation: widget.initialLocation);
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for PASSWORD_RECOVERY event — fired when the user taps the reset
+    // link in their email and Android deep-links them back into the app.
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        _router.go('/reset-password');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

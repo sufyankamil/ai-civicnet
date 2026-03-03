@@ -147,15 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                    const Spacer(),
-                   IconButton(
-                     onPressed: () => context.push('/notifications'),
-                     icon: Badge(
-                       label: const Text('2'), 
-                       backgroundColor: Colors.red,
-                       child: const Icon(Icons.notifications_outlined, size: 28),
-                     ),
-                   ),
-                   const SizedBox(width: 8),
                    FutureBuilder(
                      future: SupabaseService().getCurrentUserProfile(),
                      builder: (context, snapshot) {
@@ -226,16 +217,71 @@ class _HomeScreenState extends State<HomeScreen> {
                   
                   if (_viewModel.filteredRequests.isEmpty) {
                     return ListView(
-                      children: const [
-                         SizedBox(height: 100),
-                         Center(
-                           child: Padding(
-                             padding: EdgeInsets.all(32.0),
-                             child: Text('No requests found nearby.\\nPull to refresh.', textAlign: TextAlign.center),
-                           ),
-                         )
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 80,
+                                  color: Colors.grey[300],
+                                ),
+                                const SizedBox(height: 20),
+                                Text(
+                                  'No Requests Nearby',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'There are no open help requests in your area right now. Be the first to post one!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[400],
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 28),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed: _viewModel.fetchRequests,
+                                      icon: const Icon(Icons.refresh_rounded),
+                                      label: const Text('Refresh'),
+                                      style: OutlinedButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    FilledButton.icon(
+                                      onPressed: () => context.push('/create-request'),
+                                      icon: const Icon(Icons.add),
+                                      label: const Text('Post a Request'),
+                                      style: FilledButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     );
+
                   }
 
                   return ListView.builder(

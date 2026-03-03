@@ -171,17 +171,38 @@ class NotificationService {
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
 
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      scheduledDate: _nextInstanceOfTime(13, 3), // Schedule for 01:03 PM daily
-      notificationDetails: notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
+    final scheduledTime = _nextInstanceOfTime(12, 18);
+    logger.i('Attempting to schedule daily notification at $scheduledTime');
 
-    logger.i('Daily check-in notification scheduled for 01:03 PM');
+    try {
+      // Try exact scheduling first (requires SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM)
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledTime,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+      logger.i('✅ Daily check-in notification scheduled exactly at 12:18 AM');
+    } catch (e) {
+      logger.w('Exact alarm failed ($e) — falling back to inexact scheduling');
+      try {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexact,
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+        logger.i('✅ Daily check-in notification scheduled (inexact) at ~12:18 PM');
+      } catch (e2) {
+        logger.e('❌ Failed to schedule daily notification: $e2');
+      }
+    }
   }
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
