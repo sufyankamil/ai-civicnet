@@ -35,7 +35,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   List<legacy.RequestApplication> _applications = [];
   bool _isLoadingApplications = false;
   bool _hasFetchedApplications = false;
-  bool _hasRated = false; 
+  bool _hasRated = false;
+  int _ratingGiven = 0; // tracks the star value submitted
 
   @override
   void initState() {
@@ -97,12 +98,18 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     
     try {
       final status = await SupabaseService().getApplicationStatus(widget.requestId);
-      final hasRated = await SupabaseService().hasUserRated(widget.requestId);
+      final rating = await SupabaseService().hasUserRated(widget.requestId);
       
       if (mounted) {
         setState(() {
           _applicationStatus = status;
-          _hasRated = hasRated; 
+          if (rating != null) {
+            _hasRated = true; 
+            _ratingGiven = rating;
+          } else {
+            _hasRated = false;
+            _ratingGiven = 0;
+          }
           _isCheckingStatus = false;
         });
       }
@@ -703,14 +710,35 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
           if (request.status == RequestStatusEnum.completed) {
             if (_hasRated) {
               return Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.green.withValues(alpha: 0.1),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                color: Colors.amber.withValues(alpha: 0.08),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green),
+                    const Icon(Icons.check_circle, color: Colors.green, size: 20),
                     const SizedBox(width: 8),
-                    Text('Request Completed', style: GoogleFonts.poppins(color: Colors.green, fontWeight: FontWeight.bold)),
+                    Text(
+                      'You rated',
+                      style: GoogleFonts.poppins(color: Colors.grey[700], fontSize: 14),
+                    ),
+                    const SizedBox(width: 8),
+                    // Show filled/empty stars based on submitted rating
+                    Row(
+                      children: List.generate(5, (i) => Icon(
+                        i < _ratingGiven ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                        size: 22,
+                      )),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '($_ratingGiven/5)',
+                      style: GoogleFonts.poppins(
+                        color: Colors.amber[800],
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -975,6 +1003,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             if (!context.mounted) return;
             setState(() {
               _hasRated = true;
+              _ratingGiven = rating;
             });
             ToastService.showSuccess(context, 'Rating submitted!');
           } catch (e) {
