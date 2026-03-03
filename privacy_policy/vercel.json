@@ -8,12 +8,28 @@
     {
       "src": "delete.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "reset.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "child-safety.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/delete",
       "dest": "/delete.html"
+    },
+    {
+      "src": "/reset",
+      "dest": "/reset.html"
+    },
+    {
+      "src": "/child-safety",
+      "dest": "/child-safety.html"
     },
     {
       "src": "/(.*)",
