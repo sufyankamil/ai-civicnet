@@ -97,7 +97,7 @@ class HelpRequest {
       id: json['id'].toString(),
       requesterId: json['requester_id'] ?? '',
       requesterName: profile['name'] ?? 'Unknown',
-      requesterAvatarUrl: sanitizeAvatarUrl(profile['avatar_url']) == '' ? 'https://i.pravatar.cc/150' : sanitizeAvatarUrl(profile['avatar_url']), // Fallback
+      requesterAvatarUrl: sanitizeAvatarUrl(profile['avatar_url']),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       category: HelpCategory.values.firstWhere(

@@ -29,9 +29,6 @@ class HelpRequestModel extends HelpRequestEntity {
 
     String rawAvatar = profile['avatar_url'] ?? '';
     String avatarUrl = rawAvatar.contains('?t=') ? rawAvatar.split('?t=').first : rawAvatar;
-    if (avatarUrl.isEmpty) {
-      avatarUrl = 'https://i.pravatar.cc/150';
-    }
 
     return HelpRequestModel(
       id: json['id'].toString(),
