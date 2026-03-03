@@ -7,13 +7,27 @@ import 'package:get/get.dart';
 
 import '../viewmodels/chat_viewmodel.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  late final ChatViewModel viewModel;
+
+  @override
+  void initState() {
+    super.initState();
     // Controller is provided via ChatBinding
-    final ChatViewModel viewModel = Get.find<ChatViewModel>();
+    viewModel = Get.find<ChatViewModel>();
+    // Re-fetch every time this tab becomes visible
+    viewModel.fetchConversations();
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(

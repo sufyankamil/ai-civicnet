@@ -86,6 +86,12 @@ class SettingsScreen extends StatelessWidget {
 
           _buildSectionHeader('Account'),
           ListTile(
+            title: const Text('Help History'),
+            leading: const Icon(Icons.history, color: AppColors.primaryLight),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go('/activity'),
+          ),
+          ListTile(
             title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
             leading: const Icon(Icons.person_remove, color: Colors.red),
             trailing: const Icon(Icons.chevron_right, color: Colors.red),

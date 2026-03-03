@@ -40,7 +40,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   bool _showSafetyWarning = true;
   bool _isListening = false;
   bool _speechEnabled = false;
-  
+  int _previousMessageCount = 0;
+
   // Blocking State
   bool _isBlockedByMe = false;
   List<String> _blockedUserIds = [];
@@ -161,9 +162,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           Expanded(
             child: StreamBuilder<List<MessageEntity>>(
+              initialData: const [],
               stream: _viewModel.getMessagesStream(widget.conversationId),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+                if (snapshot.connectionState == ConnectionState.waiting &&
+                    (snapshot.data == null || snapshot.data!.isEmpty)) {
                   return const Center(child: CircularProgressIndicator.adaptive());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -175,12 +178,20 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 if (messages.isEmpty) {
                    return Center(child: Text('No messages yet', style: GoogleFonts.poppins(color: Colors.grey)));
                 }
-                
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_scrollController.hasClients) {
-                    _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-                  }
-                });
+
+                // Only auto-scroll when a new message actually arrives
+                if (messages.length > _previousMessageCount) {
+                  _previousMessageCount = messages.length;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.animateTo(
+                        _scrollController.position.maxScrollExtent,
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  });
+                }
 
                 return ListView.builder(
                   controller: _scrollController,
@@ -203,6 +214,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     }
 
                     return Column(
+                      key: ValueKey(message.id),
                       children: [
                         if (showDateHeader)
                           Padding(
@@ -303,6 +315,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     Expanded(
                       child: TextField(
                         controller: _messageController,
+                        style: GoogleFonts.poppins(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
                         decoration: InputDecoration(
                           hintText: _isListening ? 'Listening...' : 'Type a message...',
                           hintStyle: GoogleFonts.poppins(color: Colors.grey),
@@ -311,7 +326,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                             borderSide: BorderSide.none,
                           ),
                           filled: true,
-                          fillColor: _isListening ? Colors.red.withValues(alpha: 0.1) : Colors.grey[100],
+                          fillColor: _isListening
+                              ? Colors.red.withValues(alpha: 0.1)
+                              : Theme.of(context).colorScheme.surfaceContainerHighest,
                           contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         ),
                         textCapitalization: TextCapitalization.sentences,

@@ -24,7 +24,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
   final RequestViewModel _viewModel = Get.find<RequestViewModel>();
-  
+
   HelpCategory? _selectedCategory;
   UrgencyLevel _selectedUrgency = UrgencyLevel.medium;
   bool _isCategorizing = false;
@@ -45,9 +45,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
-    
+
     Position? pos;
-    if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
       try {
         pos = await Geolocator.getCurrentPosition();
       } catch (e) {
@@ -62,25 +63,37 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   }
 
   void _detectCategory() async {
-    final text = '${_titleController.text} ${_descController.text}'.toLowerCase();
+    final text = '${_titleController.text} ${_descController.text}'
+        .toLowerCase();
     if (text.length < 5) {
-      ToastService.showInfo(context, 'Please enter more details to auto-categorize.');
+      ToastService.showInfo(
+        context,
+        'Please enter more details to auto-categorize.',
+      );
       return;
     }
 
     setState(() => _isCategorizing = true);
-    await Future.delayed(const Duration(milliseconds: 1500)); 
-    
+    await Future.delayed(const Duration(milliseconds: 1500));
+
     if (!mounted) return;
 
     HelpCategory? detected;
-    if (text.contains('leak') || text.contains('water') || text.contains('fire')) {
+    if (text.contains('leak') ||
+        text.contains('water') ||
+        text.contains('fire')) {
       detected = HelpCategory.emergency;
-    } else if (text.contains('computer') || text.contains('wifi') || text.contains('phone')) {
+    } else if (text.contains('computer') ||
+        text.contains('wifi') ||
+        text.contains('phone')) {
       detected = HelpCategory.techSupport;
-    } else if (text.contains('math') || text.contains('teach') || text.contains('tutor')) {
+    } else if (text.contains('math') ||
+        text.contains('teach') ||
+        text.contains('tutor')) {
       detected = HelpCategory.education;
-    } else if (text.contains('clean') || text.contains('move') || text.contains('fix')) {
+    } else if (text.contains('clean') ||
+        text.contains('move') ||
+        text.contains('fix')) {
       detected = HelpCategory.household;
     }
 
@@ -89,10 +102,16 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         _selectedCategory = detected;
         _isCategorizing = false;
       });
-      ToastService.showSuccess(context, 'Auto-categorized as ${_categoryName(detected)}');
+      ToastService.showSuccess(
+        context,
+        'Auto-categorized as ${_categoryName(detected)}',
+      );
     } else {
       setState(() => _isCategorizing = false);
-      ToastService.showInfo(context, 'Could not auto-categorize. Please select manually.');
+      ToastService.showInfo(
+        context,
+        'Could not auto-categorize. Please select manually.',
+      );
     }
   }
 
@@ -106,23 +125,34 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           try {
             position = await Geolocator.getCurrentPosition();
           } catch (e) {
-            position = Position(longitude: 0.0, latitude: 0.0, timestamp: DateTime.now(), accuracy: 0, altitude: 0, heading: 0, speed: 0, speedAccuracy: 0, altitudeAccuracy: 0, headingAccuracy: 0);
+            position = Position(
+              longitude: 0.0,
+              latitude: 0.0,
+              timestamp: DateTime.now(),
+              accuracy: 0,
+              altitude: 0,
+              heading: 0,
+              speed: 0,
+              speedAccuracy: 0,
+              altitudeAccuracy: 0,
+              headingAccuracy: 0,
+            );
           }
         }
 
         final newRequest = HelpRequestEntity(
-          id: '', 
-          requesterId: '', 
-          requesterName: '', 
-          requesterAvatarUrl: '', 
+          id: '',
+          requesterId: '',
+          requesterName: '',
+          requesterAvatarUrl: '',
           title: _titleController.text,
           description: _descController.text,
           category: _selectedCategory!,
           urgency: _selectedUrgency,
           postedAt: DateTime.now(),
-          distance: '', 
-          aiRelevanceScore: 0, 
-          locationName: 'Current Location', 
+          distance: '',
+          aiRelevanceScore: 0,
+          locationName: 'Current Location',
           lat: position.latitude,
           lng: position.longitude,
           status: RequestStatusEnum.open,
@@ -131,16 +161,16 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         final error = await _viewModel.createRequest(newRequest);
 
         if (mounted) {
-           if (error == null) {
-              context.pop();
-              ToastService.showSuccess(context, 'Request posted successfully!');
-           } else {
-              ToastService.showError(context, error);
-           }
+          if (error == null) {
+            context.pop();
+            ToastService.showSuccess(context, 'Request posted successfully!');
+          } else {
+            ToastService.showError(context, error);
+          }
         }
       } catch (e) {
         if (mounted) {
-           logger.e('Error creating request: $e');
+          logger.e('Error creating request: $e');
         }
       }
     } else if (_selectedCategory == null) {
@@ -152,7 +182,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Request', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'New Request',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => context.pop(),
@@ -162,6 +195,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -170,30 +204,53 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
               CustomTextField(
                 hintText: 'Title (e.g., Leaky Faucet)',
                 controller: _titleController,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  if (_containsBannedWords(v)) {
+                    return 'These words are not allowed.';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descController,
                 maxLines: 4,
-                onChanged: (_) {},
+                // removed onChanged
                 decoration: InputDecoration(
                   hintText: 'Describe your issue in detail...',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                   filled: true,
                   fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                 ),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Required';
+                  if (_containsBannedWords(v)) {
+                    return 'These words are not allowed.';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton.icon(
                   onPressed: _isCategorizing ? null : _detectCategory,
-                  icon: _isCategorizing 
-                    ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator.adaptive(strokeWidth: 2)) 
-                    : const Icon(Icons.auto_awesome, size: 16),
-                  label: Text(_isCategorizing ? 'Analyzing...' : 'Auto-Categorize'),
+                  icon: _isCategorizing
+                      ? const SizedBox(
+                          width: 12,
+                          height: 12,
+                          child: CircularProgressIndicator.adaptive(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(Icons.auto_awesome, size: 16),
+                  label: Text(
+                    _isCategorizing ? 'Analyzing...' : 'Auto-Categorize',
+                  ),
                 ),
               ),
 
@@ -208,13 +265,27 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   return ChoiceChip(
                     label: Text(_categoryName(cat)),
                     selected: isSelected,
-                    onSelected: (selected) => setState(() => _selectedCategory = selected ? cat : null),
-                    selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    onSelected: (selected) => setState(
+                      () => _selectedCategory = selected ? cat : null,
+                    ),
+                    selectedColor: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.2),
                     backgroundColor: Theme.of(context).cardColor,
-                    side: BorderSide(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withValues(alpha: 0.3)),
+                    side: BorderSide(
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey.withValues(alpha: 0.3),
+                    ),
                     labelStyle: TextStyle(
-                      color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white70
+                                : Colors.black87),
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   );
                 }).toList(),
@@ -229,48 +300,78 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(16),
-                  image: (_permission == LocationPermission.always || _permission == LocationPermission.whileInUse) && _currentPosition != null
-                  ? DecorationImage(
-                    image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=${_currentPosition!.latitude},${_currentPosition!.longitude}&zoom=14&size=600x300&markers=color:red%7C${_currentPosition!.latitude},${_currentPosition!.longitude}&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}'),
-                    fit: BoxFit.cover,
-                  ) : null,
+                  image:
+                      (_permission == LocationPermission.always ||
+                              _permission == LocationPermission.whileInUse) &&
+                          _currentPosition != null
+                      ? DecorationImage(
+                          image: NetworkImage(
+                            'https://maps.googleapis.com/maps/api/staticmap?center=${_currentPosition!.latitude},${_currentPosition!.longitude}&zoom=14&size=600x300&markers=color:red%7C${_currentPosition!.latitude},${_currentPosition!.longitude}&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}',
+                          ),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
                 child: Center(
-                  child: (_permission == LocationPermission.always || _permission == LocationPermission.whileInUse)
-                  ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.location_on, color: Colors.red, size: 16),
-                        SizedBox(width: 4),
-                        Text('Current Location', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                  )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.location_off, color: Colors.grey, size: 32),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Location permission not given',
-                          style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
+                  child:
+                      (_permission == LocationPermission.always ||
+                          _permission == LocationPermission.whileInUse)
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                color: Colors.red,
+                                size: 16,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Current Location',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.location_off,
+                              color: Colors.grey,
+                              size: 32,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Location permission not given',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: _checkPermission,
+                              child: const Text('Retry Permission'),
+                            ),
+                          ],
                         ),
-                        TextButton(
-                          onPressed: _checkPermission,
-                          child: const Text('Retry Permission'),
-                        ),
-                      ],
-                    ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
               _buildSectionTitle('Urgency'),
               const SizedBox(height: 8),
@@ -282,7 +383,9 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 label: _urgencyName(_selectedUrgency),
                 activeColor: _urgencyColor(_selectedUrgency),
                 onChanged: (val) {
-                  setState(() => _selectedUrgency = UrgencyLevel.values[val.toInt()]);
+                  setState(
+                    () => _selectedUrgency = UrgencyLevel.values[val.toInt()],
+                  );
                 },
               ),
               Center(
@@ -296,11 +399,16 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
               ),
 
               const SizedBox(height: 32),
-              Obx(() => PrimaryButton(
-                text: 'Post Request',
-                isLoading: _viewModel.isLoading,
-                onPressed: _submitRequest,
-              )),
+              Obx(() {
+                final hasBannedWords =
+                    _containsBannedWords(_titleController.text) ||
+                    _containsBannedWords(_descController.text);
+                return PrimaryButton(
+                  text: 'Post Request',
+                  isLoading: _viewModel.isLoading,
+                  onPressed: hasBannedWords ? null : () => _submitRequest(),
+                );
+              }),
               const SizedBox(height: 32),
             ],
           ),
@@ -315,9 +423,20 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       style: GoogleFonts.poppins(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white70
+            : Colors.black87,
       ),
     );
+  }
+
+  bool _containsBannedWords(String text) {
+    var bannedWords = ['sex', 'porn', 'pornography', 'hate', 'death'];
+    var lowerText = text.toLowerCase();
+    for (var word in bannedWords) {
+      if (lowerText.contains(word)) return true;
+    }
+    return false;
   }
 
   String _categoryName(HelpCategory cat) {
@@ -330,10 +449,14 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
 
   Color _urgencyColor(UrgencyLevel level) {
     switch (level) {
-      case UrgencyLevel.low: return Colors.green;
-      case UrgencyLevel.medium: return Colors.orange;
-      case UrgencyLevel.high: return Colors.deepOrange;
-      case UrgencyLevel.critical: return Colors.red;
+      case UrgencyLevel.low:
+        return Colors.green;
+      case UrgencyLevel.medium:
+        return Colors.orange;
+      case UrgencyLevel.high:
+        return Colors.deepOrange;
+      case UrgencyLevel.critical:
+        return Colors.red;
     }
   }
 }

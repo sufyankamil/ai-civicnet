@@ -598,14 +598,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
                 _buildDivider(isDark),
                 _buildActionTile(
-                  icon: Icons.history_rounded,
-                  iconColor: const Color(0xFF7B61FF),
-                  label: 'Help History',
-                  onTap: () {},
-                  isDark: isDark,
-                ),
-                _buildDivider(isDark),
-                _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
                   label: 'App Settings',

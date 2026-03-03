@@ -392,22 +392,25 @@ class SupabaseService {
     }).withServerTimeout();
   }
 
-  Future<bool> hasUserRated(String requestId) async {
+  Future<int?> hasUserRated(String requestId) async {
     final user = _client.auth.currentUser;
-    if (user == null) return false;
+    if (user == null) return null;
 
     try {
       final response = await _client
           .from('user_ratings')
-          .select('id')
+          .select('rating')
           .eq('request_id', requestId)
           .eq('rater_id', user.id)
           .maybeSingle().withServerTimeout();
       
-      return response != null;
+      if (response != null && response['rating'] != null) {
+        return response['rating'] as int;
+      }
+      return null;
     } catch (e) {
       logger.e('Error checking if user rated: $e');
-      return false;
+      return null;
     }
   }
 
@@ -444,6 +447,7 @@ class SupabaseService {
       final response = await _client
           .from('profiles')
           .select()
+          .neq('id', request.requesterId) // exclude the requester
           .limit(20); // Fetch more candidates to rank
 
       final List<dynamic> data = response as List<dynamic>;

@@ -13,6 +13,10 @@ class RequestCard extends StatelessWidget {
 
   const RequestCard({super.key, required this.request});
 
+  bool _hasValidAvatar(String url) =>
+      url.isNotEmpty &&
+      (url.startsWith('http://') || url.startsWith('https://'));
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -34,7 +38,7 @@ class RequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  request.requesterAvatarUrl.isNotEmpty
+                  _hasValidAvatar(request.requesterAvatarUrl)
                       ? CachedNetworkImage(
                           imageUrl: request.requesterAvatarUrl,
                           imageBuilder: (context, imageProvider) => CircleAvatar(
@@ -106,17 +110,19 @@ class RequestCard extends StatelessWidget {
                      Column(
                        crossAxisAlignment: CrossAxisAlignment.start,
                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
-                              const SizedBox(width: 4),
-                              Text(
-                                request.distance,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
+                          if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                            Row(
+                              children: [
+                                Icon(Icons.location_on_outlined, size: 14, color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  request.distance,
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                          ],
                           Row(
                             children: [
                               Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),

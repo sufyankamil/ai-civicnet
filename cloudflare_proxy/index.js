@@ -34,7 +34,9 @@ export default {
             body: body,
         })
 
-        let response = await fetch(proxyRequest)
+        // redirect: 'manual' ensures 302 responses (e.g. to civicnet://) are
+        // passed through to the browser rather than being followed server-side.
+        let response = await fetch(proxyRequest, { redirect: 'manual' })
 
         // Stream the body through without re-encoding
         let newResponse = new Response(response.body, {

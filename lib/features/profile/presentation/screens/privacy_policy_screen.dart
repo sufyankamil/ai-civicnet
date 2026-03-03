@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -16,7 +17,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -26,7 +27,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Last updated: February 09, 2026',
+              'Last updated: March 02, 2026',
               style: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 24),
@@ -54,6 +55,40 @@ class PrivacyPolicyScreen extends StatelessWidget {
               context,
               '5. Contact Us',
               'If you have any questions about this Privacy Policy, please contact us at civicnet.app@gmail.com.',
+            ),
+            const SizedBox(height: 8),
+            InkWell(
+              onTap: () => launchUrl(
+                Uri.parse('https://privacypolicy-ruddy.vercel.app/'),
+                mode: LaunchMode.externalApplication,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.open_in_browser_rounded, color: Theme.of(context).primaryColor),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('View Full Policy Online',
+                              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
+                          Text('privacypolicy-ruddy.vercel.app',
+                              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.chevron_right, color: Colors.grey[400]),
+                  ],
+                ),
+              ),
             ),
           ],
         ),

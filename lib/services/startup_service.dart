@@ -17,7 +17,12 @@ class StartupService {
   bool _isInitialized = false;
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    // Always reschedule the daily notification (outside _isInitialized guard)
+    // so a code change to the schedule time takes effect on the next cold start.
+    if (_isInitialized) {
+      await NotificationService().scheduleDailyCheckInNotification();
+      return;
+    }
 
     final stopwatch = Stopwatch()..start();
     logger.i('Starting App Initialization...');
@@ -40,7 +45,7 @@ class StartupService {
     );
     logger.i('Supabase initialized (${stopwatch.elapsedMilliseconds}ms)');
 
-    // 4. Parallel Services
+    // 4. Parallel Services (FirebaseService also calls NotificationService().initialize())
     await Future.wait([
       FirebaseService().initialize(),
       CacheService().initialize(),
