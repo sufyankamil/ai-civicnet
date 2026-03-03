@@ -110,17 +110,19 @@ class RequestCard extends StatelessWidget {
                      Column(
                        crossAxisAlignment: CrossAxisAlignment.start,
                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
-                              const SizedBox(width: 4),
-                              Text(
-                                request.distance,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
+                          if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                            Row(
+                              children: [
+                                Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                                const SizedBox(width: 4),
+                                Text(
+                                  request.distance,
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                          ],
                           Row(
                             children: [
                               Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),

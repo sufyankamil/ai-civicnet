@@ -444,6 +444,7 @@ class SupabaseService {
       final response = await _client
           .from('profiles')
           .select()
+          .neq('id', request.requesterId) // exclude the requester
           .limit(20); // Fetch more candidates to rank
 
       final List<dynamic> data = response as List<dynamic>;
