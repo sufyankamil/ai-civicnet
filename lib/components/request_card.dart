@@ -13,6 +13,10 @@ class RequestCard extends StatelessWidget {
 
   const RequestCard({super.key, required this.request});
 
+  bool _hasValidAvatar(String url) =>
+      url.isNotEmpty &&
+      (url.startsWith('http://') || url.startsWith('https://'));
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -34,7 +38,7 @@ class RequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  request.requesterAvatarUrl.isNotEmpty
+                  _hasValidAvatar(request.requesterAvatarUrl)
                       ? CachedNetworkImage(
                           imageUrl: request.requesterAvatarUrl,
                           imageBuilder: (context, imageProvider) => CircleAvatar(
