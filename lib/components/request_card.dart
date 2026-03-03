@@ -113,7 +113,7 @@ class RequestCard extends StatelessWidget {
                           if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
                             Row(
                               children: [
-                                Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                                Icon(Icons.location_on_outlined, size: 14, color: Theme.of(context).primaryColor),
                                 const SizedBox(width: 4),
                                 Text(
                                   request.distance,
