@@ -42,6 +42,7 @@ class RootApp extends StatefulWidget {
 
 class _RootAppState extends State<RootApp> {
   bool _isInitialized = false;
+  String? _initError;
   String _initialLocation = '/';
 
   @override
@@ -79,21 +80,72 @@ class _RootAppState extends State<RootApp> {
         }
       }
     } catch (_) {}
-    await Future.wait([
-      StartupService().initialize(),
-      ThemeService().init(),
-      minSplash,
-    ]);
 
-    if (mounted) {
-      setState(() {
-        _isInitialized = true;
-      });
+    try {
+      await Future.wait([
+        StartupService().initialize(),
+        ThemeService().init(),
+        minSplash,
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _initError = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initError = e.toString();
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_initError != null) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Failed to initialize app',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _initError!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _initError = null;
+                      });
+                      _initApp();
+                    },
+                    child: const Text('Retry'),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (!_isInitialized) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
