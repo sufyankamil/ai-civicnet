@@ -51,6 +51,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     super.initState();
     _initSpeech();
     _checkBlockStatus();
+    _viewModel.markConversationAsRead(widget.conversationId);
   }
 
   Future<void> _checkBlockStatus() async {
@@ -190,6 +191,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         curve: Curves.easeOut,
                       );
                     }
+                    // Mark any newly arrived messages as read
+                    _viewModel.markConversationAsRead(widget.conversationId);
                   });
                 }
 
@@ -296,53 +299,63 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             )
           else
-            SafeArea(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        _isListening ? Icons.mic : Icons.mic_none,
-                        color: _isListening ? Colors.red : Colors.grey,
-                      ),
-                      onPressed: _listen,
-                    ),
-                    Expanded(
-                      child: TextField(
-                        controller: _messageController,
-                        style: GoogleFonts.poppins(
-                          color: Theme.of(context).textTheme.bodyLarge?.color,
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          _isListening ? Icons.mic : Icons.mic_none,
+                          color: _isListening ? Colors.red : Colors.grey,
                         ),
-                        decoration: InputDecoration(
-                          hintText: _isListening ? 'Listening...' : 'Type a message...',
-                          hintStyle: GoogleFonts.poppins(color: Colors.grey),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
+                        onPressed: _listen,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: _messageController,
+                          style: GoogleFonts.poppins(
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
-                          filled: true,
-                          fillColor: _isListening
-                              ? Colors.red.withValues(alpha: 0.1)
-                              : Theme.of(context).colorScheme.surfaceContainerHighest,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: InputDecoration(
+                            hintText: _isListening ? 'Listening...' : 'Type a message...',
+                            hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: const BorderSide(color: AppColors.primaryLight, width: 1.5),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+                            ),
+                            filled: true,
+                            fillColor: _isListening
+                                ? Colors.red.withValues(alpha: 0.1)
+                                : Theme.of(context).cardColor,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          ),
+                          textCapitalization: TextCapitalization.sentences,
+                          onSubmitted: (_) => _sendMessage(),
                         ),
-                        textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: (_) => _sendMessage(),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Obx(() => IconButton(
-                      icon: _viewModel.isSending 
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
-                        : const Icon(Icons.send, color: AppColors.primaryLight),
-                      onPressed: _viewModel.isSending ? null : _sendMessage,
-                    )),
-                  ],
+                      const SizedBox(width: 8),
+                      Obx(() => IconButton(
+                        icon: _viewModel.isSending 
+                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
+                          : const Icon(Icons.send, color: AppColors.primaryLight),
+                        onPressed: _viewModel.isSending ? null : _sendMessage,
+                      )),
+                    ],
+                  ),
                 ),
               ),
             ),

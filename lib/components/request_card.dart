@@ -109,7 +109,7 @@ class RequestCard extends StatelessWidget {
                    children: [
                      Column(
                        crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
+                         children: [
                           if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
                             Row(
                               children: [
@@ -121,18 +121,19 @@ class RequestCard extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
+                            if (request.locationName != 'Current Location') const SizedBox(height: 4),
                           ],
-                          Row(
-                            children: [
-                              Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                request.locationName,
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                              ),
-                            ],
-                          ),
+                          if (request.locationName != 'Current Location')
+                            Row(
+                              children: [
+                                Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                                const SizedBox(width: 4),
+                                Text(
+                                  request.locationName,
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
                        ],
                      ),
                      const Spacer(),

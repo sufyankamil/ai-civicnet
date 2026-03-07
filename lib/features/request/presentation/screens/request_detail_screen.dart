@@ -709,62 +709,66 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
           if (request.status == RequestStatusEnum.completed) {
             if (_hasRated) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                color: Colors.amber.withValues(alpha: 0.08),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'You rated',
-                      style: GoogleFonts.poppins(color: Colors.grey[700], fontSize: 14),
-                    ),
-                    const SizedBox(width: 8),
-                    // Show filled/empty stars based on submitted rating
-                    Row(
-                      children: List.generate(5, (i) => Icon(
-                        i < _ratingGiven ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                        size: 22,
-                      )),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '($_ratingGiven/5)',
-                      style: GoogleFonts.poppins(
-                        color: Colors.amber[800],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+              return SafeArea(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  color: Colors.amber.withValues(alpha: 0.08),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'You rated',
+                        style: GoogleFonts.poppins(color: Colors.grey[700], fontSize: 14),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      // Show filled/empty stars based on submitted rating
+                      Row(
+                        children: List.generate(5, (i) => Icon(
+                          i < _ratingGiven ? Icons.star : Icons.star_border,
+                          color: Colors.amber,
+                          size: 22,
+                        )),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '($_ratingGiven/5)',
+                        style: GoogleFonts.poppins(
+                          color: Colors.amber[800],
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             } 
             
             if (isOwner || isHelper) {
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
+                return SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: _showRatingDialog,
+                      icon: const Icon(Icons.star),
+                      label: const Text('Rate User'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.amber,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                    ],
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: _showRatingDialog,
-                    icon: const Icon(Icons.star),
-                    label: const Text('Rate User'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
                 );

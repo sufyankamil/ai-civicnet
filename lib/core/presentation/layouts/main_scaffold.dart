@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
+import '../../../features/chat/presentation/viewmodels/chat_viewmodel.dart';
 import '../../../theme/app_theme.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -57,6 +59,52 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget _buildNavItem(IconData icon, int index, String route) {
     final isSelected = _selectedIndex == index;
     
+    Widget iconWidget = Icon(
+      icon,
+      color: isSelected 
+          ? Theme.of(context).primaryColor 
+          : Colors.grey,
+    );
+
+    // Apply badge only to the Chat tab (index 4)
+    if (index == 4) {
+      if (Get.isRegistered<ChatViewModel>()) {
+        final chatVM = Get.find<ChatViewModel>();
+        iconWidget = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            iconWidget,
+            Obx(() {
+              final count = chatVM.totalUnreadCount;
+              if (count > 0) {
+                return Positioned(
+                  right: -4,
+                  top: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      count.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            }),
+          ],
+        );
+      }
+    }
+
     return GestureDetector(
       onTap: () {
         context.go(route);
@@ -70,12 +118,7 @@ class _MainScaffoldState extends State<MainScaffold> {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Icon(
-          icon,
-          color: isSelected 
-              ? Theme.of(context).primaryColor 
-              : Colors.grey,
-        ),
+        child: iconWidget,
       ),
     );
   }

@@ -591,6 +591,15 @@ class SupabaseService {
                 .limit(1)
                 .maybeSingle().withServerTimeout();
 
+            final unreadMessagesRes = await _client
+                .from('messages')
+                .select('id')
+                .eq('conversation_id', conv['id'])
+                .eq('is_read', false)
+                .neq('sender_id', user.id).withServerTimeout();
+            
+            final int unreadCount = (unreadMessagesRes as List).length;
+
             final String? dateString = lastMsgRes?['created_at'] ?? conv['updated_at'] ?? conv['created_at'];
             final DateTime messageTime = DateTime.tryParse(dateString ?? '') ?? DateTime.now();
                 
@@ -601,13 +610,49 @@ class SupabaseService {
                 otherUserAvatar: avatar,
                 lastMessage: lastMsgRes?['content'] ?? 'No messages yet',
                 lastMessageTime: messageTime,
-                unreadCount: 0,
+                unreadCount: unreadCount,
             ));
         }
         return conversations;
     } catch (e, stack) {
         logger.e('Error fetching conversations: $e\n$stack');
         return [];
+    }
+  }
+
+  Future<void> markConversationAsRead(String conversationId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      // Direct updates fail silently due to RLS (updates 0 rows instead of throwing).
+      // Therefore, we must use the RPC directly.
+      await _client.rpc('mark_conversation_as_read', params: {
+        'p_conversation_id': conversationId,
+      }).withServerTimeout();
+      
+      // Force UI update by touching the conversation table
+      await _client.from('conversations').update({
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', conversationId).withServerTimeout();
+    } catch (e) {
+      logger.e('Error marking conversation $conversationId as read via RPC: $e');
+      
+      // Fallback to direct update just in case the RPC doesn't exist on some environments
+      try {
+         await _client
+            .from('messages')
+            .update({'is_read': true})
+            .eq('conversation_id', conversationId)
+            .eq('is_read', false)
+            .neq('sender_id', user.id).withServerTimeout();
+            
+         await _client.from('conversations').update({
+            'updated_at': DateTime.now().toIso8601String(),
+         }).eq('id', conversationId).withServerTimeout();
+      } catch (directError) {
+         logger.e('Direct update fallback also failed: $directError');
+      }
     }
   }
 

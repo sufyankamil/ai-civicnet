@@ -18,6 +18,10 @@ class ChatRemoteDataSource {
     return supabaseService.sendMessage(conversationId, content, type: type);
   }
 
+  Future<void> markConversationAsRead(String conversationId) {
+    return supabaseService.markConversationAsRead(conversationId);
+  }
+
   Future<void> blockUser(String userId) {
     return supabaseService.blockUser(userId);
   }
