@@ -20,8 +20,17 @@ class NotificationService {
 
     // Initialize timezone for scheduled notifications
     tz_init.initializeTimeZones();
-    final TimezoneInfo timeZoneInfo = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
+    try {
+      final TimezoneInfo timeZoneInfo = await FlutterTimezone.getLocalTimezone();
+      String tzName = timeZoneInfo.identifier;
+      if (tzName == 'Asia/Calcutta') {
+        tzName = 'Asia/Kolkata';
+      }
+      tz.setLocalLocation(tz.getLocation(tzName));
+    } catch (e) {
+      logger.e('Error setting local location timezone, falling back to UTC: $e');
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
 
     // Android initialization
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -171,7 +180,7 @@ class NotificationService {
     const NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
 
-    final scheduledTime = _nextInstanceOfTime(12, 18);
+    final scheduledTime = _nextInstanceOfTime(11, 00);
     logger.i('Attempting to schedule daily notification at $scheduledTime');
 
     try {
@@ -185,7 +194,7 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
       );
-      logger.i('✅ Daily check-in notification scheduled exactly at 12:18 AM');
+      logger.i('✅ Daily check-in notification scheduled exactly at 11:00 AM');
     } catch (e) {
       logger.w('Exact alarm failed ($e) — falling back to inexact scheduling');
       try {
@@ -198,7 +207,7 @@ class NotificationService {
           androidScheduleMode: AndroidScheduleMode.inexact,
           matchDateTimeComponents: DateTimeComponents.time,
         );
-        logger.i('✅ Daily check-in notification scheduled (inexact) at ~12:18 PM');
+        logger.i('✅ Daily check-in notification scheduled (inexact) at ~11:00 PM');
       } catch (e2) {
         logger.e('❌ Failed to schedule daily notification: $e2');
       }
