@@ -7,6 +7,7 @@ abstract class ChatRepository {
   Future<Either<Failure, List<ChatConversationEntity>>> getConversations();
   Stream<List<MessageEntity>> getMessagesStream(String conversationId);
   Future<Either<Failure, void>> sendMessage(String conversationId, String content, {String type = 'text'});
+  Future<Either<Failure, void>> markConversationAsRead(String conversationId);
   Future<Either<Failure, void>> blockUser(String userId);
   Future<Either<Failure, void>> unblockUser(String userId);
   Future<Either<Failure, List<String>>> getBlockedUserIds();

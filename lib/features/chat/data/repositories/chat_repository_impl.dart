@@ -67,6 +67,17 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
+  Future<Either<Failure, void>> markConversationAsRead(String conversationId) async {
+    try {
+      await remoteDataSource.markConversationAsRead(conversationId);
+      return const Right(null);
+    } catch (e) {
+      logger.e('Failed to mark conversation as read', error: e);
+      return Left(ServerFailure('Failed to mark conversation as read: \$e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> blockUser(String userId) async {
     try {
       await remoteDataSource.blockUser(userId);

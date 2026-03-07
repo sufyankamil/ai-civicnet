@@ -31,3 +31,19 @@ class SendMessageUseCase implements UseCase<void, SendMessageParams> {
     return repository.sendMessage(params.conversationId, params.content, type: params.type);
   }
 }
+
+class MarkConversationAsReadParams {
+  final String conversationId;
+
+  MarkConversationAsReadParams({required this.conversationId});
+}
+
+class MarkConversationAsReadUseCase implements UseCase<void, MarkConversationAsReadParams> {
+  final ChatRepository repository;
+  MarkConversationAsReadUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, void>> call(MarkConversationAsReadParams params) {
+    return repository.markConversationAsRead(params.conversationId);
+  }
+}

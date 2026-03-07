@@ -17,11 +17,13 @@ class ChatBinding extends Bindings {
     // UseCases
     Get.lazyPut(() => GetConversationsUseCase(Get.find<ChatRepositoryImpl>()));
     Get.lazyPut(() => SendMessageUseCase(Get.find<ChatRepositoryImpl>()));
+    Get.lazyPut(() => MarkConversationAsReadUseCase(Get.find<ChatRepositoryImpl>()));
 
     // ViewModel
     Get.lazyPut(() => ChatViewModel(
       getConversationsUseCase: Get.find<GetConversationsUseCase>(),
       sendMessageUseCase: Get.find<SendMessageUseCase>(),
+      markConversationAsReadUseCase: Get.find<MarkConversationAsReadUseCase>(),
     ));
   }
 }
@@ -31,8 +33,10 @@ Future<void> initChatDI() async {
   Get.lazyPut(() => ChatRepositoryImpl(Get.find<ChatRemoteDataSource>()), fenix: true);
   Get.lazyPut(() => GetConversationsUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
   Get.lazyPut(() => SendMessageUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
+  Get.lazyPut(() => MarkConversationAsReadUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
   Get.lazyPut(() => ChatViewModel(
     getConversationsUseCase: Get.find<GetConversationsUseCase>(),
     sendMessageUseCase: Get.find<SendMessageUseCase>(),
+    markConversationAsReadUseCase: Get.find<MarkConversationAsReadUseCase>(),
   ), fenix: true);
 }

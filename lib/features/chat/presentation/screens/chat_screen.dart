@@ -62,9 +62,10 @@ class _ChatScreenState extends State<ChatScreen> {
             itemBuilder: (context, index) {
               final chat = chats[index];
               return GestureDetector(
-                onTap: () async {
-                  await context.push('/chat-detail?id=${chat.id}&name=${chat.otherUserName}&uid=${chat.otherUserId}');
-                  viewModel.fetchConversations();
+                onTap: () {
+                  context.push('/chat-detail?id=${chat.id}&name=${chat.otherUserName}&uid=${chat.otherUserId}').then((_) {
+                    viewModel.fetchConversations();
+                  });
                 },
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 16),
@@ -100,14 +101,38 @@ class _ChatScreenState extends State<ChatScreen> {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              chat.lastMessage,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.normal,
-                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    chat.lastMessage,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.poppins(
+                                      color: chat.unreadCount > 0 
+                                          ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87)
+                                          : Colors.grey[700],
+                                      fontWeight: chat.unreadCount > 0 ? FontWeight.w600 : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                                if (chat.unreadCount > 0)
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Text(
+                                      chat.unreadCount.toString(),
+                                      style: GoogleFonts.poppins(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ],
                         ),
