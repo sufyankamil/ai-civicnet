@@ -68,13 +68,12 @@ Deno.serve(async (req) => {
 
     const { token } = await client.getAccessToken()
 
-    // Send to the requester's specific topic matching their userId
-    const topic = requestData.requester_id;
-    const condition = `'${topic}' in topics`;
+    // Send to the requester's specific topic matching their userId, formatted safely
+    const topic = `user_${requestData.requester_id}`.replace(/-/g, '_');
 
     const fcmPayload = {
       message: {
-        condition: condition,
+        topic: topic,
         notification: {
           title: 'Interest in Your Request!',
           body: `${applicantName} is interested in helping with ${requestData.title || 'your request'}`,

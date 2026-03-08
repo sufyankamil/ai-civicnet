@@ -39,9 +39,10 @@ Deno.serve(async (req) => {
 
     const { token } = await client.getAccessToken()
 
-    // Send to global topic, but exclude the user who created the request (if they are subscribed to their own ID as a topic)
-    const condition = requester_id
-      ? `'global_requests' in topics && !('${requester_id}' in topics)`
+    // Send to global topic, but exclude the user who created the request
+    const userTopic = requester_id ? `user_${requester_id}`.replace(/-/g, '_') : '';
+    const condition = userTopic
+      ? `'global_requests' in topics && !('${userTopic}' in topics)`
       : `'global_requests' in topics`;
 
     const fcmPayload = {

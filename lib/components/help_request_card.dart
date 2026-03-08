@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/models.dart';
@@ -34,11 +35,25 @@ class HelpRequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, color: Colors.white),
-                  ),
+                  request.requesterAvatarUrl.isNotEmpty &&
+                          (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                      ? CachedNetworkImage(
+                          imageUrl: request.requesterAvatarUrl,
+                          imageBuilder: (context, imageProvider) => CircleAvatar(
+                            radius: 20,
+                            backgroundImage: imageProvider,
+                          ),
+                          errorWidget: (context, url, error) => const CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, color: Colors.white),
+                          ),
+                        )
+                      : const CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 
 import '../../../../models/models.dart' as legacy;
@@ -475,11 +476,25 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       children: [
                         Container(
                           margin: const EdgeInsets.only(right: 12),
-                          child: const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
+                          child: request.requesterAvatarUrl.isNotEmpty &&
+                                  (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                              ? CachedNetworkImage(
+                                  imageUrl: request.requesterAvatarUrl,
+                                  imageBuilder: (context, imageProvider) => CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage: imageProvider,
+                                  ),
+                                  errorWidget: (context, url, error) => const CircleAvatar(
+                                    radius: 20,
+                                    backgroundColor: Colors.grey,
+                                    child: Icon(Icons.person, color: Colors.white),
+                                  ),
+                                )
+                              : const CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey,
+                                  child: Icon(Icons.person, color: Colors.white),
+                                ),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
