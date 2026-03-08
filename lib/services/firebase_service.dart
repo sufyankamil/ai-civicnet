@@ -3,6 +3,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:get/get.dart';
+import 'package:civic_net/features/auth/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:civic_net/features/home/presentation/viewmodels/home_viewmodel.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -38,6 +41,22 @@ class FirebaseService {
       sound: true,
     );
 
+    // Subscribe to global requests topic to receive new request notifications
+    await _messaging.subscribeToTopic('global_requests');
+    logger.i('Subscribed to global_requests topic');
+    
+    // Subscribe to their own user ID topic so we can exclude them from their own notifications
+    try {
+      final authViewModel = Get.find<AuthViewModel>();
+      final userId = authViewModel.user?.id;
+      if (userId != null) {
+        await _messaging.subscribeToTopic(userId);
+        logger.i('Subscribed to personal topic: $userId');
+      }
+    } catch (e) {
+      logger.e('Could not subscribe to personal topic: $e');
+    }
+
     // Initialize local notifications
     await NotificationService().initialize();
 
@@ -69,6 +88,7 @@ class FirebaseService {
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         logger.i('A new onMessageOpenedApp event was published!');
         logger.d('Message background data: ${message.data}');
+        _refreshHomeFeed();
       });
 
       // Get initial message if the app was opened from a terminated state
@@ -76,9 +96,20 @@ class FirebaseService {
       if (initialMessage != null) {
         logger.i('App opened from terminated state by a notification');
         logger.d('Initial Message data: ${initialMessage.data}');
+        _refreshHomeFeed();
       }
     } else {
       logger.w('User declined or has not accepted permission');
+    }
+  }
+
+  void _refreshHomeFeed() {
+    try {
+      final homeViewModel = Get.find<HomeViewModel>();
+      homeViewModel.fetchRequests();
+      logger.i('Successfully triggered home feed refresh from notification.');
+    } catch (e) {
+      logger.e('Error attempting to refresh home feed: $e');
     }
   }
 }
