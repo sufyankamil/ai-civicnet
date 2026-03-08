@@ -342,7 +342,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                               SizedBox(width: 4),
                               Text(
                                 'Current Location',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
                               ),
                             ],
                           ),

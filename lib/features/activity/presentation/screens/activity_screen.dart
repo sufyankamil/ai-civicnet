@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../components/help_request_card.dart';
@@ -286,11 +287,25 @@ class _VolunteeringCard extends StatelessWidget {
               // Requester
               Row(
                 children: [
-                  const CircleAvatar(
-                    radius: 10,
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, size: 12, color: Colors.white),
-                  ),
+                  request.requesterAvatarUrl.isNotEmpty &&
+                          (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                      ? CachedNetworkImage(
+                          imageUrl: request.requesterAvatarUrl,
+                          imageBuilder: (context, imageProvider) => CircleAvatar(
+                            radius: 10,
+                            backgroundImage: imageProvider,
+                          ),
+                          errorWidget: (context, url, error) => const CircleAvatar(
+                            radius: 10,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, size: 12, color: Colors.white),
+                          ),
+                        )
+                      : const CircleAvatar(
+                          radius: 10,
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, size: 12, color: Colors.white),
+                        ),
                   const SizedBox(width: 6),
                   Text(
                     'Posted by ${request.requesterName}',

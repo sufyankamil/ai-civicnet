@@ -3,6 +3,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:civic_net/features/home/presentation/viewmodels/home_viewmodel.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -38,6 +41,45 @@ class FirebaseService {
       sound: true,
     );
 
+    // Subscribe to global requests topic to receive new request notifications
+    await _messaging.subscribeToTopic('global_requests');
+    logger.i('Subscribed to global_requests topic');
+    
+    // Subscribe to their own user ID topic dynamically so it works even if they log in later
+    try {
+      String? currentUserTopic;
+
+      // Subscribe synchronously on init if already logged in (fixes Hot Restart bug)
+      final initialUser = Supabase.instance.client.auth.currentUser;
+      if (initialUser != null) {
+        final safeTopic = 'user_${initialUser.id}'.replaceAll('-', '_');
+        await _messaging.subscribeToTopic(safeTopic);
+        currentUserTopic = safeTopic;
+        logger.i('Subscribed to personal FCM topic synchronously on init: $safeTopic');
+      }
+
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+        final user = data.session?.user;
+        if (user != null) {
+          final safeTopic = 'user_${user.id}'.replaceAll('-', '_');
+          if (currentUserTopic != safeTopic) {
+            if (currentUserTopic != null) {
+              await _messaging.unsubscribeFromTopic(currentUserTopic!);
+            }
+            await _messaging.subscribeToTopic(safeTopic);
+            currentUserTopic = safeTopic;
+            logger.i('Subscribed to personal FCM topic via listener: $safeTopic');
+          }
+        } else if (user == null && currentUserTopic != null) {
+          await _messaging.unsubscribeFromTopic(currentUserTopic!);
+          logger.i('Unsubscribed from personal topic: $currentUserTopic');
+          currentUserTopic = null;
+        }
+      });
+    } catch (e) {
+      logger.e('Could not setup personal topic listener: $e');
+    }
+
     // Initialize local notifications
     await NotificationService().initialize();
 
@@ -69,6 +111,7 @@ class FirebaseService {
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         logger.i('A new onMessageOpenedApp event was published!');
         logger.d('Message background data: ${message.data}');
+        _refreshHomeFeed();
       });
 
       // Get initial message if the app was opened from a terminated state
@@ -76,9 +119,20 @@ class FirebaseService {
       if (initialMessage != null) {
         logger.i('App opened from terminated state by a notification');
         logger.d('Initial Message data: ${initialMessage.data}');
+        _refreshHomeFeed();
       }
     } else {
       logger.w('User declined or has not accepted permission');
+    }
+  }
+
+  void _refreshHomeFeed() {
+    try {
+      final homeViewModel = Get.find<HomeViewModel>();
+      homeViewModel.fetchRequests();
+      logger.i('Successfully triggered home feed refresh from notification.');
+    } catch (e) {
+      logger.e('Error attempting to refresh home feed: $e');
     }
   }
 }
