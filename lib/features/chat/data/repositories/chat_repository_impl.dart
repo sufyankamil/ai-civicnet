@@ -126,4 +126,15 @@ class ChatRepositoryImpl implements ChatRepository {
       return Left(ServerFailure('Failed to report user: \$e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> markAllConversationsAsRead() async {
+    try {
+      await remoteDataSource.markAllConversationsAsRead();
+      return const Right(null);
+    } catch (e) {
+      logger.e('Failed to mark all as read', error: e);
+      return Left(ServerFailure('Failed to mark all as read: $e'));
+    }
+  }
 }

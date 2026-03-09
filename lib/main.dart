@@ -59,6 +59,10 @@ class _RootAppState extends State<RootApp> {
     await dotenv.load(fileName: ".env");
     prefsGlobal = await SharedPreferences.getInstance();
 
+    // Increment App Launch Count for feedback prompt logic
+    final currentCount = prefsGlobal?.getInt('app_launch_count') ?? 0;
+    await prefsGlobal?.setInt('app_launch_count', currentCount + 1);
+
     // Initialize Dependencies
     await initAuthDI();
     HomeBinding().dependencies();

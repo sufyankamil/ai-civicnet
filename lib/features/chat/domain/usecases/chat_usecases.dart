@@ -47,3 +47,13 @@ class MarkConversationAsReadUseCase implements UseCase<void, MarkConversationAsR
     return repository.markConversationAsRead(params.conversationId);
   }
 }
+
+class MarkAllConversationsAsReadUseCase implements UseCase<void, NoParams> {
+  final ChatRepository repository;
+  MarkAllConversationsAsReadUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, void>> call(NoParams params) {
+    return repository.markAllConversationsAsRead();
+  }
+}
