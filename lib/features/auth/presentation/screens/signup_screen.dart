@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../components/social_login_button.dart';
@@ -23,6 +25,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _acceptTerms = false;
+
 
   final AuthViewModel _authViewModel = Get.find<AuthViewModel>();
 
@@ -57,6 +61,8 @@ class _SignupScreenState extends State<SignupScreen> {
   void _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       final error = await _authViewModel.signUp(
+
+
         _emailController.text.trim(),
         _passwordController.text,
         _nameController.text.trim(),
@@ -171,12 +177,67 @@ class _SignupScreenState extends State<SignupScreen> {
                 // Live password requirements widget
                 if (_passwordController.text.isNotEmpty) ...
                   _buildPasswordRequirements(),
-                const SizedBox(height: 32),
+                // Terms and Conditions checkbox
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: Checkbox(
+                        value: _acceptTerms,
+                        activeColor: Theme.of(context).primaryColor,
+                        side: BorderSide(
+                          color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.6),
+                          width: 1.5,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            _acceptTerms = value ?? false;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => launchUrl(
+                          Uri.parse('https://privacypolicy-ruddy.vercel.app/terms'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                        child: Text.rich(
+                          TextSpan(
+                            text: 'By continuing, I agree to ',
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.7),
+                            ),
+                            children: [
+                              TextSpan(
+                                text: 'Terms and Conditions',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
                 Obx(() => PrimaryButton(
                   text: 'Sign Up',
                   isLoading: _authViewModel.isLoading,
-                  onPressed: _handleSignup,
+                  onPressed: _acceptTerms ? _handleSignup : null,
                 )),
+
+
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
