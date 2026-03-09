@@ -16,6 +16,14 @@
     {
       "src": "child-safety.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "terms.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "app_icon.png",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -30,6 +38,14 @@
     {
       "src": "/child-safety",
       "dest": "/child-safety.html"
+    },
+    {
+      "src": "/terms",
+      "dest": "/terms.html"
+    },
+    {
+      "src": "/app_icon.png",
+      "dest": "/app_icon.png"
     },
     {
       "src": "/(.*)",
