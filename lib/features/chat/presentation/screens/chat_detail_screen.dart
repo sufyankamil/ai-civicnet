@@ -18,12 +18,14 @@ class ChatDetailScreen extends StatefulWidget {
   final String conversationId;
   final String otherUserName;
   final String otherUserId;
+  final String? otherUserAvatar;
 
   const ChatDetailScreen({
     super.key,
     required this.conversationId,
     required this.otherUserName,
     required this.otherUserId,
+    this.otherUserAvatar,
   });
 
   @override
@@ -125,7 +127,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(widget.otherUserName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: (widget.otherUserAvatar != null && widget.otherUserAvatar!.isNotEmpty) 
+                    ? NetworkImage(widget.otherUserAvatar!) 
+                    : null,
+                child: (widget.otherUserAvatar == null || widget.otherUserAvatar!.isEmpty) 
+                    ? const Icon(Icons.person, size: 16, color: Colors.white) 
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              Text(widget.otherUserName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(width: 4),
               const Icon(Icons.arrow_drop_down, size: 20),
             ],
@@ -402,9 +415,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
               ),
               ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: Colors.grey,
-                  child: Icon(Icons.person, color: Colors.white),
+                leading: CircleAvatar(
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage: (widget.otherUserAvatar != null && widget.otherUserAvatar!.isNotEmpty) 
+                      ? NetworkImage(widget.otherUserAvatar!) 
+                      : null,
+                  child: (widget.otherUserAvatar == null || widget.otherUserAvatar!.isEmpty) 
+                      ? const Icon(Icons.person, color: Colors.white) 
+                      : null,
                 ),
                 title: Text(widget.otherUserName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
                 subtitle: Text('User Profile', style: GoogleFonts.poppins(fontSize: 12)),

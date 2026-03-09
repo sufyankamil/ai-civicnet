@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../../../services/supabase_service.dart';
@@ -32,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkLocationPermission();
+      _checkFeedbackPrompt();
     });
   }
 
@@ -112,6 +115,145 @@ class _HomeScreenState extends State<HomeScreen> {
       logger.e('Error updating location: $e');
       if (mounted) ToastService.showError(context, 'Unable to update location. Please try again.');
     }
+  }
+
+  Future<void> _checkFeedbackPrompt() async {
+    // Wait for 12 seconds as requested (10-15s range)
+    await Future.delayed(const Duration(seconds: 12));
+    if (!mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    
+    // Check Grace Period (Minimum 3 launches)
+    final launchCount = prefs.getInt('app_launch_count') ?? 0;
+    if (launchCount < 3) {
+      logger.d('Feedback prompt suppressed: New user (Launch $launchCount < 3)');
+      return;
+    }
+
+    final lastPromptTimeStr = prefs.getString('last_feedback_prompt_time');
+    final lastPromptType = prefs.getString('last_feedback_prompt_type'); // 'submit' or 'ignore'
+
+    if (lastPromptTimeStr != null) {
+      final lastPromptTime = DateTime.parse(lastPromptTimeStr);
+      final now = DateTime.now();
+      final difference = now.difference(lastPromptTime).inDays;
+
+      if (lastPromptType == 'submit' && difference < 30) return;
+      if (lastPromptType == 'ignore' && difference < 5) return;
+    }
+
+    if (!mounted) return;
+
+    _showFeedbackInvitation();
+  }
+
+  void _showFeedbackInvitation() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Icon(Icons.favorite_rounded, color: AppColors.accentLight, size: 48),
+            const SizedBox(height: 16),
+            Text(
+              'Enjoying Civic Net?',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Your feedback is invaluable to us. Would you like to share your thoughts or suggest improvements?',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+                      await prefs.setString('last_feedback_prompt_type', 'ignore');
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: Text(
+                      'Maybe Later',
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      // Navigator to feedback screen
+                      await context.push('/feedback');
+                      
+                      // If they came back from feedback, we assume they submitted or at least engaged
+                      // The FeedbackScreen will handle the submission logic, but we mark it here too
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+                      await prefs.setString('last_feedback_prompt_type', 'submit');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryLight,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Give Feedback',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

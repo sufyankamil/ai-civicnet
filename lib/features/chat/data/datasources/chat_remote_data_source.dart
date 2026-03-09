@@ -22,6 +22,10 @@ class ChatRemoteDataSource {
     return supabaseService.markConversationAsRead(conversationId);
   }
 
+  Future<void> markAllConversationsAsRead() {
+    return supabaseService.markAllConversationsAsRead();
+  }
+
   Future<void> blockUser(String userId) {
     return supabaseService.blockUser(userId);
   }

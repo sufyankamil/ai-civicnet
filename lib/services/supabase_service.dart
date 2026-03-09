@@ -1,5 +1,6 @@
 
 import 'dart:math' show cos, sin, sqrt, asin;
+import 'dart:io';
 
 
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
@@ -607,7 +608,7 @@ class SupabaseService {
                 id: conv['id'].toString(),
                 otherUserId: otherId,
                 otherUserName: name,
-                otherUserAvatar: avatar,
+                otherUserAvatar: sanitizeAvatarUrl(avatar),
                 lastMessage: lastMsgRes?['content'] ?? 'No messages yet',
                 lastMessageTime: messageTime,
                 unreadCount: unreadCount,
@@ -744,6 +745,41 @@ class SupabaseService {
     }).eq('id', applicationId).withServerTimeout();
   }
 
+  // --- Feedback ---
+
+  Future<void> submitFeedback({
+    required int rating,
+    required String description,
+    String? screenshotUrl,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('app_feedback').insert({
+      'user_id': user.id,
+      'rating': rating,
+      'description': description,
+      'screenshot_url': screenshotUrl,
+      'created_at': DateTime.now().toIso8601String(),
+    }).withServerTimeout();
+  }
+
+  Future<String?> uploadFeedbackScreenshot(File file) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final fileName = 'feedback_${user.id}_${DateTime.now().millisecondsSinceEpoch}.png';
+    final path = 'feedback/$fileName';
+
+    await _client.storage.from('app-feedback').uploadBinary(
+      path,
+      file.readAsBytesSync(),
+      fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+    ).withServerTimeout();
+
+    return _client.storage.from('app-feedback').getPublicUrl(path);
+  }
+
   // --- Realtime ---
 
   RealtimeChannel subscribeToHelpRequests(Function() callback) {
@@ -759,6 +795,18 @@ class SupabaseService {
         },
       )
       .subscribe();
+  }
+
+  Future<void> markAllConversationsAsRead() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await _client.rpc('mark_all_conversations_as_read').withServerTimeout();
+    } catch (e) {
+      logger.e('Error marking all conversations as read: $e');
+      throw Exception('Failed to mark all as read: $e');
+    }
   }
 
   // --- Blocking & Reporting ---

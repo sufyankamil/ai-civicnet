@@ -15,6 +15,7 @@ import '../../features/auth/presentation/screens/auth_check_screen.dart';
 import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/screens/feedback_screen.dart';
 
 
 
@@ -194,10 +195,12 @@ GoRouter createRouter({String initialLocation = '/'}) {
           final conversationId = state.uri.queryParameters['id']!;
           final otherUserName = state.uri.queryParameters['name'] ?? 'Chat';
           final otherUserId = state.uri.queryParameters['uid'] ?? '';
+          final otherUserAvatar = state.uri.queryParameters['avatar'];
           return ChatDetailScreen(
             conversationId: conversationId,
             otherUserName: otherUserName,
             otherUserId: otherUserId,
+            otherUserAvatar: otherUserAvatar,
           );
         },
       ),
@@ -225,6 +228,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/reset-password',
         builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/feedback',
+        builder: (context, state) => const FeedbackScreen(),
       ),
     ],
   );

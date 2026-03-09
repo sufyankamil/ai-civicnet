@@ -12,11 +12,13 @@ class ChatViewModel extends GetxController {
   final GetConversationsUseCase getConversationsUseCase;
   final SendMessageUseCase sendMessageUseCase;
   final MarkConversationAsReadUseCase markConversationAsReadUseCase;
+  final MarkAllConversationsAsReadUseCase markAllConversationsAsReadUseCase;
 
   ChatViewModel({
     required this.getConversationsUseCase,
     required this.sendMessageUseCase,
     required this.markConversationAsReadUseCase,
+    required this.markAllConversationsAsReadUseCase,
   });
 
   final RxList<ChatConversationEntity> _conversations = <ChatConversationEntity>[].obs;
@@ -155,6 +157,29 @@ class ChatViewModel extends GetxController {
           _conversations[index] = updatedConv;
           _updateUnreadCount();
         }
+        return true;
+      },
+    );
+  }
+
+  Future<bool> markAllMessagesAsRead() async {
+    _isLoading.value = true;
+    final result = await markAllConversationsAsReadUseCase(const NoParams());
+    _isLoading.value = false;
+    
+    return result.fold(
+      (failure) {
+        logger.e('Failed to mark all as read: ${failure.message}');
+        return false;
+      },
+      (_) {
+        // Update all local conversations unreadCount to 0
+        for (int i = 0; i < _conversations.length; i++) {
+          if (_conversations[i].unreadCount > 0) {
+            _conversations[i] = _conversations[i].copyWith(unreadCount: 0);
+          }
+        }
+        _updateUnreadCount();
         return true;
       },
     );
