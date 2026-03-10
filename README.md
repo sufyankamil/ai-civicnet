@@ -89,8 +89,8 @@ Integrated with **Firebase Cloud Messaging (FCM)**, users receive instant alerts
 ### Setup Steps
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/community_net.git
-   cd community_net
+   https://github.com/sufyankamil/ai-civicnet.git
+   cd ai-civicnet
    ```
 
 2. **Install dependencies:**
