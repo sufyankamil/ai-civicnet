@@ -1,12 +1,175 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../../../components/custom_textfield.dart';
 import '../../../../services/theme_service.dart';
 import '../../../../theme/app_theme.dart';
 
-class SettingsScreen extends StatelessWidget {
+import '../../../../services/biometric_service.dart';
+import '../../../../services/supabase_service.dart';
+import '../../../../services/toast_service.dart';
+
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _isBiometricEnabled = false;
+  bool _isLoadingBiometrics = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBiometricSettings();
+  }
+
+  Future<void> _loadBiometricSettings() async {
+    final enabled = await BiometricService().isBiometricEnabled();
+    if (mounted) {
+      setState(() {
+        _isBiometricEnabled = enabled;
+        _isLoadingBiometrics = false;
+      });
+    }
+  }
+
+  Future<void> _showPasswordPromptDialog(BuildContext context) async {
+    final passwordController = TextEditingController();
+    bool isLoading = false;
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS || Theme.of(context).platform == TargetPlatform.macOS;
+    
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            void handleEnable() async {
+              final password = passwordController.text;
+              if (password.isEmpty) return;
+
+              setDialogState(() => isLoading = true);
+
+              // Re-authenticate to confirm password
+              final currentUser = SupabaseService().currentUser;
+              if (currentUser?.email == null) {
+                 setDialogState(() => isLoading = false);
+                 Navigator.pop(ctx);
+                 return;
+              }
+              
+              try {
+                // Attempt sign in to verify password
+                final response = await SupabaseService().signIn(currentUser!.email!, password);
+                
+                if (response.session != null) {
+                   // Verified! Encrypt and save
+                   await BiometricService().enableBiometrics(currentUser.email!, password);
+                   if (mounted) {
+                     setState(() {
+                       _isBiometricEnabled = true;
+                     });
+                   }
+                   if (ctx.mounted) {
+                     Navigator.pop(ctx);
+                     ToastService.showSuccess(context, 'Biometric Login Enabled!');
+                   }
+                }
+              } catch (e) {
+                setDialogState(() => isLoading = false);
+                if (ctx.mounted) {
+                  ToastService.showError(ctx, 'Invalid password. Try again.');
+                }
+              }
+            }
+
+            final contentWidget = Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Please verify your password to enable biometric login.',
+                  style: isIOS 
+                      ? const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel) 
+                      : null,
+                ),
+                const SizedBox(height: 16),
+                isIOS
+                  ? Material( // Need material for styling
+                      color: Colors.transparent,
+                      child: CupertinoTextField(
+                        controller: passwordController,
+                        obscureText: true,
+                        placeholder: 'Password',
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        prefix: const Padding(
+                          padding: EdgeInsets.only(left: 12.0),
+                          child: Icon(CupertinoIcons.lock, color: Colors.grey, size: 20),
+                        ),
+                      ),
+                    )
+                  : CustomTextField(
+                      controller: passwordController,
+                      obscureText: true,
+                      hintText: 'Password',
+                      prefixIcon: Icons.lock_outline,
+                    ),
+              ],
+            );
+
+            if (isIOS) {
+              return CupertinoAlertDialog(
+                title: const Text('Confirm Password'),
+                content: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: contentWidget,
+                ),
+                actions: [
+                  CupertinoDialogAction(
+                    onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                    child: const Text('Cancel'),
+                  ),
+                  CupertinoDialogAction(
+                    isDefaultAction: true,
+                    onPressed: isLoading ? null : handleEnable,
+                    child: isLoading 
+                      ? const CupertinoActivityIndicator() 
+                      : const Text('Enable'),
+                  ),
+                ],
+              );
+            }
+
+            return AlertDialog(
+              title: Text('Confirm Password', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              content: contentWidget,
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(ctx),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading ? null : handleEnable,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryLight,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: isLoading 
+                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Enable'),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +243,46 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               context.push('/privacy-policy');
+            },
+          ),
+          const Divider(height: 32),
+
+          _buildSectionHeader('Security'),
+          _isLoadingBiometrics 
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: SizedBox(
+                   height: 24, width: 24, 
+                   child: CircularProgressIndicator(strokeWidth: 2)
+                ),
+              )
+            : SwitchListTile(
+            title: const Text('Biometric Login'),
+            subtitle: const Text('Use Face ID / Fingerprint to log in securely'),
+            value: _isBiometricEnabled,
+            secondary: const Icon(Icons.fingerprint, color: AppColors.primaryLight),
+            onChanged: (bool value) async {
+              if (value) {
+                // Determine if device supports biometrics
+                final isAvailable = await BiometricService().isBiometricAvailable();
+                if (!isAvailable) {
+                  if (context.mounted) {
+                    ToastService.showError(context, 'Biometrics not available on this device.');
+                  }
+                  return;
+                }
+                
+                // Prompt user for their password since we can't get it from the session
+                if (context.mounted) {
+                  _showPasswordPromptDialog(context);
+                }
+              } else {
+                // Disable it
+                await BiometricService().disableBiometrics();
+                setState(() {
+                  _isBiometricEnabled = false;
+                });
+              }
             },
           ),
           const Divider(height: 32),

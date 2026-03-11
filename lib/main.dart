@@ -10,6 +10,7 @@ import 'theme/app_theme.dart';
 import 'services/theme_service.dart';
 import 'services/startup_service.dart';
 import 'widgets/connectivity_wrapper.dart';
+import 'widgets/auto_logout_wrapper.dart';
 
 import 'package:toastification/toastification.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -208,10 +209,12 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         themeMode: themeService.themeMode,
         routerConfig: _router,
         builder: (context, child) {
-          return ConnectivityWrapper(child: child!);
+          return AutoLogoutWrapper(
+            inactivityDuration: const Duration(hours: 1),
+            child: ConnectivityWrapper(child: child!),
+          );
         },
       ),
     );
   }
 }
-

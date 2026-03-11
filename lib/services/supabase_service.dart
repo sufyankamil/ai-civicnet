@@ -332,10 +332,16 @@ class SupabaseService {
           .from('profiles')
           .select()
           .eq('id', user.id)
-          .single().withServerTimeout();
-
+          .maybeSingle().withServerTimeout();
 
       logger.d('DEBUG: Raw profile data: $data'); // DEBUG LOG
+
+      // If data is null (meaning no profile row exists yet), throw to the catch block 
+      // or return a default user immediately.
+      if (data == null) {
+        throw Exception('Profile not found.');
+      }
+
       final skillsData = data['skills'];
        logger.d('DEBUG: Skills data type: ${skillsData.runtimeType}, Value: $skillsData');
 
