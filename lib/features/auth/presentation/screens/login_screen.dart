@@ -192,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(width: 16),
                       Container(
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: IconButton(
