@@ -9,6 +9,7 @@ import '../../../../components/social_icons.dart';
 import 'package:get/get.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../services/biometric_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,8 +23,53 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _biometricEnabled = false;
 
   final AuthViewModel _authViewModel = Get.find<AuthViewModel>();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricStatus();
+  }
+
+  Future<void> _checkBiometricStatus() async {
+    final isEnabled = await BiometricService().isBiometricEnabled();
+    if (mounted) {
+      setState(() {
+        _biometricEnabled = isEnabled;
+      });
+    }
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    final authenticated = await BiometricService().authenticate(
+      localizedReason: 'Log in securely with your biometrics',
+    );
+
+    if (authenticated) {
+      final creds = await BiometricService().getSavedCredentials();
+      if (creds != null) {
+        if (!mounted) return;
+        final error = await _authViewModel.signIn(
+          creds['email']!,
+          creds['password']!,
+        );
+
+        if (mounted) {
+          if (error == null) {
+            context.go('/home');
+          } else {
+             ToastService.showError(context, 'Biometric Login Failed: $error');
+          }
+        }
+      } else {
+        if (mounted) {
+          ToastService.showError(context, 'No credentials found. Please log in manually and re-enable Biometrics.');
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -133,11 +179,37 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Obx(() => PrimaryButton(
-                  text: 'Login',
-                  isLoading: _authViewModel.isLoading,
-                  onPressed: _handleLogin,
-                )),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Obx(() => PrimaryButton(
+                        text: 'Login',
+                        isLoading: _authViewModel.isLoading,
+                        onPressed: _handleLogin,
+                      )),
+                    ),
+                    if (_biometricEnabled) ...[
+                      const SizedBox(width: 16),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: Icon(
+                            defaultTargetPlatform == TargetPlatform.iOS
+                                ? Icons.face
+                                : Icons.fingerprint,
+                            color: Theme.of(context).primaryColor,
+                            size: 32,
+                          ),
+                          onPressed: _handleBiometricLogin,
+                          tooltip: 'Login with Biometrics',
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
                 const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
