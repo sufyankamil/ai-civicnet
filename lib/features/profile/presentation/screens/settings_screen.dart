@@ -7,9 +7,11 @@ import '../../../../components/custom_textfield.dart';
 import '../../../../services/theme_service.dart';
 import '../../../../theme/app_theme.dart';
 
+import 'package:get/get.dart';
 import '../../../../services/biometric_service.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
+import '../viewmodels/settings_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -19,23 +21,13 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _isBiometricEnabled = false;
-  bool _isLoadingBiometrics = true;
+  final SettingsController _controller = Get.find<SettingsController>();
 
   @override
   void initState() {
     super.initState();
-    _loadBiometricSettings();
-  }
-
-  Future<void> _loadBiometricSettings() async {
-    final enabled = await BiometricService().isBiometricEnabled();
-    if (mounted) {
-      setState(() {
-        _isBiometricEnabled = enabled;
-        _isLoadingBiometrics = false;
-      });
-    }
+    // Refresh settings in case they changed elsewhere, but do it in background
+    _controller.loadBiometricSettings();
   }
 
   Future<void> _showPasswordPromptDialog(BuildContext context) async {
@@ -69,12 +61,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 
                 if (response.session != null) {
                    // Verified! Encrypt and save
-                   await BiometricService().enableBiometrics(currentUser.email!, password);
-                   if (mounted) {
-                     setState(() {
-                       _isBiometricEnabled = true;
-                     });
-                   }
+                    await BiometricService().enableBiometrics(currentUser.email!, password);
+                    _controller.loadBiometricSettings();
                    if (ctx.mounted) {
                      Navigator.pop(ctx);
                      ToastService.showSuccess(context, 'Biometric Login Enabled!');
@@ -248,7 +236,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(height: 32),
 
           _buildSectionHeader('Security'),
-          _isLoadingBiometrics 
+          Obx(() => _controller.isLoadingBiometrics && !_controller.isBiometricEnabled
             ? const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: SizedBox(
@@ -259,7 +247,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             : SwitchListTile(
             title: const Text('Biometric Login'),
             subtitle: const Text('Use Face ID / Fingerprint to log in securely'),
-            value: _isBiometricEnabled,
+            value: _controller.isBiometricEnabled,
             secondary: const Icon(Icons.fingerprint, color: AppColors.primaryLight),
             onChanged: (bool value) async {
               if (value) {
@@ -278,13 +266,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               } else {
                 // Disable it
-                await BiometricService().disableBiometrics();
-                setState(() {
-                  _isBiometricEnabled = false;
-                });
+                await _controller.toggleBiometrics(false);
               }
             },
-          ),
+          )),
           const Divider(height: 32),
 
           _buildSectionHeader('Account'),

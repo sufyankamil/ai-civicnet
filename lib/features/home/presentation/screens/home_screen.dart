@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkLocationPermission() async {
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 1)); // Reduced delay for better UX
     if (!mounted) return;
 
     final user = await SupabaseService().getCurrentUserProfile();
@@ -267,28 +267,37 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16.0),
               child: Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Community Help',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Community Help',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Finding matches near you...',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                        const SizedBox(height: 4),
+                        Text(
+                          'Finding matches near you...',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                   const Spacer(),
+                   IconButton(
+                     onPressed: () => context.push('/activity'),
+                     icon: const Icon(Icons.notifications_none_rounded, color: Colors.grey),
+                   ),
                    FutureBuilder(
                      future: SupabaseService().getCurrentUserProfile(),
                      builder: (context, snapshot) {

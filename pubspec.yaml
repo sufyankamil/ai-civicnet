@@ -1,7 +1,7 @@
 name: civic_net
 description: "A community networking app built with Flutter."
 publish_to: 'none'
-version: 1.0.7+9
+version: 1.0.1+10
 
 environment:
   sdk: ^3.9.2
@@ -49,6 +49,7 @@ dependencies:
   firebase_performance: ^0.10.1+10
   local_auth: ^3.0.1
   flutter_secure_storage: ^10.0.0
+  google_maps_flutter: ^2.14.2
 
 dev_dependencies:
   flutter_test:
