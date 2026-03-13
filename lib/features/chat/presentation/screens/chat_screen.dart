@@ -8,6 +8,7 @@ import '../viewmodels/chat_viewmodel.dart';
 import '../../domain/entities/chat_conversation_entity.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../services/supabase_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -48,15 +49,43 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
               child: Row(
                 children: [
-                  Text(
-                    'Messages',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28,
-                      letterSpacing: -0.5,
+                  Expanded(
+                    child: Text(
+                      'Messages',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28,
+                        letterSpacing: -0.5,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
+                  IconButton(
+                    onPressed: () => context.push('/activity'),
+                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.grey),
+                  ),
+                  FutureBuilder(
+                    future: SupabaseService().getCurrentUserProfile(),
+                    builder: (context, snapshot) {
+                      final user = snapshot.data;
+                      final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
+                      
+                      return InkWell(
+                        onTap: () => context.push('/profile'), 
+                        borderRadius: BorderRadius.circular(20),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey,
+                            backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
+                            child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white),
+                          ),
+                        ),
+                      );
+                    }
+                  ),
                   Obx(() {
                     if (viewModel.totalUnreadCount == 0) return const SizedBox.shrink();
                     return PopupMenuButton<String>(

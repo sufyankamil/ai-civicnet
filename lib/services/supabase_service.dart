@@ -3,6 +3,7 @@ import 'dart:math' show cos, sin, sqrt, asin;
 import 'dart:io';
 
 
+import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 import 'package:flutter/foundation.dart'; // For compute
@@ -926,6 +927,139 @@ class SupabaseService {
           }).eq('id', helperId).withServerTimeout();
         }
       });
+    }
+  }
+
+  // --- Local Events ---
+
+  Future<List<LocalEvent>> getLocalEvents() async {
+    try {
+      final response = await _client
+          .from('local_events')
+          .select('*, profiles:creator_id(name, avatar_url)')
+          .order('event_date', ascending: true).withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      final List<LocalEvent> events = [];
+      
+      final currentUserId = _client.auth.currentUser?.id;
+      final currentUserProfile = await getCurrentUserProfile();
+      
+      double userLat = currentUserProfile?.lat ?? 0.0;
+      double userLng = currentUserProfile?.lng ?? 0.0;
+
+      // If profile location is missing, try a one-time fresh fetch if permission is granted
+      if (userLat == 0.0 || userLng == 0.0) {
+        try {
+          final permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+            final position = await Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.low, // Fast fetch
+                timeLimit: Duration(seconds: 3),
+              ),
+            );
+            if (position.latitude != 0 || position.longitude != 0) {
+              userLat = position.latitude;
+              userLng = position.longitude;
+              // Update profile in background for next time
+              updateUserLocation(userLat, userLng);
+            }
+          }
+        } catch (e) {
+          logger.w('Fast location fetch for local events failed: $e');
+        }
+      }
+
+      logger.i('Fetching local events. User location: ($userLat, $userLng)');
+
+      const double radiusKm = 50.0;
+
+      for (var json in data) {
+        final eventLat = (json['lat'] ?? 0).toDouble();
+        final eventLng = (json['lng'] ?? 0).toDouble();
+
+        // Strict Filtering Logic:
+        // 1. If user location is available, filter by distance.
+        // 2. If event has no location (0,0), we might show it as "Global" or hide it. 
+        // 3. If user location is STILL 0.0, we show everything (current behavior) but we logged a warning.
+        
+        if (userLat != 0 && userLng != 0) {
+          if (eventLat != 0 && eventLng != 0) {
+            final distance = _calculateDistance(userLat, userLng, eventLat, eventLng);
+            if (distance > radiusKm) {
+              logger.d('Skipping event "${json['title']}" which is ${distance.toStringAsFixed(1)}km away');
+              continue; 
+            }
+          }
+        } else {
+           logger.w('Filtering skipped: User location is unknown (0,0). Showing all events.');
+        }
+
+        // Get attendee count
+        final attendeesRes = await _client
+            .from('event_attendees')
+            .select('user_id')
+            .eq('event_id', json['id']);
+        
+        final attendeeCount = (attendeesRes as List).length;
+        
+        // Check if current user is attending
+        bool isUserAttending = false;
+        if (currentUserId != null) {
+          final userRSVP = await _client
+              .from('event_attendees')
+              .select()
+              .eq('event_id', json['id'])
+              .eq('user_id', currentUserId)
+              .maybeSingle();
+          isUserAttending = userRSVP != null;
+        }
+
+        events.add(LocalEvent.fromJson({
+          ...json,
+          'attendee_count': attendeeCount,
+          'is_user_attending': isUserAttending,
+        }));
+      }
+
+      return events;
+    } catch (e) {
+      logger.e('Error fetching local events: $e');
+      return [];
+    }
+  }
+
+  Future<void> createLocalEvent(LocalEvent event) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('local_events').insert({
+      'title': event.title,
+      'description': event.description,
+      'event_date': event.eventDate.toIso8601String(),
+      'lat': event.lat,
+      'lng': event.lng,
+      'location_name': event.locationName,
+      'creator_id': user.id,
+      'created_at': DateTime.now().toIso8601String(),
+    }).withServerTimeout();
+  }
+
+  Future<void> rsvpToEvent(String eventId, bool isJoining) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    if (isJoining) {
+      await _client.from('event_attendees').insert({
+        'event_id': eventId,
+        'user_id': user.id,
+      }).withServerTimeout();
+    } else {
+      await _client.from('event_attendees').delete().match({
+        'event_id': eventId,
+        'user_id': user.id,
+      }).withServerTimeout();
     }
   }
 }

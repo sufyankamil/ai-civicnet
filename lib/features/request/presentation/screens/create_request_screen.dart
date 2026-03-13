@@ -237,20 +237,61 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: _isCategorizing ? null : _detectCategory,
-                  icon: _isCategorizing
-                      ? const SizedBox(
-                          width: 12,
-                          height: 12,
-                          child: CircularProgressIndicator.adaptive(
-                            strokeWidth: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton.icon(
+                          onPressed: _isCategorizing ? null : _detectCategory,
+                          icon: _isCategorizing
+                              ? const SizedBox(
+                                  width: 12,
+                                  height: 12,
+                                  child: CircularProgressIndicator.adaptive(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.auto_awesome, size: 16),
+                          label: Text(
+                            _isCategorizing ? 'Analyzing...' : 'Auto-Categorize',
                           ),
-                        )
-                      : const Icon(Icons.auto_awesome, size: 16),
-                  label: Text(
-                    _isCategorizing ? 'Analyzing...' : 'Auto-Categorize',
-                  ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Text(
+                            'BETA',
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Text(
+                        'This feature is in beta and can make mistakes.',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.white54
+                              : Colors.black54,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 

@@ -27,7 +27,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Last updated: March 02, 2026',
+              'Last updated: March 09, 2026',
               style: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 24),

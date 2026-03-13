@@ -21,14 +21,14 @@ class _MainScaffoldState extends State<MainScaffold> {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) { _selectedIndex = 0; }
     else if (location.startsWith('/discover')) { _selectedIndex = 1; }
-    else if (location.startsWith('/activity')) { _selectedIndex = 3; }
-    else if (location.startsWith('/chat')) { _selectedIndex = 4; }
+    else if (location.startsWith('/events')) { _selectedIndex = 2; }
+    else if (location.startsWith('/chat')) { _selectedIndex = 3; }
     
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.only(left: 24, right: 24, bottom: 8),
+          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
           height: 70,
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor.withValues(alpha: 0.9),
@@ -42,13 +42,13 @@ class _MainScaffoldState extends State<MainScaffold> {
             ],
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
                _buildNavItem(Icons.home_rounded, 0, '/home'),
                _buildNavItem(Icons.explore_rounded, 1, '/discover'),
                _buildFabItem(),
-               _buildNavItem(Icons.local_activity_rounded, 3, '/activity'),
-               _buildNavItem(Icons.chat_bubble_rounded, 4, '/chat'),
+               _buildNavItem(Icons.event_note_rounded, 2, '/events'),
+               _buildNavItem(Icons.chat_bubble_rounded, 3, '/chat'),
             ],
           ),
         ),
@@ -125,7 +125,13 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   Widget _buildFabItem() {
     return GestureDetector(
-      onTap: () => context.push('/create-request'),
+      onTap: () {
+        if (_selectedIndex == 2) {
+          context.push('/create-event');
+        } else {
+          context.push('/create-request');
+        }
+      },
       child: Container(
         width: 56,
         height: 56,

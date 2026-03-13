@@ -22,6 +22,8 @@ import 'features/home/di/home_binding.dart';
 import 'features/request/di/request_binding.dart';
 import 'features/map/di/map_binding.dart';
 import 'features/chat/di/chat_binding.dart';
+import 'features/events/di/events_binding.dart';
+import 'features/profile/di/profile_binding.dart';
 import 'features/onboarding/presentation/screens/splash_screen.dart';
 SharedPreferences? prefsGlobal;
 
@@ -70,6 +72,8 @@ class _RootAppState extends State<RootApp> {
     await initRequestDI();
     await initMapDI();
     await initChatDI();
+    await initEventsDI();
+    ProfileBinding().dependencies();
 
     // Read the initial deep-link URI BEFORE Supabase.initialize() so we can
     // detect a password-recovery link. The PASSWORD_RECOVERY auth event fires

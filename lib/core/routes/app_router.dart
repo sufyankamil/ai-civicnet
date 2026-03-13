@@ -38,6 +38,11 @@ import '../../features/profile/presentation/screens/how_tasknet_works_screen.dar
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/public_profile_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
+import '../../features/events/presentation/screens/events_list_screen.dart';
+import '../../features/events/presentation/screens/create_event_screen.dart';
+import '../../features/events/presentation/screens/event_detail_screen.dart';
+import '../../features/events/presentation/screens/location_picker_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
 GoRouter createRouter({String initialLocation = '/'}) {
@@ -70,7 +75,7 @@ GoRouter createRouter({String initialLocation = '/'}) {
             return '/login';
           }
           return '/onboarding';
-        } else if (currentPath.startsWith('/profile') || currentPath == '/chat' || currentPath == '/activity' || currentPath == '/discover' || currentPath == '/map') {
+        } else if (currentPath.startsWith('/profile') || currentPath == '/chat' || currentPath == '/activity' || currentPath == '/discover' || currentPath == '/map' || currentPath == '/events') {
             return '/login';
         }
       } else {
@@ -131,6 +136,10 @@ GoRouter createRouter({String initialLocation = '/'}) {
           GoRoute(
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/events',
+            builder: (context, state) => const EventsListScreen(),
           ),
         ],
       ),
@@ -233,6 +242,39 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/feedback',
         builder: (context, state) => const FeedbackScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/create-event',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const CreateEventScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/event/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return EventDetailScreen(eventId: id);
+        },
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/location-picker',
+        builder: (context, state) {
+          final initialLocation = state.extra as LatLng?;
+          return LocationPickerScreen(initialLocation: initialLocation);
+        },
       ),
     ],
   );
