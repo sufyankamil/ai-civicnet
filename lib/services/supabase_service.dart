@@ -170,9 +170,14 @@ class SupabaseService {
       // Parse in background isolate
       List<HelpRequest> requests = await compute(parseHelpRequests, data);
       
-      // Post-processing: Filter own requests and inject true distance
+      // Post-processing: Filter blocked users and inject true distance
       final currentUserProfile = await getCurrentUserProfile();
+      final blockedUserIds = await getBlockedUserIds();
       
+      if (blockedUserIds.isNotEmpty) {
+        requests = requests.where((r) => !blockedUserIds.contains(r.requesterId)).toList();
+      }
+
       if (currentUserProfile != null) {
         // Calculate dynamic distances
         if (currentUserProfile.lat != null && currentUserProfile.lng != null && 
@@ -989,10 +994,15 @@ class SupabaseService {
 
       final List<LocalEvent> events = [];
       const double radiusKm = 100.0;
+      final blockedUserIds = await getBlockedUserIds();
 
       for (var json in data) {
         final String eventId = json['id'].toString();
         final creatorId = json['creator_id'];
+
+        // Filter blocked users
+        if (blockedUserIds.contains(creatorId)) continue;
+        
         final eventLat = (json['lat'] ?? 0).toDouble();
         final eventLng = (json['lng'] ?? 0).toDouble();
 

@@ -6,6 +6,7 @@ import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../components/report_dialog.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String userId;
@@ -196,6 +197,40 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           onPressed: () => context.pop(),
         ),
       ),
+      actions: [
+        if (SupabaseService().currentUserId != null &&
+            SupabaseService().currentUserId != user.id)
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.flag_outlined, color: Colors.red),
+                          title: const Text('Report & Block User'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _showReportUserDialog(user);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
       title: AnimatedOpacity(
         opacity: _isCollapsed ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
@@ -518,5 +553,36 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
     if (user.points >= 150 && user.helpCount >= 10) return 'Trusted Helper';
     if (user.points >= 50 && user.helpCount >= 2) return 'Active Member';
     return 'Community Member';
+  }
+
+  void _showReportUserDialog(User user) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ReportDialog(
+        title: 'Report ${user.name}',
+        onReport: (reason) async {
+          try {
+            await SupabaseService().reportUser(user.id, reason);
+            if (!mounted) return;
+            
+            // ignore: use_build_context_synchronously
+            ToastService.showSuccess(context, 'User reported and blocked. Thank you for helping keep the community safe.');
+            
+            // Wait a brief moment for toast to start showing, then close
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (!mounted) return;
+            
+            // ignore: use_build_context_synchronously
+            Navigator.of(dialogContext).pop(); // Close dialog
+            // ignore: use_build_context_synchronously
+            context.pop(); // Go back from profile
+          } catch (e) {
+            if (!mounted) return;
+            // ignore: use_build_context_synchronously
+            ToastService.showError(context, 'Failed to submit report. Please try again.');
+          }
+        },
+      ),
+    );
   }
 }

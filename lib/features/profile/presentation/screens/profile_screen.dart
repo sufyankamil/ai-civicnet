@@ -598,6 +598,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                 ),
                 _buildDivider(isDark),
                 _buildActionTile(
+                  icon: Icons.shield_rounded,
+                  iconColor: AppColors.accentLight,
+                  label: 'Our Commitment & Safety',
+                  onTap: () => context.push('/commitment'),
+                  isDark: isDark,
+                ),
+                _buildDivider(isDark),
+                _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
                   label: 'App Settings',

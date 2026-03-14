@@ -36,6 +36,7 @@ import '../../features/profile/presentation/screens/faq_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/how_tasknet_works_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/commitment_screen.dart';
 import '../../features/profile/presentation/screens/public_profile_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/events/presentation/screens/events_list_screen.dart';
@@ -222,6 +223,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/how-it-works',
         builder: (context, state) => const HowTaskNetWorksScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/commitment',
+        builder: (context, state) => const CommitmentScreen(),
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
