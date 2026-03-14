@@ -7,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
 import '../viewmodels/events_viewmodel.dart';
+import '../../models/event_comment.dart';
+import '../../models/event.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final String eventId;
@@ -241,6 +243,8 @@ class EventDetailScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 32),
+                    _buildCommentsSection(context, viewModel, event),
                     const SizedBox(height: 100), // Space for bottom button
                   ],
                 ),
@@ -375,6 +379,342 @@ class EventDetailScreen extends StatelessWidget {
     ),
   );
 }
+
+  Widget _buildCommentsSection(BuildContext context, EventsViewModel viewModel, LocalEvent event) {
+    // Fetch comments for the current event
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      viewModel.fetchComments(event.id);
+    });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Comments',
+              style: GoogleFonts.outfit(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Obx(() => Text(
+              '${viewModel.comments.length} items',
+              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+            )),
+          ],
+        ),
+        const SizedBox(height: 20),
+        
+        // Comment Input
+        if (event.isUserAttending)
+          _buildCommentInput(context, viewModel, event.id)
+        else
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.orange.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.withValues(alpha: 0.1)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.lock_outline_rounded, size: 18, color: Colors.orange[300]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Only people attending this event can send messages.',
+                    style: TextStyle(color: Colors.orange[700], fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        
+        const SizedBox(height: 12),
+        
+        // Comments List
+        Obx(() {
+          if (viewModel.isCommentsLoading && viewModel.comments.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Center(child: CircularProgressIndicator.adaptive()),
+            );
+          }
+          
+          if (viewModel.comments.isEmpty) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 40),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.chat_bubble_outline_rounded, size: 40, color: Colors.grey[300]),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No comments yet. Be the first to ask!',
+                      style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+          
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: viewModel.comments.length,
+            padding: const EdgeInsets.only(top: 12),
+            itemBuilder: (context, index) {
+              final comment = viewModel.comments[index];
+              return _buildCommentTile(context, viewModel, event, comment);
+            },
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildCommentInput(BuildContext context, EventsViewModel viewModel, String eventId, {String? parentId, bool isReply = false}) {
+    final TextEditingController controller = TextEditingController();
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: isReply ? 'Write a reply...' : 'Ask something...',
+                hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              style: const TextStyle(fontSize: 14),
+              maxLines: null,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: CircleAvatar(
+              radius: 18,
+              backgroundColor: Theme.of(context).primaryColor,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_upward_rounded, color: Colors.white, size: 18),
+                onPressed: () {
+                  if (controller.text.trim().isNotEmpty) {
+                    viewModel.postComment(eventId, controller.text.trim(), parentId: parentId);
+                    controller.clear();
+                    if (isReply) Navigator.pop(context);
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentTile(BuildContext context, EventsViewModel viewModel, LocalEvent event, EventComment comment, {bool isReply = false}) {
+    final bool isHost = event.creatorId == SupabaseService().currentUserId;
+    final bool isMyComment = comment.userId == SupabaseService().currentUserId;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: isReply ? 12 : 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.withValues(alpha: 0.1), width: 1),
+                ),
+                child: CircleAvatar(
+                  radius: isReply ? 14 : 18,
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage: comment.userAvatarUrl.isNotEmpty 
+                      ? NetworkImage(comment.userAvatarUrl) 
+                      : null,
+                  child: comment.userAvatarUrl.isEmpty ? Icon(Icons.person, size: isReply ? 16 : 20, color: Colors.grey[400]) : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          comment.userName,
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            fontSize: isReply ? 13 : 14,
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        if (comment.userId == event.creatorId) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'HOST',
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatTimeAgo(comment.createdAt),
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      comment.content,
+                      style: TextStyle(
+                        fontSize: isReply ? 13 : 14,
+                        height: 1.5,
+                        color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        if (!isReply && isHost)
+                          GestureDetector(
+                            onTap: () => _showReplySheet(context, viewModel, event.id, comment),
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 16, bottom: 4, top: 4),
+                              child: Text(
+                                'Reply',
+                                style: TextStyle(
+                                  color: Theme.of(context).primaryColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (isMyComment)
+                          GestureDetector(
+                            onTap: () => viewModel.deleteComment(event.id, comment.id),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Text(
+                                'Delete',
+                                style: TextStyle(
+                                  color: Colors.red[300],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (comment.replies.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(left: 18),
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: Colors.grey.withValues(alpha: 0.15), width: 1.5),
+              ),
+            ),
+            padding: const EdgeInsets.only(left: 26),
+            child: Column(
+              children: comment.replies.map((reply) => _buildCommentTile(context, viewModel, event, reply, isReply: true)).toList(),
+            ),
+          ),
+      ],
+    );
+  }
+
+  void _showReplySheet(BuildContext context, EventsViewModel viewModel, String eventId, EventComment parentComment) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  'Replying to ',
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+                Text(
+                  parentComment.userName,
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            _buildCommentInput(context, viewModel, eventId, parentId: parentComment.id, isReply: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTimeAgo(DateTime date) {
+    final duration = DateTime.now().difference(date);
+    if (duration.inDays > 7) return DateFormat('MMM d').format(date);
+    if (duration.inDays >= 1) return '${duration.inDays}d';
+    if (duration.inHours >= 1) return '${duration.inHours}h';
+    if (duration.inMinutes >= 1) return '${duration.inMinutes}m';
+    return 'now';
+  }
 
   void _showDeleteConfirmation(BuildContext context, EventsViewModel viewModel, String eventId) {
     showAdaptiveDialog(
