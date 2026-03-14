@@ -970,30 +970,35 @@ class SupabaseService {
           logger.w('Fast location fetch for local events failed: $e');
         }
       }
-
       logger.i('Fetching local events. User location: ($userLat, $userLng)');
 
-      const double radiusKm = 50.0;
+      const double radiusKm = 100.0; // Increased from 50.0
 
       for (var json in data) {
+        final creatorId = json['creator_id'];
         final eventLat = (json['lat'] ?? 0).toDouble();
         final eventLng = (json['lng'] ?? 0).toDouble();
 
         // Strict Filtering Logic:
-        // 1. If user location is available, filter by distance.
-        // 2. If event has no location (0,0), we might show it as "Global" or hide it. 
-        // 3. If user location is STILL 0.0, we show everything (current behavior) but we logged a warning.
+        // 1. Always show user's own events
+        // 2. If user location is available, filter by distance.
+        // 3. If event has no location (0,0), we might show it as "Global" or hide it. 
+        // 4. If user location is STILL 0.0, we show everything (current behavior) but we logged a warning.
         
-        if (userLat != 0 && userLng != 0) {
-          if (eventLat != 0 && eventLng != 0) {
-            final distance = _calculateDistance(userLat, userLng, eventLat, eventLng);
-            if (distance > radiusKm) {
-              logger.d('Skipping event "${json['title']}" which is ${distance.toStringAsFixed(1)}km away');
-              continue; 
+        if (creatorId != currentUserId) {
+          if (userLat != 0 && userLng != 0) {
+            if (eventLat != 0 && eventLng != 0) {
+              final distance = _calculateDistance(userLat, userLng, eventLat, eventLng);
+              if (distance > radiusKm) {
+                logger.d('Skipping event "${json['title']}" which is ${distance.toStringAsFixed(1)}km away');
+                continue; 
+              }
             }
+          } else {
+             logger.w('Filtering skipped: User location is unknown (0,0). Showing all events.');
           }
         } else {
-           logger.w('Filtering skipped: User location is unknown (0,0). Showing all events.');
+          logger.d('Always showing user\'s own event: ${json['title']}');
         }
 
         // Get attendee count
@@ -1034,7 +1039,7 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    await _client.from('local_events').insert({
+    final response = await _client.from('local_events').insert({
       'title': event.title,
       'description': event.description,
       'event_date': event.eventDate.toIso8601String(),
@@ -1042,6 +1047,15 @@ class SupabaseService {
       'lng': event.lng,
       'location_name': event.locationName,
       'creator_id': user.id,
+      'created_at': DateTime.now().toIso8601String(),
+    }).select().single().withServerTimeout();
+
+    final eventId = response['id'];
+
+    // Auto-RSVP the creator
+    await _client.from('event_attendees').insert({
+      'event_id': eventId,
+      'user_id': user.id,
       'created_at': DateTime.now().toIso8601String(),
     }).withServerTimeout();
   }
@@ -1060,6 +1074,53 @@ class SupabaseService {
         'event_id': eventId,
         'user_id': user.id,
       }).withServerTimeout();
+    }
+  }
+
+  Future<void> deleteLocalEvent(String eventId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    try {
+      // 1. Fetch the event first to get its raw ID and verify owner
+      // This handles cases where eventId (String) might map to an int8 in DB
+      final existingEvent = await _client
+          .from('local_events')
+          .select('id, creator_id')
+          .eq('id', eventId)
+          .maybeSingle()
+          .withServerTimeout();
+
+      if (existingEvent == null) return;
+
+      final dbId = existingEvent['id'];
+      final dbCreatorId = existingEvent['creator_id'];
+
+      if (dbCreatorId != user.id) {
+        throw Exception('Permission denied: You are not the creator of this event.');
+      }
+
+      // 2. Delete associated attendees using the RAW ID
+      await _client
+          .from('event_attendees')
+          .delete()
+          .eq('event_id', dbId)
+          .withServerTimeout();
+      
+      // 3. Delete the event using the RAW ID
+      final response = await _client
+          .from('local_events')
+          .delete()
+          .eq('id', dbId)
+          .select()
+          .withServerTimeout();
+
+      if ((response as List).isEmpty) {
+        throw Exception('Access Denied: Your database "Delete" policy is blocking this action. Please check your Supabase RLS settings.');
+      }
+    } catch (e) {
+      logger.e('Database error during deletion: $e');
+      rethrow;
     }
   }
 }

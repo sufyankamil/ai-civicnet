@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../services/supabase_service.dart';
+import '../../../../services/toast_service.dart';
 import '../viewmodels/events_viewmodel.dart';
 
 class EventDetailScreen extends StatelessWidget {
@@ -15,20 +17,22 @@ class EventDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final EventsViewModel viewModel = Get.find<EventsViewModel>();
     
-    // Find the event in the view model's list
-    // In a real app, you might want to fetch it specifically from Supabase 
-    // but for now we assume it's in the list.
-    final eventIndex = viewModel.events.indexWhere((e) => e.id == eventId);
-    
-    if (eventIndex == -1) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: const Center(child: Text('Event not found')),
-      );
-    }
-
     return Obx(() {
-      final event = viewModel.events[eventIndex];
+      final event = viewModel.events.firstWhereOrNull((e) => e.id == eventId);
+      
+      // If event is missing, we might have just deleted it. 
+      // We pop the screen and show a loader while it's transitioning.
+      if (event == null) {
+        Future.microtask(() {
+          if (context.mounted) {
+            Navigator.of(context).pop();
+          }
+        });
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      }
+
       final dateFormat = DateFormat('EEEE, MMMM d, yyyy');
       final timeFormat = DateFormat('h:mm a');
 
@@ -38,6 +42,37 @@ class EventDetailScreen extends StatelessWidget {
             SliverAppBar(
               expandedHeight: 200,
               pinned: true,
+              leading: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ),
+              ),
+              actions: [
+                if (event.creatorId == SupabaseService().currentUserId)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.white),
+                          onPressed: () => _showDeleteConfirmation(context, viewModel, event.id),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,
@@ -239,7 +274,7 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'are attending',
+                    event.eventDate.isBefore(DateTime.now()) ? 'attended' : 'are attending',
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,
@@ -250,16 +285,22 @@ class EventDetailScreen extends StatelessWidget {
               const SizedBox(width: 24),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {
-                    viewModel.toggleRSVP(event.id, !event.isUserAttending);
-                  },
+                  onPressed: event.eventDate.isBefore(DateTime.now())
+                      ? null
+                      : () {
+                          viewModel.toggleRSVP(event.id, !event.isUserAttending);
+                        },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: event.isUserAttending
-                        ? Colors.green.withValues(alpha: 0.1)
-                        : Theme.of(context).primaryColor,
-                    foregroundColor: event.isUserAttending
-                        ? Colors.green
-                        : Colors.white,
+                    backgroundColor: event.eventDate.isBefore(DateTime.now())
+                        ? Colors.grey.withValues(alpha: 0.1)
+                        : (event.isUserAttending
+                            ? Colors.green.withValues(alpha: 0.1)
+                            : Theme.of(context).primaryColor),
+                    foregroundColor: event.eventDate.isBefore(DateTime.now())
+                        ? Colors.grey
+                        : (event.isUserAttending
+                            ? Colors.green
+                            : Colors.white),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -267,7 +308,9 @@ class EventDetailScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    event.isUserAttending ? 'Attending' : 'RSVP Now',
+                    event.eventDate.isBefore(DateTime.now())
+                        ? 'Event Ended'
+                        : (event.isUserAttending ? 'Attending' : 'RSVP Now'),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -307,27 +350,68 @@ class EventDetailScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
-            ),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 13,
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 13,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     ),
   );
 }
+
+  void _showDeleteConfirmation(BuildContext context, EventsViewModel viewModel, String eventId) {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text('Delete Event'),
+        content: const Text('Are you sure you want to delete this event? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              final error = await viewModel.deleteEvent(eventId);
+              if (error == null) {
+                if (context.mounted) {
+                  ToastService.showSuccess(context, 'Event deleted successfully');
+                }
+                // The Obx in EventDetailScreen will handle the pop back to list
+              } else {
+                if (context.mounted) {
+                  ToastService.showError(context, error);
+                }
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
 }

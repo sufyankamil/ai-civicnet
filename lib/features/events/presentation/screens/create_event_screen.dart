@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../services/logger_service.dart';
 import '../../models/event.dart';
 import '../viewmodels/events_viewmodel.dart';
 
@@ -58,7 +60,30 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       setState(() {
         _selectedLatLng = result;
       });
-      ToastService.showSuccess(context, 'Location selected on map');
+      
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(result.latitude, result.longitude);
+        if (placemarks.isNotEmpty) {
+          final p = placemarks.first;
+          final String address = [
+            if (p.name != null && p.name!.isNotEmpty) p.name,
+            if (p.subLocality != null && p.subLocality!.isNotEmpty) p.subLocality,
+            if (p.locality != null && p.locality!.isNotEmpty) p.locality,
+          ].join(', ');
+          
+          if (address.isNotEmpty) {
+            setState(() {
+              _locationController.text = address;
+            });
+          }
+        }
+      } catch (e) {
+        logger.e('Error performing reverse geocoding: $e');
+      }
+
+      if (mounted) {
+        ToastService.showSuccess(context, 'Location selected on map');
+      }
     }
   }
 

@@ -8,6 +8,15 @@ class EventsViewModel extends GetxController {
   
   final RxList<LocalEvent> _events = <LocalEvent>[].obs;
   List<LocalEvent> get events => _events;
+
+  // Filtered lists
+  List<LocalEvent> get upcomingEvents => _events
+      .where((e) => e.eventDate.isAfter(DateTime.now()))
+      .toList();
+      
+  List<LocalEvent> get pastEvents => _events
+      .where((e) => e.eventDate.isBefore(DateTime.now()))
+      .toList();
   
   final RxBool _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
@@ -39,6 +48,23 @@ class EventsViewModel extends GetxController {
     } catch (e) {
       logger.e('Error in EventsViewModel.createEvent: $e');
       return false;
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  Future<String?> deleteEvent(String eventId) async {
+    _isLoading.value = true;
+    try {
+      await _supabaseService.deleteLocalEvent(eventId);
+      _events.removeWhere((e) => e.id == eventId);
+      return null; // Success
+    } catch (e) {
+      final errorMsg = e.toString().contains('Permission denied') 
+          ? 'Permission denied: You are not the creator.' 
+          : 'Failed to delete event: $e';
+      logger.e('Error in EventsViewModel.deleteEvent: $e');
+      return errorMsg;
     } finally {
       _isLoading.value = false;
     }

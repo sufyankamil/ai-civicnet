@@ -146,14 +146,18 @@ class EventCard extends StatelessWidget {
                   SizedBox(
                     height: 36,
                     child: ElevatedButton(
-                      onPressed: onRSVP,
+                      onPressed: event.eventDate.isBefore(DateTime.now()) ? null : onRSVP,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: event.isUserAttending 
-                            ? Colors.green.withValues(alpha: 0.1)
-                            : Theme.of(context).primaryColor,
-                        foregroundColor: event.isUserAttending 
-                            ? Colors.green 
-                            : Colors.white,
+                        backgroundColor: event.eventDate.isBefore(DateTime.now())
+                            ? Colors.grey.withValues(alpha: 0.1)
+                            : (event.isUserAttending 
+                                ? Colors.green.withValues(alpha: 0.1)
+                                : Theme.of(context).primaryColor),
+                        foregroundColor: event.eventDate.isBefore(DateTime.now())
+                            ? Colors.grey 
+                            : (event.isUserAttending 
+                                ? Colors.green 
+                                : Colors.white),
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
@@ -161,7 +165,9 @@ class EventCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        event.isUserAttending ? 'Attending' : 'RSVP',
+                        event.eventDate.isBefore(DateTime.now()) 
+                            ? 'Ended' 
+                            : (event.isUserAttending ? 'Attending' : 'RSVP'),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
