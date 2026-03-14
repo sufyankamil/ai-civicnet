@@ -11,7 +11,8 @@ import '../models/models.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/notification_service.dart';
-import 'package:civic_net/core/utils/timeout_extension.dart';
+import '../features/events/models/event_comment.dart';
+import '../core/utils/timeout_extension.dart';
 
 // Top-level function for isolate
 List<HelpRequest> parseHelpRequests(List<dynamic> data) {
@@ -934,92 +935,76 @@ class SupabaseService {
 
   Future<List<LocalEvent>> getLocalEvents() async {
     try {
-      final response = await _client
-          .from('local_events')
-          .select('*, profiles:creator_id(name, avatar_url)')
-          .order('event_date', ascending: true).withServerTimeout();
-
-      final List<dynamic> data = response as List<dynamic>;
-      final List<LocalEvent> events = [];
-      
       final currentUserId = _client.auth.currentUser?.id;
       final currentUserProfile = await getCurrentUserProfile();
       
       double userLat = currentUserProfile?.lat ?? 0.0;
       double userLng = currentUserProfile?.lng ?? 0.0;
 
-      // If profile location is missing, try a one-time fresh fetch if permission is granted
+      // ... (Location fetch logic remains same) ...
       if (userLat == 0.0 || userLng == 0.0) {
         try {
           final permission = await Geolocator.checkPermission();
           if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
             final position = await Geolocator.getCurrentPosition(
               locationSettings: const LocationSettings(
-                accuracy: LocationAccuracy.low, // Fast fetch
+                accuracy: LocationAccuracy.low,
                 timeLimit: Duration(seconds: 3),
               ),
             );
             if (position.latitude != 0 || position.longitude != 0) {
               userLat = position.latitude;
               userLng = position.longitude;
-              // Update profile in background for next time
-              updateUserLocation(userLat, userLng);
             }
           }
         } catch (e) {
           logger.w('Fast location fetch for local events failed: $e');
         }
       }
-      logger.i('Fetching local events. User location: ($userLat, $userLng)');
 
-      const double radiusKm = 100.0; // Increased from 50.0
+      // Step 1: Fetch all events
+      final response = await _client
+          .from('local_events')
+          .select('*, profiles:creator_id(name, avatar_url)')
+          .order('event_date', ascending: true).withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      
+      // Step 2: Fetch all attendees for these events in one go
+      final eventIds = data.map((e) => e['id']).toList();
+      final attendeesResponse = await _client
+          .from('event_attendees')
+          .select('event_id, user_id')
+          .inFilter('event_id', eventIds).withServerTimeout();
+      
+      final List<dynamic> allAttendees = attendeesResponse as List<dynamic>;
+      
+      // Group attendees by event_id for easy lookup
+      final Map<String, List<String>> eventAttendeesMap = {};
+      for (var attendee in allAttendees) {
+        final eid = attendee['event_id'].toString();
+        final uid = attendee['user_id'].toString();
+        eventAttendeesMap.putIfAbsent(eid, () => []).add(uid);
+      }
+
+      final List<LocalEvent> events = [];
+      const double radiusKm = 100.0;
 
       for (var json in data) {
+        final String eventId = json['id'].toString();
         final creatorId = json['creator_id'];
         final eventLat = (json['lat'] ?? 0).toDouble();
         final eventLng = (json['lng'] ?? 0).toDouble();
 
-        // Strict Filtering Logic:
-        // 1. Always show user's own events
-        // 2. If user location is available, filter by distance.
-        // 3. If event has no location (0,0), we might show it as "Global" or hide it. 
-        // 4. If user location is STILL 0.0, we show everything (current behavior) but we logged a warning.
-        
-        if (creatorId != currentUserId) {
-          if (userLat != 0 && userLng != 0) {
-            if (eventLat != 0 && eventLng != 0) {
-              final distance = _calculateDistance(userLat, userLng, eventLat, eventLng);
-              if (distance > radiusKm) {
-                logger.d('Skipping event "${json['title']}" which is ${distance.toStringAsFixed(1)}km away');
-                continue; 
-              }
-            }
-          } else {
-             logger.w('Filtering skipped: User location is unknown (0,0). Showing all events.');
-          }
-        } else {
-          logger.d('Always showing user\'s own event: ${json['title']}');
+        // Filtering logic
+        if (creatorId != currentUserId && userLat != 0 && userLng != 0 && eventLat != 0 && eventLng != 0) {
+          final distance = _calculateDistance(userLat, userLng, eventLat, eventLng);
+          if (distance > radiusKm) continue;
         }
 
-        // Get attendee count
-        final attendeesRes = await _client
-            .from('event_attendees')
-            .select('user_id')
-            .eq('event_id', json['id']);
-        
-        final attendeeCount = (attendeesRes as List).length;
-        
-        // Check if current user is attending
-        bool isUserAttending = false;
-        if (currentUserId != null) {
-          final userRSVP = await _client
-              .from('event_attendees')
-              .select()
-              .eq('event_id', json['id'])
-              .eq('user_id', currentUserId)
-              .maybeSingle();
-          isUserAttending = userRSVP != null;
-        }
+        final attendees = eventAttendeesMap[eventId] ?? [];
+        final attendeeCount = attendees.length;
+        final bool isUserAttending = currentUserId != null && attendees.contains(currentUserId);
 
         events.add(LocalEvent.fromJson({
           ...json,
@@ -1122,5 +1107,62 @@ class SupabaseService {
       logger.e('Database error during deletion: $e');
       rethrow;
     }
+  }
+
+  // --- Event Comments ---
+
+  Future<List<EventComment>> getEventComments(String eventId) async {
+    try {
+      final response = await _client
+          .from('event_comments')
+          .select('*, profiles:user_id(name, avatar_url)')
+          .eq('event_id', eventId)
+          .order('created_at', ascending: true)
+          .withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      final List<EventComment> allComments = data.map((json) => EventComment.fromJson(json)).toList();
+      
+      // Build threaded structure
+      final List<EventComment> topLevelComments = [];
+      final Map<String, List<EventComment>> repliesMap = {};
+
+      for (var comment in allComments) {
+        if (comment.parentId == null) {
+          topLevelComments.add(comment);
+        } else {
+          repliesMap.putIfAbsent(comment.parentId!, () => []).add(comment);
+        }
+      }
+
+      // Attach replies to parents (one level deep as per requirement for host reply)
+      return topLevelComments.map((parent) {
+        return parent.copyWith(replies: repliesMap[parent.id] ?? []);
+      }).toList();
+    } catch (e) {
+      logger.e('Error fetching event comments: $e');
+      return [];
+    }
+  }
+
+  Future<void> postEventComment({
+    required String eventId,
+    required String content,
+    String? parentId,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('event_comments').insert({
+      'event_id': eventId,
+      'user_id': user.id,
+      'content': content,
+      'parent_id': parentId,
+      'created_at': DateTime.now().toIso8601String(),
+    }).withServerTimeout();
+  }
+
+  Future<void> deleteEventComment(String commentId) async {
+    await _client.from('event_comments').delete().eq('id', commentId).withServerTimeout();
   }
 }

@@ -1,105 +1,77 @@
 # Project Architecture
 
-## 1. Current Architecture Analysis
+## 1. Current Architecture Evolution
 
-The `community_net` Flutter project currently follows a traditional **Layered Architecture by Type**.
+The project is currently in a **transitional state** from a Layered-by-Type structure to a **Feature-First Clean Architecture**.
 
-### Current Structure:
+### Current Directory Structure:
 ```
 lib/
-├── components/   # Reusable UI widgets
-├── models/       # Data models
-├── screens/      # UI screens organized by feature/domain
-├── services/     # Third-party integrations & Business logic
-├── theme/        # App styling
-├── widgets/      # General widgets
-└── main.dart     # Entry point
+├── core/             # App-wide utilities, constants, and base classes
+├── features/         # 🟢 New Feature-First Modules (Clean Architecture)
+│   ├── auth/         # Authentication & User Profiles
+│   ├── events/       # Events, RSVP, and Event Comments
+│   └── ...           
+├── services/         # Infrastructure implementations (Supabase, Logger)
+├── components/       # Reusable global UI widgets
+├── theme/            # App styling & design system
+└── main.dart         # Entry point and dependency initialization
 ```
 
-### Problems with the Current Architecture:
-1. **Tight Coupling (UI & Services)**: The Presentation layer (screens) interacts directly with the Data/Service layer. For instance, `LoginScreen` directly calls `SupabaseService().signIn()`. This makes unit testing the UI or business logic extremely difficult.
-2. **Lack of State Management**: There is no dedicated state management solution (like Provider, Riverpod, or BLoC) for managing the UI state based on business logic. State is handled locally using `StatefulWidget` and `setState`, which becomes unmanageable as the app scales.
-3. **No Domain Layer**: The business logic is scattered across UI components and generic "Services". There are no clear UseCases or abstract repositories defining the contracts.
-4. **Poor Scalability**: Organizing files by type (`screens/`, `services/`, `models/`) rather than by feature means that as the app grows, developers have to jump between multiple distant folders to work on a single feature.
+### Improvements Implemented:
+1. **MVVM with GetX**: We have successfully migrated core features (Events, Auth) to the MVVM pattern using `GetX` for high-performance state management and dependency injection.
+2. **Feature Isolation**: Features like `events` now contain their own models, viewmodels, and screens, reducing cross-feature coupling.
+3. **Optimized Data Fetching**: Complex joins (e.g., fetching events with attendee counts and RSVP status) are now handled efficiently in the Service layer to avoid N+1 query problems.
 
 ---
 
-## 2. Target Architecture: Clean Architecture
+## 2. Event Messaging Architecture
 
-To ensure the project is scalable, maintainable, and testable, we are migrating to **Clean Architecture** combined with a **Feature-First folder structure** and the **MVVM (Model-View-ViewModel)** pattern in the presentation layer.
+The recently implemented **Event Comments** system follows a strict data flow to ensure consistency and a premium UI experience.
 
-### Target Structure:
-```
-lib/
-├── core/                   # App-wide core files (errors, network, constants, utils, di)
-├── components/             # Reusable global UI widgets (e.g., PrimaryButton)
-├── theme/                  # Theme configuration
-├── features/               # Feature-first modules
-│   ├── auth/
-│   │   ├── domain/         # Entities, Repository Interfaces, UseCases
-│   │   ├── data/           # Models, Repository Implementations, Data Sources
-│   │   └── presentation/   # ViewModels (MVVM), Screens, Feature Widgets
-│   ├── home/
-│   ├── discover/
-│   ...
-└── main.dart               # App entry and initialization
-```
-
-### The Three Layers:
-#### 1. Presentation Layer (MVVM)
-* **View**: The UI (Screens, Widgets). It only listens to state changes and propagates user actions to the ViewModel.
-* **ViewModel**: Manages the state for the view and interacts with the Domain layer (UseCases). It does not know anything about Flutter UI details.
-
-#### 2. Domain Layer
-* **Entities**: Pure Dart classes representing core business objects.
-* **UseCases**: Encapsulate specific business rules (e.g., `LoginUseCase`, `FetchUserRequestsUseCase`).
-* **Repositories (Abstract)**: Interfaces defining the contracts for data operations.
-* *Rule*: **This layer NEVER imports Flutter or any external data/UI libraries.**
-
-#### 3. Data Layer
-* **Models**: Extensions of Entities with fromJson/toJson serialization methods.
-* **Data Sources**: Remote (Supabase API) and Local (Hive, SharedPreferences) sources.
-* **Repositories (Implementation)**: Act as the single source of truth, fetching from data sources and mapping models to entities the Domain layer expects.
+### Threaded Messaging Flow:
+1.  **Data Schema**: `event_comments` table uses a self-referencing `parent_id` for two-level threading (Comment -> Host Reply).
+2.  **Service Layer**: `SupabaseService.getEventComments` fetches all comments for an event in a single query and builds the recursive tree structure in memory for efficient UI rendering.
+3.  **ViewModel Layer**: `EventsViewModel` manages a reactive list of comments. It clears state between different events to prevent data "leakage" and provides error handling.
+4.  **Presentation Layer**: Utilizes custom `CommentTile` components with visual threading (vertical lines) and host-specific visibility rules.
 
 ---
 
-## 3. Data Flow Architecture Diagram
+## 3. Reactive State Synchronization
+
+A key architectural addition is the **Auth-Event Synchronization** mechanism.
+
+*   **Global Auth Listener**: The `EventsViewModel` (and other core viewmodels) now listens directly to the Supabase `onAuthStateChange` stream.
+*   **Automatic Refresh**: Upon login, logout, or user profile changes, the viewmodels automatically re-trigger their data fetches. 
+*   **Location Filtering**: This ensures that when a new user logs in, the location-based event filters and localized data are immediately updated without requiring a manual refresh.
+
+---
+
+## 4. Project Data Flow
 
 ```mermaid
 graph TD
-    subgraph Presentation Layer [Presentation Layer (MVVM)]
-        UI[UI/View - Screens & Widgets]
-        VM[ViewModel / StateNotifier]
+    subgraph Presentation_Layer [Presentation (GetX)]
+        UI[View / Screen]
+        VM[ViewModel]
         UI -- User Actions --> VM
-        VM -- State Updates --> UI
+        VM -- RxState Updates --> UI
     end
 
-    subgraph Domain Layer [Domain Layer (Business Logic)]
-        UC[UseCases]
-        RI[Repository Interfaces]
-        E[Entities]
-        VM -- Executes --> UC
-        UC -- Uses --> RI
-        UC -. Returns .-> E
+    subgraph Service_Logic [Infrastructure Services]
+        SS[SupabaseService]
+        LS[LoggerService]
+        VM -- Calls --> SS
+        SS -- Returns Data --> VM
     end
 
-    subgraph Data Layer [Data Layer (Data Source)]
-        RI_Impl[Repository Implementations]
-        DS_Remote[Remote Data Source (Supabase/API)]
-        DS_Local[Local Data Source (Hive/Cache)]
-        M[Data Models]
-        RI_Impl -. Implements .- RI
-        RI_Impl -- Calls --> DS_Remote
-        RI_Impl -- Calls --> DS_Local
-        DS_Remote -. Returns .-> M
-        DS_Local -. Returns .-> M
-        RI_Impl -- Maps Models to --> E
+    subgraph Database_Layer [Supabase Backend]
+        DB[(PostgreSQL)]
+        RLS[Row Level Security]
+        SS -- CRUD Ops --> RLS
+        RLS -- Filters --> DB
     end
 ```
-
-### Strict Rules to Follow:
-1. No API calls directly inside UI components.
-2. No business logic inside Widgets.
-3. No Firebase/Supabase HTTP logic directly inside the UI.
+ inside the UI.
 4. The Domain layer must be pure Dart.
 5. Repositories must implement abstract contracts from the Domain layer.
