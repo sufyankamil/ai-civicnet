@@ -24,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final HomeViewModel _viewModel = Get.find<HomeViewModel>();
   final TextEditingController _searchController = TextEditingController();
+  bool _showSafetyBanner = false;
 
   @override
   void initState() {
@@ -35,7 +36,24 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkLocationPermission();
       _checkFeedbackPrompt();
+      _checkSafetyBanner();
     });
+  }
+
+  Future<void> _checkSafetyBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isDismissed = prefs.getBool('safety_banner_dismissed') ?? false;
+    if (!isDismissed && mounted) {
+      setState(() => _showSafetyBanner = true);
+    }
+  }
+
+  Future<void> _dismissSafetyBanner() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('safety_banner_dismissed', true);
+    if (mounted) {
+      setState(() => _showSafetyBanner = false);
+    }
   }
 
   @override
@@ -342,6 +360,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            // Safety Banner
+            _buildSafetyBanner(),
+
             // Filters
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -447,6 +468,79 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSafetyBanner() {
+    if (!_showSafetyBanner) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accentLight.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.accentLight.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.shield_rounded, color: AppColors.accentLight, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Community Commitment',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: AppColors.accentLight,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'CivicNet is committed to community safety. We never ask for money for requests or events.',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: _dismissSafetyBanner,
+                icon: const Icon(Icons.close_rounded, size: 20, color: Colors.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => context.push('/commitment'),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.accentLight.withValues(alpha: 0.1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(
+                'Learn More About Safety',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.accentLight,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

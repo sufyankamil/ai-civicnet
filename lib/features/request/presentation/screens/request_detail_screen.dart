@@ -18,6 +18,7 @@ import '../../../../components/helper_card.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../components/rating_dialog.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../components/report_dialog.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final String requestId;
@@ -206,6 +207,23 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   onPressed: () => context.pop(),
                 ),
               ),
+              actions: [
+                if (SupabaseService().currentUserId != null &&
+                    _viewModel.currentRequest != null &&
+                    SupabaseService().currentUserId !=
+                        _viewModel.currentRequest!.requesterId)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.flag_outlined, color: Colors.white),
+                      onPressed: () => _showReportRequestDialog(),
+                    ),
+                  ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
                   fit: StackFit.expand,
@@ -1464,6 +1482,40 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _showReportRequestDialog() {
+    final request = _viewModel.currentRequest;
+    if (request == null) return;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ReportDialog(
+        title: 'Report Request',
+        onReport: (reason) async {
+          try {
+            await SupabaseService().reportUser(request.requesterId, 'Request "${request.title}": $reason');
+            if (!mounted) return;
+            
+            // ignore: use_build_context_synchronously
+            ToastService.showSuccess(context, 'User reported and blocked. Thank you for helping keep the community safe.');
+            
+            // Wait a brief moment for toast to start showing, then close
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (!mounted) return;
+            
+            // ignore: use_build_context_synchronously
+            Navigator.of(dialogContext).pop(); // Close dialog
+            // ignore: use_build_context_synchronously
+            context.pop(); // Go back from details
+          } catch (e) {
+            if (!mounted) return;
+            // ignore: use_build_context_synchronously
+            ToastService.showError(context, 'Failed to submit report. Please try again.');
+          }
+        },
+      ),
     );
   }
 }
