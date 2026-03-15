@@ -261,7 +261,12 @@ class AnnouncementCard extends StatelessWidget {
       future: SupabaseService().getCurrentUserProfile(),
       builder: (context, snapshot) {
         final currentUser = snapshot.data;
-        if (currentUser?.role != 'super_admin') return const SizedBox.shrink();
+        if (currentUser == null) return const SizedBox.shrink();
+
+        final isSuperAdmin = currentUser.role == 'super_admin';
+        final isAdminAuthor = currentUser.role == 'admin' && announcement.authorId == currentUser.id;
+
+        if (!isSuperAdmin && !isAdminAuthor) return const SizedBox.shrink();
 
         return Column(
           children: [
@@ -273,7 +278,7 @@ class AnnouncementCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  'Super Admin Actions:',
+                  isSuperAdmin ? 'Super Admin Actions:' : 'Admin Actions:',
                   style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -281,21 +286,22 @@ class AnnouncementCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                TextButton.icon(
-                  onPressed: () => _handleVerify(context, !announcement.isVerified),
-                  icon: Icon(
-                    announcement.isVerified ? Icons.unpublished_rounded : Icons.verified_rounded,
-                    size: 18,
-                    color: announcement.isVerified ? Colors.orange : Colors.blue,
-                  ),
-                  label: Text(
-                    announcement.isVerified ? 'Unverify' : 'Verify',
-                    style: TextStyle(
-                      fontSize: 12,
+                if (isSuperAdmin)
+                  TextButton.icon(
+                    onPressed: () => _handleVerify(context, !announcement.isVerified),
+                    icon: Icon(
+                      announcement.isVerified ? Icons.unpublished_rounded : Icons.verified_rounded,
+                      size: 18,
                       color: announcement.isVerified ? Colors.orange : Colors.blue,
                     ),
+                    label: Text(
+                      announcement.isVerified ? 'Unverify' : 'Verify',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: announcement.isVerified ? Colors.orange : Colors.blue,
+                      ),
+                    ),
                   ),
-                ),
                 TextButton.icon(
                   onPressed: () => _handleDelete(context),
                   icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),

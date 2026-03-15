@@ -4,14 +4,85 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:civic_net/models/models.dart';
+import 'package:civic_net/services/supabase_service.dart';
+import 'package:civic_net/services/toast_service.dart';
 
-class AnnouncementDetailScreen extends StatelessWidget {
+class AnnouncementDetailScreen extends StatefulWidget {
   final Announcement announcement;
 
   const AnnouncementDetailScreen({
     super.key,
     required this.announcement,
   });
+
+  @override
+  State<AnnouncementDetailScreen> createState() => _AnnouncementDetailScreenState();
+}
+
+class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
+  late int _voteCount;
+  late bool _isVotedByMe;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use data passed from the list for immediate display
+    _voteCount = widget.announcement.voteCount;
+    _isVotedByMe = widget.announcement.isVotedByMe;
+    
+    // Refresh for absolute accuracy in the background
+    _fetchLatestVoteStatus();
+  }
+
+  Future<void> _fetchLatestVoteStatus() async {
+    try {
+      final data = await SupabaseService().getAnnouncementVotesInfo(widget.announcement.id);
+      if (mounted) {
+        setState(() {
+          _voteCount = data['count'];
+          _isVotedByMe = data['user_voted'];
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching vote status: $e');
+    }
+  }
+
+  Future<void> _toggleVote() async {
+    if (_isLoading) return;
+    
+    final originalVoted = _isVotedByMe;
+    final originalCount = _voteCount;
+
+    setState(() {
+      _isLoading = true;
+      _isVotedByMe = !_isVotedByMe;
+      _voteCount = _isVotedByMe ? _voteCount + 1 : _voteCount - 1;
+    });
+
+    try {
+      await SupabaseService().toggleAnnouncementVote(widget.announcement.id, _isVotedByMe);
+      if (mounted) {
+        ToastService.showSuccess(
+          context, 
+          _isVotedByMe ? 'You upvoted this' : 'Upvote removed'
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isVotedByMe = originalVoted;
+          _voteCount = originalCount;
+        });
+        ToastService.showError(context, 'Failed to vote: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   Color _getCategoryColor(AnnouncementCategory category) {
     switch (category) {
@@ -49,7 +120,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final categoryColor = _getCategoryColor(announcement.category);
+    final categoryColor = _getCategoryColor(widget.announcement.category);
 
     return Scaffold(
       body: CustomScrollView(
@@ -68,9 +139,9 @@ class AnnouncementDetailScreen extends StatelessWidget {
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: announcement.imageUrl != null && announcement.imageUrl!.isNotEmpty
+              background: widget.announcement.imageUrl != null && widget.announcement.imageUrl!.isNotEmpty
                   ? CachedNetworkImage(
-                      imageUrl: announcement.imageUrl!,
+                      imageUrl: widget.announcement.imageUrl!,
                       fit: BoxFit.cover,
                     )
                   : Container(
@@ -86,7 +157,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                       ),
                       child: Center(
                         child: Icon(
-                          _getCategoryIcon(announcement.category),
+                          _getCategoryIcon(widget.announcement.category),
                           size: 80,
                           color: Colors.white.withValues(alpha: 0.5),
                         ),
@@ -113,11 +184,11 @@ class AnnouncementDetailScreen extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(_getCategoryIcon(announcement.category), 
+                            Icon(_getCategoryIcon(widget.announcement.category), 
                                  size: 14, color: categoryColor),
                             const SizedBox(width: 6),
                             Text(
-                              announcement.category.name.toUpperCase(),
+                              widget.announcement.category.name.toUpperCase(),
                               style: theme.textTheme.labelLarge?.copyWith(
                                 color: categoryColor,
                                 fontWeight: FontWeight.bold,
@@ -128,7 +199,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        timeago.format(announcement.createdAt),
+                        timeago.format(widget.announcement.createdAt),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                           fontWeight: FontWeight.w500,
@@ -138,14 +209,14 @@ class AnnouncementDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    announcement.title,
+                    widget.announcement.title,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       height: 1.2,
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
-                  if (announcement.isVerified)
+                  if (widget.announcement.isVerified)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Row(
@@ -167,14 +238,14 @@ class AnnouncementDetailScreen extends StatelessWidget {
                   const Divider(),
                   const SizedBox(height: 24),
                   Text(
-                    announcement.content,
+                    widget.announcement.content,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       height: 1.6,
                       color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
                     ),
                   ),
                   const SizedBox(height: 32),
-                  if (announcement.sourceUrl != null && announcement.sourceUrl!.isNotEmpty) ...[
+                  if (widget.announcement.sourceUrl != null && widget.announcement.sourceUrl!.isNotEmpty) ...[
                     Text(
                       'REFERENCE',
                       style: theme.textTheme.labelMedium?.copyWith(
@@ -185,7 +256,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     InkWell(
-                      onTap: () => _launchURL(announcement.sourceUrl!),
+                      onTap: () => _launchURL(widget.announcement.sourceUrl!),
                       borderRadius: BorderRadius.circular(16),
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -220,7 +291,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                                     ),
                                   ),
                                   Text(
-                                    announcement.sourceUrl!,
+                                    widget.announcement.sourceUrl!,
                                     style: theme.textTheme.bodySmall?.copyWith(
                                       color: theme.primaryColor,
                                       decoration: TextDecoration.underline,
@@ -238,7 +309,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 40),
                   ],
-                  _buildAuthorSection(context, theme),
+                  _buildAuthorAndVoteSection(context, theme),
                   const SizedBox(height: 48),
                 ],
               ),
@@ -249,7 +320,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAuthorSection(BuildContext context, ThemeData theme) {
+  Widget _buildAuthorAndVoteSection(BuildContext context, ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -257,41 +328,140 @@ class AnnouncementDetailScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
       ),
-      child: Row(
+      child: Column(
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundImage: announcement.authorAvatarUrl != null && announcement.authorAvatarUrl!.isNotEmpty
-                ? NetworkImage(announcement.authorAvatarUrl!)
-                : null,
-            child: announcement.authorAvatarUrl == null || announcement.authorAvatarUrl!.isEmpty
-                ? const Icon(Icons.person, size: 24)
-                : null,
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundImage: widget.announcement.authorAvatarUrl != null && widget.announcement.authorAvatarUrl!.isNotEmpty
+                    ? NetworkImage(widget.announcement.authorAvatarUrl!)
+                    : null,
+                child: widget.announcement.authorAvatarUrl == null || widget.announcement.authorAvatarUrl!.isEmpty
+                    ? const Icon(Icons.person, size: 24)
+                    : null,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'POSTED BY',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    Text(
+                      widget.announcement.authorName ?? 'Community Leader',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'POSTED BY',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                    color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+          const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'HELPFUL?',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                      color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                    ),
                   ),
-                ),
-                Text(
-                  announcement.authorName ?? 'Community Leader',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
+                  Text(
+                    '$_voteCount community members agreed',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              const Spacer(),
+              _VoteButton(
+                isVoted: _isVotedByMe,
+                onTap: _toggleVote,
+                isLoading: _isLoading,
+              ),
+            ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _VoteButton extends StatelessWidget {
+  final bool isVoted;
+  final VoidCallback onTap;
+  final bool isLoading;
+
+  const _VoteButton({
+    required this.isVoted,
+    required this.onTap,
+    this.isLoading = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.primaryColor;
+
+    return Material(
+      color: isVoted ? primaryColor : Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: isLoading ? null : onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isVoted ? primaryColor : theme.colorScheme.primary.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isLoading)
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                )
+              else
+                Icon(
+                  isVoted ? Icons.thumb_up_rounded : Icons.thumb_up_outlined,
+                  size: 18,
+                  color: isVoted ? Colors.white : primaryColor,
+                ),
+              const SizedBox(width: 8),
+              Text(
+                'Agree',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: isVoted ? Colors.white : primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

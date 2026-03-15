@@ -83,7 +83,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
         'lat': request.lat,
         'lng': request.lng,
         'location_name': request.locationName,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at': DateTime.now().toUtc().toIso8601String(),
         'status': 'open',
       }).withServerTimeout();
     } catch (e) {

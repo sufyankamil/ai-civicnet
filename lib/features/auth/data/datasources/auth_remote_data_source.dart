@@ -253,7 +253,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'id': user.id,
         'name': name,
         'avatar_url': avatar,
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       }, onConflict: 'id').withServerTimeout();
     } catch (e) {
       logger.e('Failed to upsert OAuth profile: $e');

@@ -19,6 +19,8 @@ class Announcement extends Equatable {
   final bool isVerified;
   final String? sourceUrl;
   final DateTime createdAt;
+  final int voteCount;
+  final bool isVotedByMe;
 
   const Announcement({
     required this.id,
@@ -32,12 +34,19 @@ class Announcement extends Equatable {
     this.isVerified = false,
     this.sourceUrl,
     required this.createdAt,
+    this.voteCount = 0,
+    this.isVotedByMe = false,
   });
 
   factory Announcement.fromJson(Map<String, dynamic> json) {
     // Handling profiles join if provided
     final profile = json['profiles'] as Map<String, dynamic>?;
     
+    // Handling votes count and user vote state
+    // Use the denormalized votes_count column for performance
+    final votesCount = json['votes_count'] as int? ?? 0;
+    final userVoted = json['user_voted'] as bool? ?? false;
+
     return Announcement(
       id: json['id'] as String,
       title: json['title'] as String,
@@ -50,6 +59,40 @@ class Announcement extends Equatable {
       isVerified: json['is_verified'] as bool? ?? false,
       sourceUrl: json['source_url'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      voteCount: votesCount,
+      isVotedByMe: userVoted,
+    );
+  }
+
+  Announcement copyWith({
+    String? id,
+    String? title,
+    String? content,
+    String? imageUrl,
+    String? authorId,
+    String? authorName,
+    String? authorAvatarUrl,
+    AnnouncementCategory? category,
+    bool? isVerified,
+    String? sourceUrl,
+    DateTime? createdAt,
+    int? voteCount,
+    bool? isVotedByMe,
+  }) {
+    return Announcement(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      imageUrl: imageUrl ?? this.imageUrl,
+      authorId: authorId ?? this.authorId,
+      authorName: authorName ?? this.authorName,
+      authorAvatarUrl: authorAvatarUrl ?? this.authorAvatarUrl,
+      category: category ?? this.category,
+      isVerified: isVerified ?? this.isVerified,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      createdAt: createdAt ?? this.createdAt,
+      voteCount: voteCount ?? this.voteCount,
+      isVotedByMe: isVotedByMe ?? this.isVotedByMe,
     );
   }
 
@@ -80,5 +123,7 @@ class Announcement extends Equatable {
         isVerified,
         sourceUrl,
         createdAt,
+        voteCount,
+        isVotedByMe,
       ];
 }
