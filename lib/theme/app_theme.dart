@@ -13,17 +13,18 @@ class AppColors {
   static const Color textSecondaryLight = Color(0xFF636E72);
 
   // Dark Mode
-  static const Color primaryDark = Color(0xFF9D85FF); // Lighter violet for dark bg
-  static const Color secondaryDark = Color(0xFFCDB4FF); // Pale lavender
-  static const Color accentDark = Color(0xFFFF8787); // Soft Red
-  static const Color backgroundDark = Color(0xFF1A1825); // Deep purple-black
-  static const Color surfaceDark = Color(0xFF2A2640);
-  static const Color textPrimaryDark = Color(0xFFF5F4FF);
-  static const Color textSecondaryDark = Color(0xFFB2BEC3);
+  static const Color primaryDark = Color(0xFFC2B4FF); // Softer, more readable violet
+  static const Color secondaryDark = Color(0xFFE0D4FF); // Very pale lavender
+  static const Color accentDark = Color(0xFFFF9E9E); // Softer Red
+  static const Color backgroundDark = Color(0xFF0F0E17); // Deeper purple-black
+  static const Color surfaceDark = Color(0xFF161622); // Card surface
+  static const Color surfaceVariantDark = Color(0xFF232232); // For inputs/chips
+  static const Color textPrimaryDark = Color(0xFFF9F9FB); // Off-white for less eye strain
+  static const Color textSecondaryDark = Color(0xFFA7A9BE); // Much better contrast than before
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF9D85FF), Color(0xFF7B61FF)],
+    colors: [Color(0xFFC2B4FF), Color(0xFF9D85FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -82,11 +83,15 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: AppColors.primaryDark,
       scaffoldBackgroundColor: AppColors.backgroundDark,
+      cardColor: AppColors.surfaceDark,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryDark,
         secondary: AppColors.secondaryDark,
         surface: AppColors.surfaceDark,
+        surfaceContainer: AppColors.surfaceVariantDark,
         error: AppColors.accentDark,
+        onSurface: AppColors.textPrimaryDark,
+        onSurfaceVariant: AppColors.textSecondaryDark,
       ),
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).apply(
         bodyColor: AppColors.textPrimaryDark,
@@ -104,7 +109,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceDark,
+        fillColor: AppColors.surfaceVariantDark,
         contentPadding: const EdgeInsets.all(16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),

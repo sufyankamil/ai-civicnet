@@ -14,6 +14,7 @@ class User {
   final int ratingCount; // Added rating count
   final int points;
   final List<String> skills;
+  final String role; // 'user' or 'admin'
 
   final double? lat;
   final double? lng;
@@ -29,6 +30,7 @@ class User {
     this.ratingCount = 0,
     this.points = 0,
     this.skills = const [],
+    this.role = 'user',
     this.lat,
     this.lng,
   });

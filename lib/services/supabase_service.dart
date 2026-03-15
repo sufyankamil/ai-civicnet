@@ -88,6 +88,7 @@ class SupabaseService {
 
   Future<void> signOut() async {
     await _client.auth.signOut().withServerTimeout();
+    await CacheService().clear();
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
@@ -164,8 +165,8 @@ class SupabaseService {
 
       final List<dynamic> data = response as List<dynamic>;
       
-      // Cache the data
-      await CacheService().put('help_requests', data);
+      // Cache the data with a 15-minute TTL
+      await CacheService().put('help_requests', data, ttl: const Duration(minutes: 15));
       
       // Parse in background isolate
       List<HelpRequest> requests = await compute(parseHelpRequests, data);
@@ -301,6 +302,7 @@ class SupabaseService {
         skills: skillsList,
         lat: (data['lat'] ?? 0.0).toDouble(),
         lng: (data['lng'] ?? 0.0).toDouble(),
+        role: data['role'] ?? 'user',
       );
     } catch (e) {
       logger.e('Error fetching user profile $userId: $e');
@@ -324,6 +326,7 @@ class SupabaseService {
             skills: skillsList,
             lat: (data['lat'] ?? 0.0).toDouble(),
             lng: (data['lng'] ?? 0.0).toDouble(),
+            role: data['role'] ?? 'user',
          );
       }
       return null;
@@ -367,6 +370,7 @@ class SupabaseService {
         skills: skillsList,
         lat: (data['lat'] ?? 0.0).toDouble(),
         lng: (data['lng'] ?? 0.0).toDouble(),
+        role: data['role'] ?? 'user',
       );
     } catch (e, stack) {
         logger.e('DEBUG: Error parsing profile: $e\n$stack'); // DEBUG LOG
@@ -793,6 +797,32 @@ class SupabaseService {
     return _client.storage.from('app-feedback').getPublicUrl(path);
   }
 
+  // --- Announcements ---
+
+  Future<List<Announcement>> getAnnouncements() async {
+    try {
+      final response = await _client
+          .from('announcements')
+          .select('*, profiles:author_id(name, avatar_url)')
+          .order('created_at', ascending: false)
+          .withServerTimeout();
+      
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => Announcement.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching announcements: $e');
+      return [];
+    }
+  }
+
+  Stream<List<Announcement>> getAnnouncementsStream() {
+    return _client
+        .from('announcements')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false)
+        .map((data) => data.map((json) => Announcement.fromJson(json)).toList());
+  }
+
   // --- Realtime ---
 
   RealtimeChannel subscribeToHelpRequests(Function() callback) {
@@ -1174,5 +1204,155 @@ class SupabaseService {
 
   Future<void> deleteEventComment(String commentId) async {
     await _client.from('event_comments').delete().eq('id', commentId).withServerTimeout();
+  }
+
+  // --- Admin & Verification ---
+
+  Future<void> submitVerificationRequest(String reason) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('verification_requests').insert({
+      'user_id': user.id,
+      'reason': reason,
+      'status': 'pending',
+    }).withServerTimeout();
+  }
+
+  /// Get count of pending verification requests
+  Future<int> getPendingRequestsCount() async {
+    try {
+      final response = await _client
+          .from('verification_requests')
+          .select('id')
+          .eq('status', 'pending');
+      
+      return (response as List).length;
+    } catch (e) {
+      logger.e('Error getting pending requests count: $e');
+      return 0;
+    }
+  }
+
+  /// Get pending verification requests for admin review
+  Future<List<VerificationRequest>> getPendingVerificationRequests() async {
+    try {
+      final response = await _client
+          .from('verification_requests')
+          .select('*, profiles:user_id(name, avatar_url)')
+          .eq('status', 'pending')
+          .order('created_at', ascending: true)
+          .withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => VerificationRequest.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching verification requests: $e');
+      return [];
+    }
+  }
+
+  Future<void> updateUserRole(String userId, String role) async {
+    final response = await _client
+        .from('profiles')
+        .update({'role': role})
+        .eq('id', userId)
+        .select()
+        .withServerTimeout();
+    
+    if ((response as List).isEmpty) {
+      throw Exception('Failed to update user role. You might not have permission.');
+    }
+  }
+
+  Future<void> updateVerificationStatus(String requestId, String status) async {
+    await _client
+        .from('verification_requests')
+        .update({'status': status})
+        .eq('id', requestId)
+        .withServerTimeout();
+  }
+
+  Future<Map<String, dynamic>> checkVerificationEligibility() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return {'eligible': false, 'reason': 'Not authenticated'};
+
+    try {
+      // 1. Check for pending requests
+      final pendingResponse = await _client
+          .from('verification_requests')
+          .select()
+          .eq('user_id', user.id)
+          .eq('status', 'pending')
+          .maybeSingle();
+      
+      if (pendingResponse != null) {
+        return {'eligible': false, 'reason': 'pending'};
+      }
+
+      // 2. Check for latest request (approved or rejected)
+      final latestRequestResponse = await _client
+          .from('verification_requests')
+          .select()
+          .eq('user_id', user.id)
+          .order('updated_at', ascending: false)
+          .limit(1);
+      
+      final List<dynamic> historyData = latestRequestResponse as List<dynamic>;
+
+      if (historyData.isNotEmpty) {
+        final lastRequest = historyData[0];
+        final String status = lastRequest['status'];
+
+        if (status == 'rejected') {
+          // Check for cooldown (3 rejections)
+          final allRejections = await _client
+              .from('verification_requests')
+              .select()
+              .eq('user_id', user.id)
+              .eq('status', 'rejected');
+          
+          final List<dynamic> rejectionData = allRejections as List<dynamic>;
+
+          if (rejectionData.length >= 3) {
+            final lastRejection = DateTime.parse(rejectionData[0]['updated_at']);
+            final cooldownEnd = lastRejection.add(const Duration(days: 30));
+            
+            if (DateTime.now().isBefore(cooldownEnd)) {
+              return {
+                'eligible': false, 
+                'reason': 'cooldown',
+                'cooldownEnd': cooldownEnd,
+              };
+            }
+          }
+
+          return {
+            'eligible': true,
+            'lastStatus': 'rejected',
+            'rejectionCount': rejectionData.length,
+          };
+        } else if (status == 'approved') {
+          // If approved but role is still 'user', something went wrong with the sync
+          // We'll allow them to see the button to potentially trigger a refresh or re-approval
+          final currentUser = await getCurrentUserProfile();
+          if (currentUser?.role != 'admin' && currentUser?.role != 'super_admin') {
+            return {
+              'eligible': true,
+              'lastStatus': 'approved_pending_sync',
+            };
+          }
+
+          return {
+            'eligible': false,
+            'lastStatus': 'approved',
+          };
+        }
+      }
+      return {'eligible': true};
+    } catch (e) {
+      logger.e('Error checking verification eligibility: $e');
+      return {'eligible': false, 'reason': 'error'};
+    }
   }
 }

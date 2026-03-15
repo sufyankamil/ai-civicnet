@@ -21,7 +21,7 @@ class HelpRequestCard extends StatelessWidget {
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
       ),
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
@@ -73,7 +73,7 @@ class HelpRequestCard extends StatelessWidget {
                           '${request.requesterName} • ${timeago.format(request.postedAt)}',
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -93,11 +93,11 @@ class HelpRequestCard extends StatelessWidget {
               if (request.requesterId == SupabaseService().currentUserId)
                 Row(
                   children: [
-                    Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                    Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     const SizedBox(width: 4),
                     Text(
                       request.locationName,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                   ],
                 )
@@ -124,11 +124,11 @@ class HelpRequestCard extends StatelessWidget {
                         if (request.locationName != 'Current Location')
                           Row(
                             children: [
-                              Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                              Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
                               const SizedBox(width: 4),
                               Text(
                                 request.locationName,
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                               ),
                             ],
                           ),
@@ -171,18 +171,21 @@ class HelpRequestCard extends StatelessWidget {
         text = 'General';
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: isDark ? 0.2 : 0.1),
         borderRadius: BorderRadius.circular(8),
+        border: isDark ? Border.all(color: color.withValues(alpha: 0.3), width: 1) : null,
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
+          color: isDark ? color.withValues(alpha: 0.9) : color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
