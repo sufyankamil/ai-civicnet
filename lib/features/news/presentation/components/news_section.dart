@@ -1,51 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:civic_net/services/supabase_service.dart';
+import 'package:civic_net/services/toast_service.dart';
 import 'package:civic_net/models/models.dart';
 import 'announcement_card.dart';
+import '../../../../widgets/haptic_buttons.dart';
 
 class NewsSection extends StatelessWidget {
   const NewsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<List<Announcement>>(
-      stream: SupabaseService().getAnnouncementsStream(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator.adaptive());
-        }
-        
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
-        
-        final announcements = snapshot.data ?? [];
-        
-        if (announcements.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.newspaper_rounded, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
-                const SizedBox(height: 16),
-                const Text(
-                  'No announcements yet',
-                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-          );
-        }
+    return FutureBuilder<User?>(
+      future: SupabaseService().getCurrentUserProfile(),
+      builder: (context, userSnapshot) {
+        final user = userSnapshot.data;
+        final isAdmin = user?.role == 'admin' || user?.role == 'super_admin';
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: announcements.length,
-          itemBuilder: (context, index) {
-            return AnnouncementCard(
-              announcement: announcements[index],
-              onTap: () {
-                // Future: Slide up full announcement detail
-              },
+        return StreamBuilder<List<Announcement>>(
+          stream: SupabaseService().getAnnouncementsStream(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator.adaptive());
+            }
+            
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+            
+            final announcements = snapshot.data ?? [];
+            
+            return Stack(
+              children: [
+                if (announcements.isEmpty)
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.newspaper_rounded, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'No announcements yet',
+                          style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: announcements.length,
+                    itemBuilder: (context, index) {
+                      return AnnouncementCard(
+                        announcement: announcements[index],
+                        onTap: () {},
+                      );
+                    },
+                  ),
+                if (isAdmin)
+                  Positioned(
+                    bottom: 24,
+                    right: 24,
+                    child: AppFloatingActionButton.extended(
+                      onPressed: () {
+                        ToastService.showInfo(context, 'Coming soon: Admin Announcement Creator');
+                      },
+                      label: const Text('Post News'),
+                      icon: const Icon(Icons.add_comment_rounded),
+                      backgroundColor: Theme.of(context).primaryColor,
+                    ),
+                  ),
+              ],
             );
           },
         );

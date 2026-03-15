@@ -12,6 +12,7 @@ import '../../../../services/toast_service.dart';
 import '../../../../components/request_card.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../../../news/presentation/components/news_section.dart';
+import '../../../../widgets/haptic_buttons.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? initialFilter;
@@ -86,11 +87,14 @@ class _HomeScreenState extends State<HomeScreen> {
             'To show accurate help requests and matches near you, Civic Net needs access to your location.',
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Not Now', style: TextStyle(color: Colors.grey)),
+            AppHaptic(
+              onTap: () => Navigator.of(context).pop(),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: const Text('Not Now', style: TextStyle(color: Colors.grey)),
+              ),
             ),
-            ElevatedButton(
+            AppElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _requestLocationUpdates();
@@ -351,6 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 controller: _searchController,
                 onChanged: _viewModel.onSearchChanged,
                 decoration: InputDecoration(
+                  hintText: 'Search help requests...',
                   hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   filled: true,

@@ -5,6 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../components/verification_request_dialog.dart';
+import '../../../../widgets/haptic_buttons.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -16,6 +18,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   Future<User?>? _profileFuture;
+  Future<Map<String, dynamic>>? _eligibilityFuture;
   late final AnimationController _bannerController;
   late final Animation<double> _bannerAnim;
   final ScrollController _scrollController = ScrollController();
@@ -44,6 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   void _refreshProfile() {
     setState(() {
       _profileFuture = SupabaseService().getCurrentUserProfile();
+      _eligibilityFuture = SupabaseService().checkVerificationEligibility();
     });
   }
 
@@ -79,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   Text('Could not load profile',
                       style: GoogleFonts.poppins(color: Colors.grey)),
                   const SizedBox(height: 16),
-                  ElevatedButton(
+                  AppElevatedButton(
                       onPressed: _refreshProfile,
                       child: const Text('Retry')),
                 ],
@@ -108,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       const SizedBox(height: 28),
                       _buildSkillsSection(user, isDark),
                       const SizedBox(height: 28),
-                      _buildActionsSection(context, isDark),
+                      _buildActionsSection(context, isDark, user),
                       // Extra clearance so content scrolls above the bottom nav bar
                       SizedBox(
                         height: MediaQuery.of(context).padding.bottom +
@@ -558,7 +562,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   // ─── Actions ──────────────────────────────────────────────────────────────
 
-  Widget _buildActionsSection(BuildContext context, bool isDark) {
+  Widget _buildActionsSection(BuildContext context, bool isDark, User user) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -597,8 +601,131 @@ class _ProfileScreenState extends State<ProfileScreen>
                   isDark: isDark,
                 ),
                 _buildDivider(isDark),
+                if (user.role == 'super_admin')
+                  FutureBuilder<int>(
+                    future: SupabaseService().getPendingRequestsCount(),
+                    builder: (context, countSnapshot) {
+                      final count = countSnapshot.data ?? 0;
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildActionTile(
+                            icon: Icons.admin_panel_settings_rounded,
+                            iconColor: Colors.amber,
+                            label: 'Admin Control Panel',
+                            onTap: () async {
+                              await context.push('/admin-panel');
+                              _refreshProfile();
+                            },
+                            isDark: isDark,
+                            badgeCount: count > 0 ? count : null,
+                          ),
+                          _buildDivider(isDark),
+                        ],
+                      );
+                    },
+                  )
+                else if (user.role == 'admin')
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildActionTile(
+                        icon: Icons.verified_rounded,
+                        iconColor: Colors.green,
+                        label: 'Verified Leader Status',
+                        onTap: () {
+                          showAdaptiveDialog(
+                            context: context,
+                            builder: (context) => AlertDialog.adaptive(
+                              title: const Text('Verified Leader'),
+                              content: const Text(
+                                'Congratulations! You are a verified community leader. You can now post official news announcements to the community feed.'
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('Awesome'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        isDark: isDark,
+                        showChevron: false,
+                      ),
+                      _buildDivider(isDark),
+                    ],
+                  )
+                else
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: _eligibilityFuture,
+                      builder: (context, elSnapshot) {
+                        final data = elSnapshot.data;
+                        final String? reason = data?['reason'];
+                      final String? lastStatus = data?['lastStatus'];
+                      
+                      if (reason == 'pending') {
+                        return _buildActionTile(
+                          icon: Icons.hourglass_empty_rounded,
+                          iconColor: Colors.orange,
+                          label: 'Leader Status Pending',
+                          onTap: () {},
+                          isDark: isDark,
+                          showChevron: false,
+                        );
+                      }
+
+                      if (reason == 'cooldown') {
+                        final DateTime end = data!['cooldownEnd'];
+                        final daysLeft = end.difference(DateTime.now()).inDays;
+                        return _buildActionTile(
+                          icon: Icons.timer_outlined,
+                          iconColor: Colors.redAccent,
+                          label: 'Application Limit Reached',
+                          onTap: () {
+                            showAdaptiveDialog(
+                              context: context,
+                              builder: (context) => AlertDialog.adaptive(
+                                title: const Text('Application Limit'),
+                                content: Text(
+                                  'Your application has been declined 3 times. To ensure quality, there is a 30-day waiting period.\n\n'
+                                  'You can reapply in $daysLeft ${daysLeft == 1 ? 'day' : 'days'} (on ${end.day}/${end.month}/${end.year}).',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text('Got it'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          isDark: isDark,
+                        );
+                      }
+
+                      return _buildActionTile(
+                        icon: Icons.verified_user_rounded,
+                        iconColor: lastStatus == 'rejected' ? Colors.redAccent : Colors.blue,
+                        label: lastStatus == 'rejected' 
+                          ? 'Application Rejected - Try Again' 
+                          : (lastStatus == 'approved_pending_sync' 
+                              ? 'Leader Status Approved - Syncing...'
+                              : 'Apply for Leader Status'),
+                        onTap: () async {
+                          final result = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => const VerificationRequestDialog(),
+                          );
+                          if (result == true) _refreshProfile();
+                        },
+                        isDark: isDark,
+                      );
+                    },
+                  ),
+                _buildDivider(isDark),
                 _buildActionTile(
-                  icon: Icons.shield_rounded,
+                    icon: Icons.shield_rounded,
                   iconColor: AppColors.accentLight,
                   label: 'Our Commitment & Safety',
                   onTap: () => context.push('/commitment'),
@@ -666,8 +793,9 @@ class _ProfileScreenState extends State<ProfileScreen>
     required bool isDark,
     Color? labelColor,
     bool showChevron = true,
+    int? badgeCount,
   }) {
-    return InkWell(
+    return AppHaptic(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
       child: Padding(
@@ -682,20 +810,41 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               child: Icon(icon, color: iconColor, size: 20),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: labelColor,
+                  color: labelColor ??
+                      (isDark ? Colors.white : AppColors.textPrimaryLight),
                 ),
               ),
             ),
+            if (badgeCount != null && badgeCount > 0)
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  badgeCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             if (showChevron)
-              Icon(Icons.chevron_right_rounded,
-                  color: Colors.grey.shade400, size: 20),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? Colors.grey[600] : Colors.grey[400],
+                size: 20,
+              ),
           ],
         ),
       ),

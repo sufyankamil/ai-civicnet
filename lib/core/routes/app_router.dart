@@ -43,6 +43,7 @@ import '../../features/events/presentation/screens/events_list_screen.dart';
 import '../../features/events/presentation/screens/create_event_screen.dart';
 import '../../features/events/presentation/screens/event_detail_screen.dart';
 import '../../features/events/presentation/screens/location_picker_screen.dart';
+import '../../features/profile/presentation/screens/admin_panel_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 
@@ -281,6 +282,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
           final initialLocation = state.extra as LatLng?;
           return LocationPickerScreen(initialLocation: initialLocation);
         },
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/admin-panel',
+        builder: (context, state) => const AdminPanelScreen(),
       ),
     ],
   );
