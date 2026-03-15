@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:civic_net/models/models.dart';
+import 'package:civic_net/services/supabase_service.dart';
+import 'package:civic_net/services/toast_service.dart';
+import '../screens/announcement_detail_screen.dart';
 
 class AnnouncementCard extends StatelessWidget {
   final Announcement announcement;
@@ -67,7 +71,14 @@ class AnnouncementCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: onTap,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AnnouncementDetailScreen(announcement: announcement),
+                ),
+              );
+            },
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -157,6 +168,36 @@ class AnnouncementCard extends StatelessWidget {
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      if (announcement.sourceUrl != null) ...[
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () => _launchURL(announcement.sourceUrl!),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: theme.primaryColor.withValues(alpha: 0.1)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.link_rounded, size: 14, color: theme.primaryColor),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Source Information',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.primaryColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       const Divider(),
                       const SizedBox(height: 12),
@@ -196,6 +237,7 @@ class AnnouncementCard extends StatelessWidget {
                                size: 16, color: theme.primaryColor),
                         ],
                       ),
+                      _buildAdminActions(context),
                     ],
                   ),
                 ),
@@ -205,5 +247,118 @@ class AnnouncementCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _launchURL(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri != null && await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    }
+  }
+
+  Widget _buildAdminActions(BuildContext context) {
+    return FutureBuilder<User?>(
+      future: SupabaseService().getCurrentUserProfile(),
+      builder: (context, snapshot) {
+        final currentUser = snapshot.data;
+        if (currentUser == null) return const SizedBox.shrink();
+
+        final isSuperAdmin = currentUser.role == 'super_admin';
+        final isAdminAuthor = currentUser.role == 'admin' && announcement.authorId == currentUser.id;
+
+        if (!isSuperAdmin && !isAdminAuthor) return const SizedBox.shrink();
+
+        return Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  isSuperAdmin ? 'Super Admin Actions:' : 'Admin Actions:',
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                const Spacer(),
+                if (isSuperAdmin)
+                  TextButton.icon(
+                    onPressed: () => _handleVerify(context, !announcement.isVerified),
+                    icon: Icon(
+                      announcement.isVerified ? Icons.unpublished_rounded : Icons.verified_rounded,
+                      size: 18,
+                      color: announcement.isVerified ? Colors.orange : Colors.blue,
+                    ),
+                    label: Text(
+                      announcement.isVerified ? 'Unverify' : 'Verify',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: announcement.isVerified ? Colors.orange : Colors.blue,
+                      ),
+                    ),
+                  ),
+                TextButton.icon(
+                  onPressed: () => _handleDelete(context),
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
+                  label: const Text(
+                    'Delete',
+                    style: TextStyle(fontSize: 12, color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _handleDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Announcement?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await SupabaseService().deleteAnnouncement(announcement.id);
+        if (context.mounted) {
+          ToastService.showSuccess(context, 'Announcement deleted');
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ToastService.showError(context, 'Failed to delete: $e');
+        }
+      }
+    }
+  }
+
+  Future<void> _handleVerify(BuildContext context, bool verify) async {
+    try {
+      await SupabaseService().verifyAnnouncement(announcement.id, verify);
+      if (context.mounted) {
+        ToastService.showSuccess(context, verify ? 'Announcement verified' : 'Verification removed');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ToastService.showError(context, 'Action failed: $e');
+      }
+    }
   }
 }

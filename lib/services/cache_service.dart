@@ -23,7 +23,7 @@ class CacheService {
     try {
       final entry = {
         'data': data,
-        'timestamp': DateTime.now().toIso8601String(),
+        'timestamp': DateTime.now().toUtc().toIso8601String(),
         'ttl': ttl?.inMilliseconds,
       };
       await _box.put(key, entry);

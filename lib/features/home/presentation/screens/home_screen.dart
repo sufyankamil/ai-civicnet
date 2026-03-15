@@ -23,14 +23,25 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final HomeViewModel _viewModel = Get.find<HomeViewModel>();
   final TextEditingController _searchController = TextEditingController();
+  late TabController _tabController;
   bool _showSafetyBanner = false;
+  String _newsSearchQuery = '';
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {
+          // Trigger rebuild to update search hint
+        });
+      }
+    });
+
     if (widget.initialFilter != null) {
       _viewModel.onFilterSelected(widget.initialFilter!);
     }
@@ -61,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -281,10 +293,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        body: SafeArea(
+    return Scaffold(
+      body: SafeArea(
           child: Column(
             children: [
             // Header
@@ -353,9 +363,19 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
                 controller: _searchController,
-                onChanged: _viewModel.onSearchChanged,
+                onChanged: (value) {
+                  if (_tabController.index == 0) {
+                    _viewModel.onSearchChanged(value);
+                  } else {
+                    setState(() {
+                      _newsSearchQuery = value;
+                    });
+                  }
+                },
                 decoration: InputDecoration(
-                  hintText: 'Search help requests...',
+                  hintText: _tabController.index == 0 
+                      ? 'Search help requests...' 
+                      : 'Search news feed...',
                   hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   filled: true,
@@ -375,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TabBar(
+                controller: _tabController,
                 isScrollable: false,
                 labelColor: Theme.of(context).primaryColor,
                 unselectedLabelColor: Colors.grey,
@@ -393,6 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             Expanded(
               child: TabBarView(
+                controller: _tabController,
                 children: [
                   // --- REQUESTS TAB ---
                   Column(
@@ -503,16 +525,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
 
                   // --- NEWS FEED TAB ---
-                  const NewsSection(),
+                  NewsSection(searchQuery: _newsSearchQuery),
                 ],
               ),
             ),
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildSafetyBanner() {
     if (!_showSafetyBanner) return const SizedBox.shrink();

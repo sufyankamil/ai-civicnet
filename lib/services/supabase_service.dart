@@ -27,6 +27,7 @@ class SupabaseService {
     _client.auth.onAuthStateChange.listen((data) {
       if (data.session != null) {
         _setupNotificationListener();
+        initVoteCache(); // Initialize the vote cache on login
       } else {
         _notificationChannel?.unsubscribe();
         _notificationChannel = null;
@@ -36,6 +37,27 @@ class SupabaseService {
 
   final SupabaseClient _client = Supabase.instance.client;
   RealtimeChannel? _notificationChannel;
+  final Set<String> _userVotedIds = {};
+
+  Future<void> initVoteCache() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final response = await _client
+          .from('announcement_votes')
+          .select('announcement_id')
+          .eq('user_id', user.id);
+      
+      final List<dynamic> data = response as List<dynamic>;
+      _userVotedIds.clear();
+      for (var item in data) {
+        _userVotedIds.add(item['announcement_id'] as String);
+      }
+    } catch (e) {
+      logger.e('Error initializing vote cache: $e');
+    }
+  }
 
   void _setupNotificationListener() {
     final userId = currentUserId;
@@ -135,7 +157,7 @@ class SupabaseService {
       'lng': request.lng,
       'location_name': request.locationName,
 
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
       'status': 'open',
     }).withServerTimeout();
   }
@@ -441,7 +463,7 @@ class SupabaseService {
       'name': name,
       'avatar_url': sanitizeAvatarUrl(avatarUrl),
       'skills': skills,
-      'updated_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
 
     await _client.from('profiles').upsert(updates).withServerTimeout();
@@ -454,7 +476,7 @@ class SupabaseService {
     await _client.from('profiles').update({
       'lat': lat,
       'lng': lng,
-      'updated_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', user.id).withServerTimeout();
   }
 
@@ -651,7 +673,7 @@ class SupabaseService {
       
       // Force UI update by touching the conversation table
       await _client.from('conversations').update({
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
       }).eq('id', conversationId).withServerTimeout();
     } catch (e) {
       logger.e('Error marking conversation $conversationId as read via RPC: $e');
@@ -666,7 +688,7 @@ class SupabaseService {
             .neq('sender_id', user.id).withServerTimeout();
             
          await _client.from('conversations').update({
-            'updated_at': DateTime.now().toIso8601String(),
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
          }).eq('id', conversationId).withServerTimeout();
       } catch (directError) {
          logger.e('Direct update fallback also failed: $directError');
@@ -695,7 +717,7 @@ class SupabaseService {
     }).withServerTimeout();
     
     await _client.from('conversations').update({
-        'updated_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', conversationId).withServerTimeout();
   }
 
@@ -777,7 +799,7 @@ class SupabaseService {
       'rating': rating,
       'description': description,
       'screenshot_url': screenshotUrl,
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     }).withServerTimeout();
   }
 
@@ -808,7 +830,12 @@ class SupabaseService {
           .withServerTimeout();
       
       final List<dynamic> data = response as List<dynamic>;
-      return data.map((json) => Announcement.fromJson(json)).toList();
+      return data.map((json) {
+        final annId = json['id'] as String;
+        return Announcement.fromJson(json).copyWith(
+          isVotedByMe: _userVotedIds.contains(annId),
+        );
+      }).toList();
     } catch (e) {
       logger.e('Error fetching announcements: $e');
       return [];
@@ -820,7 +847,138 @@ class SupabaseService {
         .from('announcements')
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
-        .map((data) => data.map((json) => Announcement.fromJson(json)).toList());
+        .map((data) => data.map((json) {
+              final annId = json['id'] as String;
+              return Announcement.fromJson(json).copyWith(
+                isVotedByMe: _userVotedIds.contains(annId),
+              );
+            }).toList());
+  }
+
+  Future<void> createAnnouncement({
+    required String title,
+    required String content,
+    required String category,
+    String? imageUrl,
+    String? sourceUrl,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('announcements').insert({
+      'title': title,
+      'content': content,
+      'category': category,
+      'image_url': imageUrl,
+      'source_url': sourceUrl,
+      'author_id': user.id,
+      'created_at': DateTime.now().toUtc().toIso8601String(),
+    }).withServerTimeout();
+  }
+
+  Future<String?> uploadAnnouncementImage(File file) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final fileName = 'announcement_${user.id}_${DateTime.now().millisecondsSinceEpoch}.png';
+    final path = 'announcements/$fileName';
+
+    await _client.storage.from('announcements').uploadBinary(
+      path,
+      file.readAsBytesSync(),
+      fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+    ).withServerTimeout();
+
+    return _client.storage.from('announcements').getPublicUrl(path);
+  }
+
+  Future<void> deleteAnnouncement(String id) async {
+    final user = await getCurrentUserProfile();
+    if (user == null) throw Exception('Not authenticated');
+
+    if (user.role == 'super_admin') {
+      await _client.from('announcements').delete().eq('id', id).withServerTimeout();
+      return;
+    }
+
+    if (user.role == 'admin') {
+      // Fetch the announcement to check author
+      final announcement = await _client
+          .from('announcements')
+          .select('author_id')
+          .eq('id', id)
+          .maybeSingle()
+          .withServerTimeout();
+      
+      if (announcement != null && announcement['author_id'] == user.id) {
+        await _client.from('announcements').delete().eq('id', id).withServerTimeout();
+        return;
+      }
+    }
+
+    throw Exception('Permission denied: You can only delete your own announcements.');
+  }
+
+  Future<void> verifyAnnouncement(String id, bool isVerified) async {
+    final user = await getCurrentUserProfile();
+    if (user?.role != 'super_admin') {
+      throw Exception('Permission denied: Only super admins can verify announcements.');
+    }
+
+    await _client.from('announcements').update({
+      'is_verified': isVerified,
+    }).eq('id', id).withServerTimeout();
+  }
+
+  Future<void> toggleAnnouncementVote(String announcementId, bool shouldVote) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    if (shouldVote) {
+      await _client.from('announcement_votes').insert({
+        'announcement_id': announcementId,
+        'user_id': user.id,
+      }).withServerTimeout();
+      _userVotedIds.add(announcementId);
+    } else {
+      await _client.from('announcement_votes').delete().match({
+        'announcement_id': announcementId,
+        'user_id': user.id,
+      }).withServerTimeout();
+      _userVotedIds.remove(announcementId);
+    }
+  }
+
+  Future<Map<String, dynamic>> getAnnouncementVotesInfo(String announcementId) async {
+    final user = _client.auth.currentUser;
+    
+    // Get total count
+    final countRes = await _client
+        .from('announcement_votes')
+        .select('id')
+        .eq('announcement_id', announcementId);
+    
+    final count = countRes.length;
+
+    // Check if user voted
+    bool userVoted = false;
+    if (user != null) {
+      final userVoteRes = await _client
+          .from('announcement_votes')
+          .select('id')
+          .match({
+            'announcement_id': announcementId,
+            'user_id': user.id,
+          })
+          .maybeSingle();
+      
+      userVoted = userVoteRes != null;
+    }
+
+    return {
+      'count': count,
+      'user_voted': userVoted,
+    };
   }
 
   // --- Realtime ---
@@ -1072,7 +1230,7 @@ class SupabaseService {
       'lng': event.lng,
       'location_name': event.locationName,
       'creator_id': user.id,
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     }).select().single().withServerTimeout();
 
     final eventId = response['id'];
@@ -1081,7 +1239,7 @@ class SupabaseService {
     await _client.from('event_attendees').insert({
       'event_id': eventId,
       'user_id': user.id,
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     }).withServerTimeout();
   }
 
@@ -1198,7 +1356,7 @@ class SupabaseService {
       'user_id': user.id,
       'content': content,
       'parent_id': parentId,
-      'created_at': DateTime.now().toIso8601String(),
+      'created_at': DateTime.now().toUtc().toIso8601String(),
     }).withServerTimeout();
   }
 
