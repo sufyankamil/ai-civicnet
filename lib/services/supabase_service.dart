@@ -794,6 +794,32 @@ class SupabaseService {
     return _client.storage.from('app-feedback').getPublicUrl(path);
   }
 
+  // --- Announcements ---
+
+  Future<List<Announcement>> getAnnouncements() async {
+    try {
+      final response = await _client
+          .from('announcements')
+          .select('*, profiles:author_id(name, avatar_url)')
+          .order('created_at', ascending: false)
+          .withServerTimeout();
+      
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => Announcement.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching announcements: $e');
+      return [];
+    }
+  }
+
+  Stream<List<Announcement>> getAnnouncementsStream() {
+    return _client
+        .from('announcements')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false)
+        .map((data) => data.map((json) => Announcement.fromJson(json)).toList());
+  }
+
   // --- Realtime ---
 
   RealtimeChannel subscribeToHelpRequests(Function() callback) {

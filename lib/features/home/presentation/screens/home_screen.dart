@@ -11,6 +11,7 @@ import '../../../../services/logger_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../components/request_card.dart';
 import '../viewmodels/home_viewmodel.dart';
+import '../../../news/presentation/components/news_section.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? initialFilter;
@@ -276,10 +277,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
             // Header
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -363,114 +366,148 @@ class _HomeScreenState extends State<HomeScreen> {
             // Safety Banner
             _buildSafetyBanner(),
 
-            // Filters
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.all(16),
-              child: Obx(() => Row(
-                children: [
-                  _buildFilterChip('All'),
-                  _buildFilterChip('Recommended'),
-                  _buildFilterChip('Emergency'),
-                  _buildFilterChip('Tech Support'),
-                  _buildFilterChip('Household'),
+            // TabBar for switching between Requests and News
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TabBar(
+                isScrollable: false,
+                labelColor: Theme.of(context).primaryColor,
+                unselectedLabelColor: Colors.grey,
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.label,
+                indicatorPadding: const EdgeInsets.only(top: 45),
+                indicatorColor: Theme.of(context).primaryColor,
+                dividerColor: Colors.transparent,
+                labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+                tabs: const [
+                  Tab(text: 'Requests'),
+                  Tab(text: 'News Feed'),
                 ],
-              )),
+              ),
             ),
 
-            // List
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: _viewModel.fetchRequests,
-                child: Obx(() {
-                  if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
-                    return const Center(child: CircularProgressIndicator.adaptive());
-                  }
-                  
-                  if (_viewModel.filteredRequests.isEmpty) {
-                    return ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.15),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.search_off_rounded,
-                                  size: 80,
-                                  color: Colors.grey[300],
-                                ),
-                                const SizedBox(height: 20),
-                                Text(
-                                  'No Requests Nearby',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'There are no open help requests in your area right now. Be the first to post one!',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                    height: 1.5,
-                                  ),
-                                ),
-                                const SizedBox(height: 28),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    OutlinedButton.icon(
-                                      onPressed: _viewModel.fetchRequests,
-                                      icon: const Icon(Icons.refresh_rounded),
-                                      label: const Text('Refresh'),
-                                      style: OutlinedButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              child: TabBarView(
+                children: [
+                  // --- REQUESTS TAB ---
+                  Column(
+                    children: [
+                      // Filters (Only for Requests)
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.all(16),
+                        child: Obx(() => Row(
+                          children: [
+                            _buildFilterChip('All'),
+                            _buildFilterChip('Recommended'),
+                            _buildFilterChip('Emergency'),
+                            _buildFilterChip('Tech Support'),
+                            _buildFilterChip('Household'),
+                          ],
+                        )),
+                      ),
+                      
+                      // List
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: _viewModel.fetchRequests,
+                          child: Obx(() {
+                            if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
+                              return const Center(child: CircularProgressIndicator.adaptive());
+                            }
+                            
+                            if (_viewModel.filteredRequests.isEmpty) {
+                              return ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                children: [
+                                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                                  Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.search_off_rounded,
+                                            size: 80,
+                                            color: Colors.grey[300],
+                                          ),
+                                          const SizedBox(height: 20),
+                                          Text(
+                                            'No Requests Nearby',
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Theme.of(context).colorScheme.onSurface,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            'There are no open help requests in your area right now. Be the first to post one!',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                              height: 1.5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 28),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              OutlinedButton.icon(
+                                                onPressed: _viewModel.fetchRequests,
+                                                icon: const Icon(Icons.refresh_rounded),
+                                                label: const Text('Refresh'),
+                                                style: OutlinedButton.styleFrom(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              FilledButton.icon(
+                                                onPressed: () => context.push('/create-request'),
+                                                icon: const Icon(Icons.add),
+                                                label: const Text('Post a Request'),
+                                                style: FilledButton.styleFrom(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    FilledButton.icon(
-                                      onPressed: () => context.push('/create-request'),
-                                      icon: const Icon(Icons.add),
-                                      label: const Text('Post a Request'),
-                                      style: FilledButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                                  ),
+                                ],
+                              );
+                            }
+
+                            return ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              itemCount: _viewModel.filteredRequests.length,
+                              itemBuilder: (context, index) {
+                                return RequestCard(request: _viewModel.filteredRequests[index]);
+                              },
+                            );
+                          }),
                         ),
-                      ],
-                    );
+                      ),
+                    ],
+                  ),
 
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _viewModel.filteredRequests.length,
-                    itemBuilder: (context, index) {
-                      return RequestCard(request: _viewModel.filteredRequests[index]);
-                    },
-                  );
-                }),
+                  // --- NEWS FEED TAB ---
+                  const NewsSection(),
+                ],
               ),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSafetyBanner() {
     if (!_showSafetyBanner) return const SizedBox.shrink();

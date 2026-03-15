@@ -6,4 +6,5 @@ export '../features/chat/models/message.dart';
 export '../features/request/models/request_application.dart';
 export '../features/notifications/models/app_notification.dart';
 export '../features/events/models/event.dart';
+export '../features/news/models/announcement.dart';
 
