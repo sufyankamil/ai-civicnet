@@ -17,6 +17,7 @@ class Announcement extends Equatable {
   final String? authorAvatarUrl;
   final AnnouncementCategory category;
   final bool isVerified;
+  final String? sourceUrl;
   final DateTime createdAt;
 
   const Announcement({
@@ -29,6 +30,7 @@ class Announcement extends Equatable {
     this.authorAvatarUrl,
     required this.category,
     this.isVerified = false,
+    this.sourceUrl,
     required this.createdAt,
   });
 
@@ -46,6 +48,7 @@ class Announcement extends Equatable {
       authorAvatarUrl: profile?['avatar_url'] as String?,
       category: _parseCategory(json['category'] as String?),
       isVerified: json['is_verified'] as bool? ?? false,
+      sourceUrl: json['source_url'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -75,6 +78,7 @@ class Announcement extends Equatable {
         authorAvatarUrl,
         category,
         isVerified,
+        sourceUrl,
         createdAt,
       ];
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:civic_net/services/supabase_service.dart';
-import 'package:civic_net/services/toast_service.dart';
 import 'package:civic_net/models/models.dart';
 import 'announcement_card.dart';
+import '../screens/create_announcement_screen.dart';
 import '../../../../widgets/haptic_buttons.dart';
 
 class NewsSection extends StatelessWidget {
@@ -47,7 +47,13 @@ class NewsSection extends StatelessWidget {
                   )
                 else
                   ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 16,
+                      bottom: 100, // Extra space for FAB
+                    ),
+                    physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: announcements.length,
                     itemBuilder: (context, index) {
                       return AnnouncementCard(
@@ -62,7 +68,10 @@ class NewsSection extends StatelessWidget {
                     right: 24,
                     child: AppFloatingActionButton.extended(
                       onPressed: () {
-                        ToastService.showInfo(context, 'Coming soon: Admin Announcement Creator');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
+                        );
                       },
                       label: const Text('Post News'),
                       icon: const Icon(Icons.add_comment_rounded),

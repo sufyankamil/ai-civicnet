@@ -823,6 +823,63 @@ class SupabaseService {
         .map((data) => data.map((json) => Announcement.fromJson(json)).toList());
   }
 
+  Future<void> createAnnouncement({
+    required String title,
+    required String content,
+    required String category,
+    String? imageUrl,
+    String? sourceUrl,
+  }) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('announcements').insert({
+      'title': title,
+      'content': content,
+      'category': category,
+      'image_url': imageUrl,
+      'source_url': sourceUrl,
+      'author_id': user.id,
+      'created_at': DateTime.now().toIso8601String(),
+    }).withServerTimeout();
+  }
+
+  Future<String?> uploadAnnouncementImage(File file) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    final fileName = 'announcement_${user.id}_${DateTime.now().millisecondsSinceEpoch}.png';
+    final path = 'announcements/$fileName';
+
+    await _client.storage.from('announcements').uploadBinary(
+      path,
+      file.readAsBytesSync(),
+      fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+    ).withServerTimeout();
+
+    return _client.storage.from('announcements').getPublicUrl(path);
+  }
+
+  Future<void> deleteAnnouncement(String id) async {
+    final user = await getCurrentUserProfile();
+    if (user?.role != 'super_admin') {
+      throw Exception('Permission denied: Only super admins can delete announcements.');
+    }
+
+    await _client.from('announcements').delete().eq('id', id).withServerTimeout();
+  }
+
+  Future<void> verifyAnnouncement(String id, bool isVerified) async {
+    final user = await getCurrentUserProfile();
+    if (user?.role != 'super_admin') {
+      throw Exception('Permission denied: Only super admins can verify announcements.');
+    }
+
+    await _client.from('announcements').update({
+      'is_verified': isVerified,
+    }).eq('id', id).withServerTimeout();
+  }
+
   // --- Realtime ---
 
   RealtimeChannel subscribeToHelpRequests(Function() callback) {
