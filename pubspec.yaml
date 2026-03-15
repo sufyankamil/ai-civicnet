@@ -1,7 +1,7 @@
 name: civic_net
 description: "A community networking app built with Flutter."
 publish_to: 'none'
-version: 1.1.0+13
+version: 1.1.0+14
 
 environment:
   sdk: ^3.9.2
@@ -64,4 +64,8 @@ flutter:
 
   assets:
     - .env
-    - assets/fonts/
+    - assets/icons/
+    - assets/fonts/Poppins-Regular.ttf
+    - assets/fonts/Poppins-Medium.ttf
+    - assets/fonts/Poppins-SemiBold.ttf
+    - assets/fonts/Poppins-Bold.ttf

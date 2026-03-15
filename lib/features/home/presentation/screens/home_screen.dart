@@ -304,7 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           'Finding matches near you...',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -314,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                    IconButton(
                      onPressed: () => context.push('/activity'),
-                     icon: const Icon(Icons.notifications_none_rounded, color: Colors.grey),
+                     icon: const Icon(Icons.assignment_outlined, color: Colors.grey),
                    ),
                    FutureBuilder(
                      future: SupabaseService().getCurrentUserProfile(),
@@ -348,10 +348,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 controller: _searchController,
                 onChanged: _viewModel.onSearchChanged,
                 decoration: InputDecoration(
-                  hintText: 'Search requests, skills...',
-                  prefixIcon: const Icon(Icons.search),
+                  hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   filled: true,
-                  fillColor: Theme.of(context).cardColor,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainer,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -409,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.grey[600],
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 const SizedBox(height: 10),
@@ -418,7 +418,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey[400],
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                                     height: 1.5,
                                   ),
                                 ),

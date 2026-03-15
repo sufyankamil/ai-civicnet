@@ -88,6 +88,7 @@ class SupabaseService {
 
   Future<void> signOut() async {
     await _client.auth.signOut().withServerTimeout();
+    await CacheService().clear();
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
@@ -164,8 +165,8 @@ class SupabaseService {
 
       final List<dynamic> data = response as List<dynamic>;
       
-      // Cache the data
-      await CacheService().put('help_requests', data);
+      // Cache the data with a 15-minute TTL
+      await CacheService().put('help_requests', data, ttl: const Duration(minutes: 15));
       
       // Parse in background isolate
       List<HelpRequest> requests = await compute(parseHelpRequests, data);
