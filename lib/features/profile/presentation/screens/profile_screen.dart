@@ -348,23 +348,45 @@ class _ProfileScreenState extends State<ProfileScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
+                                color: (user.role == 'admin' || user.role == 'super_admin')
+                                    ? Colors.amber.withValues(alpha: 0.3)
+                                    : Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.4)),
+                                    color: (user.role == 'admin' || user.role == 'super_admin')
+                                        ? Colors.amber.withValues(alpha: 0.6)
+                                        : Colors.white.withValues(alpha: 0.4)),
+                                boxShadow: (user.role == 'admin' || user.role == 'super_admin')
+                                    ? [
+                                        BoxShadow(
+                                          color: Colors.amber.withValues(alpha: 0.2),
+                                          blurRadius: 8,
+                                          spreadRadius: 1,
+                                        )
+                                      ]
+                                    : null,
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.verified_rounded,
-                                      color: Colors.white, size: 13),
+                                  Icon(
+                                    (user.role == 'admin' || user.role == 'super_admin')
+                                        ? Icons.verified_user_rounded
+                                        : Icons.verified_rounded,
+                                    color: (user.role == 'admin' || user.role == 'super_admin')
+                                        ? Colors.amber[100]
+                                        : Colors.white,
+                                    size: 13,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     _trustLevel(user),
                                     style: GoogleFonts.poppins(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                      color: (user.role == 'admin' || user.role == 'super_admin')
+                                          ? Colors.amber[50]
+                                          : Colors.white,
                                     ),
                                   ),
                                 ],
@@ -873,6 +895,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   String _trustLevel(User user) {
+    if (user.role == 'admin' || user.role == 'super_admin') return 'Verified Leader';
     if (user.points >= 350 && user.helpCount >= 25) return 'Elite Helper';
     if (user.points >= 150 && user.helpCount >= 10) return 'Trusted Helper';
     if (user.points >= 50 && user.helpCount >= 2) return 'Active Member';
