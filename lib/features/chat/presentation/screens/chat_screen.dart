@@ -63,7 +63,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   IconButton(
                     onPressed: () => context.push('/activity'),
-                    icon: const Icon(Icons.notifications_none_rounded, color: Colors.grey),
+                    icon: const Icon(Icons.assignment_outlined, color: Colors.grey),
                   ),
                   FutureBuilder(
                     future: SupabaseService().getCurrentUserProfile(),
@@ -132,30 +132,35 @@ class _ChatScreenState extends State<ChatScreen> {
             // --- Modern Search Bar ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.surfaceDark : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 15,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
-                  decoration: InputDecoration(
-                    hintText: 'Search conversations...',
-                    hintStyle: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),
-                    prefixIcon: const Icon(Icons.search, color: AppColors.primaryLight, size: 20),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 15),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
+                decoration: InputDecoration(
+                  hintText: 'Search conversations...',
+                  hintStyle: GoogleFonts.poppins(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
                   ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    size: 20,
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainer,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 15),
                 ),
               ),
             ),

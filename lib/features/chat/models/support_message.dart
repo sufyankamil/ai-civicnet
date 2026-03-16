@@ -11,6 +11,7 @@ class SupportMessage {
   final SupportSenderType senderType;
   final String content;
   final List<String>? options;
+  final Map<String, dynamic>? metadata;
   final DateTime createdAt;
 
   SupportMessage({
@@ -19,6 +20,7 @@ class SupportMessage {
     required this.senderType,
     required this.content,
     this.options,
+    this.metadata,
     required this.createdAt,
   });
 
@@ -34,6 +36,9 @@ class SupportMessage {
       options: json['options'] != null 
           ? List<String>.from(json['options'] as List) 
           : null,
+      metadata: json['metadata'] != null 
+          ? Map<String, dynamic>.from(json['metadata'] as Map) 
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -44,6 +49,7 @@ class SupportMessage {
       'sender_type': senderType.name,
       'content': content,
       'options': options,
+      'metadata': metadata,
     };
   }
 }

@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../main.dart'; // for prefsGlobal
+import '../../services/logger_service.dart';
+
 
 // Screens
 import '../../features/profile/presentation/screens/privacy_policy_screen.dart';
@@ -16,9 +18,6 @@ import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/feedback_screen.dart';
-
-
-
 
 import '../../core/presentation/layouts/main_scaffold.dart';
 import '../../features/map/presentation/screens/map_screen.dart';
@@ -46,6 +45,9 @@ import '../../features/events/presentation/screens/location_picker_screen.dart';
 import '../../features/profile/presentation/screens/admin_panel_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+String lastAppLocation = '/';
+
+
 
 GoRouter createRouter({String initialLocation = '/'}) {
   final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
@@ -55,7 +57,7 @@ GoRouter createRouter({String initialLocation = '/'}) {
     debugLabel: 'shell',
   );
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
     refreshListenable: GoRouterRefreshStream(
@@ -290,6 +292,14 @@ GoRouter createRouter({String initialLocation = '/'}) {
       ),
     ],
   );
+
+  router.routerDelegate.addListener(() {
+    final String location = router.routerDelegate.currentConfiguration.uri.toString();
+    lastAppLocation = location;
+    logger.d('Navigation update: $location');
+  });
+
+  return router;
 }
 
 // Helper for GoRouter to listen to streams
