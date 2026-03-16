@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -39,16 +40,16 @@ class _ActivityScreenState extends State<ActivityScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text('My Activity', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          title: Text(AppLocalizations.of(context)!.myActivity, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           bottom: TabBar(
             labelColor: Theme.of(context).primaryColor,
             unselectedLabelColor: Colors.grey,
             indicatorColor: Theme.of(context).primaryColor,
-            tabs: const [
-              Tab(text: 'My Requests'),
-              Tab(text: 'Volunteering'),
+            tabs: [
+              Tab(text: AppLocalizations.of(context)!.myRequests),
+              Tab(text: AppLocalizations.of(context)!.volunteering),
             ],
           ),
         ),
@@ -63,10 +64,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const _ActivityPlaceholder(
+                  return _ActivityPlaceholder(
                     icon: Icons.assignment_rounded,
-                    title: 'No Active Requests',
-                    subtitle: 'You haven\'t posted any help requests lately.',
+                    title: AppLocalizations.of(context)!.noActiveRequests,
+                    subtitle: AppLocalizations.of(context)!.noRequestsLately,
                   );
                 }
 
@@ -93,10 +94,10 @@ class _ActivityScreenState extends State<ActivityScreen> {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const _ActivityPlaceholder(
+                  return _ActivityPlaceholder(
                     icon: Icons.volunteer_activism_rounded,
-                    title: 'Not Volunteering Yet',
-                    subtitle: 'Offer help on community requests to see them here.',
+                    title: AppLocalizations.of(context)!.notVolunteeringYet,
+                    subtitle: AppLocalizations.of(context)!.offerHelpToSee,
                   );
                 }
 
@@ -176,19 +177,20 @@ class _VolunteeringCard extends StatelessWidget {
     }
   }
 
-  String get _statusLabel {
+  String _getStatusLabel(ApplicationStatus status, AppLocalizations l10n) {
     switch (status) {
       case ApplicationStatus.accepted:
-        return 'Accepted';
+        return l10n.accepted;
       case ApplicationStatus.rejected:
-        return 'Not Selected';
+        return l10n.notSelected;
       case ApplicationStatus.pending:
-        return 'Awaiting Review';
+        return l10n.awaitingReview;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -227,7 +229,7 @@ class _VolunteeringCard extends StatelessWidget {
                         Icon(_statusIcon, size: 13, color: _statusColor),
                         const SizedBox(width: 4),
                         Text(
-                          _statusLabel,
+                          _getStatusLabel(status, l10n),
                           style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
@@ -238,7 +240,7 @@ class _VolunteeringCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    'Applied ${timeago.format(appliedAt)}',
+                    AppLocalizations.of(context)!.appliedAt(timeago.format(appliedAt)),
                     style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey),
                   ),
                 ],
@@ -308,7 +310,7 @@ class _VolunteeringCard extends StatelessWidget {
                         ),
                   const SizedBox(width: 6),
                   Text(
-                    'Posted by ${request.requesterName}',
+                    AppLocalizations.of(context)!.postedBy(request.requesterName),
                     style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],

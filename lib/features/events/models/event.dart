@@ -9,7 +9,7 @@ enum EventCategory {
   other
 }
 
-class LocalEvent {
+class Event {
   final String id;
   final String title;
   final String description;
@@ -24,7 +24,7 @@ class LocalEvent {
   final int attendeeCount;
   final bool isUserAttending;
 
-  LocalEvent({
+  Event({
     required this.id,
     required this.title,
     required this.description,
@@ -40,13 +40,13 @@ class LocalEvent {
     this.isUserAttending = false,
   });
 
-  factory LocalEvent.fromJson(Map<String, dynamic> json) {
+  factory Event.fromJson(Map<String, dynamic> json) {
     final profileData = json['profiles'];
     final Map<String, dynamic> profile = (profileData is List && profileData.isNotEmpty) 
         ? profileData.first 
         : (profileData is Map<String, dynamic> ? profileData : {});
 
-    return LocalEvent(
+    return Event(
       id: json['id'].toString(),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
@@ -63,11 +63,11 @@ class LocalEvent {
     );
   }
 
-  LocalEvent copyWith({
+  Event copyWith({
     int? attendeeCount,
     bool? isUserAttending,
   }) {
-    return LocalEvent(
+    return Event(
       id: id,
       title: title,
       description: description,

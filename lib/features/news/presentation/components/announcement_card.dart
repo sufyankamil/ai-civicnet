@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -186,7 +187,7 @@ class AnnouncementCard extends StatelessWidget {
                                 Icon(Icons.link_rounded, size: 14, color: theme.primaryColor),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Source Information',
+                                  AppLocalizations.of(context)!.sourceInformation,
                                   style: GoogleFonts.poppins(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -226,7 +227,7 @@ class AnnouncementCard extends StatelessWidget {
                           ),
                           const Spacer(),
                           Text(
-                            'Read More',
+                            AppLocalizations.of(context)!.readMore,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -278,7 +279,7 @@ class AnnouncementCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  isSuperAdmin ? 'Super Admin Actions:' : 'Admin Actions:',
+                  isSuperAdmin ? AppLocalizations.of(context)!.superAdminActions : AppLocalizations.of(context)!.adminActions,
                   style: GoogleFonts.poppins(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -295,7 +296,7 @@ class AnnouncementCard extends StatelessWidget {
                       color: announcement.isVerified ? Colors.orange : Colors.blue,
                     ),
                     label: Text(
-                      announcement.isVerified ? 'Unverify' : 'Verify',
+                      announcement.isVerified ? AppLocalizations.of(context)!.unverify : AppLocalizations.of(context)!.verify,
                       style: TextStyle(
                         fontSize: 12,
                         color: announcement.isVerified ? Colors.orange : Colors.blue,
@@ -305,9 +306,9 @@ class AnnouncementCard extends StatelessWidget {
                 TextButton.icon(
                   onPressed: () => _handleDelete(context),
                   icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
-                  label: const Text(
-                    'Delete',
-                    style: TextStyle(fontSize: 12, color: Colors.red),
+                  label: Text(
+                    AppLocalizations.of(context)!.delete,
+                    style: const TextStyle(fontSize: 12, color: Colors.red),
                   ),
                 ),
               ],
@@ -322,14 +323,14 @@ class AnnouncementCard extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Announcement?'),
-        content: const Text('This action cannot be undone.'),
+        title: Text(AppLocalizations.of(context)!.deleteAnnouncementTitle),
+        content: Text(AppLocalizations.of(context)!.deleteAnnouncementContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context)!.cancel)),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),
@@ -339,11 +340,11 @@ class AnnouncementCard extends StatelessWidget {
       try {
         await SupabaseService().deleteAnnouncement(announcement.id);
         if (context.mounted) {
-          ToastService.showSuccess(context, 'Announcement deleted');
+          ToastService.showSuccess(context, AppLocalizations.of(context)!.announcementDeleted);
         }
       } catch (e) {
         if (context.mounted) {
-          ToastService.showError(context, 'Failed to delete: $e');
+          ToastService.showError(context, AppLocalizations.of(context)!.actionFailed(e.toString()));
         }
       }
     }
@@ -353,11 +354,11 @@ class AnnouncementCard extends StatelessWidget {
     try {
       await SupabaseService().verifyAnnouncement(announcement.id, verify);
       if (context.mounted) {
-        ToastService.showSuccess(context, verify ? 'Announcement verified' : 'Verification removed');
+        ToastService.showSuccess(context, verify ? AppLocalizations.of(context)!.announcementVerified : AppLocalizations.of(context)!.verificationRemoved);
       }
     } catch (e) {
       if (context.mounted) {
-        ToastService.showError(context, 'Action failed: $e');
+        ToastService.showError(context, AppLocalizations.of(context)!.actionFailed(e.toString()));
       }
     }
   }

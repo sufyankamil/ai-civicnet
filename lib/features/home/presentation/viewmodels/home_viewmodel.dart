@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import '../../../request/domain/entities/help_request_entity.dart';
 import '../../../request/domain/usecases/request_usecases.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../../../services/supabase_service.dart'; // Temporarily for warnings/location
+import '../../../../services/supabase_service.dart';
+import '../../../../models/models.dart';
 
 class HomeViewModel extends GetxController {
   final GetHelpRequestsUseCase getHelpRequestsUseCase;
@@ -12,6 +13,8 @@ class HomeViewModel extends GetxController {
 
   final RxList<HelpRequestEntity> _allRequests = <HelpRequestEntity>[].obs;
   final RxList<HelpRequestEntity> _filteredRequests = <HelpRequestEntity>[].obs;
+  final RxList<Poll> _polls = <Poll>[].obs;
+  final RxList<Guild> _guilds = <Guild>[].obs;
   final RxBool _isLoading = false.obs;
   final RxString _searchQuery = ''.obs;
   final RxString _selectedFilter = 'All'.obs;
@@ -20,6 +23,8 @@ class HomeViewModel extends GetxController {
   bool _isDisposed = false;
 
   List<HelpRequestEntity> get filteredRequests => _filteredRequests;
+  List<Poll> get polls => _polls;
+  List<Guild> get guilds => _guilds;
   bool get isLoading => _isLoading.value;
   String get selectedFilter => _selectedFilter.value;
   String get searchQuery => _searchQuery.value;
@@ -30,6 +35,8 @@ class HomeViewModel extends GetxController {
     // Subscribe to requests changes
     getHelpRequestsUseCase.repository.subscribeToHelpRequests(_onRequestsUpdated);
     fetchRequests();
+    fetchPolls();
+    fetchGuilds();
     
     // Defer the checking logic as before
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -67,6 +74,55 @@ class HomeViewModel extends GetxController {
       },
     );
     _isLoading.value = false;
+  }
+
+  Future<void> fetchPolls() async {
+    try {
+      final activePolls = await SupabaseService().getActivePolls();
+      _polls.assignAll(activePolls);
+    } catch (e) {
+      // silenced
+    }
+  }
+
+  Future<void> voteInPoll(String pollId, String optionId) async {
+    try {
+      await SupabaseService().voteInPoll(pollId, optionId);
+      await fetchPolls(); // Refresh polls to show updated counts and user vote
+    } catch (e) {
+      // Handle error (could use ToastService)
+    }
+  }
+
+  Future<void> deletePoll(String pollId) async {
+    try {
+      await SupabaseService().deletePoll(pollId);
+      await fetchPolls();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> fetchGuilds() async {
+    try {
+      final guilds = await SupabaseService().getGuilds();
+      _guilds.assignAll(guilds);
+    } catch (e) {
+      // silenced
+    }
+  }
+
+  Future<void> toggleGuildMembership(Guild guild) async {
+    try {
+      if (guild.isUserMember) {
+        await SupabaseService().leaveGuild(guild.id);
+      } else {
+        await SupabaseService().joinGuild(guild.id);
+      }
+      await fetchGuilds();
+    } catch (e) {
+      // Handle error
+    }
   }
 
   void onSearchChanged(String query) {

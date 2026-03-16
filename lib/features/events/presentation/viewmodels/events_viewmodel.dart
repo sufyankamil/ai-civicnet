@@ -8,15 +8,15 @@ import '../../models/event_comment.dart';
 class EventsViewModel extends GetxController {
   final SupabaseService _supabaseService = SupabaseService();
   
-  final RxList<LocalEvent> _events = <LocalEvent>[].obs;
-  List<LocalEvent> get events => _events;
+  final RxList<Event> _events = <Event>[].obs;
+  List<Event> get events => _events;
 
   // Filtered lists
-  List<LocalEvent> get upcomingEvents => _events
+  List<Event> get upcomingEvents => _events
       .where((e) => e.eventDate.isAfter(DateTime.now()))
       .toList();
       
-  List<LocalEvent> get pastEvents => _events
+  List<Event> get pastEvents => _events
       .where((e) => e.eventDate.isBefore(DateTime.now()))
       .toList();
   
@@ -41,7 +41,7 @@ class EventsViewModel extends GetxController {
     _isLoading.value = true;
     _events.clear(); // Clear old data to avoid showing User A's status to User B
     try {
-      final fetchedEvents = await _supabaseService.getLocalEvents();
+      final fetchedEvents = await _supabaseService.getEvents();
       _events.assignAll(fetchedEvents);
     } catch (e) {
       logger.e('Error in EventsViewModel.fetchEvents: $e');
@@ -54,10 +54,10 @@ class EventsViewModel extends GetxController {
     _events.clear();
   }
 
-  Future<bool> createEvent(LocalEvent event) async {
+  Future<bool> createEvent(Event event) async {
     _isLoading.value = true;
     try {
-      await _supabaseService.createLocalEvent(event);
+      await _supabaseService.createEvent(event);
       await fetchEvents();
       return true;
     } catch (e) {
@@ -71,7 +71,7 @@ class EventsViewModel extends GetxController {
   Future<String?> deleteEvent(String eventId) async {
     _isLoading.value = true;
     try {
-      await _supabaseService.deleteLocalEvent(eventId);
+      await _supabaseService.deleteEvent(eventId);
       _events.removeWhere((e) => e.id == eventId);
       return null; // Success
     } catch (e) {

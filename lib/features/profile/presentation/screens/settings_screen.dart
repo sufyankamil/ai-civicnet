@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
 import '../../../../services/theme_service.dart';
 import '../../../../theme/app_theme.dart';
@@ -51,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final currentUser = SupabaseService().currentUser;
               if (currentUser?.email == null) {
                  setDialogState(() => isLoading = false);
-                 Navigator.pop(ctx);
+                 if (ctx.mounted) Navigator.pop(ctx);
                  return;
               }
               
@@ -65,13 +66,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _controller.loadBiometricSettings();
                    if (ctx.mounted) {
                      Navigator.pop(ctx);
-                     ToastService.showSuccess(context, 'Biometric Login Enabled!');
+                     ToastService.showSuccess(context, 'Biometric Login Enabled!'); // TODO: Localize Toast
                    }
                 }
               } catch (e) {
                 setDialogState(() => isLoading = false);
                 if (ctx.mounted) {
-                  ToastService.showError(ctx, 'Invalid password. Try again.');
+                  ToastService.showError(ctx, 'Invalid password. Try again.'); // TODO: Localize Toast
                 }
               }
             }
@@ -81,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Please verify your password to enable biometric login.',
+                  AppLocalizations.of(context)!.verifyPassword,
                   style: isIOS 
                       ? const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel) 
                       : null,
@@ -93,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: CupertinoTextField(
                         controller: passwordController,
                         obscureText: true,
-                        placeholder: 'Password',
+                        placeholder: AppLocalizations.of(context)!.password,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         prefix: const Padding(
                           padding: EdgeInsets.only(left: 12.0),
@@ -104,7 +105,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   : CustomTextField(
                       controller: passwordController,
                       obscureText: true,
-                      hintText: 'Password',
+                      hintText: AppLocalizations.of(context)!.password,
                       prefixIcon: Icons.lock_outline,
                     ),
               ],
@@ -112,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             if (isIOS) {
               return CupertinoAlertDialog(
-                title: const Text('Confirm Password'),
+                title: Text(AppLocalizations.of(context)!.confirmPassword),
                 content: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: contentWidget,
@@ -120,26 +121,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 actions: [
                   CupertinoDialogAction(
                     onPressed: isLoading ? null : () => Navigator.pop(ctx),
-                    child: const Text('Cancel'),
+                    child: Text(AppLocalizations.of(context)!.cancel),
                   ),
                   CupertinoDialogAction(
                     isDefaultAction: true,
                     onPressed: isLoading ? null : handleEnable,
                     child: isLoading 
                       ? const CupertinoActivityIndicator() 
-                      : const Text('Enable'),
+                      : Text(AppLocalizations.of(context)!.enable),
                   ),
                 ],
               );
             }
 
             return AlertDialog(
-              title: Text('Confirm Password', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              title: Text(AppLocalizations.of(context)!.confirmPassword, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
               content: contentWidget,
               actions: [
                 TextButton(
                   onPressed: isLoading ? null : () => Navigator.pop(ctx),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 ElevatedButton(
                   onPressed: isLoading ? null : handleEnable,
@@ -149,7 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: isLoading 
                     ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Enable'),
+                    : Text(AppLocalizations.of(context)!.enable),
                 ),
               ],
             );
@@ -161,12 +162,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Access the provided theme service
     final themeService = Provider.of<ThemeService>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(l10n.settingsTitle, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -177,19 +179,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 100),
         children: [
-          _buildSectionHeader('Appearance'),
+          _buildSectionHeader(l10n.appearance),
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('Theme'),
-            subtitle: Text(themeService.themeMode.toString().split('.').last.toUpperCase()),
+            title: Text(l10n.theme),
+            subtitle: Text(themeService.themeMode == ThemeMode.system 
+                ? l10n.system 
+                : themeService.themeMode == ThemeMode.light 
+                    ? l10n.light 
+                    : l10n.dark),
             leading: const Icon(Icons.brightness_6, color: AppColors.primaryLight),
             trailing: DropdownButton<ThemeMode>(
               value: themeService.themeMode,
               underline: const SizedBox(),
-              items: const [
-                DropdownMenuItem(value: ThemeMode.system, child: Text('System')),
-                DropdownMenuItem(value: ThemeMode.light, child: Text('Light')),
-                DropdownMenuItem(value: ThemeMode.dark, child: Text('Dark')),
+              items: [
+                DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.system)),
+                DropdownMenuItem(value: ThemeMode.light, child: Text(l10n.light)),
+                DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.dark)),
               ],
               onChanged: (ThemeMode? mode) async {
                 if (mode != null) {
@@ -200,12 +206,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          _buildSectionHeader('Support'),
+          _buildSectionHeader(l10n.languageTitle),
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('How TaskNet Works'),
+            title: Text(l10n.languageTitle),
+            subtitle: Text(themeService.locale?.languageCode == 'hi' ? l10n.hindi : l10n.english),
+            leading: const Icon(Icons.language, color: AppColors.primaryLight),
+            trailing: DropdownButton<Locale>(
+              value: themeService.locale ?? const Locale('en'),
+              underline: const SizedBox(),
+              items: [
+                DropdownMenuItem(value: const Locale('en'), child: Text(l10n.english)),
+                DropdownMenuItem(value: const Locale('hi'), child: Text(l10n.hindi)),
+              ],
+              onChanged: (Locale? locale) async {
+                if (locale != null) {
+                  await themeService.setLocale(locale);
+                }
+              },
+            ),
+          ),
+          const Divider(height: 32),
+
+          const Divider(height: 32),
+
+          _buildSectionHeader(l10n.support),
+          const SizedBox(height: 8),
+          ListTile(
+            title: Text(l10n.howItWorks),
             subtitle: Text(
-              'Interactive data-flow canvas',
+              'Interactive data-flow canvas', // TODO: Localize if needed
               style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
             leading: Container(
@@ -220,13 +250,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => context.push('/how-it-works'),
           ),
           ListTile(
-            title: const Text('FAQ'),
+            title: Text(l10n.faq),
             leading: const Icon(Icons.help_outline, color: AppColors.primaryLight),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/faq'),
           ),
           ListTile(
-            title: const Text('Privacy Policy'),
+            title: Text(l10n.privacyPolicy),
             leading: const Icon(Icons.privacy_tip_outlined, color: Colors.grey),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
@@ -235,7 +265,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          _buildSectionHeader('Security'),
+          const Divider(height: 32),
+
+          _buildSectionHeader(l10n.security),
           Obx(() => _controller.isLoadingBiometrics && !_controller.isBiometricEnabled
             ? const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -245,8 +277,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               )
             : SwitchListTile(
-            title: const Text('Biometric Login'),
-            subtitle: const Text('Use Face ID / Fingerprint to log in securely'),
+            title: Text(l10n.biometricLogin),
+            subtitle: Text(l10n.biometricDescription),
             value: _controller.isBiometricEnabled,
             secondary: const Icon(Icons.fingerprint, color: AppColors.primaryLight),
             onChanged: (bool value) async {
@@ -272,25 +304,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           )),
           const Divider(height: 32),
 
-          _buildSectionHeader('Account'),
+          _buildSectionHeader(l10n.account),
           ListTile(
-            title: const Text('Help History'),
+            title: Text(l10n.helpHistory),
             leading: const Icon(Icons.history, color: AppColors.primaryLight),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.go('/activity'),
           ),
           ListTile(
-            title: const Text('Delete Account', style: TextStyle(color: Colors.red)),
+            title: Text(l10n.deleteAccount, style: const TextStyle(color: Colors.red)),
             leading: const Icon(Icons.person_remove, color: Colors.red),
             trailing: const Icon(Icons.chevron_right, color: Colors.red),
             onTap: () => context.push('/delete-account'),
           ),
           const Divider(height: 32),
 
-          _buildSectionHeader('About'),
+          _buildSectionHeader(l10n.about),
           const SizedBox(height: 8),
           ListTile(
-            title: const Text('Version'),
+            title: Text(l10n.version),
             leading: const Icon(Icons.info_outline, color: Colors.grey),
             trailing: const Text('1.0.0', style: TextStyle(color: Colors.grey)),
           ),

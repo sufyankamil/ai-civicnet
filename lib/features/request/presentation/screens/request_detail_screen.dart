@@ -60,11 +60,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       requesterAvatarUrl: entity.requesterAvatarUrl,
       title: entity.title,
       description: entity.description,
-      category: legacy.HelpCategory.values.firstWhere(
+      category: HelpCategory.values.firstWhere(
         (e) =>
             e.toString().split('.').last ==
             entity.category.toString().split('.').last,
-        orElse: () => legacy.HelpCategory.other,
+        orElse: () => HelpCategory.other,
       ),
       urgency: legacy.UrgencyLevel.values.firstWhere(
         (e) =>

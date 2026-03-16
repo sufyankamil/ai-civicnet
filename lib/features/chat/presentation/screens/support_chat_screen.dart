@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:civic_net/features/chat/viewmodels/support_view_model.dart';
 import '../../../../models/models.dart';
@@ -426,7 +427,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                     color: isDark ? Colors.white : Colors.black87,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Type your message...',
+                    hintText: AppLocalizations.of(context)!.typeMessageHint,
                     hintStyle: GoogleFonts.poppins(
                       color: isDark ? Colors.white38 : Colors.grey[400],
                       fontSize: 14,

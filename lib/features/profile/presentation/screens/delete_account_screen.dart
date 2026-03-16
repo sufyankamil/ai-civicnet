@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
@@ -173,7 +174,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               TextField(
                 controller: _confirmController,
                 decoration: InputDecoration(
-                  hintText: 'DELETE',
+                  hintText: AppLocalizations.of(context)!.deleteAccountConfirm,
                   filled: true,
                   fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade100,
                   border: OutlineInputBorder(

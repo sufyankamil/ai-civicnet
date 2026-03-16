@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,6 +7,7 @@ import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
 import '../components/verification_request_dialog.dart';
 import '../../../../widgets/haptic_buttons.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -81,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   const Icon(Icons.person_off_outlined,
                       size: 56, color: Colors.grey),
                   const SizedBox(height: 16),
-                  Text('Could not load profile',
+                  Text('Could not load profile', // TODO: Localize
                       style: GoogleFonts.poppins(color: Colors.grey)),
                   const SizedBox(height: 16),
                   AppElevatedButton(
@@ -111,6 +112,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       const SizedBox(height: 24),
                       _buildStatsRow(user, isDark),
                       const SizedBox(height: 28),
+                      _buildKarmaIndicator(user, isDark),
+                      const SizedBox(height: 28),
+                      _buildBadgeGallery(user, isDark),
+                      const SizedBox(height: 28),
                       _buildSkillsSection(user, isDark),
                       const SizedBox(height: 28),
                       _buildActionsSection(context, isDark, user),
@@ -135,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildHeroSliver(User user, bool isDark) {
     final displayName =
-        user.name.isEmpty || user.name == 'Unknown' ? 'No Name Set' : user.name;
+        user.name.isEmpty || user.name == 'Unknown' ? AppLocalizations.of(context)!.noName : user.name;
 
     return SliverAppBar(
       expandedHeight: 280,
@@ -200,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: IgnorePointer(
             ignoring: !_isCollapsed,
             child: IconButton(
-              tooltip: 'Edit Profile',
+              tooltip: AppLocalizations.of(context)!.editProfile,
               icon: Icon(
                 Icons.edit_rounded,
                 color: AppColors.primaryLight,
@@ -334,7 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              user.email.isEmpty ? 'No email' : user.email,
+                              user.email.isEmpty ? AppLocalizations.of(context)!.noEmail : user.email,
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 color: Colors.white.withValues(alpha: 0.8),
@@ -428,9 +433,9 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildStatsRow(User user, bool isDark) {
     final stats = [
-      ('🤝', 'Helps', user.helpCount.toString()),
-      ('⭐', 'Rating', user.rating.toStringAsFixed(1)),
-      ('🏆', 'Points', user.points.toString()),
+      ('🤝', AppLocalizations.of(context)!.helps, user.helpCount.toString()),
+      ('⭐', AppLocalizations.of(context)!.rating, user.rating.toStringAsFixed(1)),
+      ('🏆', AppLocalizations.of(context)!.points, user.points.toString()),
     ];
 
     return Padding(
@@ -497,7 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           Row(
             children: [
               Text(
-                'Skills',
+                AppLocalizations.of(context)!.skills,
                 style: GoogleFonts.poppins(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
@@ -510,7 +515,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   if (mounted) _refreshProfile();
                 },
                 icon: const Icon(Icons.add_rounded, size: 16),
-                label: const Text('Add'),
+                label: Text(AppLocalizations.of(context)!.add),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primaryLight,
                   textStyle: GoogleFonts.poppins(
@@ -537,7 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       color: AppColors.primaryLight.withValues(alpha: 0.6), size: 20),
                   const SizedBox(width: 10),
                   Text(
-                    'Add skills so helpers can find you faster',
+                    AppLocalizations.of(context)!.addSkillsDescription,
                     style: GoogleFonts.poppins(
                         fontSize: 13, color: Colors.grey),
                   ),
@@ -592,7 +597,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Account',
+            AppLocalizations.of(context)!.account,
             style: GoogleFonts.poppins(
               fontSize: 17,
               fontWeight: FontWeight.bold,
@@ -616,7 +621,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 _buildActionTile(
                   icon: Icons.edit_rounded,
                   iconColor: AppColors.primaryLight,
-                  label: 'Edit Profile',
+                  label: AppLocalizations.of(context)!.editProfile,
                   onTap: () async {
                     await context.push('/edit-profile');
                     if (mounted) _refreshProfile();
@@ -635,7 +640,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           _buildActionTile(
                             icon: Icons.admin_panel_settings_rounded,
                             iconColor: Colors.amber,
-                            label: 'Admin Control Panel',
+                            label: AppLocalizations.of(context)!.adminControlPanel,
                             onTap: () async {
                               await context.push('/admin-panel');
                               _refreshProfile();
@@ -655,7 +660,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       _buildActionTile(
                         icon: Icons.verified_rounded,
                         iconColor: Colors.green,
-                        label: 'Verified Leader Status',
+                        label: AppLocalizations.of(context)!.verifiedLeaderStatus,
                         onTap: () {
                           showAdaptiveDialog(
                             context: context,
@@ -748,16 +753,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                 _buildDivider(isDark),
                 _buildActionTile(
-                    icon: Icons.shield_rounded,
+                  icon: Icons.shield_rounded,
                   iconColor: AppColors.accentLight,
-                  label: 'Our Commitment & Safety',
+                  label: AppLocalizations.of(context)!.commitmentSafety,
                   onTap: () => context.push('/commitment'),
                   isDark: isDark,
                 ),
                 _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
-                  label: 'App Settings',
+                  label: AppLocalizations.of(context)!.appSettings,
                   onTap: () => context.push('/settings'),
                   isDark: isDark,
                 ),
@@ -765,7 +770,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 _buildActionTile(
                   icon: Icons.chat_bubble_outline_rounded,
                   iconColor: Colors.blueAccent,
-                  label: 'Support Chat',
+                  label: AppLocalizations.of(context)!.supportChat,
                   onTap: () => Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(builder: (_) => const SupportChatScreen()),
                   ),
@@ -775,27 +780,27 @@ class _ProfileScreenState extends State<ProfileScreen>
                 _buildActionTile(
                   icon: Icons.logout_rounded,
                   iconColor: Colors.red,
-                  label: 'Logout',
+                  label: AppLocalizations.of(context)!.logout,
                   labelColor: Colors.red,
                   onTap: () async {
                     final confirmed = await showAdaptiveDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog.adaptive(
-                        title: const Text('Log out?'),
-                        content: const Text(
-                            'Are you sure you want to log out of CivicNet?'),
+                        title: Text(AppLocalizations.of(context)!.logoutConfirm),
+                        content: Text(
+                            AppLocalizations.of(context)!.logoutDescription),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
+                            child: Text(AppLocalizations.of(context)!.cancel),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
                             style: TextButton.styleFrom(
                                 foregroundColor: Colors.red),
-                            child: const Text(
-                              'Logout',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                            child: Text(
+                              AppLocalizations.of(context)!.logout,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -895,10 +900,176 @@ class _ProfileScreenState extends State<ProfileScreen>
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   String _trustLevel(User user) {
-    if (user.role == 'admin' || user.role == 'super_admin') return 'Verified Leader';
-    if (user.points >= 350 && user.helpCount >= 25) return 'Elite Helper';
-    if (user.points >= 150 && user.helpCount >= 10) return 'Trusted Helper';
-    if (user.points >= 50 && user.helpCount >= 2) return 'Active Member';
-    return 'New Member';
+    if (user.role == 'admin' || user.role == 'super_admin') return AppLocalizations.of(context)!.verifiedLeader;
+    if (user.points >= 350 && user.helpCount >= 25) return AppLocalizations.of(context)!.eliteHelper;
+    if (user.points >= 150 && user.helpCount >= 10) return AppLocalizations.of(context)!.trustedHelper;
+    if (user.points >= 50 && user.helpCount >= 2) return AppLocalizations.of(context)!.activeMember;
+    return AppLocalizations.of(context)!.newMember;
+  }
+
+  // ─── Karma Indicator ──────────────────────────────────────────────────
+
+  Widget _buildKarmaIndicator(User user, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryLight,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.civicKarma,
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primaryLight,
+                    ),
+                  ),
+                  Text(
+                    user.karmaLevel,
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.score,
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  user.points.toString(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primaryLight,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Badge Gallery ──────────────────────────────────────────────────
+
+  Widget _buildBadgeGallery(User user, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            AppLocalizations.of(context)!.achievements,
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        FutureBuilder<List<Badge>>(
+          future: SupabaseService().getUserBadges(user.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(
+                height: 100,
+                child: Center(child: CircularProgressIndicator.adaptive()),
+              );
+            }
+            final badges = snapshot.data ?? [];
+            if (badges.isEmpty) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  AppLocalizations.of(context)!.noBadges,
+                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey),
+                ),
+              );
+            }
+            return SizedBox(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: badges.length,
+                itemBuilder: (context, index) {
+                  final badge = badges[index];
+                  return Container(
+                    width: 100,
+                    margin: const EdgeInsets.only(right: 12),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.surfaceDark : Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            _getBadgeIcon(badge.name),
+                            color: Colors.amber,
+                            size: 32,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          badge.name,
+                          style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  IconData _getBadgeIcon(String name) {
+    switch (name) {
+      case 'First Responder': return Icons.flash_on_rounded;
+      case 'Community Voice': return Icons.how_to_vote_rounded;
+      case 'Social Butterfly': return Icons.groups_rounded;
+      case 'Century Club': return Icons.military_tech_rounded;
+      default: return Icons.emoji_events_rounded;
+    }
   }
 }

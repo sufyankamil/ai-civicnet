@@ -8,7 +8,7 @@ import '../../../../services/supabase_service.dart';
 import '../../../../services/storage_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/logger_service.dart';
-import '../../../../models/models.dart';
+import '../../../request/domain/entities/request_enums.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});

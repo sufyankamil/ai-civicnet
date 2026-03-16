@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../l10n/app_localizations.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/models.dart';
+import '../features/request/domain/entities/request_enums.dart';
 import '../theme/app_theme.dart';
 import '../services/supabase_service.dart';
 import 'ai_match_badge.dart';
@@ -70,7 +72,7 @@ class HelpRequestCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${request.requesterName} • ${timeago.format(request.postedAt)}',
+                          AppLocalizations.of(context)!.postedByTime(request.requesterName, timeago.format(request.postedAt)),
                           style: TextStyle(
                             fontSize: 12,
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -152,23 +154,36 @@ class HelpRequestCard extends StatelessWidget {
     switch (category) {
       case HelpCategory.emergency:
         color = AppColors.accentLight;
-        text = 'Emergency';
+        text = AppLocalizations.of(context)!.emergency;
         break;
       case HelpCategory.techSupport:
         color = Colors.blue;
-        text = 'Tech';
+        text = AppLocalizations.of(context)!.tech;
         break;
       case HelpCategory.education:
         color = Colors.purple;
-        text = 'Education';
+        text = AppLocalizations.of(context)!.education;
         break;
       case HelpCategory.household:
         color = Colors.orange;
-        text = 'Household';
+        text = AppLocalizations.of(context)!.household;
         break;
-      default:
+      case HelpCategory.transport:
+        color = Colors.teal;
+        text = AppLocalizations.of(context)!.transport;
+        break;
+      case HelpCategory.health:
+        color = Colors.pink;
+        text = AppLocalizations.of(context)!.health;
+        break;
+      case HelpCategory.errands:
+        color = Colors.brown;
+        text = AppLocalizations.of(context)!.errands;
+        break;
+      case HelpCategory.other:
         color = Colors.grey;
-        text = 'General';
+        text = AppLocalizations.of(context)!.general;
+        break;
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;

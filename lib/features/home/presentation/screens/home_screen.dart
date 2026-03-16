@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../l10n/app_localizations.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../../../services/supabase_service.dart';
@@ -11,8 +12,11 @@ import '../../../../services/logger_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../components/request_card.dart';
 import '../viewmodels/home_viewmodel.dart';
+import '../widgets/poll_card.dart';
+import '../widgets/guild_card.dart';
 import '../../../news/presentation/components/news_section.dart';
 import '../../../../widgets/haptic_buttons.dart';
+import '../../../../models/models.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? initialFilter;
@@ -190,8 +194,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.1),
@@ -293,70 +297,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       body: SafeArea(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Community Help',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Finding matches near you...',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                   IconButton(
-                     onPressed: () => context.push('/activity'),
-                     icon: const Icon(Icons.assignment_outlined, color: Colors.grey),
-                   ),
-                   FutureBuilder(
-                     future: SupabaseService().getCurrentUserProfile(),
-                     builder: (context, snapshot) {
-                       final user = snapshot.data;
-                       final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
-                       
-                       return InkWell(
-                         onTap: () => context.push('/profile'), 
-                         borderRadius: BorderRadius.circular(20),
-                         child: Padding(
-                           padding: const EdgeInsets.all(4.0),
-                           child: CircleAvatar(
-                             radius: 20,
-                             backgroundColor: Colors.grey,
-                             backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
-                             child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white),
-                           ),
-                         ),
-                       );
-                     }
-                   ),
-                ],
-              ),
-            ),
+              _buildHeader(l10n),
 
             // Search Bar
             Padding(
@@ -374,8 +322,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 },
                 decoration: InputDecoration(
                   hintText: _tabController.index == 0 
-                      ? 'Search help requests...' 
-                      : 'Search news feed...',
+                      ? l10n.searchHelp 
+                      : l10n.searchNews,
                   hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
                   filled: true,
@@ -388,8 +336,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
             ),
 
-            // Safety Banner
-            _buildSafetyBanner(),
+            _buildFilters(l10n),
+            if (_showSafetyBanner) _buildSafetyBanner(l10n),
 
             // TabBar for switching between Requests and News
             Padding(
@@ -405,9 +353,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 indicatorColor: Theme.of(context).primaryColor,
                 dividerColor: Colors.transparent,
                 labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
-                tabs: const [
-                  Tab(text: 'Requests'),
-                  Tab(text: 'News Feed'),
+                tabs: [
+                  Tab(text: AppLocalizations.of(context)!.homeTitle),
+                  Tab(text: AppLocalizations.of(context)!.discoverTitle),
                 ],
               ),
             ),
@@ -416,116 +364,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // --- REQUESTS TAB ---
-                  Column(
-                    children: [
-                      // Filters (Only for Requests)
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.all(16),
-                        child: Obx(() => Row(
-                          children: [
-                            _buildFilterChip('All'),
-                            _buildFilterChip('Recommended'),
-                            _buildFilterChip('Emergency'),
-                            _buildFilterChip('Tech Support'),
-                            _buildFilterChip('Household'),
-                          ],
-                        )),
-                      ),
-                      
-                      // List
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: _viewModel.fetchRequests,
-                          child: Obx(() {
-                            if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
-                              return const Center(child: CircularProgressIndicator.adaptive());
-                            }
-                            
-                            if (_viewModel.filteredRequests.isEmpty) {
-                              return ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                children: [
-                                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                                  Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.search_off_rounded,
-                                            size: 80,
-                                            color: Colors.grey[300],
-                                          ),
-                                          const SizedBox(height: 20),
-                                          Text(
-                                            'No Requests Nearby',
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Theme.of(context).colorScheme.onSurface,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            'There are no open help requests in your area right now. Be the first to post one!',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                              height: 1.5,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 28),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              OutlinedButton.icon(
-                                                onPressed: _viewModel.fetchRequests,
-                                                icon: const Icon(Icons.refresh_rounded),
-                                                label: const Text('Refresh'),
-                                                style: OutlinedButton.styleFrom(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 12),
-                                              FilledButton.icon(
-                                                onPressed: () => context.push('/create-request'),
-                                                icon: const Icon(Icons.add),
-                                                label: const Text('Post a Request'),
-                                                style: FilledButton.styleFrom(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
-
-                            return ListView.builder(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              itemCount: _viewModel.filteredRequests.length,
-                              itemBuilder: (context, index) {
-                                return RequestCard(request: _viewModel.filteredRequests[index]);
-                              },
-                            );
-                          }),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // --- NEWS FEED TAB ---
-                  NewsSection(searchQuery: _newsSearchQuery),
+                  _buildRequestsTab(l10n),
+                  _buildNewsTab(l10n),
                 ],
               ),
             ),
@@ -535,7 +375,240 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildSafetyBanner() {
+  Widget _buildHeader(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.appTitle,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.findMatches,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: () => context.push('/activity'),
+            icon: const Icon(Icons.assignment_outlined, color: Colors.grey),
+          ),
+          FutureBuilder(
+            future: SupabaseService().getCurrentUserProfile(),
+            builder: (context, snapshot) {
+              final user = snapshot.data;
+              if (user != null && (user.role == 'admin' || user.role == 'super_admin')) {
+                return IconButton(
+                  onPressed: () => context.push('/create-poll'),
+                  icon: const Icon(Icons.add_circle_outline, color: AppColors.primaryLight),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+          FutureBuilder(
+            future: SupabaseService().getCurrentUserProfile(),
+            builder: (context, snapshot) {
+               final user = snapshot.data;
+               final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
+               
+               return InkWell(
+                 onTap: () => context.push('/profile'), 
+                 borderRadius: BorderRadius.circular(20),
+                 child: Padding(
+                   padding: const EdgeInsets.all(4.0),
+                   child: CircleAvatar(
+                     radius: 20,
+                     backgroundColor: Colors.grey,
+                     backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
+                     child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white),
+                   ),
+                 ),
+               );
+             }
+           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRequestsTab(AppLocalizations l10n) {
+    return Column(
+      children: [
+        // Polls Section (Active Polls)
+        Obx(() {
+          if (_viewModel.polls.isEmpty) return const SizedBox.shrink();
+          
+          // Show a summary card that opens a bottom sheet for all active polls
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: InkWell(
+              onTap: () => _showPollsBottomSheet(context, l10n),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryLight,
+                      AppColors.primaryLight.withValues(alpha: 0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryLight.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.poll_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.activePolls,
+                            style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Text(
+                            l10n.pollsCount(_viewModel.polls.length),
+                            style: GoogleFonts.poppins(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+
+        // Guilds Row (Discovery)
+        Obx(() => _viewModel.guilds.isEmpty 
+          ? const SizedBox.shrink()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.findYourGuild,
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () { /* TODO: Navigator to full discovery */ },
+                        child: Text(l10n.seeAll),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _viewModel.guilds.length,
+                    itemBuilder: (context, index) {
+                      final guild = _viewModel.guilds[index];
+                      return GuildCard(
+                        guild: guild,
+                        onToggleJoin: () => _viewModel.toggleGuildMembership(guild),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            )
+        ),
+        
+        // List
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _viewModel.fetchRequests,
+            child: Obx(() {
+              if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
+                return const Center(child: CircularProgressIndicator.adaptive());
+              }
+              
+              if (_viewModel.filteredRequests.isEmpty) {
+                return _buildRequestPlaceholder(l10n);
+              }
+
+              return ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _viewModel.filteredRequests.length,
+                itemBuilder: (context, index) {
+                  return RequestCard(request: _viewModel.filteredRequests[index]);
+                },
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNewsTab(AppLocalizations l10n) {
+    return NewsSection(searchQuery: _newsSearchQuery);
+  }
+
+  Widget _buildSafetyBanner(AppLocalizations l10n) {
     if (!_showSafetyBanner) return const SizedBox.shrink();
 
     return Container(
@@ -558,7 +631,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Community Commitment',
+                      l10n.communityCommitment,
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -567,7 +640,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'CivicNet is committed to community safety. We never ask for money for requests or events.',
+                      l10n.safetyDescription,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         height: 1.4,
@@ -594,7 +667,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
               child: Text(
-                'Learn More About Safety',
+                l10n.learnMoreSafety,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -608,6 +681,92 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
+  void _showPollsBottomSheet(BuildContext context, AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        builder: (_, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                l10n.activePolls,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: Obx(() => ListView.builder(
+                  controller: scrollController,
+                  itemCount: _viewModel.polls.length,
+                  itemBuilder: (context, index) {
+                    final poll = _viewModel.polls[index];
+                    return FutureBuilder(
+                      future: SupabaseService().getCurrentUserProfile(),
+                      builder: (context, snapshot) {
+                        final user = snapshot.data;
+                        return PollCard(
+                          poll: poll,
+                          isCreator: user?.id == poll.creatorId,
+                          onVote: (optionId) => _viewModel.voteInPoll(poll.id, optionId),
+                          onDelete: () => _showDeletePollDialog(poll),
+                        );
+                      }
+                    );
+                  },
+                )),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeletePollDialog(Poll poll) {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: Text(AppLocalizations.of(context)!.deletePoll),
+        content: Text(AppLocalizations.of(context)!.deletePollConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              _viewModel.deletePoll(poll.id);
+              Navigator.pop(context);
+            },
+            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFilterChip(String label) {
     final isSelected = _viewModel.selectedFilter == label;
     return Padding(
@@ -615,19 +774,93 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       child: FilterChip(
         label: Text(label),
         selected: isSelected,
-        onSelected: (_) => _viewModel.onFilterSelected(label),
-        backgroundColor: Colors.transparent,
-        shape: StadiumBorder(
+        onSelected: (selected) {
+          if (selected) _viewModel.onFilterSelected(label);
+        },
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+        checkmarkColor: Theme.of(context).primaryColor,
+        labelStyle: TextStyle(
+          color: isSelected ? Theme.of(context).primaryColor : null,
+          fontWeight: isSelected ? FontWeight.bold : null,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
           side: BorderSide(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.withValues(alpha: 0.3),
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
           ),
         ),
-        selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-        labelStyle: TextStyle(
-          color: isSelected ? Theme.of(context).primaryColor : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87),
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
-        showCheckmark: false,
+      ),
+    );
+  }
+
+  Widget _buildFilters(AppLocalizations l10n) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.all(16),
+      child: Obx(() => Row(
+        children: [
+          _buildFilterChip('All'),
+          _buildFilterChip('Recommended'),
+          _buildFilterChip('Emergency'),
+          _buildFilterChip('Tech Support'),
+          _buildFilterChip('Household'),
+        ],
+      )),
+    );
+  }
+
+  Widget _buildRequestPlaceholder(AppLocalizations l10n) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off_rounded, size: 80, color: Colors.grey[300]),
+          const SizedBox(height: 20),
+          Text(
+            l10n.noRequests,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            l10n.noRequestsDescription,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 28),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              OutlinedButton.icon(
+                onPressed: _viewModel.fetchRequests,
+                icon: const Icon(Icons.refresh_rounded),
+                label: Text(l10n.refresh),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              FilledButton.icon(
+                onPressed: () => context.push('/create-request'),
+                icon: const Icon(Icons.add),
+                label: Text(l10n.postRequest),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

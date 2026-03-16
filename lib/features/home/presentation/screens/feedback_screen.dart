@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -80,7 +81,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('App Feedback', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text(AppLocalizations.of(context)!.appFeedback, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -155,7 +156,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               controller: _descriptionController,
               maxLines: 5,
               decoration: InputDecoration(
-                hintText: 'What can we improve? What do you love?',
+                hintText: AppLocalizations.of(context)!.feedbackHint,
                 hintStyle: GoogleFonts.poppins(fontSize: 14),
                 filled: true,
                 fillColor: Theme.of(context).cardColor,

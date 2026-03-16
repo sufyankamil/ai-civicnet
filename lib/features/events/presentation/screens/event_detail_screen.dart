@@ -380,7 +380,7 @@ class EventDetailScreen extends StatelessWidget {
   );
 }
 
-  Widget _buildCommentsSection(BuildContext context, EventsViewModel viewModel, LocalEvent event) {
+  Widget _buildCommentsSection(BuildContext context, EventsViewModel viewModel, Event event) {
     // Fetch comments for the current event
     WidgetsBinding.instance.addPostFrameCallback((_) {
       viewModel.fetchComments(event.id);
@@ -530,7 +530,7 @@ class EventDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCommentTile(BuildContext context, EventsViewModel viewModel, LocalEvent event, EventComment comment, {bool isReply = false}) {
+  Widget _buildCommentTile(BuildContext context, EventsViewModel viewModel, Event event, EventComment comment, {bool isReply = false}) {
     final bool isHost = event.creatorId == SupabaseService().currentUserId;
     final bool isMyComment = comment.userId == SupabaseService().currentUserId;
     

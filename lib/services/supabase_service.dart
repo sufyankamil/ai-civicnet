@@ -1182,7 +1182,7 @@ class SupabaseService {
 
   // --- Local Events ---
 
-  Future<List<LocalEvent>> getLocalEvents() async {
+  Future<List<Event>> getEvents() async {
     try {
       final currentUserId = _client.auth.currentUser?.id;
       final currentUserProfile = await getCurrentUserProfile();
@@ -1236,7 +1236,7 @@ class SupabaseService {
         eventAttendeesMap.putIfAbsent(eid, () => []).add(uid);
       }
 
-      final List<LocalEvent> events = [];
+      final List<Event> events = [];
       const double radiusKm = 100.0;
       final blockedUserIds = await getBlockedUserIds();
 
@@ -1260,7 +1260,7 @@ class SupabaseService {
         final attendeeCount = attendees.length;
         final bool isUserAttending = currentUserId != null && attendees.contains(currentUserId);
 
-        events.add(LocalEvent.fromJson({
+        events.add(Event.fromJson({
           ...json,
           'attendee_count': attendeeCount,
           'is_user_attending': isUserAttending,
@@ -1274,7 +1274,7 @@ class SupabaseService {
     }
   }
 
-  Future<void> createLocalEvent(LocalEvent event) async {
+  Future<void> createEvent(Event event) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
@@ -1316,7 +1316,7 @@ class SupabaseService {
     }
   }
 
-  Future<void> deleteLocalEvent(String eventId) async {
+  Future<void> deleteEvent(String eventId) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
@@ -1565,6 +1565,176 @@ class SupabaseService {
     } catch (e) {
       logger.e('Error checking verification eligibility: $e');
       return {'eligible': false, 'reason': 'error'};
+    }
+  }
+
+  // --- Community Polling ---
+
+  Future<List<Poll>> getActivePolls() async {
+    final user = _client.auth.currentUser;
+    try {
+      final response = await _client
+          .from('polls')
+          .select('*, poll_options(*)')
+          .eq('is_active', true)
+          .order('created_at', ascending: false)
+          .withServerTimeout();
+
+      final List<dynamic> pollsData = response as List<dynamic>;
+      
+      // Fetch user votes for these polls
+      Map<String, String> userVotes = {};
+      if (user != null) {
+        final pollIds = pollsData.map((p) => p['id'] as String).toList();
+        final votesRes = await _client
+            .from('poll_votes')
+            .select('poll_id, option_id')
+            .eq('user_id', user.id)
+            .inFilter('poll_id', pollIds)
+            .withServerTimeout();
+        
+        for (var vote in votesRes as List<dynamic>) {
+          userVotes[vote['poll_id']] = vote['option_id'];
+        }
+      }
+
+      return pollsData.map((json) {
+        final List<dynamic> optionsData = json['poll_options'] as List<dynamic>;
+        final options = optionsData.map((o) => PollOption.fromJson(o)).toList();
+        return Poll.fromJson(
+          json,
+          options: options,
+          userVoteOptionId: userVotes[json['id']],
+        );
+      }).toList();
+    } catch (e) {
+      logger.e('Error fetching active polls: $e');
+      return [];
+    }
+  }
+
+  Future<void> voteInPoll(String pollId, String optionId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('poll_votes').insert({
+      'poll_id': pollId,
+      'user_id': user.id,
+      'option_id': optionId,
+    }).withServerTimeout();
+  }
+
+  Future<void> createPoll(String question, List<String> options, {String? description, DateTime? endDate}) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    try {
+      final pollRes = await _client.from('polls').insert({
+        'creator_id': user.id,
+        'question': question,
+        'description': description,
+        'end_date': (endDate ?? DateTime.now().add(const Duration(days: 7))).toIso8601String(),
+      }).select().single().withServerTimeout();
+
+      final pollId = pollRes['id'];
+
+      final optionsToInsert = options.map((opt) => {
+        'poll_id': pollId,
+        'option_text': opt,
+      }).toList();
+
+      await _client.from('poll_options').insert(optionsToInsert).withServerTimeout();
+    } catch (e) {
+      logger.e('Error creating poll or options: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deletePoll(String pollId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('polls').delete().eq('id', pollId).eq('creator_id', user.id).withServerTimeout();
+  }
+
+  // --- Interest-Based Guilds ---
+
+  Future<List<Guild>> getGuilds() async {
+    final user = _client.auth.currentUser;
+    try {
+      final response = await _client
+          .from('guilds')
+          .select()
+          .order('member_count', ascending: false)
+          .withServerTimeout();
+
+      final List<dynamic> guildsData = response as List<dynamic>;
+
+      // Fetch user memberships
+      Set<String> memberGuildIds = {};
+      if (user != null) {
+        final membershipsRes = await _client
+            .from('guild_memberships')
+            .select('guild_id')
+            .eq('user_id', user.id)
+            .withServerTimeout();
+        
+        memberGuildIds = (membershipsRes as List<dynamic>)
+            .map((m) => m['guild_id'] as String)
+            .toSet();
+      }
+
+      return guildsData.map((json) => Guild.fromJson(
+        json,
+        isUserMember: memberGuildIds.contains(json['id']),
+      )).toList();
+    } catch (e) {
+      logger.e('Error fetching guilds: $e');
+      return [];
+    }
+  }
+
+  Future<void> joinGuild(String guildId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('guild_memberships').insert({
+      'guild_id': guildId,
+      'user_id': user.id,
+    }).withServerTimeout();
+  }
+
+  Future<void> leaveGuild(String guildId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client.from('guild_memberships').delete().match({
+      'guild_id': guildId,
+      'user_id': user.id,
+    }).withServerTimeout();
+  }
+
+  // --- Reputation & Badges ---
+
+  Future<List<Badge>> getUserBadges(String userId) async {
+    try {
+      final response = await _client
+          .from('user_badges')
+          .select('*, badges(*)')
+          .eq('user_id', userId)
+          .withServerTimeout();
+      
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) {
+        final badgeJson = json['badges'];
+        return Badge.fromJson({
+          ...badgeJson,
+          'awarded_at': json['awarded_at'],
+        });
+      }).toList();
+    } catch (e) {
+      logger.e('Error fetching user badges: $e');
+      return [];
     }
   }
 }

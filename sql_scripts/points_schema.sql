@@ -62,5 +62,9 @@ BEGIN
   SET points = points + 5
   WHERE id = v_requester_id;
 
+  -- Run badge check for both users
+  PERFORM public.check_and_award_badges(p_helper_id);
+  PERFORM public.check_and_award_badges(v_requester_id);
+
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

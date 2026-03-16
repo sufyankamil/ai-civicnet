@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../services/toast_service.dart';
@@ -38,13 +39,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         UserAttributes(password: _passwordController.text.trim()),
       );
       if (mounted) {
-        ToastService.showSuccess(context, 'Password updated! Please log in.');
+        ToastService.showSuccess(context, AppLocalizations.of(context)!.passwordUpdated);
         context.go('/login');
       }
     } on AuthException catch (e) {
       if (mounted) ToastService.showError(context, e.message);
     } catch (e) {
-      if (mounted) ToastService.showError(context, 'Something went wrong. Please try again.');
+      if (mounted) ToastService.showError(context, AppLocalizations.of(context)!.somethingWentWrong);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -90,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ),
                 const SizedBox(height: 28),
                 Text(
-                  'Set New Password',
+                  AppLocalizations.of(context)!.setNewPassword,
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -99,13 +100,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Enter a new password for your account.',
+                  AppLocalizations.of(context)!.enterNewPassword,
                   style: GoogleFonts.poppins(
                       fontSize: 15, color: Colors.grey, height: 1.6),
                 ),
                 const SizedBox(height: 40),
                 CustomTextField(
-                  hintText: 'New Password',
+                  hintText: AppLocalizations.of(context)!.newPassword,
                   prefixIcon: Icons.lock_outline,
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -118,17 +119,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a new password';
+                      return AppLocalizations.of(context)!.enterNewPasswordError;
                     }
                     if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                      return AppLocalizations.of(context)!.passwordLengthError;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: 'Confirm Password',
+                  hintText: AppLocalizations.of(context)!.confirmPassword,
                   prefixIcon: Icons.lock_outline,
                   controller: _confirmController,
                   obscureText: _obscureConfirm,
@@ -141,14 +142,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   validator: (value) {
                     if (value != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return AppLocalizations.of(context)!.passwordsDoNotMatch;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 40),
                 PrimaryButton(
-                  text: 'Update Password',
+                  text: AppLocalizations.of(context)!.updatePassword,
                   isLoading: _isLoading,
                   onPressed: _handleReset,
                 ),
