@@ -799,8 +799,64 @@ class SupabaseService {
       'rating': rating,
       'description': description,
       'screenshot_url': screenshotUrl,
-      'created_at': DateTime.now().toUtc().toIso8601String(),
     }).withServerTimeout();
+  }
+
+  // --- Support Chat ---
+
+  Future<String> createSupportConversation() async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not logged in');
+
+    try {
+      final response = await _client.from('support_conversations').insert({
+        'user_id': user.id,
+      }).select().single().withServerTimeout();
+      
+      return response['id'];
+    } catch (e) {
+      logger.e('Error creating support conversation: $e');
+      rethrow;
+    }
+  }
+
+  Stream<List<SupportMessage>> getSupportMessagesStream(String conversationId) {
+    return _client
+        .from('support_messages')
+        .stream(primaryKey: ['id'])
+        .eq('conversation_id', conversationId)
+        .order('created_at', ascending: true)
+        .map((data) => data.map((json) => SupportMessage.fromJson(json)).toList());
+  }
+
+  Future<void> sendSupportMessage(SupportMessage message) async {
+    try {
+      await _client.from('support_messages').insert(message.toJson()).withServerTimeout();
+    } catch (e) {
+      logger.e('Error sending support message: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> closeSupportConversation(String id) async {
+    try {
+      await _client.from('support_conversations').update({
+        'status': 'closed',
+      }).eq('id', id).withServerTimeout();
+    } catch (e) {
+      logger.e('Error closing support conversation: $e');
+    }
+  }
+
+  Future<void> updateSupportFeedback(String id, String feedback) async {
+    try {
+      await _client.from('support_conversations').update({
+        'feedback': feedback,
+      }).eq('id', id).withServerTimeout();
+    } catch (e) {
+      logger.e('Error updating support feedback: $e');
+      rethrow;
+    }
   }
 
   Future<String?> uploadFeedbackScreenshot(File file) async {
@@ -1491,10 +1547,8 @@ class SupabaseService {
             'rejectionCount': rejectionData.length,
           };
         } else if (status == 'approved') {
-          // If approved but role is still 'user', something went wrong with the sync
-          // We'll allow them to see the button to potentially trigger a refresh or re-approval
-          final currentUser = await getCurrentUserProfile();
-          if (currentUser?.role != 'admin' && currentUser?.role != 'super_admin') {
+          final currentUserProfile = await getCurrentUserProfile();
+          if (currentUserProfile?.role != 'admin' && currentUserProfile?.role != 'super_admin') {
             return {
               'eligible': true,
               'lastStatus': 'approved_pending_sync',

@@ -7,6 +7,7 @@ import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
 import '../components/verification_request_dialog.dart';
 import '../../../../widgets/haptic_buttons.dart';
+import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -731,12 +732,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                   onTap: () => context.push('/commitment'),
                   isDark: isDark,
                 ),
-                _buildDivider(isDark),
                 _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
                   label: 'App Settings',
                   onTap: () => context.push('/settings'),
+                  isDark: isDark,
+                ),
+                _buildDivider(isDark),
+                _buildActionTile(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  iconColor: Colors.blueAccent,
+                  label: 'Support Chat',
+                  onTap: () => Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(builder: (_) => const SupportChatScreen()),
+                  ),
                   isDark: isDark,
                 ),
                 _buildDivider(isDark),
