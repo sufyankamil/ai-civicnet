@@ -1,14 +1,6 @@
+import "../domain/entities/request_enums.dart";
 import '../../profile/models/user.dart';
 
-enum HelpCategory {
-  errands,
-  techSupport,
-  emergency,
-  education,
-  transport,
-  household,
-  other, health
-}
 
 enum UrgencyLevel {
   low,

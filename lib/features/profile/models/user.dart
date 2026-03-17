@@ -15,6 +15,7 @@ class User {
   final int points;
   final List<String> skills;
   final String role; // 'user' or 'admin'
+  final String karmaLevel;
 
   final double? lat;
   final double? lng;
@@ -31,6 +32,7 @@ class User {
     this.points = 0,
     this.skills = const [],
     this.role = 'user',
+    this.karmaLevel = 'Seedling',
     this.lat,
     this.lng,
   });

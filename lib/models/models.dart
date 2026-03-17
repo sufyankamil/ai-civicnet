@@ -9,4 +9,6 @@ export '../features/request/models/request_application.dart';
 export '../features/notifications/models/app_notification.dart';
 export '../features/events/models/event.dart';
 export '../features/news/models/announcement.dart';
-
+export '../features/home/models/poll.dart';
+export '../features/home/models/guild.dart';
+export '../features/home/models/badge.dart';

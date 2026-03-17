@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../features/request/domain/entities/request_enums.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,9 +9,11 @@ class DiscoverScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Discover', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(l10n.discoverTitle, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
       ),
@@ -21,7 +24,7 @@ class DiscoverScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Categories',
+                l10n.categories,
                 style: GoogleFonts.poppins(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -29,57 +32,27 @@ class DiscoverScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              GridView.count(
-                crossAxisCount: 2,
+              GridView.builder(
+                padding: EdgeInsets.zero,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 1.1,
+                ),
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.1,
-                children: [
-                  _buildCategoryCard(
+                itemCount: HelpCategory.values.length,
+                itemBuilder: (context, index) {
+                  final category = HelpCategory.values[index];
+                  return _buildCategoryCard(
                     context,
-                    title: 'Tech Support',
-                    icon: Icons.computer_rounded,
-                    color: Colors.blue,
-                    category: HelpCategory.techSupport,
-                  ),
-                  _buildCategoryCard(
-                    context,
-                    title: 'Household',
-                    icon: Icons.home_repair_service_rounded,
-                    color: Colors.orange,
-                    category: HelpCategory.household,
-                  ),
-                  _buildCategoryCard(
-                    context,
-                    title: 'Emergency',
-                    icon: Icons.warning_rounded,
-                    color: Colors.red,
-                    category: HelpCategory.emergency,
-                  ),
-                  _buildCategoryCard(
-                    context,
-                    title: 'Education',
-                    icon: Icons.school_rounded,
-                    color: Colors.green,
-                    category: HelpCategory.education,
-                  ),
-                  _buildCategoryCard(
-                    context,
-                    title: 'Health',
-                    icon: Icons.medical_services_rounded,
-                    color: Colors.pink,
-                    category: HelpCategory.health,
-                  ),
-                  _buildCategoryCard(
-                    context,
-                    title: 'Other',
-                    icon: Icons.category_rounded,
-                    color: Colors.purple,
-                    category: HelpCategory.other,
-                  ),
-                ],
+                    title: _getCategoryTitle(l10n, category),
+                    icon: _getCategoryIcon(category),
+                    color: _getCategoryColor(category),
+                    category: category,
+                  );
+                },
               ),
             ],
           ),
@@ -97,7 +70,6 @@ class DiscoverScreen extends StatelessWidget {
   }) {
     return InkWell(
       onTap: () {
-        // Navigate back to home and set the filter via query parameter
         context.go('/home?filter=$title');
       },
       borderRadius: BorderRadius.circular(16),
@@ -137,5 +109,68 @@ class DiscoverScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getCategoryTitle(AppLocalizations l10n, HelpCategory category) {
+    switch (category) {
+      case HelpCategory.techSupport:
+        return l10n.techSupport;
+      case HelpCategory.household:
+        return l10n.household;
+      case HelpCategory.emergency:
+        return l10n.emergency;
+      case HelpCategory.education:
+        return l10n.education;
+      case HelpCategory.health:
+        return l10n.health;
+      case HelpCategory.other:
+        return l10n.other;
+      case HelpCategory.errands:
+        return 'Errands';
+      case HelpCategory.transport:
+        return 'Transport';
+    }
+  }
+
+  IconData _getCategoryIcon(HelpCategory category) {
+    switch (category) {
+      case HelpCategory.techSupport:
+        return Icons.computer_rounded;
+      case HelpCategory.household:
+        return Icons.home_repair_service_rounded;
+      case HelpCategory.emergency:
+        return Icons.warning_rounded;
+      case HelpCategory.education:
+        return Icons.school_rounded;
+      case HelpCategory.health:
+        return Icons.medical_services_rounded;
+      case HelpCategory.other:
+        return Icons.category_rounded;
+      case HelpCategory.errands:
+        return Icons.shopping_bag_rounded;
+      case HelpCategory.transport:
+        return Icons.directions_car_rounded;
+    }
+  }
+
+  Color _getCategoryColor(HelpCategory category) {
+    switch (category) {
+      case HelpCategory.techSupport:
+        return Colors.blue;
+      case HelpCategory.household:
+        return Colors.orange;
+      case HelpCategory.emergency:
+        return Colors.red;
+      case HelpCategory.education:
+        return Colors.green;
+      case HelpCategory.health:
+        return Colors.pink;
+      case HelpCategory.other:
+        return Colors.purple;
+      case HelpCategory.errands:
+        return Colors.brown;
+      case HelpCategory.transport:
+        return Colors.teal;
+    }
   }
 }

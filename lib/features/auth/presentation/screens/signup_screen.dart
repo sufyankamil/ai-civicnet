@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -118,7 +119,7 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Create Account',
+                  AppLocalizations.of(context)!.createAccount,
                   style: GoogleFonts.poppins(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -127,43 +128,43 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Join your community to help and be helped.',
+                  AppLocalizations.of(context)!.joinCommunity,
                   style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
 
                 CustomTextField(
-                  hintText: 'Full Name',
+                  hintText: AppLocalizations.of(context)!.fullName,
                   prefixIcon: Icons.person_outline,
                   controller: _nameController,
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) return 'Please enter your name';
-                    if (value.trim().length < 3) return 'Name must be at least 3 characters';
+                    if (value == null || value.trim().isEmpty) return AppLocalizations.of(context)!.enterName;
+                    if (value.trim().length < 3) return AppLocalizations.of(context)!.nameTooShort;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: 'Email Address',
+                  hintText: AppLocalizations.of(context)!.emailAddress,
                   prefixIcon: Icons.email_outlined,
                   controller: _emailController,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your email';
+                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterEmail;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: 'Password',
+                  hintText: AppLocalizations.of(context)!.password,
                   prefixIcon: Icons.lock_outline,
                   obscureText: _obscurePassword,
                   controller: _passwordController,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter a password';
-                    if (value.length < 8) return 'At least 8 characters required';
-                    if (!value.contains(RegExp(r'[A-Z]'))) return 'Needs an uppercase letter';
-                    if (!value.contains(RegExp(r'[a-z]'))) return 'Needs a lowercase letter';
-                    if (!value.contains(RegExp(r'[0-9]'))) return 'Needs a number';
+                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterPasswordSignup;
+                    if (value.length < 8) return AppLocalizations.of(context)!.passwordTooShort;
+                    if (!value.contains(RegExp(r'[A-Z]'))) return AppLocalizations.of(context)!.passwordUppercase;
+                    if (!value.contains(RegExp(r'[a-z]'))) return AppLocalizations.of(context)!.passwordLowercase;
+                    if (!value.contains(RegExp(r'[0-9]'))) return AppLocalizations.of(context)!.passwordNumber;
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -208,14 +209,14 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         child: Text.rich(
                           TextSpan(
-                            text: 'By continuing, I agree to ',
+                            text: AppLocalizations.of(context)!.agreeTerms(AppLocalizations.of(context)!.termsAndConditions).split(AppLocalizations.of(context)!.termsAndConditions).first,
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.7),
                             ),
                             children: [
                               TextSpan(
-                                text: 'Terms and Conditions',
+                                text: AppLocalizations.of(context)!.termsAndConditions,
                                 style: GoogleFonts.poppins(
                                   fontSize: 13,
                                   color: Theme.of(context).primaryColor,
@@ -232,7 +233,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 24),
                 Obx(() => PrimaryButton(
-                  text: 'Sign Up',
+                  text: AppLocalizations.of(context)!.signup,
                   isLoading: _authViewModel.isLoading,
                   onPressed: _acceptTerms ? _handleSignup : null,
                 )),
@@ -242,10 +243,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account?'),
+                    Text('${AppLocalizations.of(context)!.alreadyHaveAccount.split('?').first}?'),
                     TextButton(
                       onPressed: () => context.pop(),
-                      child: Text('Login',
+                      child: Text(AppLocalizations.of(context)!.login,
                           style:
                               TextStyle(color: Theme.of(context).primaryColor)),
                     ),
@@ -310,10 +311,10 @@ class _SignupScreenState extends State<SignupScreen> {
   List<Widget> _buildPasswordRequirements() {
     return [
       const SizedBox(height: 10),
-      _reqRow('At least 8 characters', _hasMinLength),
-      _reqRow('At least one uppercase letter (A–Z)', _hasUppercase),
-      _reqRow('At least one lowercase letter (a–z)', _hasLowercase),
-      _reqRow('At least one number (0–9)', _hasDigit),
+      _reqRow(AppLocalizations.of(context)!.atLeast8Chars, _hasMinLength),
+      _reqRow(AppLocalizations.of(context)!.oneUppercase, _hasUppercase),
+      _reqRow(AppLocalizations.of(context)!.oneLowercase, _hasLowercase),
+      _reqRow(AppLocalizations.of(context)!.oneNumber, _hasDigit),
       const SizedBox(height: 4),
     ];
   }

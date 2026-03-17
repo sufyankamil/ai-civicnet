@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
@@ -97,7 +98,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         _selectedTime.minute,
       );
 
-      final newEvent = LocalEvent(
+      final newEvent = Event(
         id: '',
         title: _titleController.text,
         description: _descController.text,
@@ -143,7 +144,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               _buildSectionTitle('Event Details'),
               const SizedBox(height: 16),
               CustomTextField(
-                hintText: 'Event Title (e.g., Park Cleanup)',
+                hintText: AppLocalizations.of(context)!.eventTitleHint,
                 controller: _titleController,
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),
@@ -152,7 +153,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 controller: _descController,
                 maxLines: 4,
                 decoration: InputDecoration(
-                  hintText: 'Describe what\'s happening...',
+                  hintText: AppLocalizations.of(context)!.eventDescriptionHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -188,7 +189,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               ),
               const SizedBox(height: 16),
               CustomTextField(
-                hintText: 'Location Name (e.g., Central Park)',
+                hintText: AppLocalizations.of(context)!.locationNameHint,
                 controller: _locationController,
                 validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
               ),

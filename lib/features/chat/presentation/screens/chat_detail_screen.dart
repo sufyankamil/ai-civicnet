@@ -12,6 +12,8 @@ import '../viewmodels/chat_viewmodel.dart';
 import '../../../../services/supabase_service.dart'; // Temporarily for currentUserId if needed, or via viewmodel
 
 import '../../../../services/toast_service.dart';
+import '../../../../l10n/app_localizations.dart';
+
 import '../../../../theme/app_theme.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -190,7 +192,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 final messages = snapshot.data!.where((m) => !_blockedUserIds.contains(m.senderId)).toList();
                 
                 if (messages.isEmpty) {
-                   return Center(child: Text('No messages yet', style: GoogleFonts.poppins(color: Colors.grey)));
+                   return Center(child: Text(AppLocalizations.of(context)!.noMessagesYet, style: GoogleFonts.poppins(color: Colors.grey)));
                 }
 
                 // Only auto-scroll when a new message actually arrives
@@ -302,10 +304,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 color: Colors.grey[100],
                 child: Column(
                   children: [
-                     Text('You have blocked this user.', style: GoogleFonts.poppins(color: Colors.grey[600])),
+                     Text(AppLocalizations.of(context)!.blockedUserMessage, style: GoogleFonts.poppins(color: Colors.grey[600])),
                      TextButton(
                        onPressed: _unblockUser,
-                       child: const Text('Unblock to chat'),
+                       child: Text(AppLocalizations.of(context)!.unblockToChat),
                      ),
                   ],
                 ),
@@ -321,14 +323,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                         icon: Icon(
                           _isListening ? Icons.mic : Icons.mic_none,
                           color: _isListening ? Colors.red : Colors.grey,
                         ),
                         onPressed: _listen,
                       ),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: TextField(
                           controller: _messageController,
@@ -362,6 +368,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Obx(() => IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                         icon: _viewModel.isSending 
                           ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
                           : const Icon(Icons.send, color: AppColors.primaryLight),
@@ -425,13 +433,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       : null,
                 ),
                 title: Text(widget.otherUserName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                subtitle: Text('User Profile', style: GoogleFonts.poppins(fontSize: 12)),
+                subtitle: Text(AppLocalizations.of(context)!.userProfile, style: GoogleFonts.poppins(fontSize: 12)),
               ),
               const Divider(),
               if (!_isBlockedByMe) ...[
                 ListTile(
                   leading: const Icon(Icons.block, color: Colors.red),
-                  title: Text('Block User', style: GoogleFonts.poppins(color: Colors.red)),
+                  title: Text(AppLocalizations.of(context)!.blockUser, style: GoogleFonts.poppins(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _confirmBlock();
@@ -439,7 +447,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.report, color: Colors.orange),
-                  title: Text('Block and Report', style: GoogleFonts.poppins(color: Colors.orange)),
+                  title: Text(AppLocalizations.of(context)!.blockAndReport, style: GoogleFonts.poppins(color: Colors.orange)),
                   onTap: () {
                     Navigator.pop(context);
                     _showReportDialog();
@@ -448,7 +456,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ] else 
                 ListTile(
                   leading: const Icon(Icons.check_circle, color: Colors.green),
-                  title: Text('Unblock User', style: GoogleFonts.poppins(color: Colors.green)),
+                  title: Text(AppLocalizations.of(context)!.unblockUser, style: GoogleFonts.poppins(color: Colors.green)),
                   onTap: () {
                     Navigator.pop(context);
                     _unblockUser();
@@ -466,7 +474,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
      showAdaptiveDialog(
       context: context, 
       builder: (context) => AlertDialog.adaptive(
-        title: const Text('Block User?'),
+        title: Text(AppLocalizations.of(context)!.blockUserConfirm),
         content: Text('You will no longer receive messages from ${widget.otherUserName}. They will not be notified.'),
         actions: [
           if (Theme.of(context).platform == TargetPlatform.iOS) ...[
@@ -529,9 +537,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               color: Colors.transparent,
               child: TextField(
                 controller: reasonController,
-                decoration: const InputDecoration(
-                  hintText: 'Spam, harassment, etc.',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.reportHint,
+                  border: const OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),

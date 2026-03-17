@@ -25,6 +25,9 @@ import 'features/chat/di/chat_binding.dart';
 import 'features/events/di/events_binding.dart';
 import 'features/profile/di/profile_binding.dart';
 import 'features/onboarding/presentation/screens/splash_screen.dart';
+import 'l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 SharedPreferences? prefsGlobal;
 
 void main() {
@@ -146,7 +149,7 @@ class _RootAppState extends State<RootApp> {
                       _initApp();
                     },
                     child: const Text('Retry'),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -179,7 +182,9 @@ class CommunityHelpApp extends StatefulWidget {
 }
 
 class _CommunityHelpAppState extends State<CommunityHelpApp> {
-  late final GoRouter _router = createRouter(initialLocation: widget.initialLocation);
+  late final GoRouter _router = createRouter(
+    initialLocation: widget.initialLocation,
+  );
   StreamSubscription<AuthState>? _authSubscription;
 
   @override
@@ -187,7 +192,9 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
     super.initState();
     // Listen for PASSWORD_RECOVERY event — fired when the user taps the reset
     // link in their email and Android deep-links them back into the app.
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
       if (data.event == AuthChangeEvent.passwordRecovery) {
         _router.go('/reset-password');
       }
@@ -211,6 +218,14 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: themeService.themeMode,
+        locale: themeService.locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en'), Locale('hi')],
         routerConfig: _router,
         builder: (context, child) {
           return AutoLogoutWrapper(

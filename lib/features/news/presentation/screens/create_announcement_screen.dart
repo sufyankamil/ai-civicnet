@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/services/supabase_service.dart';
 import 'package:civic_net/services/toast_service.dart';
 import 'package:civic_net/features/news/models/announcement.dart';
@@ -105,7 +106,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                 controller: _titleController,
                 style: GoogleFonts.poppins(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Enter announcement title...',
+                  hintText: AppLocalizations.of(context)!.announcementTitleHint,
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   enabledBorder: OutlineInputBorder(
@@ -133,7 +134,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                 maxLines: 6,
                 style: GoogleFonts.poppins(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'What\'s the news?',
+                  hintText: AppLocalizations.of(context)!.announcementContentHint,
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                   border: OutlineInputBorder(
@@ -204,7 +205,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                 style: GoogleFonts.poppins(fontSize: 14),
                 keyboardType: TextInputType.url,
                 decoration: InputDecoration(
-                  hintText: 'Provide a link or source of information...',
+                  hintText: AppLocalizations.of(context)!.announcementSourceHint,
                   prefixIcon: Icon(Icons.link_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
                   filled: true,
                   fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),

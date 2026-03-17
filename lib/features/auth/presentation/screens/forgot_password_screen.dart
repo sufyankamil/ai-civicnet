@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
 import 'package:get/get.dart';
@@ -52,7 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     
     if (mounted) {
       if (error == null) {
-        ToastService.showSuccess(context, 'Reset link resent successfully!');
+        ToastService.showSuccess(context, AppLocalizations.of(context)!.resetLinkResent);
       } else {
         ToastService.showError(context, error);
       }
@@ -111,7 +112,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 28),
           Text(
-            'Forgot Password?',
+            AppLocalizations.of(context)!.forgotPassword,
             style: GoogleFonts.poppins(
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -120,7 +121,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            "No worries! Enter your registered email and we'll send you a secure reset link.",
+            AppLocalizations.of(context)!.noWorriesReset,
             style: GoogleFonts.poppins(
               fontSize: 15,
               color: Colors.grey,
@@ -129,22 +130,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 40),
           CustomTextField(
-            hintText: 'Email Address',
+            hintText: AppLocalizations.of(context)!.emailAddress,
             prefixIcon: Icons.email_outlined,
             controller: _emailController,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return 'Please enter your email';
+                return AppLocalizations.of(context)!.enterEmail;
               }
               if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                return 'Please enter a valid email';
+                return AppLocalizations.of(context)!.enterValidEmail;
               }
               return null;
             },
           ),
           const SizedBox(height: 32),
           Obx(() => PrimaryButton(
-            text: 'Send Reset Link',
+            text: AppLocalizations.of(context)!.sendResetLink,
             isLoading: _authViewModel.isLoading,
             onPressed: _handleReset,
           )),
@@ -153,7 +154,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             child: TextButton(
               onPressed: () => context.pop(),
               child: Text(
-                'Back to Login',
+                AppLocalizations.of(context)!.backToLogin,
                 style: TextStyle(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.w600,
@@ -196,7 +197,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 36),
         Text(
-          'Check your inbox!',
+          AppLocalizations.of(context)!.checkYourInbox,
           style: GoogleFonts.poppins(
             fontSize: 26,
             fontWeight: FontWeight.bold,
@@ -206,7 +207,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
-            'We sent a password reset link to\n${_emailController.text.trim()}',
+            AppLocalizations.of(context)!.resetSentTo(_emailController.text.trim()),
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 15,
@@ -217,14 +218,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'The link expires in 60 minutes.',
+          AppLocalizations.of(context)!.linkExpires,
           style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade400),
         ),
         const SizedBox(height: 48),
         SizedBox(
           width: double.infinity,
           child: PrimaryButton(
-            text: 'Back to Login',
+            text: AppLocalizations.of(context)!.backToLogin,
             onPressed: () => context.pop(),
           ),
         ),
@@ -232,7 +233,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         TextButton(
           onPressed: _handleResend,
           child: Text(
-            "Didn't receive it? Resend",
+            AppLocalizations.of(context)!.didntReceive,
             style: TextStyle(color: Theme.of(context).primaryColor),
           ),
         ),

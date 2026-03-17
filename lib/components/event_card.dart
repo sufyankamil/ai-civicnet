@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
-import '../features/events/models/event.dart';
+import '../../l10n/app_localizations.dart';
+import '../models/models.dart';
 import '../theme/app_theme.dart';
 
 class EventCard extends StatelessWidget {
-  final LocalEvent event;
+  final Event event;
   final VoidCallback onTap;
   final VoidCallback onRSVP;
 
@@ -23,6 +24,8 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
+    final now = DateTime.now();
+    final isPast = event.eventDate.isBefore(now);
     
     return Card(
       elevation: 0,
@@ -77,7 +80,7 @@ class EventCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Hosted by ${event.creatorName}',
+                          AppLocalizations.of(context)!.postedBy(event.creatorName),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
@@ -92,9 +95,9 @@ class EventCard extends StatelessWidget {
                       color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'EVENT',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.eventLabel,
+                      style: const TextStyle(
                         color: AppColors.primaryLight,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -138,7 +141,9 @@ class EventCard extends StatelessWidget {
                       const Icon(Icons.people_outline, size: 16, color: Colors.grey),
                       const SizedBox(width: 6),
                       Text(
-                        '${event.attendeeCount} attending',
+                        isPast
+                            ? AppLocalizations.of(context)!.attendedCount(event.attendeeCount)
+                            : AppLocalizations.of(context)!.attendingCount(event.attendeeCount),
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
@@ -146,14 +151,14 @@ class EventCard extends StatelessWidget {
                   SizedBox(
                     height: 36,
                     child: ElevatedButton(
-                      onPressed: event.eventDate.isBefore(DateTime.now()) ? null : onRSVP,
+                      onPressed: isPast ? null : onRSVP,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: event.eventDate.isBefore(DateTime.now())
+                        backgroundColor: isPast
                             ? Colors.grey.withValues(alpha: 0.1)
                             : (event.isUserAttending 
                                 ? Colors.green.withValues(alpha: 0.1)
                                 : Theme.of(context).primaryColor),
-                        foregroundColor: event.eventDate.isBefore(DateTime.now())
+                        foregroundColor: isPast
                             ? Colors.grey 
                             : (event.isUserAttending 
                                 ? Colors.green 
@@ -165,9 +170,9 @@ class EventCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        event.eventDate.isBefore(DateTime.now()) 
-                            ? 'Ended' 
-                            : (event.isUserAttending ? 'Attending' : 'RSVP'),
+                        isPast 
+                            ? AppLocalizations.of(context)!.ended 
+                            : (event.isUserAttending ? AppLocalizations.of(context)!.attending : AppLocalizations.of(context)!.rsvp),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),

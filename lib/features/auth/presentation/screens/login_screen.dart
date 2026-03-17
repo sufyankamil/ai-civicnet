@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../components/custom_textfield.dart';
@@ -44,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleBiometricLogin() async {
     final authenticated = await BiometricService().authenticate(
-      localizedReason: 'Log in securely with your biometrics',
+      localizedReason: AppLocalizations.of(context)!.biometricLoginReason,
     );
 
     if (authenticated) {
@@ -60,12 +61,12 @@ class _LoginScreenState extends State<LoginScreen> {
           if (error == null) {
             context.go('/home');
           } else {
-             ToastService.showError(context, 'Biometric Login Failed: $error');
+             ToastService.showError(context, AppLocalizations.of(context)!.biometricLoginFailed(error));
           }
         }
       } else {
         if (mounted) {
-          ToastService.showError(context, 'No credentials found. Please log in manually and re-enable Biometrics.');
+          ToastService.showError(context, AppLocalizations.of(context)!.noCredentialsFound);
         }
       }
     }
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 48),
                 Text(
-                  'Welcome Back!',
+                  AppLocalizations.of(context)!.welcomeBack,
                   style: GoogleFonts.poppins(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
@@ -138,28 +139,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Sign in to continue connecting with your community.',
+                  AppLocalizations.of(context)!.signInToContinue,
                   style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 48),
 
                 CustomTextField(
-                  hintText: 'Email Address',
+                  hintText: AppLocalizations.of(context)!.emailAddress,
                   prefixIcon: Icons.email_outlined,
                   controller: _emailController,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your email';
+                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterEmail;
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 CustomTextField(
-                  hintText: 'Password',
+                  hintText: AppLocalizations.of(context)!.password,
                   prefixIcon: Icons.lock_outline,
                   obscureText: _obscurePassword,
                   controller: _passwordController,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Please enter your password';
+                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterPassword;
                     return null;
                   },
                   suffixIcon: IconButton(
@@ -174,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push('/forgot-password'),
-                    child: Text('Forgot Password?',
+                    child: Text(AppLocalizations.of(context)!.forgotPassword,
                         style: TextStyle(color: Theme.of(context).primaryColor)),
                   ),
                 ),
@@ -183,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Expanded(
                       child: Obx(() => PrimaryButton(
-                        text: 'Login',
+                        text: AppLocalizations.of(context)!.login,
                         isLoading: _authViewModel.isLoading,
                         onPressed: _handleLogin,
                       )),
@@ -204,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             size: 32,
                           ),
                           onPressed: _handleBiometricLogin,
-                          tooltip: 'Login with Biometrics',
+                          tooltip: AppLocalizations.of(context)!.loginWithBiometrics,
                         ),
                       ),
                     ],
@@ -214,10 +215,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account?"),
+                    Text('${AppLocalizations.of(context)!.dontHaveAccount.split('?').first}?'),
                     TextButton(
                       onPressed: () => context.push('/signup'),
-                      child: Text('Sign Up',
+                      child: Text(AppLocalizations.of(context)!.signup,
                           style: TextStyle(
                             color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:get/get.dart';
@@ -136,7 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 controller: _searchController,
                 onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
                 decoration: InputDecoration(
-                  hintText: 'Search conversations...',
+                hintText: AppLocalizations.of(context)!.searchConversationsHint,
                   hintStyle: GoogleFonts.poppins(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,

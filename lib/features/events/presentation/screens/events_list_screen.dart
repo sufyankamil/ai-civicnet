@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../models/models.dart';
 import '../../../../components/event_card.dart';
 import '../viewmodels/events_viewmodel.dart';
 
@@ -9,6 +11,7 @@ class EventsListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final EventsViewModel viewModel = Get.find<EventsViewModel>();
 
     return DefaultTabController(
@@ -27,7 +30,7 @@ class EventsListScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Community Noticeboard',
+                            l10n.eventsTitle,
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -38,7 +41,7 @@ class EventsListScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Local events and updates',
+                            l10n.localEventsUpdates,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[600],
@@ -55,23 +58,21 @@ class EventsListScreen extends StatelessWidget {
     
               // Tab Bar
               TabBar(
-                tabs: const [
-                  Tab(text: 'Upcoming'),
-                  Tab(text: 'Past'),
+                tabs: [
+                  Tab(text: l10n.upcoming),
+                  Tab(text: l10n.past),
                 ],
                 labelColor: Theme.of(context).primaryColor,
                 unselectedLabelColor: Colors.grey,
                 indicatorColor: Theme.of(context).primaryColor,
-                indicatorWeight: 3,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
               ),
     
               // Events List
               Expanded(
                 child: TabBarView(
                   children: [
-                    _buildEventsList(context, viewModel, upcoming: true),
-                    _buildEventsList(context, viewModel, upcoming: false),
+                    _buildEventsList(context, viewModel, viewModel.upcomingEvents, l10n, true),
+                    _buildEventsList(context, viewModel, viewModel.pastEvents, l10n, false),
                   ],
                 ),
               ),
@@ -82,17 +83,17 @@ class EventsListScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEventsList(BuildContext context, EventsViewModel viewModel, {required bool upcoming}) {
+  Widget _buildEventsList(BuildContext context, EventsViewModel viewModel, List<Event> events, AppLocalizations l10n, bool upcoming) {
     return RefreshIndicator(
       onRefresh: viewModel.fetchEvents,
       child: Obx(() {
-        final events = upcoming ? viewModel.upcomingEvents : viewModel.pastEvents;
+        final currentEvents = upcoming ? viewModel.upcomingEvents : viewModel.pastEvents;
 
-        if (viewModel.isLoading && events.isEmpty) {
+        if (viewModel.isLoading && currentEvents.isEmpty) {
           return const Center(child: CircularProgressIndicator.adaptive());
         }
 
-        if (events.isEmpty) {
+        if (currentEvents.isEmpty) {
           return ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
@@ -108,7 +109,7 @@ class EventsListScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      upcoming ? 'No Upcoming Events' : 'No Past Events',
+                      upcoming ? l10n.noUpcomingEvents : l10n.noPastEvents,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -118,7 +119,7 @@ class EventsListScreen extends StatelessWidget {
                     const SizedBox(height: 10),
                     if (upcoming)
                       Text(
-                        'Be the first to organize a local gathering!',
+                        l10n.firstToOrganize,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[400],
@@ -129,7 +130,7 @@ class EventsListScreen extends StatelessWidget {
                       FilledButton.icon(
                         onPressed: () => context.push('/create-event'),
                         icon: const Icon(Icons.add),
-                        label: const Text('Post an Event'),
+                        label: Text(l10n.postAnEvent),
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -144,9 +145,9 @@ class EventsListScreen extends StatelessWidget {
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: events.length,
+          itemCount: currentEvents.length,
           itemBuilder: (context, index) {
-            final event = events[index];
+            final event = currentEvents[index];
             return EventCard(
               event: event,
               onTap: () {

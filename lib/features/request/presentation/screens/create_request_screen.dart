@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import '../../../../components/custom_textfield.dart';
@@ -202,7 +203,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
               _buildSectionTitle('What do you need help with?'),
               const SizedBox(height: 8),
               CustomTextField(
-                hintText: 'Title (e.g., Leaky Faucet)',
+                hintText: AppLocalizations.of(context)!.requestTitleHint,
                 controller: _titleController,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Required';
@@ -218,7 +219,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 maxLines: 4,
                 // removed onChanged
                 decoration: InputDecoration(
-                  hintText: 'Describe your issue in detail...',
+                  hintText: AppLocalizations.of(context)!.requestDescriptionHint,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
