@@ -217,9 +217,20 @@
       }
     }
   },
+  "attendedCount": "{count} attended",
+  "@attendedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "ended": "Ended",
   "rsvp": "RSVP",
   "attending": "Attending",
+  "eventEndedLabel": "Event Ended",
+  "attendingLabel": "Attending",
+  "rsvpNow": "RSVP Now",
   "noDescription": "No description available.",
   "membersCount": "{count} members",
   "@membersCount": {
@@ -314,6 +325,8 @@
   "eventTitleHint": "Event Title (e.g., Park Cleanup)",
   "eventDescriptionHint": "Describe what's happening...",
   "locationNameHint": "Location Name (e.g., Central Park)",
+  "peopleAttended": "people attended",
+  "peopleAttending": "people are attending",
   "fieldRequired": "This field is required",
   "pollCreationIntro": "Gather community input on local initiatives.",
   "maxOptionsAllowed": "Maximum 5 options allowed",

@@ -323,14 +323,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                         icon: Icon(
                           _isListening ? Icons.mic : Icons.mic_none,
                           color: _isListening ? Colors.red : Colors.grey,
                         ),
                         onPressed: _listen,
                       ),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: TextField(
                           controller: _messageController,
@@ -364,6 +368,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Obx(() => IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                         icon: _viewModel.isSending 
                           ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
                           : const Icon(Icons.send, color: AppColors.primaryLight),

@@ -9,6 +9,7 @@ import '../../../../services/toast_service.dart';
 import '../viewmodels/events_viewmodel.dart';
 import '../../models/event_comment.dart';
 import '../../models/event.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class EventDetailScreen extends StatelessWidget {
   final String eventId;
@@ -278,7 +279,9 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    event.eventDate.isBefore(DateTime.now()) ? 'attended' : 'are attending',
+                    event.eventDate.isBefore(DateTime.now()) 
+                        ? AppLocalizations.of(context)!.peopleAttended 
+                        : AppLocalizations.of(context)!.peopleAttending,
                     style: TextStyle(
                       color: Colors.grey[600],
                       fontSize: 12,
@@ -313,8 +316,10 @@ class EventDetailScreen extends StatelessWidget {
                   ),
                   child: Text(
                     event.eventDate.isBefore(DateTime.now())
-                        ? 'Event Ended'
-                        : (event.isUserAttending ? 'Attending' : 'RSVP Now'),
+                        ? AppLocalizations.of(context)!.eventEndedLabel
+                        : (event.isUserAttending 
+                            ? AppLocalizations.of(context)!.attendingLabel 
+                            : AppLocalizations.of(context)!.rsvpNow),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -494,7 +499,6 @@ class EventDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: controller,
@@ -502,7 +506,11 @@ class EventDetailScreen extends StatelessWidget {
                 hintText: isReply ? 'Write a reply...' : 'Ask something...',
                 hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                fillColor: Colors.transparent,
+                filled: true,
               ),
               style: const TextStyle(fontSize: 14),
               maxLines: null,

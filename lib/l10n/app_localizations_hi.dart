@@ -511,6 +511,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String attendedCount(int count) {
+    return '$count शामिल हुए';
+  }
+
+  @override
   String get ended => 'समाप्त';
 
   @override
@@ -518,6 +523,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get attending => 'शाामिल हो रहे हैं';
+
+  @override
+  String get eventEndedLabel => 'कार्यक्रम समाप्त';
+
+  @override
+  String get attendingLabel => 'शामिल हो रहे हैं';
+
+  @override
+  String get rsvpNow => 'अभी शामिल हों';
 
   @override
   String get noDescription => 'कोई विवरण उपलब्ध नहीं है।';
@@ -709,6 +723,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get locationNameHint => 'स्थान का नाम (जैसे, सेंट्रल पार्क)';
+
+  @override
+  String get peopleAttended => 'लोग शामिल हुए';
+
+  @override
+  String get peopleAttending => 'लोग शामिल हो रहे हैं';
 
   @override
   String get fieldRequired => 'यह फ़ील्ड आवश्यक है';

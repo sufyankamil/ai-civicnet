@@ -24,6 +24,8 @@ class EventCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
+    final now = DateTime.now();
+    final isPast = event.eventDate.isBefore(now);
     
     return Card(
       elevation: 0,
@@ -139,7 +141,9 @@ class EventCard extends StatelessWidget {
                       const Icon(Icons.people_outline, size: 16, color: Colors.grey),
                       const SizedBox(width: 6),
                       Text(
-                        AppLocalizations.of(context)!.attendingCount(event.attendeeCount),
+                        isPast
+                            ? AppLocalizations.of(context)!.attendedCount(event.attendeeCount)
+                            : AppLocalizations.of(context)!.attendingCount(event.attendeeCount),
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ],
@@ -147,14 +151,14 @@ class EventCard extends StatelessWidget {
                   SizedBox(
                     height: 36,
                     child: ElevatedButton(
-                      onPressed: event.eventDate.isBefore(DateTime.now()) ? null : onRSVP,
+                      onPressed: isPast ? null : onRSVP,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: event.eventDate.isBefore(DateTime.now())
+                        backgroundColor: isPast
                             ? Colors.grey.withValues(alpha: 0.1)
                             : (event.isUserAttending 
                                 ? Colors.green.withValues(alpha: 0.1)
                                 : Theme.of(context).primaryColor),
-                        foregroundColor: event.eventDate.isBefore(DateTime.now())
+                        foregroundColor: isPast
                             ? Colors.grey 
                             : (event.isUserAttending 
                                 ? Colors.green 
@@ -166,7 +170,7 @@ class EventCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        event.eventDate.isBefore(DateTime.now()) 
+                        isPast 
                             ? AppLocalizations.of(context)!.ended 
                             : (event.isUserAttending ? AppLocalizations.of(context)!.attending : AppLocalizations.of(context)!.rsvp),
                         style: const TextStyle(fontWeight: FontWeight.bold),

@@ -1028,6 +1028,12 @@ abstract class AppLocalizations {
   /// **'{count} attending'**
   String attendingCount(int count);
 
+  /// No description provided for @attendedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} attended'**
+  String attendedCount(int count);
+
   /// No description provided for @ended.
   ///
   /// In en, this message translates to:
@@ -1045,6 +1051,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Attending'**
   String get attending;
+
+  /// No description provided for @eventEndedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Ended'**
+  String get eventEndedLabel;
+
+  /// No description provided for @attendingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Attending'**
+  String get attendingLabel;
+
+  /// No description provided for @rsvpNow.
+  ///
+  /// In en, this message translates to:
+  /// **'RSVP Now'**
+  String get rsvpNow;
 
   /// No description provided for @noDescription.
   ///
@@ -1399,6 +1423,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Location Name (e.g., Central Park)'**
   String get locationNameHint;
+
+  /// No description provided for @peopleAttended.
+  ///
+  /// In en, this message translates to:
+  /// **'people attended'**
+  String get peopleAttended;
+
+  /// No description provided for @peopleAttending.
+  ///
+  /// In en, this message translates to:
+  /// **'people are attending'**
+  String get peopleAttending;
 
   /// No description provided for @fieldRequired.
   ///

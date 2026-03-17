@@ -506,6 +506,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String attendedCount(int count) {
+    return '$count attended';
+  }
+
+  @override
   String get ended => 'Ended';
 
   @override
@@ -513,6 +518,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attending => 'Attending';
+
+  @override
+  String get eventEndedLabel => 'Event Ended';
+
+  @override
+  String get attendingLabel => 'Attending';
+
+  @override
+  String get rsvpNow => 'RSVP Now';
 
   @override
   String get noDescription => 'No description available.';
@@ -703,6 +717,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationNameHint => 'Location Name (e.g., Central Park)';
+
+  @override
+  String get peopleAttended => 'people attended';
+
+  @override
+  String get peopleAttending => 'people are attending';
 
   @override
   String get fieldRequired => 'This field is required';

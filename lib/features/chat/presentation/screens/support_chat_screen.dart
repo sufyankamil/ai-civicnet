@@ -400,6 +400,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       ),
       child: SafeArea(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Container(
