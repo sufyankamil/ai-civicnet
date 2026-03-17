@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../services/logger_service.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class LocationPickerScreen extends StatefulWidget {
   final LatLng? initialLocation;
@@ -25,6 +25,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   }
 
   Future<void> _setInitialLocation() async {
+    final l10n = AppLocalizations.of(context)!;
     logger.i('LocationPickerScreen: _setInitialLocation started');
     if (widget.initialLocation != null && (widget.initialLocation!.latitude != 0 || widget.initialLocation!.longitude != 0)) {
       logger.i('LocationPickerScreen: Using provided initialLocation: ${widget.initialLocation}');
@@ -46,7 +47,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
         permission = await Geolocator.requestPermission();
         logger.i('LocationPickerScreen: Permission after request: $permission');
         if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
-          _handleLocationError('Location permissions are required.');
+          _handleLocationError(l10n.locationPermissionRequired);
           return;
         }
       }
@@ -56,7 +57,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       logger.d('LocationPickerScreen: Service enabled: $serviceEnabled');
       if (!serviceEnabled) {
-        _handleLocationError('GPS is disabled. Please enable it.');
+        _handleLocationError(l10n.gpsDisabled);
         return;
       }
 
@@ -81,11 +82,12 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       await _updateWithCurrentPosition();
     } catch (e) {
       logger.e('LocationPickerScreen: Error in _setInitialLocation: $e');
-      _handleLocationError('Location fetch failed: $e');
+      _handleLocationError(l10n.locationFetchFailed(e.toString()));
     }
   }
 
   Future<void> _updateWithCurrentPosition() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       logger.d('LocationPickerScreen: getCurrentPosition starting (12s timeout)...');
       Position position = await Geolocator.getCurrentPosition(
@@ -114,7 +116,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     } catch (e) {
       logger.w('LocationPickerScreen: Failed to get current position: $e');
       if (_selectedLocation == null) {
-        _handleLocationError('Could not get your precise location.');
+        _handleLocationError(l10n.preciseLocationFetchFailed);
       }
     }
   }
@@ -145,7 +147,7 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message ?? 'Could not find your location. Defaulting to India.'),
+        content: Text(message ?? AppLocalizations.of(context)!.locationNotFoundDefault),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.redAccent,
       ),
@@ -165,14 +167,14 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Select Location',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          AppLocalizations.of(context)!.selectLocationTitle,
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           if (_selectedLocation != null)
             TextButton(
               onPressed: () => Navigator.pop(context, _selectedLocation),
-              child: const Text('CONFIRM', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(AppLocalizations.of(context)!.confirmAllCaps, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
         ],
       ),
@@ -222,8 +224,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Tap on the map to select a precise location for your event.',
+                        Text(
+                          AppLocalizations.of(context)!.tapOnMapToSelectLocation,
                           style: TextStyle(fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
@@ -242,8 +244,8 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              'Confirm Location',
+                            child: Text(
+                              AppLocalizations.of(context)!.confirmLocation,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),

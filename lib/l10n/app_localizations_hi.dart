@@ -107,23 +107,23 @@ class AppLocalizationsHi extends AppLocalizations {
   String get enable => 'सक्षम करें';
 
   @override
-  String get findMatches => 'मैच खोजें';
+  String get findMatches => 'आपके आस-पास मैच ढूँढ रहे हैं...';
 
   @override
   String get searchHelp => 'मदद के अनुरोध खोजें...';
 
   @override
-  String get searchNews => 'खबरें खोजें...';
+  String get searchNews => 'न्यूज़ फीड खोजें...';
 
   @override
-  String get noRequests => 'कोई अनुरोध नहीं';
+  String get noRequests => 'आस-पास कोई अनुरोध नहीं';
 
   @override
   String get noRequestsDescription =>
-      'आपके क्षेत्र में अभी तक कोई मदद अनुरोध नहीं है।';
+      'अभी आपके क्षेत्र में कोई सहायता अनुरोध नहीं हैं। पहले पोस्ट करने वाले बनें!';
 
   @override
-  String get refresh => 'ताज़ा करें';
+  String get refresh => 'रिफ्रेश';
 
   @override
   String get postRequest => 'अनुरोध पोस्ट करें';
@@ -136,14 +136,14 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count पोल',
-      one: '1 पोल',
+      other: '$count सक्रिय पोल',
+      one: '1 सक्रिय पोल',
     );
     return '$_temp0';
   }
 
   @override
-  String get findYourGuild => 'अपना समाज (गिल्य) खोजें';
+  String get findYourGuild => 'अपना समाज ढूँढें';
 
   @override
   String get seeAll => 'सभी देखें';
@@ -153,10 +153,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get safetyDescription =>
-      'हमारे सुरक्षा दिशानिर्देशों और साझा सामुदायिक प्रतिबद्धता की समीक्षा करें।';
+      'CivicNet सामुदायिक सुरक्षा के लिए प्रतिबद्ध है। हम अनुरोधों या कार्यक्रमों के लिए कभी पैसे नहीं मांगते।';
 
   @override
-  String get learnMoreSafety => 'और जानें';
+  String get learnMoreSafety => 'सुरक्षा के बारे में और जानें';
 
   @override
   String get couldNotLoadProfile => 'प्रोफ़ाइल लोड नहीं की जा सकी';
@@ -321,7 +321,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accepted => 'स्वीकार किया गया';
 
   @override
-  String get notSelected => 'चयनित नहीं';
+  String get notSelected => 'इसके लिए चयन नहीं हुआ';
 
   @override
   String get awaitingReview => 'समीक्षा की प्रतीक्षा है';
@@ -744,4 +744,247 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get failedToCreatePoll => 'पोल बनाने में विफल';
+
+  @override
+  String get categoryAll => 'सभी';
+
+  @override
+  String get categoryRecommended => 'अनुशंसित';
+
+  @override
+  String get categoryTechSupport => 'तकनीकी सहायता';
+
+  @override
+  String get categoryHousehold => 'घरेलू';
+
+  @override
+  String get categoryEmergency => 'आपातकालीन';
+
+  @override
+  String get categoryEducation => 'शिक्षा';
+
+  @override
+  String get categoryGeneral => 'सामान्य';
+
+  @override
+  String get bestMatch => 'सबसे अच्छा मैच';
+
+  @override
+  String get goodMatch => 'अच्छा मैच';
+
+  @override
+  String get match => 'मैच';
+
+  @override
+  String get description => 'विवरण';
+
+  @override
+  String get communityHelpers => 'सामुदायिक सहायक';
+
+  @override
+  String get viewAll => 'सभी देखें';
+
+  @override
+  String get nearbyMembersHelp => 'आस-पास के सदस्य जो मदद कर सकते हैं।';
+
+  @override
+  String get requester => 'अनुरोधकर्ता';
+
+  @override
+  String get approximateLocation => 'अनुमानित स्थान';
+
+  @override
+  String get applicationAccepted => 'आवेदन स्वीकार कर लिया गया!';
+
+  @override
+  String get interestSent => 'रुचि भेजी गई (लंबित)';
+
+  @override
+  String get taskCompleted => 'कार्य पूर्ण!';
+
+  @override
+  String earnedPoints(int count) {
+    return 'मदद करने के लिए आपने $count अंक अर्जित किए।';
+  }
+
+  @override
+  String get noHelpersYet => 'अभी तक कोई सहायक उपलब्ध नहीं है';
+
+  @override
+  String get beTheFirstHelper =>
+      'समुदाय में शामिल होने वाले पहले व्यक्ति बनें!';
+
+  @override
+  String get communicateWithRequester =>
+      'अब आप अनुरोधकर्ता के साथ संवाद कर सकते हैं।';
+
+  @override
+  String get chatWithRequester => 'अनुरोधकर्ता के साथ चैट करें';
+
+  @override
+  String get imInterested => 'मुझे रुचि है';
+
+  @override
+  String get requestNoLongerOpen => 'यह अनुरोध अब आवेदनों के लिए खुला नहीं है।';
+
+  @override
+  String get yourRequest => 'यह आपका अनुरोध है';
+
+  @override
+  String get interestShown => 'अभी तक कोई रुचि नहीं दिखाई गई है।';
+
+  @override
+  String helpsCount(int count) {
+    return '$count मदद';
+  }
+
+  @override
+  String get enjoyingApp => 'Civic Net पसंद आ रहा है?';
+
+  @override
+  String get feedbackDescription =>
+      'आपकी प्रतिक्रिया हमारे लिए अमूल्य है। क्या आप अपने विचार साझा करना चाहेंगे या सुधार सुझाना चाहेंगे?';
+
+  @override
+  String get maybeLater => 'बाद में';
+
+  @override
+  String get giveFeedback => 'प्रतिक्रिया दें';
+
+  @override
+  String get locationPermissionTitle => 'स्थान सक्षम करें';
+
+  @override
+  String get locationPermissionDesc =>
+      'आपको अपने आस-पास के सटीक सहायता अनुरोध और मैच दिखाने के लिए, Civic Net को आपके स्थान तक पहुँच की आवश्यकता है।';
+
+  @override
+  String get communityEvent => 'सामुदायिक कार्यक्रम';
+
+  @override
+  String get aboutThisEvent => 'इस कार्यक्रम के बारे में';
+
+  @override
+  String get organizer => 'आयोजक';
+
+  @override
+  String get communityMember => 'सामुदायिक सदस्य';
+
+  @override
+  String get comments => 'टिप्पणियाँ';
+
+  @override
+  String itemsCount(int count) {
+    return '$count आइटम';
+  }
+
+  @override
+  String get writeReply => 'जवाब लिखें...';
+
+  @override
+  String get askSomething => 'कुछ पूछें...';
+
+  @override
+  String get onlyAttendingCanChat =>
+      'केवल इस कार्यक्रम में शामिल होने वाले लोग ही संदेश भेज सकते हैं।';
+
+  @override
+  String get noCommentsBeFirst =>
+      'अभी तक कोई टिप्पणी नहीं। पूछने वाले पहले व्यक्ति बनें!';
+
+  @override
+  String get deleteEvent => 'कार्यक्रम हटाएं';
+
+  @override
+  String get deleteEventConfirm =>
+      'क्या आप वाकई इस कार्यक्रम को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।';
+
+  @override
+  String get eventDeletedSuccess => 'कार्यक्रम सफलतापूर्वक हटा दिया गया';
+
+  @override
+  String get host => 'होस्ट';
+
+  @override
+  String get reply => 'जवाब दें';
+
+  @override
+  String get replyingTo => 'को जवाब दे रहे हैं ';
+
+  @override
+  String get tapToSeeOnMap => 'मैप पर देखने के लिए टैप करें';
+
+  @override
+  String get locationSelectedOnMap => 'मैप पर स्थान चुना गया';
+
+  @override
+  String get eventPostedSuccess => 'कार्यक्रम सफलतापूर्वक पोस्ट किया गया!';
+
+  @override
+  String get eventPostedError =>
+      'कार्यक्रम पोस्ट करने में विफल। कृपया फिर से प्रयास करें।';
+
+  @override
+  String get postAnEventTitle => 'एक कार्यक्रम पोस्ट करें';
+
+  @override
+  String get eventDetails => 'कार्यक्रम का विवरण';
+
+  @override
+  String get required => 'आवश्यक';
+
+  @override
+  String get whenAndWhere => 'कब और कहाँ';
+
+  @override
+  String get dateLabel => 'तारीख';
+
+  @override
+  String get timeLabel => 'समय';
+
+  @override
+  String get selectLocationOnMap => 'मैप पर सटीक स्थान चुनें';
+
+  @override
+  String get changeLocationOnMap => 'मैप पर स्थान बदलें';
+
+  @override
+  String selectedLocation(String lat, String lng) {
+    return 'चुना गया: $lat, $lng';
+  }
+
+  @override
+  String get locationPermissionRequired => 'स्थान अनुमति आवश्यक है।';
+
+  @override
+  String get gpsDisabled => 'GPS बंद है। कृपया इसे सक्षम करें।';
+
+  @override
+  String locationFetchFailed(String error) {
+    return 'स्थान प्राप्त करना विफल रहा: $error';
+  }
+
+  @override
+  String get preciseLocationFetchFailed =>
+      'आपका सटीक स्थान प्राप्त नहीं किया जा सका।';
+
+  @override
+  String get locationNotFoundDefault =>
+      'आपका स्थान नहीं मिल सका। भारत को डिफ़ॉल्ट मान रहे हैं।';
+
+  @override
+  String get selectLocationTitle => 'स्थान चुनें';
+
+  @override
+  String get confirmAllCaps => 'पुष्टि करें';
+
+  @override
+  String get tapOnMapToSelectLocation =>
+      'मैप पर टैप करके अपने कार्यक्रम के लिए सटीक स्थान चुनें।';
+
+  @override
+  String get confirmLocation => 'स्थान की पुष्टि करें';
+
+  @override
+  String get beta => 'बीटा';
 }

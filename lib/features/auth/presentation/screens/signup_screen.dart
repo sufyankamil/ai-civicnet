@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../components/custom_textfield.dart';
@@ -120,7 +119,7 @@ class _SignupScreenState extends State<SignupScreen> {
               children: [
                 Text(
                   AppLocalizations.of(context)!.createAccount,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).primaryColor,
@@ -129,7 +128,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 8),
                 Text(
                   AppLocalizations.of(context)!.joinCommunity,
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
 
@@ -210,14 +209,14 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: Text.rich(
                           TextSpan(
                             text: AppLocalizations.of(context)!.agreeTerms(AppLocalizations.of(context)!.termsAndConditions).split(AppLocalizations.of(context)!.termsAndConditions).first,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 13,
                               color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.7),
                             ),
                             children: [
                               TextSpan(
                                 text: AppLocalizations.of(context)!.termsAndConditions,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 13,
                                   color: Theme.of(context).primaryColor,
                                   fontWeight: FontWeight.w600,

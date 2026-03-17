@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -11,6 +10,7 @@ import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../components/request_card.dart';
+import '../../../../components/request_card_skeleton.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/poll_card.dart';
 import '../widgets/guild_card.dart';
@@ -91,23 +91,23 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
        showDialog(
          context: context,
          barrierDismissible: false,
-         builder: (context) => AlertDialog(
+         builder: (context) {
+           final l10n = AppLocalizations.of(context)!;
+           return AlertDialog(
           title: Row(
             children: [
               const Icon(Icons.location_on, color: AppColors.primaryLight, size: 28),
               const SizedBox(width: 8),
-              const Text('Enable Location'),
+              Text(l10n.locationPermissionTitle),
             ],
           ),
-          content: const Text(
-            'To show accurate help requests and matches near you, Civic Net needs access to your location.',
-          ),
+          content: Text(l10n.locationPermissionDesc),
           actions: [
             AppHaptic(
               onTap: () => Navigator.of(context).pop(),
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: const Text('Not Now', style: TextStyle(color: Colors.grey)),
+                child: Text(l10n.notNow, style: const TextStyle(color: Colors.grey)),
               ),
             ),
             AppElevatedButton(
@@ -115,11 +115,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 Navigator.of(context).pop();
                 _requestLocationUpdates();
               },
-              child: const Text('Allow Access'),
+              child: Text(l10n.allowAccess),
             ),
-          ],
-        ),
-      );
+           ],
+         );
+       },
+     );
     }
   }
 
@@ -219,17 +220,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             const Icon(Icons.favorite_rounded, color: AppColors.accentLight, size: 48),
             const SizedBox(height: 16),
             Text(
-              'Enjoying Civic Net?',
-              style: GoogleFonts.poppins(
+              AppLocalizations.of(context)!.enjoyingApp,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              'Your feedback is invaluable to us. Would you like to share your thoughts or suggest improvements?',
+              AppLocalizations.of(context)!.feedbackDescription,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
                 height: 1.5,
@@ -251,8 +252,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     child: Text(
-                      'Maybe Later',
-                      style: GoogleFonts.poppins(
+                      AppLocalizations.of(context)!.maybeLater,
+                      style: TextStyle(
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w600,
                       ),
@@ -280,9 +281,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Give Feedback',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    child: Text(
+                      AppLocalizations.of(context)!.giveFeedback,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -349,10 +350,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 unselectedLabelColor: Colors.grey,
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.label,
-                indicatorPadding: const EdgeInsets.only(top: 45),
+                indicatorPadding: const EdgeInsets.symmetric(horizontal: 16),
                 indicatorColor: Theme.of(context).primaryColor,
                 dividerColor: Colors.transparent,
-                labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 tabs: [
                   Tab(text: AppLocalizations.of(context)!.homeTitle),
                   Tab(text: AppLocalizations.of(context)!.discoverTitle),
@@ -504,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         children: [
                           Text(
                             l10n.activePolls,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -512,7 +513,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                           ),
                           Text(
                             l10n.pollsCount(_viewModel.polls.length),
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.9),
                               fontSize: 12,
                             ),
@@ -545,7 +546,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     children: [
                       Text(
                         l10n.findYourGuild,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -583,7 +584,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             onRefresh: _viewModel.fetchRequests,
             child: Obx(() {
               if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
-                return const Center(child: CircularProgressIndicator.adaptive());
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: 5,
+                  itemBuilder: (context, index) => const RequestCardSkeleton(),
+                );
               }
               
               if (_viewModel.filteredRequests.isEmpty) {
@@ -632,7 +637,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   children: [
                     Text(
                       l10n.communityCommitment,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                         color: AppColors.accentLight,
@@ -641,7 +646,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     Text(
                       l10n.safetyDescription,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 12,
                         height: 1.4,
                       ),
@@ -668,7 +673,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ),
               child: Text(
                 l10n.learnMoreSafety,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: AppColors.accentLight,
@@ -710,7 +715,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               const SizedBox(height: 24),
               Text(
                 l10n.activePolls,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -767,15 +772,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildFilterChip(String label) {
-    final isSelected = _viewModel.selectedFilter == label;
+  Widget _buildFilterChip(String filterKey, String label) {
+    final isSelected = _viewModel.selectedFilter == filterKey;
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
       child: FilterChip(
         label: Text(label),
         selected: isSelected,
         onSelected: (selected) {
-          if (selected) _viewModel.onFilterSelected(label);
+          if (selected) _viewModel.onFilterSelected(filterKey);
         },
         backgroundColor: Theme.of(context).colorScheme.surface,
         selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
@@ -797,14 +802,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget _buildFilters(AppLocalizations l10n) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
       child: Obx(() => Row(
         children: [
-          _buildFilterChip('All'),
-          _buildFilterChip('Recommended'),
-          _buildFilterChip('Emergency'),
-          _buildFilterChip('Tech Support'),
-          _buildFilterChip('Household'),
+          _buildFilterChip('All', l10n.categoryAll),
+          _buildFilterChip('Recommended', l10n.categoryRecommended),
+          _buildFilterChip('Emergency', l10n.categoryEmergency),
+          _buildFilterChip('Tech Support', l10n.categoryTechSupport),
+          _buildFilterChip('Household', l10n.categoryHousehold),
         ],
       )),
     );

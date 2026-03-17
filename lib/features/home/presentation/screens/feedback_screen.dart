@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -81,7 +80,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.appFeedback, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        title: Text(AppLocalizations.of(context)!.appFeedback, style: TextStyle(fontWeight: FontWeight.w600)),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -104,7 +103,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'How is your experience?',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -113,7 +112,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   Text(
                     'Your feedback helps us improve Civic Net for everyone.',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
@@ -124,7 +123,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             const SizedBox(height: 32),
             Text(
               'Rating',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -146,7 +145,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             const SizedBox(height: 32),
             Text(
               'Details',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -157,7 +156,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               maxLines: 5,
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.feedbackHint,
-                hintStyle: GoogleFonts.poppins(fontSize: 14),
+                hintStyle: TextStyle(fontSize: 14),
                 filled: true,
                 fillColor: Theme.of(context).cardColor,
                 border: OutlineInputBorder(
@@ -169,7 +168,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             const SizedBox(height: 32),
             Text(
               'Screenshot (Optional)',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
@@ -225,7 +224,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                           const SizedBox(height: 8),
                           Text(
                             'Upload Screenshot',
-                            style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 13),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 13),
                           ),
                         ],
                       ),
@@ -247,7 +246,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
                         'Submit Feedback',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

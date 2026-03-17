@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../theme/app_theme.dart';
 
 class CommitmentScreen extends StatelessWidget {
@@ -15,7 +14,7 @@ class CommitmentScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Our Commitment',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -62,7 +61,7 @@ class CommitmentScreen extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             'Built for Community',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -72,7 +71,7 @@ class CommitmentScreen extends StatelessWidget {
           Text(
             'We are committed to delivering the best to help our community in a better way.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 14,
               color: Colors.white.withValues(alpha: 0.9),
               height: 1.5,
@@ -110,7 +109,7 @@ class CommitmentScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 'Safety Awareness',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.red,
@@ -147,7 +146,7 @@ class CommitmentScreen extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 14,
               height: 1.5,
             ),
@@ -196,7 +195,7 @@ class CommitmentScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -206,7 +205,7 @@ class CommitmentScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             content,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white70 : Colors.black87,
               height: 1.6,
@@ -230,7 +229,7 @@ class CommitmentScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Committed to a safer community.',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               color: Colors.grey,
               fontStyle: FontStyle.italic,

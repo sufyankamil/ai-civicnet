@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
 
 class AiMatchBadge extends StatelessWidget {
@@ -9,26 +10,26 @@ class AiMatchBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine color and text based on score
+    final l10n = AppLocalizations.of(context)!;
     Color color;
     String text;
     IconData icon;
 
     if (score >= 0.99) {
       color = AppColors.secondaryLight;
-      text = 'Best Match';
+      text = l10n.bestMatch;
       icon = Icons.stars;
     } else if (score >= 0.7) {
       color = Colors.green;
-      text = 'Good Match';
+      text = l10n.goodMatch;
       icon = Icons.thumb_up;
     } else if (score >= 0.4) {
       color = Colors.orange;
-      text = 'Match';
+      text = l10n.match;
       icon = Icons.check_circle_outline;
     } else {
       color = Colors.grey;
-      text = 'Match';
+      text = l10n.match;
       icon = Icons.check_circle_outline;
     }
 

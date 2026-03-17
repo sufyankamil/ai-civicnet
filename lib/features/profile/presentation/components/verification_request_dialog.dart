@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../widgets/haptic_buttons.dart';
@@ -47,7 +46,7 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
     return AlertDialog(
       title: Text(
         'Apply for Leader Status',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -55,7 +54,7 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
         children: [
           Text(
             'Explain why you want to become a community leader. This will be reviewed by existing admins.',
-            style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey),
+            style: TextStyle(fontSize: 13, color: Colors.grey),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -63,7 +62,7 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText: 'Describe your role or contributions to the community...',
-              hintStyle: GoogleFonts.poppins(fontSize: 13),
+              hintStyle: TextStyle(fontSize: 13),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -76,7 +75,7 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
                 borderSide: BorderSide(color: Theme.of(context).primaryColor),
               ),
             ),
-            style: GoogleFonts.poppins(fontSize: 14),
+            style: TextStyle(fontSize: 14),
           ),
         ],
       ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
@@ -135,7 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             }
 
             return AlertDialog(
-              title: Text(AppLocalizations.of(context)!.confirmPassword, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              title: Text(AppLocalizations.of(context)!.confirmPassword, style: TextStyle(fontWeight: FontWeight.bold)),
               content: contentWidget,
               actions: [
                 TextButton(
@@ -168,7 +167,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settingsTitle, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(l10n.settingsTitle, style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -206,7 +205,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          _buildSectionHeader(l10n.languageTitle),
+          _buildSectionHeader(
+            l10n.languageTitle,
+            suffix: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                l10n.beta,
+                style: const TextStyle(
+                  color: AppColors.primaryLight,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
           const SizedBox(height: 8),
           ListTile(
             title: Text(l10n.languageTitle),
@@ -226,8 +242,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-          const Divider(height: 32),
-
           const Divider(height: 32),
 
           _buildSectionHeader(l10n.support),
@@ -263,8 +277,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               context.push('/privacy-policy');
             },
           ),
-          const Divider(height: 32),
-
           const Divider(height: 32),
 
           _buildSectionHeader(l10n.security),
@@ -331,16 +343,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, {Widget? suffix}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title,
-        style: GoogleFonts.poppins(
-          fontWeight: FontWeight.bold,
-          color: AppColors.primaryLight,
-          fontSize: 14,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.primaryLight,
+              fontSize: 14,
+            ),
+          ),
+          if (suffix != null) ...[
+            const SizedBox(width: 8),
+            suffix,
+          ],
+        ],
       ),
     );
   }

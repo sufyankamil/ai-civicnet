@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class FAQScreen extends StatelessWidget {
   const FAQScreen({super.key});
@@ -32,7 +31,7 @@ class FAQScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('FAQ', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('FAQ', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -52,14 +51,14 @@ class FAQScreen extends StatelessWidget {
             child: ExpansionTile(
               title: Text(
                 faq['question']!,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
               ),
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Text(
                     faq['answer']!,
-                    style: GoogleFonts.poppins(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700]),
+                    style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[700]),
                   ),
                 ),
               ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -83,7 +82,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       }
 
       if (mounted) {
-        ToastService.showSuccess(context, 'Location selected on map');
+        ToastService.showSuccess(context, AppLocalizations.of(context)!.locationSelectedOnMap);
       }
     }
   }
@@ -117,9 +116,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       if (mounted) {
         if (success) {
           context.pop();
-          ToastService.showSuccess(context, 'Event posted successfully!');
+          ToastService.showSuccess(context, AppLocalizations.of(context)!.eventPostedSuccess);
         } else {
-          ToastService.showError(context, 'Failed to post event. Please try again.');
+          ToastService.showError(context, AppLocalizations.of(context)!.eventPostedError);
         }
       }
     }
@@ -130,8 +129,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Post an Event',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          AppLocalizations.of(context)!.postAnEventTitle,
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -141,12 +140,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('Event Details'),
+              _buildSectionTitle(AppLocalizations.of(context)!.eventDetails),
               const SizedBox(height: 16),
               CustomTextField(
                 hintText: AppLocalizations.of(context)!.eventTitleHint,
                 controller: _titleController,
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.isEmpty) ? AppLocalizations.of(context)!.required : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -161,17 +160,17 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   filled: true,
                   fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                 ),
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.isEmpty) ? AppLocalizations.of(context)!.required : null,
               ),
               const SizedBox(height: 24),
-              _buildSectionTitle('When & Where'),
+              _buildSectionTitle(AppLocalizations.of(context)!.whenAndWhere),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: _buildPickerTile(
-                      label: 'Date',
-                      value: DateFormat('MMM d, yyyy').format(_selectedDate),
+                      label: AppLocalizations.of(context)!.dateLabel,
+                      value: _getLocalizedDate(context, _selectedDate),
                       icon: Icons.calendar_today,
                       onTap: _pickDate,
                     ),
@@ -179,7 +178,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _buildPickerTile(
-                      label: 'Time',
+                      label: AppLocalizations.of(context)!.timeLabel,
                       value: _selectedTime.format(context),
                       icon: Icons.access_time,
                       onTap: _pickTime,
@@ -191,25 +190,30 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
               CustomTextField(
                 hintText: AppLocalizations.of(context)!.locationNameHint,
                 controller: _locationController,
-                validator: (v) => (v == null || v.isEmpty) ? 'Required' : null,
+                validator: (v) => (v == null || v.isEmpty) ? AppLocalizations.of(context)!.required : null,
               ),
               const SizedBox(height: 8),
               TextButton.icon(
                 onPressed: _pickLocationOnMap,
                 icon: const Icon(Icons.map),
-                label: Text(_selectedLatLng == null ? 'Select exact location on map' : 'Change location on map'),
+                label: Text(_selectedLatLng == null 
+                    ? AppLocalizations.of(context)!.selectLocationOnMap 
+                    : AppLocalizations.of(context)!.changeLocationOnMap),
               ),
               if (_selectedLatLng != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 12.0),
                   child: Text(
-                    'Selected: ${_selectedLatLng!.latitude.toStringAsFixed(4)}, ${_selectedLatLng!.longitude.toStringAsFixed(4)}',
+                    AppLocalizations.of(context)!.selectedLocation(
+                      _selectedLatLng!.latitude.toStringAsFixed(4),
+                      _selectedLatLng!.longitude.toStringAsFixed(4),
+                    ),
                     style: TextStyle(fontSize: 12, color: Colors.green[700], fontWeight: FontWeight.bold),
                   ),
                 ),
               const SizedBox(height: 48),
               Obx(() => PrimaryButton(
-                text: 'Post Event',
+                text: AppLocalizations.of(context)!.postAnEvent,
                 isLoading: _viewModel.isLoading,
                 onPressed: _submitEvent,
               )),
@@ -224,7 +228,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
       ),
@@ -267,5 +271,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
         ),
       ),
     );
+  }
+
+  String _getLocalizedDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('MMM d, yyyy', locale).format(date);
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:intl/intl.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
@@ -140,7 +139,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     : null,
               ),
               const SizedBox(width: 8),
-              Text(widget.otherUserName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18)),
+              Text(widget.otherUserName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
               const SizedBox(width: 4),
               const Icon(Icons.arrow_drop_down, size: 20),
             ],
@@ -164,7 +163,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                    Expanded(
                      child: Text(
                        'Please respect community guidelines. Do not share personal details. Report users if needed.',
-                       style: GoogleFonts.poppins(fontSize: 12, color: Colors.black87),
+                       style: TextStyle(fontSize: 12, color: Colors.black87),
                      ),
                    ),
                    IconButton(
@@ -186,13 +185,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   return const Center(child: CircularProgressIndicator.adaptive());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No messages yet', style: GoogleFonts.poppins(color: Colors.grey)));
+                  return Center(child: Text('No messages yet', style: TextStyle(color: Colors.grey)));
                 }
 
                 final messages = snapshot.data!.where((m) => !_blockedUserIds.contains(m.senderId)).toList();
                 
                 if (messages.isEmpty) {
-                   return Center(child: Text(AppLocalizations.of(context)!.noMessagesYet, style: GoogleFonts.poppins(color: Colors.grey)));
+                   return Center(child: Text(AppLocalizations.of(context)!.noMessagesYet, style: TextStyle(color: Colors.grey)));
                 }
 
                 // Only auto-scroll when a new message actually arrives
@@ -246,7 +245,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                 ),
                                 child: Text(
                                   DateFormat('MMMM d, y').format(message.createdAt),
-                                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                 ),
                               ),
                             ),
@@ -271,7 +270,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                               children: [
                                 Text(
                                   message.content,
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     color: isMe ? Colors.white : Colors.black87,
                                     fontSize: 15,
                                   ),
@@ -279,7 +278,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   timeago.format(message.createdAt, locale: 'en_short'),
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     color: isMe ? Colors.white70 : Colors.grey[600],
                                     fontSize: 10,
                                   ),
@@ -304,7 +303,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 color: Colors.grey[100],
                 child: Column(
                   children: [
-                     Text(AppLocalizations.of(context)!.blockedUserMessage, style: GoogleFonts.poppins(color: Colors.grey[600])),
+                     Text(AppLocalizations.of(context)!.blockedUserMessage, style: TextStyle(color: Colors.grey[600])),
                      TextButton(
                        onPressed: _unblockUser,
                        child: Text(AppLocalizations.of(context)!.unblockToChat),
@@ -338,12 +337,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       Expanded(
                         child: TextField(
                           controller: _messageController,
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                           decoration: InputDecoration(
                             hintText: _isListening ? 'Listening...' : 'Type a message...',
-                            hintStyle: GoogleFonts.poppins(color: Colors.grey),
+                            hintStyle: TextStyle(color: Colors.grey),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(24),
                               borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
@@ -432,14 +431,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ? const Icon(Icons.person, color: Colors.white) 
                       : null,
                 ),
-                title: Text(widget.otherUserName, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                subtitle: Text(AppLocalizations.of(context)!.userProfile, style: GoogleFonts.poppins(fontSize: 12)),
+                title: Text(widget.otherUserName, style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(AppLocalizations.of(context)!.userProfile, style: TextStyle(fontSize: 12)),
               ),
               const Divider(),
               if (!_isBlockedByMe) ...[
                 ListTile(
                   leading: const Icon(Icons.block, color: Colors.red),
-                  title: Text(AppLocalizations.of(context)!.blockUser, style: GoogleFonts.poppins(color: Colors.red)),
+                  title: Text(AppLocalizations.of(context)!.blockUser, style: TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.pop(context);
                     _confirmBlock();
@@ -447,7 +446,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.report, color: Colors.orange),
-                  title: Text(AppLocalizations.of(context)!.blockAndReport, style: GoogleFonts.poppins(color: Colors.orange)),
+                  title: Text(AppLocalizations.of(context)!.blockAndReport, style: TextStyle(color: Colors.orange)),
                   onTap: () {
                     Navigator.pop(context);
                     _showReportDialog();
@@ -456,7 +455,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ] else 
                 ListTile(
                   leading: const Icon(Icons.check_circle, color: Colors.green),
-                  title: Text(AppLocalizations.of(context)!.unblockUser, style: GoogleFonts.poppins(color: Colors.green)),
+                  title: Text(AppLocalizations.of(context)!.unblockUser, style: TextStyle(color: Colors.green)),
                   onTap: () {
                     Navigator.pop(context);
                     _unblockUser();
@@ -531,7 +530,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Why are you reporting ${widget.otherUserName}?', style: GoogleFonts.poppins(fontSize: 14)),
+            Text('Why are you reporting ${widget.otherUserName}?', style: TextStyle(fontSize: 14)),
             const SizedBox(height: 12),
             Material(
               color: Colors.transparent,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import '../../../../theme/app_theme.dart';
@@ -40,7 +39,7 @@ class MapScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Text(
                           'Location permission not given',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Colors.grey[700],
@@ -81,7 +80,7 @@ class MapScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Search area...',
-                        style: GoogleFonts.poppins(color: Colors.grey),
+                        style: TextStyle(color: Colors.grey),
                       ),
                     ),
                     const Icon(Icons.filter_list, color: AppColors.primaryLight),
@@ -126,14 +125,14 @@ class MapScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Structure Fire nearby',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
                             ),
                           ),
                           Text(
                             '0.2 km away • Emergency',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               color: Colors.grey,
                               fontSize: 12,
                             ),

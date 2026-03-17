@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -40,7 +39,7 @@ class _ActivityScreenState extends State<ActivityScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.myActivity, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+          title: Text(AppLocalizations.of(context)!.myActivity, style: TextStyle(fontWeight: FontWeight.bold)),
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           bottom: TabBar(
@@ -230,7 +229,7 @@ class _VolunteeringCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           _getStatusLabel(status, l10n),
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: _statusColor,
@@ -241,7 +240,7 @@ class _VolunteeringCard extends StatelessWidget {
                   ),
                   Text(
                     AppLocalizations.of(context)!.appliedAt(timeago.format(appliedAt)),
-                    style: GoogleFonts.poppins(fontSize: 11, color: Colors.grey),
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
                   ),
                 ],
               ),
@@ -249,7 +248,7 @@ class _VolunteeringCard extends StatelessWidget {
               // Title
               Text(
                 request.title,
-                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -262,7 +261,7 @@ class _VolunteeringCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       request.locationName,
-                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -276,7 +275,7 @@ class _VolunteeringCard extends StatelessWidget {
                     ),
                     child: Text(
                       request.category.toString().split('.').last,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 11,
                         color: AppColors.primaryLight,
                         fontWeight: FontWeight.w500,
@@ -311,7 +310,7 @@ class _VolunteeringCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     AppLocalizations.of(context)!.postedBy(request.requesterName),
-                    style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -347,7 +346,7 @@ class _ActivityPlaceholder extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               title,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey[700],
@@ -357,7 +356,7 @@ class _ActivityPlaceholder extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[500]),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
               textAlign: TextAlign.center,
             ),
           ],

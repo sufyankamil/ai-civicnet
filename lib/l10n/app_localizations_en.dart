@@ -107,19 +107,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enable => 'Enable';
 
   @override
-  String get findMatches => 'Find Matches';
+  String get findMatches => 'Finding matches near you...';
 
   @override
   String get searchHelp => 'Search help requests...';
 
   @override
-  String get searchNews => 'Search news...';
+  String get searchNews => 'Search news feed...';
 
   @override
-  String get noRequests => 'No Requests';
+  String get noRequests => 'No Requests Nearby';
 
   @override
-  String get noRequestsDescription => 'No help requests in your area yet.';
+  String get noRequestsDescription =>
+      'There are no open help requests in your area right now. Be the first to post one!';
 
   @override
   String get refresh => 'Refresh';
@@ -135,8 +136,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count Polls',
-      one: '1 Poll',
+      other: '$count Active Polls',
+      one: '1 Active Poll',
     );
     return '$_temp0';
   }
@@ -152,10 +153,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get safetyDescription =>
-      'Review our safety guidelines and shared community commitment.';
+      'CivicNet is committed to community safety. We never ask for money for requests or events.';
 
   @override
-  String get learnMoreSafety => 'Learn More';
+  String get learnMoreSafety => 'Learn More About Safety';
 
   @override
   String get couldNotLoadProfile => 'Could not load profile';
@@ -318,7 +319,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accepted => 'Accepted';
 
   @override
-  String get notSelected => 'Not Selected';
+  String get notSelected => 'Not Selected for This One';
 
   @override
   String get awaitingReview => 'Awaiting Review';
@@ -739,4 +740,245 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToCreatePoll => 'Failed to create poll';
+
+  @override
+  String get categoryAll => 'All';
+
+  @override
+  String get categoryRecommended => 'Recommended';
+
+  @override
+  String get categoryTechSupport => 'Tech Support';
+
+  @override
+  String get categoryHousehold => 'Household';
+
+  @override
+  String get categoryEmergency => 'Emergency';
+
+  @override
+  String get categoryEducation => 'Education';
+
+  @override
+  String get categoryGeneral => 'General';
+
+  @override
+  String get bestMatch => 'Best Match';
+
+  @override
+  String get goodMatch => 'Good Match';
+
+  @override
+  String get match => 'Match';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get communityHelpers => 'Community Helpers';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get nearbyMembersHelp => 'Nearby members who might be able to help.';
+
+  @override
+  String get requester => 'Requester';
+
+  @override
+  String get approximateLocation => 'Approximate Location';
+
+  @override
+  String get applicationAccepted => 'Application Accepted!';
+
+  @override
+  String get interestSent => 'Interest Sent (Pending)';
+
+  @override
+  String get taskCompleted => 'Task Completed!';
+
+  @override
+  String earnedPoints(int count) {
+    return 'You earned $count points for helping out.';
+  }
+
+  @override
+  String get noHelpersYet => 'No helpers available yet';
+
+  @override
+  String get beTheFirstHelper => 'Be the first to join the community!';
+
+  @override
+  String get communicateWithRequester =>
+      'You can now communicate with the requester.';
+
+  @override
+  String get chatWithRequester => 'Chat with Requester';
+
+  @override
+  String get imInterested => 'I\'m Interested';
+
+  @override
+  String get requestNoLongerOpen =>
+      'This request is no longer open for applications.';
+
+  @override
+  String get yourRequest => 'This is your request';
+
+  @override
+  String get interestShown => 'No interest shown yet.';
+
+  @override
+  String helpsCount(int count) {
+    return '$count helps';
+  }
+
+  @override
+  String get enjoyingApp => 'Enjoying Civic Net?';
+
+  @override
+  String get feedbackDescription =>
+      'Your feedback is invaluable to us. Would you like to share your thoughts or suggest improvements?';
+
+  @override
+  String get maybeLater => 'Maybe Later';
+
+  @override
+  String get giveFeedback => 'Give Feedback';
+
+  @override
+  String get locationPermissionTitle => 'Enable Location';
+
+  @override
+  String get locationPermissionDesc =>
+      'To show accurate help requests and matches near you, Civic Net needs access to your location.';
+
+  @override
+  String get communityEvent => 'COMMUNITY EVENT';
+
+  @override
+  String get aboutThisEvent => 'About this event';
+
+  @override
+  String get organizer => 'Organizer';
+
+  @override
+  String get communityMember => 'Community Member';
+
+  @override
+  String get comments => 'Comments';
+
+  @override
+  String itemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get writeReply => 'Write a reply...';
+
+  @override
+  String get askSomething => 'Ask something...';
+
+  @override
+  String get onlyAttendingCanChat =>
+      'Only people attending this event can send messages.';
+
+  @override
+  String get noCommentsBeFirst => 'No comments yet. Be the first to ask!';
+
+  @override
+  String get deleteEvent => 'Delete Event';
+
+  @override
+  String get deleteEventConfirm =>
+      'Are you sure you want to delete this event? This action cannot be undone.';
+
+  @override
+  String get eventDeletedSuccess => 'Event deleted successfully';
+
+  @override
+  String get host => 'HOST';
+
+  @override
+  String get reply => 'Reply';
+
+  @override
+  String get replyingTo => 'Replying to ';
+
+  @override
+  String get tapToSeeOnMap => 'Tap to see on map';
+
+  @override
+  String get locationSelectedOnMap => 'Location selected on map';
+
+  @override
+  String get eventPostedSuccess => 'Event posted successfully!';
+
+  @override
+  String get eventPostedError => 'Failed to post event. Please try again.';
+
+  @override
+  String get postAnEventTitle => 'Post an Event';
+
+  @override
+  String get eventDetails => 'Event Details';
+
+  @override
+  String get required => 'Required';
+
+  @override
+  String get whenAndWhere => 'When & Where';
+
+  @override
+  String get dateLabel => 'Date';
+
+  @override
+  String get timeLabel => 'Time';
+
+  @override
+  String get selectLocationOnMap => 'Select exact location on map';
+
+  @override
+  String get changeLocationOnMap => 'Change location on map';
+
+  @override
+  String selectedLocation(String lat, String lng) {
+    return 'Selected: $lat, $lng';
+  }
+
+  @override
+  String get locationPermissionRequired => 'Location permissions are required.';
+
+  @override
+  String get gpsDisabled => 'GPS is disabled. Please enable it.';
+
+  @override
+  String locationFetchFailed(String error) {
+    return 'Location fetch failed: $error';
+  }
+
+  @override
+  String get preciseLocationFetchFailed =>
+      'Could not get your precise location.';
+
+  @override
+  String get locationNotFoundDefault =>
+      'Could not find your location. Defaulting to India.';
+
+  @override
+  String get selectLocationTitle => 'Select Location';
+
+  @override
+  String get confirmAllCaps => 'CONFIRM';
+
+  @override
+  String get tapOnMapToSelectLocation =>
+      'Tap on the map to select a precise location for your event.';
+
+  @override
+  String get confirmLocation => 'Confirm Location';
+
+  @override
+  String get beta => 'BETA';
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
@@ -49,7 +48,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Control Panel', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('Admin Control Panel', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: FutureBuilder<List<VerificationRequest>>(
         future: _requestsFuture,
@@ -67,8 +66,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 children: [
                   Icon(Icons.check_circle_outline_rounded, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
-                  Text('All caught up!', style: GoogleFonts.poppins(color: Colors.grey)),
-                  Text('No pending verification requests.', style: GoogleFonts.poppins(color: Colors.grey, fontSize: 12)),
+                  Text('All caught up!', style: TextStyle(color: Colors.grey)),
+                  Text('No pending verification requests.', style: TextStyle(color: Colors.grey, fontSize: 12)),
                 ],
               ),
             );
@@ -103,8 +102,8 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(request.userName ?? 'Unknown User', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
-                                Text('Applied for Leader status', style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                                Text(request.userName ?? 'Unknown User', style: TextStyle(fontWeight: FontWeight.bold)),
+                                Text('Applied for Leader status', style: TextStyle(fontSize: 12, color: Colors.grey)),
                               ],
                             ),
                           ),
@@ -119,7 +118,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         ),
                         child: Text(
                           request.reason,
-                          style: GoogleFonts.poppins(fontSize: 14),
+                          style: TextStyle(fontSize: 14),
                         ),
                       ),
                       const SizedBox(height: 16),

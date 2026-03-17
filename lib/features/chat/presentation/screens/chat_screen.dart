@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -53,7 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Expanded(
                     child: Text(
                       'Messages',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 28,
                         letterSpacing: -0.5,
@@ -118,7 +117,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               const SizedBox(width: 12),
                               Text(
                                 'Mark all as read',
-                                style: GoogleFonts.poppins(fontSize: 14),
+                                style: TextStyle(fontSize: 14),
                               ),
                             ],
                           ),
@@ -138,7 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
                 decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.searchConversationsHint,
-                  hintStyle: GoogleFonts.poppins(
+                  hintStyle: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                   ),
@@ -276,7 +275,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         children: [
                           Text(
                             chat.otherUserName,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontWeight: chat.unreadCount > 0 ? FontWeight.bold : FontWeight.w600,
                               fontSize: 16,
                               color: isDark ? Colors.white : AppColors.textPrimaryLight,
@@ -284,7 +283,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                           Text(
                             timeago.format(chat.lastMessageTime, locale: 'en_short'),
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               color: Colors.grey,
                               fontSize: 12,
                             ),
@@ -299,7 +298,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               chat.lastMessage,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 color: chat.unreadCount > 0 
                                     ? (isDark ? Colors.white : Colors.black87)
                                     : Colors.grey[600],
@@ -318,7 +317,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ),
                               child: Text(
                                 chat.unreadCount.toString(),
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -358,7 +357,7 @@ class _ChatScreenState extends State<ChatScreen> {
           const SizedBox(height: 24),
           Text(
             'No conversations yet',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : AppColors.textPrimaryLight,
@@ -370,7 +369,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Text(
               'Your messages with community helpers will appear here.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 color: Colors.grey,
                 fontSize: 14,
               ),

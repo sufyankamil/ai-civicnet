@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Light Mode
@@ -20,7 +19,7 @@ class AppColors {
   static const Color surfaceDark = Color(0xFF161622); // Card surface
   static const Color surfaceVariantDark = Color(0xFF232232); // For inputs/chips
   static const Color textPrimaryDark = Color(0xFFF9F9FB); // Off-white for less eye strain
-  static const Color textSecondaryDark = Color(0xFFA7A9BE); // Much better contrast than before
+  static const Color textSecondaryDark = Color(0xFFA7A9BE); 
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
@@ -37,13 +36,14 @@ class AppTheme {
       brightness: Brightness.light,
       primaryColor: AppColors.primaryLight,
       scaffoldBackgroundColor: AppColors.backgroundLight,
+      fontFamily: 'Poppins',
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryLight,
         secondary: AppColors.secondaryLight,
         surface: AppColors.surfaceLight,
         error: AppColors.accentLight,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme().apply(
+      textTheme: const TextTheme().apply(
         bodyColor: AppColors.textPrimaryLight,
         displayColor: AppColors.textPrimaryLight,
       ),
@@ -84,6 +84,7 @@ class AppTheme {
       primaryColor: AppColors.primaryDark,
       scaffoldBackgroundColor: AppColors.backgroundDark,
       cardColor: AppColors.surfaceDark,
+      fontFamily: 'Poppins',
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryDark,
         secondary: AppColors.secondaryDark,
@@ -93,7 +94,7 @@ class AppTheme {
         onSurface: AppColors.textPrimaryDark,
         onSurfaceVariant: AppColors.textSecondaryDark,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).apply(
+      textTheme: const TextTheme().apply(
         bodyColor: AppColors.textPrimaryDark,
         displayColor: AppColors.textPrimaryDark,
       ),

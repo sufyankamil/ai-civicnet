@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
@@ -92,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const SizedBox(height: 28),
                 Text(
                   AppLocalizations.of(context)!.setNewPassword,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).primaryColor,
@@ -101,7 +100,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 const SizedBox(height: 10),
                 Text(
                   AppLocalizations.of(context)!.enterNewPassword,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                       fontSize: 15, color: Colors.grey, height: 1.6),
                 ),
                 const SizedBox(height: 40),

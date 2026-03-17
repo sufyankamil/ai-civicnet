@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class SocialLoginButton extends StatelessWidget {
   final Widget icon;
@@ -67,7 +66,7 @@ class SocialLoginButton extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : Colors.black87,

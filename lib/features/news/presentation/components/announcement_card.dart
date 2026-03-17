@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -119,7 +118,7 @@ class AnnouncementCard extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   announcement.category.name.toUpperCase(),
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: categoryColor,
@@ -130,7 +129,7 @@ class AnnouncementCard extends StatelessWidget {
                           ),
                           Text(
                             timeago.format(announcement.createdAt),
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 11,
                               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                             ),
@@ -143,7 +142,7 @@ class AnnouncementCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               announcement.title,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: theme.colorScheme.onSurface,
@@ -161,7 +160,7 @@ class AnnouncementCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         announcement.content,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 14,
                           color: theme.colorScheme.onSurfaceVariant,
                           height: 1.5,
@@ -188,7 +187,7 @@ class AnnouncementCard extends StatelessWidget {
                                 const SizedBox(width: 6),
                                 Text(
                                   AppLocalizations.of(context)!.sourceInformation,
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: theme.primaryColor,
@@ -219,7 +218,7 @@ class AnnouncementCard extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             announcement.authorName ?? 'Community Leader',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: theme.colorScheme.onSurface,
@@ -228,7 +227,7 @@ class AnnouncementCard extends StatelessWidget {
                           const Spacer(),
                           Text(
                             AppLocalizations.of(context)!.readMore,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: theme.primaryColor,
@@ -280,7 +279,7 @@ class AnnouncementCard extends StatelessWidget {
               children: [
                 Text(
                   isSuperAdmin ? AppLocalizations.of(context)!.superAdminActions : AppLocalizations.of(context)!.adminActions,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,

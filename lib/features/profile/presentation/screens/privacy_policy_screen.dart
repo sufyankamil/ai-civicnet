@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
@@ -10,7 +9,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Privacy Policy', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('Privacy Policy', style: TextStyle(fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
@@ -23,12 +22,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             Text(
               'Privacy Policy for Civic Net',
-              style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Text(
               'Last updated: March 09, 2026',
-              style: GoogleFonts.poppins(color: Colors.grey, fontSize: 14),
+              style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 24),
             _buildSection(
@@ -79,9 +78,9 @@ class PrivacyPolicyScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('View Full Policy Online',
-                              style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                           Text('privacypolicy-ruddy.vercel.app',
-                              style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
+                              style: TextStyle(fontSize: 12, color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -104,12 +103,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             content,
-            style: GoogleFonts.poppins(fontSize: 14, height: 1.5, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[800]),
+            style: TextStyle(fontSize: 14, height: 1.5, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[800]),
           ),
         ],
       ),

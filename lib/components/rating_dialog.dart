@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class RatingDialog extends StatefulWidget {
   final String ratedUserName;
@@ -27,7 +26,7 @@ class _RatingDialogState extends State<RatingDialog> {
       title: Center(
         child: Text(
           'Rate Experience',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       content: Column(

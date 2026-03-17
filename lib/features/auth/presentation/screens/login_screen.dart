@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../components/social_login_button.dart';
@@ -131,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 48),
                 Text(
                   AppLocalizations.of(context)!.welcomeBack,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).primaryColor,
@@ -140,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 Text(
                   AppLocalizations.of(context)!.signInToContinue,
-                  style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 48),
 

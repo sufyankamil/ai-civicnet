@@ -23,7 +23,6 @@ class EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('MMM d, yyyy • h:mm a');
     final now = DateTime.now();
     final isPast = event.eventDate.isBefore(now);
     
@@ -112,7 +111,7 @@ class EventCard extends StatelessWidget {
                   const Icon(Icons.calendar_today, size: 14, color: AppColors.primaryLight),
                   const SizedBox(width: 6),
                   Text(
-                    dateFormat.format(event.eventDate),
+                    _getLocalizedDate(context, event.eventDate),
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -184,5 +183,10 @@ class EventCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _getLocalizedDate(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat('MMM d, yyyy • h:mm a', locale).format(date);
   }
 }

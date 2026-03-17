@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../l10n/app_localizations.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
 import 'ai_match_badge.dart';
@@ -94,7 +95,7 @@ class HelperCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${helper.distance} • ${helper.user.rating} ★ (${helper.user.helpCount} helps)',
+                      '${helper.distance} • ${helper.user.rating} ★ (${AppLocalizations.of(context)!.helpsCount(helper.user.helpCount)})',
                       style: TextStyle(color: Colors.grey[600], fontSize: 12),
                     ),
                     const SizedBox(height: 8),

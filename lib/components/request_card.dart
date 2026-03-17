@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import '../l10n/app_localizations.dart';
 import '../features/request/domain/entities/help_request_entity.dart';
 import '../features/request/domain/entities/request_enums.dart';
 import '../theme/app_theme.dart';
@@ -19,6 +20,8 @@ class RequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+
     return Card(
       elevation: 0,
       color: Theme.of(context).cardColor,
@@ -72,7 +75,7 @@ class RequestCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${request.requesterName} • ${timeago.format(request.postedAt)}',
+                          '${request.requesterName} • ${timeago.format(request.postedAt, locale: locale)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
@@ -148,29 +151,30 @@ class RequestCard extends StatelessWidget {
   }
 
   Widget _buildCategoryChip(BuildContext context, HelpCategory category) {
+    final l10n = AppLocalizations.of(context)!;
     Color color;
     String text;
 
     switch (category) {
       case HelpCategory.emergency:
         color = AppColors.accentLight;
-        text = 'Emergency';
+        text = l10n.categoryEmergency;
         break;
       case HelpCategory.techSupport:
         color = Colors.blue;
-        text = 'Tech';
+        text = l10n.categoryTechSupport;
         break;
       case HelpCategory.education:
         color = Colors.purple;
-        text = 'Education';
+        text = l10n.categoryEducation;
         break;
       case HelpCategory.household:
         color = Colors.orange;
-        text = 'Household';
+        text = l10n.categoryHousehold;
         break;
       default:
         color = Colors.grey;
-        text = 'General';
+        text = l10n.categoryGeneral;
     }
 
     return Container(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
@@ -113,7 +112,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 28),
           Text(
             AppLocalizations.of(context)!.forgotPassword,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
               color: Theme.of(context).primaryColor,
@@ -122,7 +121,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 10),
           Text(
             AppLocalizations.of(context)!.noWorriesReset,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 15,
               color: Colors.grey,
               height: 1.6,
@@ -198,7 +197,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 36),
         Text(
           AppLocalizations.of(context)!.checkYourInbox,
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
           ),
@@ -209,7 +208,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Text(
             AppLocalizations.of(context)!.resetSentTo(_emailController.text.trim()),
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 15,
               color: Colors.grey,
               height: 1.6,
@@ -219,7 +218,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 8),
         Text(
           AppLocalizations.of(context)!.linkExpires,
-          style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey.shade400),
+          style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
         ),
         const SizedBox(height: 48),
         SizedBox(
