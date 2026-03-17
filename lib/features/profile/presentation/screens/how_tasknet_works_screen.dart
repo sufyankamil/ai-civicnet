@@ -194,7 +194,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            'v1.0',
+            'v1.1',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,

@@ -205,44 +205,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          _buildSectionHeader(
-            l10n.languageTitle,
-            suffix: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                l10n.beta,
-                style: const TextStyle(
-                  color: AppColors.primaryLight,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          ListTile(
-            title: Text(l10n.languageTitle),
-            subtitle: Text(themeService.locale?.languageCode == 'hi' ? l10n.hindi : l10n.english),
-            leading: const Icon(Icons.language, color: AppColors.primaryLight),
-            trailing: DropdownButton<Locale>(
-              value: themeService.locale ?? const Locale('en'),
-              underline: const SizedBox(),
-              items: [
-                DropdownMenuItem(value: const Locale('en'), child: Text(l10n.english)),
-                DropdownMenuItem(value: const Locale('hi'), child: Text(l10n.hindi)),
-              ],
-              onChanged: (Locale? locale) async {
-                if (locale != null) {
-                  await themeService.setLocale(locale);
-                }
-              },
-            ),
-          ),
-          const Divider(height: 32),
 
           _buildSectionHeader(l10n.support),
           const SizedBox(height: 8),
@@ -336,7 +298,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             title: Text(l10n.version),
             leading: const Icon(Icons.info_outline, color: Colors.grey),
-            trailing: const Text('1.0.0', style: TextStyle(color: Colors.grey)),
+            trailing: const Text('1.1.0', style: TextStyle(color: Colors.grey)),
           ),
         ],
       ),
