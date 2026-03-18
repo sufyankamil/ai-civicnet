@@ -1,7 +1,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../services/pending_toast_service.dart';
 import '../../../../services/toast_service.dart';
@@ -255,7 +254,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Text(
             page.title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : AppColors.textPrimaryLight,
@@ -265,7 +264,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Text(
             page.desc,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 15,
               height: 1.6,
               color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
@@ -311,7 +310,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     children: [
                       Text(
                         'How CivicNet Works',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -320,7 +319,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       const SizedBox(height: 4),
                       Text(
                         "A task's journey from post\nto fulfilment - step by step.",
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.85),
                           height: 1.5,
@@ -405,7 +404,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               children: [
                 Text(
                   'Step ${index + 1}',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: step.color,
@@ -414,14 +413,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
                 Text(
                   step.title,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   step.desc,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 11.5,
                     height: 1.4,
                     color: isDark

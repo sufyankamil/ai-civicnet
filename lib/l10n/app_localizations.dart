@@ -293,7 +293,7 @@ abstract class AppLocalizations {
   /// No description provided for @findMatches.
   ///
   /// In en, this message translates to:
-  /// **'Find Matches'**
+  /// **'Finding matches near you...'**
   String get findMatches;
 
   /// No description provided for @searchHelp.
@@ -305,19 +305,19 @@ abstract class AppLocalizations {
   /// No description provided for @searchNews.
   ///
   /// In en, this message translates to:
-  /// **'Search news...'**
+  /// **'Search news feed...'**
   String get searchNews;
 
   /// No description provided for @noRequests.
   ///
   /// In en, this message translates to:
-  /// **'No Requests'**
+  /// **'No Requests Nearby'**
   String get noRequests;
 
   /// No description provided for @noRequestsDescription.
   ///
   /// In en, this message translates to:
-  /// **'No help requests in your area yet.'**
+  /// **'There are no open help requests in your area right now. Be the first to post one!'**
   String get noRequestsDescription;
 
   /// No description provided for @refresh.
@@ -341,7 +341,7 @@ abstract class AppLocalizations {
   /// No description provided for @pollsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 Poll} other{{count} Polls}}'**
+  /// **'{count, plural, =1{1 Active Poll} other{{count} Active Polls}}'**
   String pollsCount(int count);
 
   /// No description provided for @findYourGuild.
@@ -365,13 +365,13 @@ abstract class AppLocalizations {
   /// No description provided for @safetyDescription.
   ///
   /// In en, this message translates to:
-  /// **'Review our safety guidelines and shared community commitment.'**
+  /// **'CivicNet is committed to community safety. We never ask for money for requests or events.'**
   String get safetyDescription;
 
   /// No description provided for @learnMoreSafety.
   ///
   /// In en, this message translates to:
-  /// **'Learn More'**
+  /// **'Learn More About Safety'**
   String get learnMoreSafety;
 
   /// No description provided for @couldNotLoadProfile.
@@ -689,7 +689,7 @@ abstract class AppLocalizations {
   /// No description provided for @notSelected.
   ///
   /// In en, this message translates to:
-  /// **'Not Selected'**
+  /// **'Not Selected for This One'**
   String get notSelected;
 
   /// No description provided for @awaitingReview.
@@ -1465,6 +1465,450 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to create poll'**
   String get failedToCreatePoll;
+
+  /// No description provided for @categoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get categoryAll;
+
+  /// No description provided for @categoryRecommended.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get categoryRecommended;
+
+  /// No description provided for @categoryTechSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Tech Support'**
+  String get categoryTechSupport;
+
+  /// No description provided for @categoryHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get categoryHousehold;
+
+  /// No description provided for @categoryEmergency.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency'**
+  String get categoryEmergency;
+
+  /// No description provided for @categoryEducation.
+  ///
+  /// In en, this message translates to:
+  /// **'Education'**
+  String get categoryEducation;
+
+  /// No description provided for @categoryGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get categoryGeneral;
+
+  /// No description provided for @bestMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Best Match'**
+  String get bestMatch;
+
+  /// No description provided for @goodMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Good Match'**
+  String get goodMatch;
+
+  /// No description provided for @match.
+  ///
+  /// In en, this message translates to:
+  /// **'Match'**
+  String get match;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @communityHelpers.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Helpers'**
+  String get communityHelpers;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
+
+  /// No description provided for @nearbyMembersHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Nearby members who might be able to help.'**
+  String get nearbyMembersHelp;
+
+  /// No description provided for @requester.
+  ///
+  /// In en, this message translates to:
+  /// **'Requester'**
+  String get requester;
+
+  /// No description provided for @approximateLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Approximate Location'**
+  String get approximateLocation;
+
+  /// No description provided for @applicationAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Accepted!'**
+  String get applicationAccepted;
+
+  /// No description provided for @interestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Interest Sent (Pending)'**
+  String get interestSent;
+
+  /// No description provided for @taskCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Completed!'**
+  String get taskCompleted;
+
+  /// No description provided for @earnedPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'You earned {count} points for helping out.'**
+  String earnedPoints(int count);
+
+  /// No description provided for @noHelpersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No helpers available yet'**
+  String get noHelpersYet;
+
+  /// No description provided for @beTheFirstHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Be the first to join the community!'**
+  String get beTheFirstHelper;
+
+  /// No description provided for @communicateWithRequester.
+  ///
+  /// In en, this message translates to:
+  /// **'You can now communicate with the requester.'**
+  String get communicateWithRequester;
+
+  /// No description provided for @chatWithRequester.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with Requester'**
+  String get chatWithRequester;
+
+  /// No description provided for @imInterested.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m Interested'**
+  String get imInterested;
+
+  /// No description provided for @requestNoLongerOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'This request is no longer open for applications.'**
+  String get requestNoLongerOpen;
+
+  /// No description provided for @yourRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your request'**
+  String get yourRequest;
+
+  /// No description provided for @interestShown.
+  ///
+  /// In en, this message translates to:
+  /// **'No interest shown yet.'**
+  String get interestShown;
+
+  /// No description provided for @helpsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} helps'**
+  String helpsCount(int count);
+
+  /// No description provided for @enjoyingApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Enjoying Civic Net?'**
+  String get enjoyingApp;
+
+  /// No description provided for @feedbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Your feedback is invaluable to us. Would you like to share your thoughts or suggest improvements?'**
+  String get feedbackDescription;
+
+  /// No description provided for @maybeLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Maybe Later'**
+  String get maybeLater;
+
+  /// No description provided for @giveFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Give Feedback'**
+  String get giveFeedback;
+
+  /// No description provided for @locationPermissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Location'**
+  String get locationPermissionTitle;
+
+  /// No description provided for @locationPermissionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'To show accurate help requests and matches near you, Civic Net needs access to your location.'**
+  String get locationPermissionDesc;
+
+  /// No description provided for @communityEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'COMMUNITY EVENT'**
+  String get communityEvent;
+
+  /// No description provided for @aboutThisEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'About this event'**
+  String get aboutThisEvent;
+
+  /// No description provided for @organizer.
+  ///
+  /// In en, this message translates to:
+  /// **'Organizer'**
+  String get organizer;
+
+  /// No description provided for @communityMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Member'**
+  String get communityMember;
+
+  /// No description provided for @comments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get comments;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items'**
+  String itemsCount(int count);
+
+  /// No description provided for @writeReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply...'**
+  String get writeReply;
+
+  /// No description provided for @askSomething.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask something...'**
+  String get askSomething;
+
+  /// No description provided for @onlyAttendingCanChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Only people attending this event can send messages.'**
+  String get onlyAttendingCanChat;
+
+  /// No description provided for @noCommentsBeFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'No comments yet. Be the first to ask!'**
+  String get noCommentsBeFirst;
+
+  /// No description provided for @deleteEvent.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Event'**
+  String get deleteEvent;
+
+  /// No description provided for @deleteEventConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this event? This action cannot be undone.'**
+  String get deleteEventConfirm;
+
+  /// No description provided for @eventDeletedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event deleted successfully'**
+  String get eventDeletedSuccess;
+
+  /// No description provided for @host.
+  ///
+  /// In en, this message translates to:
+  /// **'HOST'**
+  String get host;
+
+  /// No description provided for @reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get reply;
+
+  /// No description provided for @replyingTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to '**
+  String get replyingTo;
+
+  /// No description provided for @tapToSeeOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see on map'**
+  String get tapToSeeOnMap;
+
+  /// No description provided for @locationSelectedOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Location selected on map'**
+  String get locationSelectedOnMap;
+
+  /// No description provided for @eventPostedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Event posted successfully!'**
+  String get eventPostedSuccess;
+
+  /// No description provided for @eventPostedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to post event. Please try again.'**
+  String get eventPostedError;
+
+  /// No description provided for @postAnEventTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Post an Event'**
+  String get postAnEventTitle;
+
+  /// No description provided for @eventDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Event Details'**
+  String get eventDetails;
+
+  /// No description provided for @required.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get required;
+
+  /// No description provided for @whenAndWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'When & Where'**
+  String get whenAndWhere;
+
+  /// No description provided for @dateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get dateLabel;
+
+  /// No description provided for @timeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get timeLabel;
+
+  /// No description provided for @selectLocationOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Select exact location on map'**
+  String get selectLocationOnMap;
+
+  /// No description provided for @changeLocationOnMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Change location on map'**
+  String get changeLocationOnMap;
+
+  /// No description provided for @selectedLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected: {lat}, {lng}'**
+  String selectedLocation(String lat, String lng);
+
+  /// No description provided for @locationPermissionRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Location permissions are required.'**
+  String get locationPermissionRequired;
+
+  /// No description provided for @gpsDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is disabled. Please enable it.'**
+  String get gpsDisabled;
+
+  /// No description provided for @locationFetchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Location fetch failed: {error}'**
+  String locationFetchFailed(String error);
+
+  /// No description provided for @preciseLocationFetchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get your precise location.'**
+  String get preciseLocationFetchFailed;
+
+  /// No description provided for @locationNotFoundDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find your location. Defaulting to India.'**
+  String get locationNotFoundDefault;
+
+  /// No description provided for @selectLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Location'**
+  String get selectLocationTitle;
+
+  /// No description provided for @confirmAllCaps.
+  ///
+  /// In en, this message translates to:
+  /// **'CONFIRM'**
+  String get confirmAllCaps;
+
+  /// No description provided for @tapOnMapToSelectLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap on the map to select a precise location for your event.'**
+  String get tapOnMapToSelectLocation;
+
+  /// No description provided for @confirmLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Location'**
+  String get confirmLocation;
+
+  /// No description provided for @beta.
+  ///
+  /// In en, this message translates to:
+  /// **'BETA'**
+  String get beta;
 }
 
 class _AppLocalizationsDelegate

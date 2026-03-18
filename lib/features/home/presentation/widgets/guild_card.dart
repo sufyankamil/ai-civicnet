@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
@@ -54,7 +53,7 @@ class GuildCard extends StatelessWidget {
                 ),
                 child: Text(
                   guild.category,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey[600],
@@ -66,7 +65,7 @@ class GuildCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             guild.name,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -76,7 +75,7 @@ class GuildCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             guild.description ?? AppLocalizations.of(context)!.noDescription,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
             ),
@@ -89,7 +88,7 @@ class GuildCard extends StatelessWidget {
             children: [
               Text(
                 AppLocalizations.of(context)!.membersCount(guild.memberCount),
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   color: AppColors.primaryLight,
@@ -107,7 +106,7 @@ class GuildCard extends StatelessWidget {
                   ),
                   child: Text(
                     guild.isUserMember ? AppLocalizations.of(context)!.joined : AppLocalizations.of(context)!.join,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: guild.isUserMember ? Colors.grey[600] : Colors.white,

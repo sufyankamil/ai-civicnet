@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
@@ -18,6 +17,7 @@ import '../../../../components/helper_card.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../components/rating_dialog.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../../components/report_dialog.dart';
 
 class RequestDetailScreen extends StatefulWidget {
@@ -264,8 +264,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Approximate Location',
-                                style: GoogleFonts.poppins(
+                                AppLocalizations.of(context)!.approximateLocation,
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
@@ -315,12 +315,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            request.category
-                                .toString()
-                                .split('.')
-                                .last
-                                .toUpperCase(),
-                            style: GoogleFonts.poppins(
+                            _getLocalizedCategory(request.category.name),
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: AppColors.secondaryLight,
@@ -332,7 +328,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           const SizedBox(width: 8),
                           Text(
                             request.distance,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               color: Colors.grey[600],
                               fontSize: 12,
                             ),
@@ -347,7 +343,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         Expanded(
                           child: Text(
                             request.title,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(
@@ -470,14 +466,14 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 children: [
                                   Text(
                                     'Task Completed!',
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.green[800],
                                     ),
                                   ),
                                   Text(
                                     'You earned 15 points for helping out.',
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
                                       color: Colors.green[800],
                                       fontSize: 13,
                                     ),
@@ -523,9 +519,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const Text(
-                              'Requester',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context)!.requester,
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
                               ),
@@ -557,8 +553,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     const SizedBox(height: 16),
 
                     Text(
-                      'Description',
-                      style: GoogleFonts.poppins(
+                      AppLocalizations.of(context)!.description,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -566,7 +562,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     const SizedBox(height: 8),
                     Text(
                       request.description,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(
                           context,
@@ -604,8 +600,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'Community Helpers',
-                                      style: GoogleFonts.poppins(
+                                      AppLocalizations.of(context)!.communityHelpers,
+                                      style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18,
                                       ),
@@ -627,13 +623,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                       tapTargetSize:
                                           MaterialTapTargetSize.shrinkWrap,
                                     ),
-                                    child: const Text('View All'),
+                                    child: Text(AppLocalizations.of(context)!.viewAll),
                                   ),
                               ],
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Nearby members who might be able to help.',
+                              AppLocalizations.of(context)!.nearbyMembersHelp,
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 13,
@@ -665,15 +661,15 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                      'No helpers available yet',
-                                      style: GoogleFonts.poppins(
+                                      AppLocalizations.of(context)!.noHelpersYet,
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.grey[700],
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Be the first to join the community!',
+                                      AppLocalizations.of(context)!.beTheFirstHelper,
                                       style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: 12,
@@ -763,15 +759,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      _applicationStatus ==
-                                              legacy.ApplicationStatus.accepted
-                                          ? 'Application Accepted!'
-                                          : _applicationStatus ==
-                                                legacy
-                                                    .ApplicationStatus
-                                                    .rejected
-                                          ? 'Not Selected for This One'
-                                          : 'Interest Sent (Pending)',
+                                      _getLocalizedApplicationStatus(_applicationStatus!.name),
                                       style: TextStyle(
                                         color:
                                             _applicationStatus ==
@@ -793,9 +781,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 if (_applicationStatus ==
                                     legacy.ApplicationStatus.accepted) ...[
                                   const SizedBox(height: 8),
-                                  const Text(
-                                    'You can now communicate with the requester.',
-                                    style: TextStyle(
+                                  Text(
+                                    AppLocalizations.of(context)!.communicateWithRequester,
+                                    style: const TextStyle(
                                       fontSize: 12,
                                       color: Colors.green,
                                     ),
@@ -805,7 +793,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                   ElevatedButton.icon(
                                     onPressed: () => _startChat(request),
                                     icon: const Icon(Icons.chat),
-                                    label: const Text('Chat with Requester'),
+                                    label: Text(AppLocalizations.of(context)!.chatWithRequester),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                       foregroundColor: Colors.white,
@@ -836,20 +824,20 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                               ? 0.5
                               : 1.0,
                           child: PrimaryButton(
-                            text: 'I\'m Interested',
+                            text: AppLocalizations.of(context)!.imInterested,
                             isLoading: _isApplying || _isCheckingStatus,
                             onPressed: request.status == RequestStatusEnum.open
                                 ? () => _applyToRequest()
                                 : () => ToastService.showInfo(
                                     context,
-                                    'This request is no longer open for applications.',
+                                    AppLocalizations.of(context)!.requestNoLongerOpen,
                                   ),
                           ),
                         ),
                     ] else ...[
                       Center(
                         child: Text(
-                          'This is your request',
+                          AppLocalizations.of(context)!.yourRequest,
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontWeight: FontWeight.bold,
@@ -865,7 +853,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       const SizedBox(height: 16),
                       Text(
                         'Applications (${_applications.length})',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
@@ -877,7 +865,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         )
                       else if (_applications.isEmpty)
                         Text(
-                          'No interest shown yet.',
+                          AppLocalizations.of(context)!.interestShown,
                           style: TextStyle(color: Colors.grey[600]),
                         )
                       else
@@ -1029,7 +1017,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'You rated',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         color: Colors.grey[700],
                         fontSize: 14,
                       ),
@@ -1049,7 +1037,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     const SizedBox(width: 6),
                     Text(
                       '($_ratingGiven/5)',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         color: Colors.amber[800],
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
@@ -1450,7 +1438,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'All Community Helpers',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -1517,5 +1505,27 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         },
       ),
     );
+  }
+
+  String _getLocalizedCategory(String category) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (category.toLowerCase()) {
+      case 'emergency': return l10n.categoryEmergency;
+      case 'tech support': return l10n.categoryTechSupport;
+      case 'household': return l10n.categoryHousehold;
+      case 'education': return l10n.categoryEducation;
+      case 'general': return l10n.categoryGeneral;
+      default: return category;
+    }
+  }
+
+  String _getLocalizedApplicationStatus(String status) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (status.toLowerCase()) {
+      case 'accepted': return l10n.applicationAccepted;
+      case 'not selected': return l10n.notSelected;
+      case 'applied': return l10n.interestSent;
+      default: return status;
+    }
   }
 }

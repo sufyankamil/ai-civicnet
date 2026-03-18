@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../features/request/domain/entities/request_enums.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +12,7 @@ class DiscoverScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.discoverTitle, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(l10n.discoverTitle, style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
       ),
@@ -25,7 +24,7 @@ class DiscoverScreen extends StatelessWidget {
             children: [
               Text(
                 l10n.categories,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,
@@ -100,7 +99,7 @@ class DiscoverScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),

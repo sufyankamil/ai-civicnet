@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../theme/app_theme.dart';
 
 // ─── Data Model ─────────────────────────────────────────────────────────────
@@ -184,7 +183,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
       ),
       title: Text(
         'How CivicNet Works',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
       ),
       actions: [
         Container(
@@ -195,8 +194,8 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            'v1.0',
-            style: GoogleFonts.poppins(
+            'v1.1',
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -236,7 +235,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
               children: [
                 Text(
                   'The Journey of a Task',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -245,7 +244,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                 const SizedBox(height: 6),
                 Text(
                   'From posting to fulfillment — see\nhow your request flows through\nthe CivicNet ecosystem.',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.85),
                     height: 1.5,
@@ -307,7 +306,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
           const SizedBox(height: 4),
           Text(
             'Tap any step to learn more',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
             ),
@@ -392,7 +391,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                           children: [
                             Text(
                               'Step ${index + 1}',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: node.color,
@@ -414,7 +413,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                         const SizedBox(height: 2),
                         Text(
                           node.title,
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
@@ -429,7 +428,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               node.subtitle,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 12.5,
                                 color: isDark
                                     ? AppColors.textSecondaryDark
@@ -480,7 +479,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
   Widget _buildSectionLabel(String text, bool isDark) {
     return Text(
       text,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),

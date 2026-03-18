@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -83,7 +82,7 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.createPoll, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.createPoll, style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -94,11 +93,11 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
             children: [
               Text(
                 AppLocalizations.of(context)!.pollCreationIntro,
-                style: GoogleFonts.poppins(color: Colors.grey[600]),
+                style: TextStyle(color: Colors.grey[600]),
               ),
               const SizedBox(height: 32),
               
-              Text(AppLocalizations.of(context)!.question, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context)!.question, style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               CustomTextField(
                 controller: _questionController,
@@ -108,7 +107,7 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
               ),
               const SizedBox(height: 24),
 
-              Text(AppLocalizations.of(context)!.descriptionOptional, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+              Text(AppLocalizations.of(context)!.descriptionOptional, style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               CustomTextField(
                 controller: _descriptionController,
@@ -120,7 +119,7 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppLocalizations.of(context)!.options, style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                  Text(AppLocalizations.of(context)!.options, style: TextStyle(fontWeight: FontWeight.bold)),
                   if (_optionControllers.length < 5)
                     TextButton.icon(
                       onPressed: _addOption,

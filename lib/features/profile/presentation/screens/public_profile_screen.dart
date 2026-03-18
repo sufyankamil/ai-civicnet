@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
@@ -116,7 +115,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                       size: 56, color: Colors.grey),
                   const SizedBox(height: 16),
                   Text('User not found',
-                      style: GoogleFonts.poppins(color: Colors.grey)),
+                      style: TextStyle(color: Colors.grey)),
                 ],
               ),
             );
@@ -267,7 +266,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
               Expanded(
                 child: Text(
                   displayName,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : Colors.black87,
@@ -385,7 +384,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           children: [
                             Text(
                               displayName,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -411,7 +410,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                                   const SizedBox(width: 4),
                                   Text(
                                     _trustLevel(user),
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
@@ -476,7 +475,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           const SizedBox(height: 6),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.primaryLight,
@@ -484,7 +483,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 11,
               color: Colors.grey,
             ),
@@ -504,7 +503,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         children: [
           Text(
             'Skills',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
             ),
@@ -534,7 +533,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                 ),
                 child: Text(
                   skill,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,

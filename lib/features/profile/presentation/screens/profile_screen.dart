@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
@@ -83,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       size: 56, color: Colors.grey),
                   const SizedBox(height: 16),
                   Text('Could not load profile', // TODO: Localize
-                      style: GoogleFonts.poppins(color: Colors.grey)),
+                      style: TextStyle(color: Colors.grey)),
                   const SizedBox(height: 16),
                   AppElevatedButton(
                       onPressed: _refreshProfile,
@@ -185,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               Expanded(
                 child: Text(
                   displayName,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : Colors.black87,
@@ -329,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           children: [
                             Text(
                               displayName,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -340,7 +339,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                             const SizedBox(height: 2),
                             Text(
                               user.email.isEmpty ? AppLocalizations.of(context)!.noEmail : user.email,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.white.withValues(alpha: 0.8),
                               ),
@@ -386,7 +385,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   const SizedBox(width: 4),
                                   Text(
                                     _trustLevel(user),
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: (user.role == 'admin' || user.role == 'super_admin')
@@ -473,7 +472,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 6),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.primaryLight,
@@ -481,7 +480,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 11,
               color: Colors.grey,
             ),
@@ -503,7 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             children: [
               Text(
                 AppLocalizations.of(context)!.skills,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -518,7 +517,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 label: Text(AppLocalizations.of(context)!.add),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primaryLight,
-                  textStyle: GoogleFonts.poppins(
+                  textStyle: TextStyle(
                       fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -543,7 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   const SizedBox(width: 10),
                   Text(
                     AppLocalizations.of(context)!.addSkillsDescription,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                         fontSize: 13, color: Colors.grey),
                   ),
                 ],
@@ -574,7 +573,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   child: Text(
                     skill,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -598,7 +597,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         children: [
           Text(
             AppLocalizations.of(context)!.account,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
             ),
@@ -851,7 +850,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                   color: labelColor ??
@@ -936,7 +935,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 children: [
                   Text(
                     AppLocalizations.of(context)!.civicKarma,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.primaryLight,
@@ -944,7 +943,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   Text(
                     user.karmaLevel,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: isDark ? Colors.white : Colors.black87,
@@ -958,11 +957,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: [
                 Text(
                   AppLocalizations.of(context)!.score,
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Text(
                   user.points.toString(),
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryLight,
@@ -986,7 +985,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             AppLocalizations.of(context)!.achievements,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
             ),
@@ -1008,7 +1007,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   AppLocalizations.of(context)!.noBadges,
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey),
+                  style: TextStyle(fontSize: 13, color: Colors.grey),
                 ),
               );
             }
@@ -1046,7 +1045,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(height: 8),
                         Text(
                           badge.name,
-                          style: GoogleFonts.poppins(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

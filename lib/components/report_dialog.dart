@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import 'primary_button.dart';
 
@@ -38,7 +37,7 @@ class _ReportDialogState extends State<ReportDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(
         widget.title,
-        style: GoogleFonts.poppins(
+        style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 18,
           color: isDark ? Colors.white : Colors.black87,
@@ -71,7 +70,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 ),
                 title: Text(
                   reason,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 14,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
@@ -86,7 +85,7 @@ class _ReportDialogState extends State<ReportDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: Text(
             'Cancel',
-            style: GoogleFonts.poppins(color: Colors.grey),
+            style: TextStyle(color: Colors.grey),
           ),
         ),
         SizedBox(

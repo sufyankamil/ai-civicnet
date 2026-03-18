@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -185,7 +184,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
       appBar: AppBar(
         title: Text(
           'New Request',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.close),
@@ -270,7 +269,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                           ),
                           child: Text(
                             'BETA',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                               color: Theme.of(context).primaryColor,
@@ -465,7 +464,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: Theme.of(context).brightness == Brightness.dark

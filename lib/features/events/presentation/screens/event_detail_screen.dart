@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +9,7 @@ import '../viewmodels/events_viewmodel.dart';
 import '../../models/event_comment.dart';
 import '../../models/event.dart';
 import '../../../../l10n/app_localizations.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class EventDetailScreen extends StatelessWidget {
   final String eventId;
@@ -143,7 +143,7 @@ class EventDetailScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            'COMMUNITY EVENT',
+                            AppLocalizations.of(context)!.communityEvent,
                             style: TextStyle(
                               color: Theme.of(context).primaryColor,
                               fontSize: 10,
@@ -156,7 +156,7 @@ class EventDetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text(
                       event.title,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -173,7 +173,7 @@ class EventDetailScreen extends StatelessWidget {
                       context,
                       Icons.location_on_outlined,
                       event.locationName,
-                      'Tap to see on map',
+                      AppLocalizations.of(context)!.tapToSeeOnMap,
                       onTap: () async {
                         if (event.lat != 0 && event.lng != 0) {
                           final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=${event.lat},${event.lng}');
@@ -185,8 +185,8 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      'About this event',
-                      style: GoogleFonts.poppins(
+                      AppLocalizations.of(context)!.aboutThisEvent,
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -204,8 +204,8 @@ class EventDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      'Organizer',
-                      style: GoogleFonts.poppins(
+                      AppLocalizations.of(context)!.organizer,
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -234,7 +234,7 @@ class EventDetailScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Community Member',
+                              AppLocalizations.of(context)!.communityMember,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -272,15 +272,15 @@ class EventDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${event.attendeeCount} people',
+                    AppLocalizations.of(context)!.membersCount(event.attendeeCount),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
                   Text(
-                    event.eventDate.isBefore(DateTime.now()) 
-                        ? AppLocalizations.of(context)!.peopleAttended 
+                    event.eventDate.isBefore(DateTime.now())
+                        ? AppLocalizations.of(context)!.peopleAttended
                         : AppLocalizations.of(context)!.peopleAttending,
                     style: TextStyle(
                       color: Colors.grey[600],
@@ -317,8 +317,8 @@ class EventDetailScreen extends StatelessWidget {
                   child: Text(
                     event.eventDate.isBefore(DateTime.now())
                         ? AppLocalizations.of(context)!.eventEndedLabel
-                        : (event.isUserAttending 
-                            ? AppLocalizations.of(context)!.attendingLabel 
+                        : (event.isUserAttending
+                            ? AppLocalizations.of(context)!.attendingLabel
                             : AppLocalizations.of(context)!.rsvpNow),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
@@ -398,20 +398,20 @@ class EventDetailScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Comments',
-              style: GoogleFonts.outfit(
+              AppLocalizations.of(context)!.comments,
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Obx(() => Text(
-              '${viewModel.comments.length} items',
+              AppLocalizations.of(context)!.itemsCount(viewModel.comments.length),
               style: TextStyle(color: Colors.grey[500], fontSize: 13),
             )),
           ],
         ),
         const SizedBox(height: 20),
-        
+
         // Comment Input
         if (event.isUserAttending)
           _buildCommentInput(context, viewModel, event.id)
@@ -429,16 +429,16 @@ class EventDetailScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Only people attending this event can send messages.',
+                    AppLocalizations.of(context)!.onlyAttendingCanChat,
                     style: TextStyle(color: Colors.orange[700], fontSize: 13, fontWeight: FontWeight.w500),
                   ),
                 ),
               ],
             ),
           ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Comments List
         Obx(() {
           if (viewModel.isCommentsLoading && viewModel.comments.isEmpty) {
@@ -447,7 +447,7 @@ class EventDetailScreen extends StatelessWidget {
               child: Center(child: CircularProgressIndicator.adaptive()),
             );
           }
-          
+
           if (viewModel.comments.isEmpty) {
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 40),
@@ -457,7 +457,7 @@ class EventDetailScreen extends StatelessWidget {
                     Icon(Icons.chat_bubble_outline_rounded, size: 40, color: Colors.grey[300]),
                     const SizedBox(height: 12),
                     Text(
-                      'No comments yet. Be the first to ask!',
+                      AppLocalizations.of(context)!.noCommentsBeFirst,
                       style: TextStyle(color: Colors.grey[400], fontSize: 14),
                     ),
                   ],
@@ -465,7 +465,7 @@ class EventDetailScreen extends StatelessWidget {
               ),
             );
           }
-          
+
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -483,7 +483,7 @@ class EventDetailScreen extends StatelessWidget {
 
   Widget _buildCommentInput(BuildContext context, EventsViewModel viewModel, String eventId, {String? parentId, bool isReply = false}) {
     final TextEditingController controller = TextEditingController();
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
@@ -503,7 +503,9 @@ class EventDetailScreen extends StatelessWidget {
             child: TextField(
               controller: controller,
               decoration: InputDecoration(
-                hintText: isReply ? 'Write a reply...' : 'Ask something...',
+                hintText: isReply
+                    ? AppLocalizations.of(context)!.writeReply
+                    : AppLocalizations.of(context)!.askSomething,
                 hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
@@ -541,7 +543,7 @@ class EventDetailScreen extends StatelessWidget {
   Widget _buildCommentTile(BuildContext context, EventsViewModel viewModel, Event event, EventComment comment, {bool isReply = false}) {
     final bool isHost = event.creatorId == SupabaseService().currentUserId;
     final bool isMyComment = comment.userId == SupabaseService().currentUserId;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -558,8 +560,8 @@ class EventDetailScreen extends StatelessWidget {
                 child: CircleAvatar(
                   radius: isReply ? 14 : 18,
                   backgroundColor: Colors.grey[200],
-                  backgroundImage: comment.userAvatarUrl.isNotEmpty 
-                      ? NetworkImage(comment.userAvatarUrl) 
+                  backgroundImage: comment.userAvatarUrl.isNotEmpty
+                      ? NetworkImage(comment.userAvatarUrl)
                       : null,
                   child: comment.userAvatarUrl.isEmpty ? Icon(Icons.person, size: isReply ? 16 : 20, color: Colors.grey[400]) : null,
                 ),
@@ -573,7 +575,7 @@ class EventDetailScreen extends StatelessWidget {
                       children: [
                         Text(
                           comment.userName,
-                          style: GoogleFonts.outfit(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
                             fontSize: isReply ? 13 : 14,
                             color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
@@ -588,7 +590,7 @@ class EventDetailScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'HOST',
+                              AppLocalizations.of(context)!.host,
                               style: TextStyle(
                                 color: Theme.of(context).primaryColor,
                                 fontSize: 9,
@@ -600,7 +602,7 @@ class EventDetailScreen extends StatelessWidget {
                         ],
                         const SizedBox(width: 8),
                         Text(
-                          _formatTimeAgo(comment.createdAt),
+                          _formatTimeAgo(context, comment.createdAt),
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 11,
@@ -625,14 +627,14 @@ class EventDetailScreen extends StatelessWidget {
                             onTap: () => _showReplySheet(context, viewModel, event.id, comment),
                             child: Padding(
                               padding: const EdgeInsets.only(right: 16, bottom: 4, top: 4),
-                              child: Text(
-                                'Reply',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                                child: Text(
+                                  AppLocalizations.of(context)!.reply,
+                                  style: TextStyle(
+                                    color: Theme.of(context).primaryColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
                             ),
                           ),
                         if (isMyComment)
@@ -640,14 +642,14 @@ class EventDetailScreen extends StatelessWidget {
                             onTap: () => viewModel.deleteComment(event.id, comment.id),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(
-                                  color: Colors.red[300],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                child: Text(
+                                  AppLocalizations.of(context)!.delete,
+                                  style: TextStyle(
+                                    color: Colors.red[300],
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
                             ),
                           ),
                       ],
@@ -697,9 +699,9 @@ class EventDetailScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Text(
-                  'Replying to ',
-                  style: TextStyle(fontSize: 13, color: Colors.grey),
+                Text(
+                  AppLocalizations.of(context)!.replyingTo,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
                 ),
                 Text(
                   parentComment.userName,
@@ -715,26 +717,22 @@ class EventDetailScreen extends StatelessWidget {
     );
   }
 
-  String _formatTimeAgo(DateTime date) {
-    final duration = DateTime.now().difference(date);
-    if (duration.inDays > 7) return DateFormat('MMM d').format(date);
-    if (duration.inDays >= 1) return '${duration.inDays}d';
-    if (duration.inHours >= 1) return '${duration.inHours}h';
-    if (duration.inMinutes >= 1) return '${duration.inMinutes}m';
-    return 'now';
+  String _formatTimeAgo(BuildContext context, DateTime date) {
+    final locale = Localizations.localeOf(context).languageCode;
+    return timeago.format(date, locale: locale);
   }
 
   void _showDeleteConfirmation(BuildContext context, EventsViewModel viewModel, String eventId) {
     showAdaptiveDialog(
       context: context,
       builder: (context) => AlertDialog.adaptive(
-        title: const Text('Delete Event'),
-        content: const Text('Are you sure you want to delete this event? This action cannot be undone.'),
+        title: Text(AppLocalizations.of(context)!.deleteEvent),
+        content: Text(AppLocalizations.of(context)!.deleteEventConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              'Cancel',
+              AppLocalizations.of(context)!.cancel,
               style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
               ),
@@ -746,7 +744,7 @@ class EventDetailScreen extends StatelessWidget {
               final error = await viewModel.deleteEvent(eventId);
               if (error == null) {
                 if (context.mounted) {
-                  ToastService.showSuccess(context, 'Event deleted successfully');
+                  ToastService.showSuccess(context, AppLocalizations.of(context)!.eventDeletedSuccess);
                 }
                 // The Obx in EventDetailScreen will handle the pop back to list
               } else {
@@ -756,7 +754,7 @@ class EventDetailScreen extends StatelessWidget {
               }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),

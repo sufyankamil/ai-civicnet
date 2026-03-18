@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -225,7 +224,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                           const SizedBox(width: 4),
                           Text(
                             'Verified Trusted Information',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               color: Colors.blue,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -284,7 +283,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                                 children: [
                                   Text(
                                     'Source Information',
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 14,
                                       color: theme.colorScheme.onSurface,
@@ -453,7 +452,7 @@ class _VoteButton extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 'Agree',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                   color: isVoted ? Colors.white : primaryColor,

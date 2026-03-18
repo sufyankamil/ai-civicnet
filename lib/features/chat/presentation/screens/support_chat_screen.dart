@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:civic_net/features/chat/viewmodels/support_view_model.dart';
@@ -62,7 +61,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           centerTitle: true,
           title: Text(
             'Support Chat',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 18,
               color: isDark ? Colors.white : AppColors.textPrimaryLight,
@@ -104,7 +103,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                               Text(
                                 _viewModel.errorMessage.value,
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.poppins(color: isDark ? Colors.white70 : Colors.black54),
+                                style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton(
@@ -126,7 +125,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                       return Center(
                         child: Text(
                           'Connecting to support...',
-                          style: GoogleFonts.poppins(color: Colors.grey, fontSize: 16),
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       );
                     }
@@ -192,7 +191,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'Redirecting you...',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: isDark ? Colors.white : AppColors.textPrimaryLight,
@@ -244,7 +243,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           children: [
             Text(
               message.content,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 color: isMe ? Colors.white : (isDark ? Colors.white : Colors.black87),
                 fontSize: 14,
                 height: 1.4,
@@ -253,7 +252,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
             const SizedBox(height: 4),
             Text(
               timeago.format(message.createdAt, locale: 'en_short'),
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 color: isMe
                     ? Colors.white70
                     : (isDark ? Colors.white54 : Colors.grey[500]),
@@ -301,7 +300,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               ),
               child: Text(
                 option,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: isDark ? Colors.white : AppColors.primaryLight,
@@ -423,13 +422,13 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                   controller: _messageController,
                   maxLines: 4,
                   minLines: 1,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 14,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.typeMessageHint,
-                    hintStyle: GoogleFonts.poppins(
+                    hintStyle: TextStyle(
                       color: isDark ? Colors.white38 : Colors.grey[400],
                       fontSize: 14,
                     ),

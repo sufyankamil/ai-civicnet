@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../../../../components/primary_button.dart';
@@ -136,7 +135,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Complete Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('Complete Profile', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -149,7 +148,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             children: [
               Text(
                 'Welcome to CivicNet!',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,
@@ -158,7 +157,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               const SizedBox(height: 8),
               Text(
                 'Add an avatar and select your skills to help us match you with community requests.',
-                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
               const SizedBox(height: 32),
 
@@ -213,7 +212,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               Center(
                 child: Text(
                   'Tap to upload a photo (Optional)',
-                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ),
               const SizedBox(height: 16),
@@ -222,12 +221,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
               Text(
                 'Your Skills',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 'What kind of help can you offer? Select all that apply:',
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
               const SizedBox(height: 16),
               Wrap(

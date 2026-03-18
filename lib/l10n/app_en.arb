@@ -201,7 +201,6 @@
   "setNewPassword": "Set New Password",
   "enterNewPassword": "Enter a new password for your account.",
   "newPassword": "New Password",
-  "confirmPassword": "Confirm Password",
   "enterNewPasswordError": "Please enter a new password",
   "passwordLengthError": "Password must be at least 6 characters",
   "passwordsDoNotMatch": "Passwords do not match",
@@ -332,25 +331,118 @@
   "maxOptionsAllowed": "Maximum 5 options allowed",
   "pollCreatedSuccessfully": "Poll created successfully!",
   "failedToCreatePoll": "Failed to create poll",
-  "activePolls": "Active Polls",
-  "communityCommitment": "Community Commitment",
-  "findMatches": "Find Matches",
-  "findYourGuild": "Find Your Guild",
-  "learnMoreSafety": "Learn More",
-  "noRequests": "No Requests",
-  "noRequestsDescription": "No help requests in your area yet.",
-  "pollsCount": "{count, plural, =1{1 Poll} other{{count} Polls}}",
-  "@pollsCount": {
+  "categoryAll": "All",
+  "categoryRecommended": "Recommended",
+  "categoryTechSupport": "Tech Support",
+  "categoryHousehold": "Household",
+  "categoryEmergency": "Emergency",
+  "categoryEducation": "Education",
+  "categoryGeneral": "General",
+  "bestMatch": "Best Match",
+  "goodMatch": "Good Match",
+  "match": "Match",
+  "description": "Description",
+  "communityHelpers": "Community Helpers",
+  "viewAll": "View All",
+  "nearbyMembersHelp": "Nearby members who might be able to help.",
+  "requester": "Requester",
+  "approximateLocation": "Approximate Location",
+  "applicationAccepted": "Application Accepted!",
+  "notSelected": "Not Selected for This One",
+  "interestSent": "Interest Sent (Pending)",
+  "taskCompleted": "Task Completed!",
+  "earnedPoints": "You earned {count} points for helping out.",
+  "@earnedPoints": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "postRequest": "Post a Request",
-  "refresh": "Refresh",
-  "safetyDescription": "Review our safety guidelines and shared community commitment.",
-  "searchHelp": "Search help requests...",
-  "searchNews": "Search news...",
-  "seeAll": "See All"
+  "noHelpersYet": "No helpers available yet",
+  "beTheFirstHelper": "Be the first to join the community!",
+  "communicateWithRequester": "You can now communicate with the requester.",
+  "chatWithRequester": "Chat with Requester",
+  "imInterested": "I'm Interested",
+  "requestNoLongerOpen": "This request is no longer open for applications.",
+  "yourRequest": "This is your request",
+  "interestShown": "No interest shown yet.",
+  "helpsCount": "{count} helps",
+  "@helpsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "enjoyingApp": "Enjoying Civic Net?",
+  "feedbackDescription": "Your feedback is invaluable to us. Would you like to share your thoughts or suggest improvements?",
+  "maybeLater": "Maybe Later",
+  "giveFeedback": "Give Feedback",
+  "locationPermissionTitle": "Enable Location",
+  "locationPermissionDesc": "To show accurate help requests and matches near you, Civic Net needs access to your location.",
+  "communityEvent": "COMMUNITY EVENT",
+  "aboutThisEvent": "About this event",
+  "organizer": "Organizer",
+  "communityMember": "Community Member",
+  "comments": "Comments",
+  "itemsCount": "{count} items",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writeReply": "Write a reply...",
+  "askSomething": "Ask something...",
+  "onlyAttendingCanChat": "Only people attending this event can send messages.",
+  "noCommentsBeFirst": "No comments yet. Be the first to ask!",
+  "deleteEvent": "Delete Event",
+  "deleteEventConfirm": "Are you sure you want to delete this event? This action cannot be undone.",
+  "eventDeletedSuccess": "Event deleted successfully",
+  "host": "HOST",
+  "reply": "Reply",
+  "replyingTo": "Replying to ",
+  "tapToSeeOnMap": "Tap to see on map",
+  "locationSelectedOnMap": "Location selected on map",
+  "eventPostedSuccess": "Event posted successfully!",
+  "eventPostedError": "Failed to post event. Please try again.",
+  "postAnEventTitle": "Post an Event",
+  "eventDetails": "Event Details",
+  "required": "Required",
+  "whenAndWhere": "When & Where",
+  "dateLabel": "Date",
+  "timeLabel": "Time",
+  "selectLocationOnMap": "Select exact location on map",
+  "changeLocationOnMap": "Change location on map",
+  "selectedLocation": "Selected: {lat}, {lng}",
+  "@selectedLocation": {
+    "placeholders": {
+      "lat": {
+        "type": "String"
+      },
+      "lng": {
+        "type": "String"
+      }
+    }
+  },
+  "locationPermissionRequired": "Location permissions are required.",
+  "gpsDisabled": "GPS is disabled. Please enable it.",
+  "locationFetchFailed": "Location fetch failed: {error}",
+  "@locationFetchFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "preciseLocationFetchFailed": "Could not get your precise location.",
+  "locationNotFoundDefault": "Could not find your location. Defaulting to India.",
+  "selectLocationTitle": "Select Location",
+  "confirmAllCaps": "CONFIRM",
+  "tapOnMapToSelectLocation": "Tap on the map to select a precise location for your event.",
+  "confirmLocation": "Confirm Location",
+  "beta": "BETA"
 }
+

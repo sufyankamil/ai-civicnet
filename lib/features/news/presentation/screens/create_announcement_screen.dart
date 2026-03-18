@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/services/supabase_service.dart';
@@ -82,7 +81,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
       appBar: AppBar(
         title: Text(
           'Post Announcement',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -94,7 +93,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
             children: [
               Text(
                 'Create a new community announcement',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -104,7 +103,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
               _buildLabel('Title'),
               TextFormField(
                 controller: _titleController,
-                style: GoogleFonts.poppins(fontSize: 14),
+                style: TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.announcementTitleHint,
                   filled: true,
@@ -132,7 +131,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
               TextFormField(
                 controller: _contentController,
                 maxLines: 6,
-                style: GoogleFonts.poppins(fontSize: 14),
+                style: TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.announcementContentHint,
                   filled: true,
@@ -182,7 +181,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                         value: category,
                         child: Text(
                           category.name.toUpperCase(),
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),
@@ -202,7 +201,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
               _buildLabel('Source URL (Optional)'),
               TextFormField(
                 controller: _sourceUrlController,
-                style: GoogleFonts.poppins(fontSize: 14),
+                style: TextStyle(fontSize: 14),
                 keyboardType: TextInputType.url,
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.announcementSourceHint,
@@ -257,7 +256,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                             const SizedBox(height: 12),
                             Text(
                               'Tap to add an image',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 13,
                                 color: theme.colorScheme.onSurfaceVariant,
                               ),
@@ -293,7 +292,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         text,
-        style: GoogleFonts.poppins(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),

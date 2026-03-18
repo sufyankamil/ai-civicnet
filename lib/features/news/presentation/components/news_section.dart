@@ -4,6 +4,7 @@ import 'package:civic_net/models/models.dart';
 import 'announcement_card.dart';
 import '../screens/create_announcement_screen.dart';
 import '../../../../widgets/haptic_buttons.dart';
+import 'announcement_card_skeleton.dart';
 
 class NewsSection extends StatefulWidget {
   final String? searchQuery;
@@ -51,7 +52,11 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
           stream: _announcementsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator.adaptive());
+              return ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: 3,
+                itemBuilder: (context, index) => const AnnouncementCardSkeleton(),
+              );
             }
             
             if (snapshot.hasError) {

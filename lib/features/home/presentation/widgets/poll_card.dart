@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
@@ -51,7 +50,7 @@ class PollCard extends StatelessWidget {
                 ),
                 child: Text(
                   AppLocalizations.of(context)!.communityPollLabel,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primaryLight,
@@ -73,7 +72,7 @@ class PollCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             poll.question,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -82,7 +81,7 @@ class PollCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               poll.description!,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[600],
               ),
@@ -132,7 +131,7 @@ class PollCard extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   option.optionText,
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     color: isSelected ? AppColors.primaryLight : null,
@@ -143,7 +142,7 @@ class PollCard extends StatelessWidget {
                               if (hasVoted)
                                 Text(
                                   '${(percentage * 100).toStringAsFixed(0)}%',
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                     color: isSelected ? AppColors.primaryLight : Colors.grey[600],
@@ -162,7 +161,7 @@ class PollCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${AppLocalizations.of(context)!.votesCountSummary(totalVotes)} • ${AppLocalizations.of(context)!.daysLeft(poll.endDate.difference(DateTime.now()).inDays)}',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               color: Colors.grey[500],
             ),
