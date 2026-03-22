@@ -449,6 +449,10 @@ class EventDetailScreen extends StatelessWidget {
           }
 
           if (viewModel.comments.isEmpty) {
+            if (!event.isUserAttending) {
+              return const SizedBox.shrink();
+            }
+
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 40),
               child: Center(

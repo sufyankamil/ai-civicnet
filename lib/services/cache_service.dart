@@ -13,7 +13,7 @@ class CacheService {
     try {
       await Hive.initFlutter();
       _box = await Hive.openBox(_boxName);
-      logger.i('CacheService initialized');
+      logger.i('CacheService initialized successfully');
     } catch (e) {
       logger.e('Failed to initialize CacheService', error: e);
     }
