@@ -164,12 +164,15 @@ class FirebaseService {
         _refreshHomeFeed();
       });
 
-      // Get initial message if the app was opened from a terminated state
-      RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-      if (initialMessage != null) {
-        logger.i('App opened from terminated state by a notification');
-        logger.d('Initial Message data: ${initialMessage.data}');
-        _refreshHomeFeed();
+      try {
+        RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage().timeout(const Duration(milliseconds: 500));
+        if (initialMessage != null) {
+          logger.i('App opened from terminated state by a notification');
+          logger.d('Initial Message data: ${initialMessage.data}');
+          _refreshHomeFeed();
+        }
+      } catch (e) {
+        logger.w('Timeout or error getting initial message: $e');
       }
     } else {
       logger.w('User declined or has not accepted permission');
