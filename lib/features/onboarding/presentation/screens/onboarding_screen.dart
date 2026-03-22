@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../services/pending_toast_service.dart';
@@ -113,7 +114,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     Future.microtask(() async {
       for (var i = 0; i < _nodeControllers.length; i++) {
         await Future.delayed(Duration(milliseconds: 100 * i));
-        if (mounted) _nodeControllers[i].forward();
+        if (mounted) {
+          _nodeControllers[i].forward();
+          HapticFeedback.lightImpact();
+        }
       }
     });
   }
