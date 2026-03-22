@@ -11,6 +11,7 @@ import '../models/models.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/notification_service.dart';
+import 'package:civic_net/services/encryption_service.dart';
 import '../features/events/models/event_comment.dart';
 import '../core/utils/timeout_extension.dart';
 
@@ -648,7 +649,7 @@ class SupabaseService {
                 otherUserId: otherId,
                 otherUserName: name,
                 otherUserAvatar: sanitizeAvatarUrl(avatar),
-                lastMessage: lastMsgRes?['content'] ?? 'No messages yet',
+                lastMessage: lastMsgRes != null && lastMsgRes['content'] != null ? EncryptionService().decryptPayload(lastMsgRes['content']) : 'No messages yet',
                 lastMessageTime: messageTime,
                 unreadCount: unreadCount,
             ));
@@ -702,17 +703,25 @@ class SupabaseService {
         .stream(primaryKey: ['id'])
         .eq('conversation_id', conversationId)
         .order('created_at', ascending: true)
-        .map((data) => data.map((json) => Message.fromJson(json)).toList());
+        .map((data) => data.map((json) {
+           final mutableJson = Map<String, dynamic>.from(json);
+           if (mutableJson['content'] != null) {
+              mutableJson['content'] = EncryptionService().decryptPayload(mutableJson['content']);
+           }
+           return Message.fromJson(mutableJson);
+        }).toList());
   }
 
   Future<void> sendMessage(String conversationId, String content, {String type = 'text'}) async {
     final user = _client.auth.currentUser;
     if (user == null) return;
     
+    final encryptedContent = EncryptionService().encryptPayload(content);
+
     await _client.from('messages').insert({
       'conversation_id': conversationId,
       'sender_id': user.id,
-      'content': content,
+      'content': encryptedContent,
       'message_type': type,
     }).withServerTimeout();
     
