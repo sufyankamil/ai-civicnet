@@ -9,6 +9,7 @@ import 'package:civic_net/services/firebase_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
+import 'package:civic_net/services/encryption_service.dart';
 class StartupService {
   static final StartupService _instance = StartupService._internal();
   factory StartupService() => _instance;
@@ -26,6 +27,9 @@ class StartupService {
 
     final stopwatch = Stopwatch()..start();
     logger.i('Starting App Initialization...');
+
+    EncryptionService().initialize();
+    logger.i('Encryption Service initialized');
 
     // 1. Firebase Core
     await Firebase.initializeApp();
