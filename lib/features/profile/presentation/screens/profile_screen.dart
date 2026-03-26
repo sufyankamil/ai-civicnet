@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../components/app_loader.dart';
 import '../components/verification_request_dialog.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -70,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return const AppLoader();
           }
 
           if (snapshot.data == null) {
@@ -432,27 +433,27 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildStatsRow(User user, bool isDark) {
     final stats = [
-      ('🤝', AppLocalizations.of(context)!.helps, user.helpCount.toString()),
-      ('⭐', AppLocalizations.of(context)!.rating, user.rating.toStringAsFixed(1)),
-      ('🏆', AppLocalizations.of(context)!.points, user.points.toString()),
+      (Icons.handshake_rounded, AppLocalizations.of(context)!.helps, user.helpCount.toString(), Colors.blue),
+      (Icons.star_rounded, AppLocalizations.of(context)!.rating, user.rating.toStringAsFixed(1), Colors.amber),
+      (Icons.emoji_events_rounded, AppLocalizations.of(context)!.points, user.points.toString(), Colors.orange),
     ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, stats[0].$4, isDark)),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, stats[1].$4, isDark)),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, stats[2].$4, isDark)),
         ],
       ),
     );
   }
 
   Widget _buildStatCard(
-      String emoji, String label, String value, bool isDark) {
+      IconData icon, String label, String value, Color iconColor, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -468,7 +469,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
+          Icon(icon, color: iconColor, size: 24),
           const SizedBox(height: 6),
           Text(
             value,
@@ -758,6 +759,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   onTap: () => context.push('/commitment'),
                   isDark: isDark,
                 ),
+                _buildDivider(isDark),
                 _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
@@ -998,7 +1000,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(
                 height: 100,
-                child: Center(child: CircularProgressIndicator.adaptive()),
+                child: AppLoader(),
               );
             }
             final badges = snapshot.data ?? [];

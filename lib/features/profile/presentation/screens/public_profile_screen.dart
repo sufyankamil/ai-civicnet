@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../components/app_loader.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../components/report_dialog.dart';
 
@@ -92,7 +93,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return const AppLoader();
           }
 
           if (snapshot.data == null) {
@@ -150,7 +151,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           child: ElevatedButton.icon(
                             onPressed: _isStartingChat ? null : () => _startChat(user),
                             icon: _isStartingChat 
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(strokeWidth: 2, backgroundColor: Colors.white))
+                                ? const AppLoader(size: 20, centered: false)
                                 : const Icon(Icons.chat_bubble_outline),
                             label: const Text('Send Message'),
                             style: ElevatedButton.styleFrom(
@@ -435,27 +436,27 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
 
   Widget _buildStatsRow(User user, bool isDark) {
     final stats = [
-      ('🤝', 'Helps', user.helpCount.toString()),
-      ('⭐', 'Rating', user.rating.toStringAsFixed(1)),
-      ('🏆', 'Points', user.points.toString()),
+      (Icons.handshake_rounded, 'Helps', user.helpCount.toString(), Colors.blue),
+      (Icons.star_rounded, 'Rating', user.rating.toStringAsFixed(1), Colors.amber),
+      (Icons.emoji_events_rounded, 'Points', user.points.toString(), Colors.orange),
     ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, stats[0].$4, isDark)),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, stats[1].$4, isDark)),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, stats[2].$4, isDark)),
         ],
       ),
     );
   }
 
   Widget _buildStatCard(
-      String emoji, String label, String value, bool isDark) {
+      IconData icon, String label, String value, Color iconColor, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -471,7 +472,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
+          Icon(icon, color: iconColor, size: 24),
           const SizedBox(height: 6),
           Text(
             value,

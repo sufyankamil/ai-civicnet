@@ -14,8 +14,12 @@ class ChatRemoteDataSource {
     return supabaseService.getMessagesStream(conversationId);
   }
 
-  Future<void> sendMessage(String conversationId, String content, {String type = 'text'}) {
-    return supabaseService.sendMessage(conversationId, content, type: type);
+  Future<void> sendMessage(String conversationId, String content, {String type = 'text', String? replyToId}) {
+    return supabaseService.sendMessage(conversationId, content, type: type, replyToId: replyToId);
+  }
+
+  Future<void> deleteMessage(String messageId) {
+    return supabaseService.deleteMessage(messageId);
   }
 
   Future<void> markConversationAsRead(String conversationId) {

@@ -7,7 +7,9 @@ class MessageEntity extends Equatable {
   final String content;
   final String type; // 'text', 'image', 'audio'
   final DateTime createdAt;
+  final bool isDeleted;
   final bool isRead;
+  final String? replyToId;
 
   const MessageEntity({
     required this.id,
@@ -17,6 +19,8 @@ class MessageEntity extends Equatable {
     required this.type,
     required this.createdAt,
     required this.isRead,
+    this.isDeleted = false,
+    this.replyToId,
   });
 
   @override
@@ -28,5 +32,7 @@ class MessageEntity extends Equatable {
         type,
         createdAt,
         isRead,
+        isDeleted,
+        replyToId,
       ];
 }

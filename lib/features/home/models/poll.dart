@@ -37,6 +37,9 @@ class Poll extends Equatable {
     );
   }
 
+  bool get isExpired => endDate.isBefore(DateTime.now());
+  int get daysLeft => endDate.difference(DateTime.now()).inDays;
+
   @override
   List<Object?> get props => [id, creatorId, question, description, endDate, createdAt, isActive, options, userVoteOptionId];
 }

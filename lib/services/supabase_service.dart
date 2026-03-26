@@ -712,7 +712,7 @@ class SupabaseService {
         }).toList());
   }
 
-  Future<void> sendMessage(String conversationId, String content, {String type = 'text'}) async {
+  Future<void> sendMessage(String conversationId, String content, {String type = 'text', String? replyToId}) async {
     final user = _client.auth.currentUser;
     if (user == null) return;
     
@@ -723,11 +723,22 @@ class SupabaseService {
       'sender_id': user.id,
       'content': encryptedContent,
       'message_type': type,
+      'reply_to_id': replyToId,
     }).withServerTimeout();
     
     await _client.from('conversations').update({
         'updated_at': DateTime.now().toUtc().toIso8601String(),
     }).eq('id', conversationId).withServerTimeout();
+  }
+
+  Future<void> deleteMessage(String messageId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    await _client.from('messages').update({
+      'is_deleted': true,
+      'content': EncryptionService().encryptPayload('This message was deleted'),
+    }).eq('id', messageId).eq('sender_id', user.id).withServerTimeout();
   }
 
   // --- Interest / Applications ---

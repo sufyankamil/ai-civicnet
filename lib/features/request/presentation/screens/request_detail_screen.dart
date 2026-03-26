@@ -12,6 +12,7 @@ import '../viewmodels/request_viewmodel.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../components/app_loader.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../components/helper_card.dart';
 import '../../../../components/primary_button.dart';
@@ -51,42 +52,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     _checkApplicationStatus();
   }
 
-  // temporary mapper to bridge older SupabaseService methods
-  legacy.HelpRequest _mapEntityToModel(HelpRequestEntity entity) {
-    return legacy.HelpRequest(
-      id: entity.id,
-      requesterId: entity.requesterId,
-      requesterName: entity.requesterName,
-      requesterAvatarUrl: entity.requesterAvatarUrl,
-      title: entity.title,
-      description: entity.description,
-      category: HelpCategory.values.firstWhere(
-        (e) =>
-            e.toString().split('.').last ==
-            entity.category.toString().split('.').last,
-        orElse: () => HelpCategory.other,
-      ),
-      urgency: legacy.UrgencyLevel.values.firstWhere(
-        (e) =>
-            e.toString().split('.').last ==
-            entity.urgency.toString().split('.').last,
-        orElse: () => legacy.UrgencyLevel.medium,
-      ),
-      postedAt: entity.postedAt,
-      distance: entity.distance,
-      aiRelevanceScore: entity.aiRelevanceScore,
-      locationName: entity.locationName,
-      lat: entity.lat,
-      lng: entity.lng,
-      status: legacy.RequestStatus.values.firstWhere(
-        (e) =>
-            e.toString().split('.').last ==
-            entity.status.toString().split('.').last,
-        orElse: () => legacy.RequestStatus.open,
-      ),
-      helperId: entity.helperId,
-    );
-  }
 
   Future<void> _loadApplications(String requesterId) async {
     if (SupabaseService().currentUserId != requesterId) {
@@ -174,7 +139,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     return Scaffold(
       body: Obx(() {
         if (_viewModel.isLoading && _viewModel.currentRequest == null) {
-          return const Center(child: CircularProgressIndicator.adaptive());
+          return const AppLoader();
         }
 
         final request = _viewModel.currentRequest;
@@ -572,132 +537,112 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    FutureBuilder<List<legacy.Helper>>(
-                      future: SupabaseService().getPotentialHelpers(
-                        _mapEntityToModel(request),
-                      ),
-                      builder: (context, snapshot) {
-                        List<legacy.Helper> helpers = [];
-                        if (snapshot.hasData) {
-                          final currentUserId = SupabaseService().currentUserId;
-                          helpers = snapshot.data!
-                              .where((h) => h.user.id != currentUserId)
-                              .toList();
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.auto_awesome,
-                                      color: AppColors.secondaryLight,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      AppLocalizations.of(context)!.communityHelpers,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
+                                const Icon(
+                                  Icons.auto_awesome,
+                                  color: AppColors.secondaryLight,
+                                  size: 20,
                                 ),
-                                if (helpers.length > 3)
-                                  TextButton(
-                                    onPressed: () => _showAllHelpersBottomSheet(
-                                      context,
-                                      helpers,
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(AppLocalizations.of(context)!.viewAll),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppLocalizations.of(context)!.communityHelpers,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
                                   ),
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              AppLocalizations.of(context)!.nearbyMembersHelp,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting)
-                              const Center(
-                                child: CircularProgressIndicator.adaptive(),
-                              )
-                            else if (snapshot.error != null)
-                              Text('Error loading helpers: ${snapshot.error}')
-                            else if (helpers.isEmpty)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey[300]!),
+                            if (_viewModel.potentialHelpers.length > 3)
+                              TextButton(
+                                onPressed: () => _showAllHelpersBottomSheet(
+                                  context,
+                                  _viewModel.potentialHelpers,
                                 ),
-                                child: Column(
-                                  children: [
-                                    const Icon(
-                                      Icons.people_outline,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      AppLocalizations.of(context)!.noHelpersYet,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      AppLocalizations.of(context)!.beTheFirstHelper,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
-                              )
-                            else
-                              Column(
-                                children: helpers
-                                    .take(3)
-                                    .map(
-                                      (helper) => HelperCard(
-                                        helper: helper,
-                                        onTap: () {
-                                          context.push(
-                                            '/profile/${helper.user.id}',
-                                          );
-                                        },
-                                      ),
-                                    )
-                                    .toList(),
+                                child: Text(AppLocalizations.of(context)!.viewAll),
                               ),
                           ],
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context)!.nearbyMembersHelp,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (_viewModel.isLoadingHelpers)
+                          const AppLoader()
+                        else if (_viewModel.potentialHelpers.isEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.people_outline,
+                                  size: 48,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  AppLocalizations.of(context)!.noHelpersYet,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  AppLocalizations.of(context)!.beTheFirstHelper,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Column(
+                            children: _viewModel.potentialHelpers
+                                .take(3)
+                                .map(
+                                  (helper) => HelperCard(
+                                    helper: helper,
+                                    onTap: () {
+                                      context.push(
+                                        '/profile/${helper.user.id}',
+                                      );
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 32),
 
@@ -860,9 +805,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(height: 16),
                       if (_isLoadingApplications)
-                        const Center(
-                          child: CircularProgressIndicator.adaptive(),
-                        )
+                        const AppLoader()
                       else if (_applications.isEmpty)
                         Text(
                           AppLocalizations.of(context)!.interestShown,

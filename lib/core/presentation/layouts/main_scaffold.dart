@@ -137,7 +137,7 @@ class _MainScaffoldState extends State<MainScaffold> {
         height: 56,
         transform: Matrix4.translationValues(0, -20, 0),
         decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient,
+          gradient: AppColors.primaryGradient(Theme.of(context).brightness),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(

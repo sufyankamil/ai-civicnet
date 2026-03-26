@@ -217,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             leading: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
+                gradient: AppColors.primaryGradient(Theme.of(context).brightness),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.route_rounded, color: Colors.white, size: 18),

@@ -28,7 +28,7 @@ class EncryptionService {
   /// In debug mode (Option B), it logs the unencrypted format beautifully.
   String encryptPayload(String plainText) {
     if (kDebugMode) {
-      logger.i('🔒 [EncryptionService] Encrypting (Option B Visibility):\n$plainText');
+      logger.i('[ENCRYPT] [EncryptionService] Encrypting (Option B Visibility):\n$plainText');
     }
     
     // For CBC mode, we must prepend the IV to the encrypted text so we can decrypt it later.
@@ -39,7 +39,7 @@ class EncryptionService {
     final result = base64Encode(iv.bytes + encrypted.bytes);
     
     if (kDebugMode) {
-      logger.d('🔒 [EncryptionService] Generated Cipher: $result');
+      logger.d('[ENCRYPT] [EncryptionService] Generated Cipher: $result');
     }
     return result;
   }

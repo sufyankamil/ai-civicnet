@@ -22,11 +22,21 @@ class AppColors {
   static const Color textSecondaryDark = Color(0xFFA7A9BE); 
 
   // Gradients
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFFC2B4FF), Color(0xFF9D85FF)],
+  static const LinearGradient primaryGradientLight = LinearGradient(
+    colors: [Color(0xFF7B61FF), Color(0xFF6248FF)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
+
+  static const LinearGradient primaryGradientDark = LinearGradient(
+    colors: [Color(0xFF7B61FF), Color(0xFFB388FF)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static LinearGradient primaryGradient(Brightness brightness) {
+    return brightness == Brightness.dark ? primaryGradientDark : primaryGradientLight;
+  }
 }
 
 class AppTheme {

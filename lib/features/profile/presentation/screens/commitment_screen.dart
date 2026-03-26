@@ -25,7 +25,7 @@ class CommitmentScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeroSection(),
+            _buildHeroSection(context),
             const SizedBox(height: 32),
             _buildCommitmentSection(isDark),
             const SizedBox(height: 24),
@@ -33,19 +33,19 @@ class CommitmentScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _buildPersonalGestureNote(isDark),
             const SizedBox(height: 48),
-            _buildFooter(),
+            _buildFooter(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeroSection() {
+  Widget _buildHeroSection(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        gradient: AppColors.primaryGradient(Theme.of(context).brightness),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -216,15 +216,28 @@ class CommitmentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter() {
+  Widget _buildFooter(BuildContext context) {
     return Center(
       child: Column(
         children: [
-          Image.asset(
-            'assets/icons/app_icon.png',
-            width: 40,
-            height: 40,
-            errorBuilder: (context, error, stackTrace) => const Icon(Icons.account_balance_rounded, size: 40, color: Colors.grey),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient(Theme.of(context).brightness),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryLight.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.verified_user_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
           const SizedBox(height: 12),
           Text(

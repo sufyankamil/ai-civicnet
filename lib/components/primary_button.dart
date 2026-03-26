@@ -1,9 +1,11 @@
 
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import 'app_loader.dart';
 
 class PrimaryButton extends StatefulWidget {
   final String text;
+  final IconData? icon;
   final VoidCallback? onPressed;
   final bool isLoading;
   final double? width;
@@ -11,6 +13,7 @@ class PrimaryButton extends StatefulWidget {
   const PrimaryButton({
     super.key,
     required this.text,
+    this.icon,
     required this.onPressed,
     this.isLoading = false,
     this.width,
@@ -73,7 +76,7 @@ class _PrimaryButtonState extends State<PrimaryButton> with SingleTickerProvider
             width: widget.width ?? double.infinity,
             height: 56,
             decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
+              gradient: AppColors.primaryGradient(Theme.of(context).brightness),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -85,21 +88,27 @@ class _PrimaryButtonState extends State<PrimaryButton> with SingleTickerProvider
             ),
             child: Center(
               child: widget.isLoading
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator.adaptive(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2,
-                      ),
+                  ? const AppLoader(
+                      size: 24,
+                      centered: false,
                     )
-                  : Text(
-                      widget.text,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.text,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (widget.icon != null) ...[
+                          const SizedBox(width: 8),
+                          Icon(widget.icon, color: Colors.white, size: 20),
+                        ],
+                      ],
                     ),
             ),
           ),
