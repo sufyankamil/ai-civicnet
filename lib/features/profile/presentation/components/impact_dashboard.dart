@@ -3,8 +3,10 @@ import 'parallax_card.dart';
 import 'package:civic_net/features/profile/models/user.dart';
 import 'package:civic_net/theme/app_theme.dart';
 import 'package:civic_net/services/pdf_service.dart';
+import 'package:civic_net/components/success_animation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class ImpactDashboard extends StatelessWidget {
+class ImpactDashboard extends StatefulWidget {
   final User user;
   final bool isDark;
   final ScrollController scrollController;
@@ -18,9 +20,54 @@ class ImpactDashboard extends StatelessWidget {
     required this.scrollController,
   });
 
+  @override
+  State<ImpactDashboard> createState() => _ImpactDashboardState();
+}
+
+class _ImpactDashboardState extends State<ImpactDashboard> {
+  bool _hasCheckedCelebration = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAutoCelebration();
+  }
+
+  @override
+  void didUpdateWidget(ImpactDashboard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_hasCheckedCelebration) {
+      _checkAutoCelebration();
+    }
+  }
+
+  Future<void> _checkAutoCelebration() async {
+    if (widget.user.neighborsImpacted < ImpactDashboard._exportThreshold) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'has_seen_50_neighbor_celebration_${widget.user.id}';
+    final hasSeen = prefs.getBool(key) ?? false;
+
+    if (!hasSeen && mounted) {
+      _hasCheckedCelebration = true;
+      // Delay slightly for smooth transition
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        if (mounted) {
+          SuccessAnimation.show(
+            context,
+            title: 'Community Pillar!',
+            subtitle: 'You have impacted 50+ neighbors. Your dedication is inspiring!',
+            icon: Icons.workspace_premium_rounded,
+          );
+          prefs.setBool(key, true);
+        }
+      });
+    }
+  }
+
   Widget _buildExportButton(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isLocked = user.neighborsImpacted < _exportThreshold;
+    final isLocked = widget.user.neighborsImpacted < ImpactDashboard._exportThreshold;
     final accentColor = isLocked 
         ? (isDark ? Colors.grey[600] : Colors.grey[400]) 
         : AppColors.primaryLight;
@@ -36,7 +83,7 @@ class ImpactDashboard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Unlock your official certificate at $_exportThreshold Neighbors Helped! (Current: ${user.neighborsImpacted})',
+                      'Unlock your official certificate at ${ImpactDashboard._exportThreshold} Neighbors Helped! (Current: ${widget.user.neighborsImpacted})',
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -49,7 +96,7 @@ class ImpactDashboard extends StatelessWidget {
             ),
           );
         } else {
-          PdfService.generateVolunteerCertificate(user);
+          PdfService.generateVolunteerCertificate(widget.user);
         }
       },
       icon: Container(
@@ -71,10 +118,11 @@ class ImpactDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Using calculated properties from the User model
-    final hoursSaved = user.hoursSaved;
-    final neighborsImpacted = user.neighborsImpacted;
-    final progress = user.levelProgress;
-    final pointsToNext = user.pointsToNextRank;
+    final hoursSaved = widget.user.hoursSaved;
+    final neighborsImpacted = widget.user.neighborsImpacted;
+    final progress = widget.user.levelProgress;
+    final pointsToNext = widget.user.pointsToNextRank;
+    final isDark = widget.isDark;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -106,6 +154,17 @@ class ImpactDashboard extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              if (widget.user.neighborsImpacted >= ImpactDashboard._exportThreshold)
+                IconButton(
+                  onPressed: () => SuccessAnimation.show(
+                    context,
+                    title: 'Community Pillar!',
+                    subtitle: 'You have impacted 50+ neighbors. Your dedication is inspiring!',
+                    icon: Icons.workspace_premium_rounded,
+                  ),
+                  icon: const Icon(Icons.celebration_rounded, color: Colors.amber, size: 20),
+                  tooltip: 'Celebrate Achievement',
+                ),
               _buildExportButton(context),
             ],
           ),
@@ -130,7 +189,7 @@ class ImpactDashboard extends StatelessWidget {
               _buildImpactStat(
                 context,
                 'Trust Score',
-                '${(user.rating * 20).toInt()}%',
+                '${(widget.user.rating * 20).toInt()}%',
                 Icons.verified_user_rounded,
                 Colors.green,
                 onTap: () => _showTrustBreakdown(context),
@@ -258,6 +317,7 @@ class ImpactDashboard extends StatelessWidget {
     Color color, {
     VoidCallback? onTap,
   }) {
+    final isDark = widget.isDark;
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -272,7 +332,7 @@ class ImpactDashboard extends StatelessWidget {
                 : null,
             ),
             child: ParallaxCard(
-              scrollController: scrollController,
+              scrollController: widget.scrollController,
               parallaxSpeed: 0.3,
               child: Icon(icon, color: color, size: 18),
             ),
@@ -305,7 +365,7 @@ class ImpactDashboard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+        backgroundColor: widget.isDark ? AppColors.surfaceDark : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
@@ -314,7 +374,7 @@ class ImpactDashboard extends StatelessWidget {
             Text(
               'Trust Score Details',
               style: TextStyle(
-                color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                color: widget.isDark ? Colors.white : AppColors.textPrimaryLight,
               ),
             ),
           ],
@@ -357,7 +417,7 @@ class ImpactDashboard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white70 : Colors.grey[800],
+                color: widget.isDark ? Colors.white70 : Colors.grey[800],
               ),
             ),
             Text(

@@ -326,6 +326,10 @@ class SupabaseService {
         lat: (data['lat'] ?? 0.0).toDouble(),
         lng: (data['lng'] ?? 0.0).toDouble(),
         role: data['role'] ?? 'user',
+        isPublicProfile: data['is_public_profile'] ?? true,
+        showNeighborhood: data['show_neighborhood'] ?? true,
+        showImpactStats: data['show_impact_stats'] ?? true,
+        showAchievements: data['show_achievements'] ?? true,
       );
     } catch (e) {
       logger.e('Error fetching user profile $userId: $e');
@@ -350,6 +354,10 @@ class SupabaseService {
             lat: (data['lat'] ?? 0.0).toDouble(),
             lng: (data['lng'] ?? 0.0).toDouble(),
             role: data['role'] ?? 'user',
+            isPublicProfile: data['is_public_profile'] ?? true,
+            showNeighborhood: data['show_neighborhood'] ?? true,
+            showImpactStats: data['show_impact_stats'] ?? true,
+            showAchievements: data['show_achievements'] ?? true,
          );
       }
       return null;
@@ -393,6 +401,10 @@ class SupabaseService {
         lat: (data['lat'] ?? 0.0).toDouble(),
         lng: (data['lng'] ?? 0.0).toDouble(),
         role: data['role'] ?? 'user',
+        isPublicProfile: data['is_public_profile'] ?? true,
+        showNeighborhood: data['show_neighborhood'] ?? true,
+        showImpactStats: data['show_impact_stats'] ?? true,
+        showAchievements: data['show_achievements'] ?? true,
       );
     } catch (e, stack) {
         logger.e('DEBUG: Error parsing profile: $e\n$stack'); // DEBUG LOG
@@ -408,6 +420,10 @@ class SupabaseService {
           ratingCount: 0,
           points: 0,
           skills: [],
+          isPublicProfile: true,
+          showNeighborhood: true,
+          showImpactStats: true,
+          showAchievements: true,
         );
     }
   }
@@ -440,8 +456,28 @@ class SupabaseService {
             lat: (row['lat'] ?? 0.0).toDouble(),
             lng: (row['lng'] ?? 0.0).toDouble(),
             role: row['role'] ?? 'user',
+            isPublicProfile: row['is_public_profile'] ?? true,
+            showNeighborhood: row['show_neighborhood'] ?? true,
+            showImpactStats: row['show_impact_stats'] ?? true,
+            showAchievements: row['show_achievements'] ?? true,
           );
         });
+  }
+
+  Future<void> updatePrivacySettings(Map<String, bool> settings) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    final Map<String, dynamic> updates = {
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    if (settings.containsKey('public')) updates['is_public_profile'] = settings['public']!;
+    if (settings.containsKey('location')) updates['show_neighborhood'] = settings['location']!;
+    if (settings.containsKey('stats')) updates['show_impact_stats'] = settings['stats']!;
+    if (settings.containsKey('badges')) updates['show_achievements'] = settings['badges']!;
+
+    await _client.from('profiles').update(updates).eq('id', user.id).withServerTimeout();
   }
 
   // ... (existing update methods) ...
@@ -538,6 +574,10 @@ class SupabaseService {
           skills: skillsList,
           lat: (json['lat'] ?? 0.0).toDouble(),
           lng: (json['lng'] ?? 0.0).toDouble(),
+          isPublicProfile: json['is_public_profile'] ?? true,
+          showNeighborhood: json['show_neighborhood'] ?? true,
+          showImpactStats: json['show_impact_stats'] ?? true,
+          showAchievements: json['show_achievements'] ?? true,
         );
 
         // --- Scoring Logic ---

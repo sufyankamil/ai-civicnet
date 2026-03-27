@@ -19,9 +19,12 @@ class User {
   final List<Badge> badges;
   final String role; // 'user' or 'admin'
   final String karmaLevel;
-
   final double? lat;
   final double? lng;
+  final bool isPublicProfile;
+  final bool showNeighborhood;
+  final bool showImpactStats;
+  final bool showAchievements;
 
   User({
     required this.id,
@@ -39,6 +42,10 @@ class User {
     this.karmaLevel = 'Seedling',
     this.lat,
     this.lng,
+    this.isPublicProfile = true,
+    this.showNeighborhood = true,
+    this.showImpactStats = true,
+    this.showAchievements = true,
   });
 
   // Calculated impact properties

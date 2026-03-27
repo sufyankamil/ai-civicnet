@@ -1,158 +1,173 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:flutter/services.dart';
 
-class SuccessAnimation extends StatefulWidget {
-  final double size;
-  final Color? color;
-  final VoidCallback? onComplete;
+class SuccessAnimation extends StatelessWidget {
+  final String? title;
+  final String? subtitle;
+  final IconData? icon;
+  final Color baseColor;
+  final double? size;
 
   const SuccessAnimation({
     super.key,
-    this.size = 100,
-    this.color,
-    this.onComplete,
+    this.title,
+    this.subtitle,
+    this.icon,
+    this.baseColor = const Color(0xFF7B61FF),
+    this.size,
   });
 
-  @override
-  State<SuccessAnimation> createState() => _SuccessAnimationState();
-}
-
-class _SuccessAnimationState extends State<SuccessAnimation>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _checkAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _checkAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: const Interval(0.4, 1.0, curve: Curves.easeInOut),
-      ),
-    );
-
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.2).chain(CurveTween(curve: Curves.easeOut)),
-        weight: 70,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.2, end: 1.0).chain(CurveTween(curve: Curves.easeIn)),
-        weight: 30,
-      ),
-    ]).animate(_controller);
-
-    _controller.forward().then((_) {
-      if (widget.onComplete != null) widget.onComplete!();
-    });
-
-    // Premium haptic pop
-    HapticFeedback.mediumImpact();
-    Future.delayed(const Duration(milliseconds: 400), () {
-      HapticFeedback.lightImpact();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final themeColor = widget.color ?? Theme.of(context).primaryColor;
-
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: Container(
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              color: themeColor.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: themeColor.withValues(alpha: 0.2),
-                width: 2,
-              ),
+  static Future<void> show(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    HapticFeedback.vibrate();
+    return showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black.withValues(alpha: 0.85),
+      transitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, anim1, anim2) {
+        return SuccessAnimation(
+          title: title,
+          subtitle: subtitle,
+          icon: icon,
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: anim1,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+              CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
             ),
-            child: CustomPaint(
-              painter: _CheckPainter(
-                progress: _checkAnimation.value,
-                color: themeColor,
-              ),
-            ),
+            child: child,
           ),
         );
       },
     );
   }
-}
-
-class _CheckPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-
-  _CheckPainter({required this.progress, required this.color});
 
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = size.width * 0.08
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
+  Widget build(BuildContext context) {
+    const String confettiUrl = 'https://lottie.host/6ab623c2-d1d5-4521-862a-0630b925f385/u6mE1j0c8o.json';
 
-    final path = Path();
-    
-    // Start of checkmark
-    final startX = size.width * 0.25;
-    final startY = size.height * 0.5;
-    
-    // Middle of checkmark (the bend)
-    final midX = size.width * 0.45;
-    final midY = size.height * 0.7;
-    
-    // End of checkmark
-    final endX = size.width * 0.75;
-    final endY = size.height * 0.35;
-
-    if (progress > 0) {
-      path.moveTo(startX, startY);
-      
-      // First segment (downwards)
-      if (progress < 0.3) {
-        final p = progress / 0.3;
-        path.lineTo(
-          startX + (midX - startX) * p,
-          startY + (midY - startY) * p,
-        );
-      } else {
-        path.lineTo(midX, midY);
-        
-        // Second segment (upwards)
-        final p = (progress - 0.3) / 0.7;
-        path.lineTo(
-          midX + (endX - midX) * p,
-          midY + (endY - midY) * p,
-        );
-      }
+    if (size != null) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Lottie.network(
+              confettiUrl,
+              fit: BoxFit.contain,
+              repeat: false,
+              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            ),
+            if (icon != null)
+              Icon(icon, size: size! * 0.4, color: baseColor),
+          ],
+        ),
+      );
     }
 
-    canvas.drawPath(path, paint);
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Lottie.network(
+            confettiUrl,
+            width: double.infinity,
+            height: double.infinity,
+            fit: BoxFit.cover,
+            repeat: false,
+            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+          ),
+          
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.elasticOut,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: value,
+                      child: Container(
+                        padding: const EdgeInsets.all(30),
+                        decoration: BoxDecoration(
+                          color: baseColor.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: baseColor, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: baseColor.withValues(alpha: 0.4),
+                              blurRadius: 30,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          icon ?? Icons.check_circle_rounded,
+                          size: 80,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 40),
+                if (title != null)
+                  Text(
+                    title!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    subtitle!,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 60),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: baseColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+                  child: const Text(
+                    'AMAZING!',
+                    style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(_CheckPainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }

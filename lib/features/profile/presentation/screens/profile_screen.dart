@@ -9,6 +9,8 @@ import '../../../../components/app_loader.dart';
 import '../components/verification_request_dialog.dart';
 import '../components/impact_dashboard.dart';
 import '../components/milestone_gallery.dart';
+import '../components/impact_heatmap.dart';
+import '../components/privacy_settings.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
@@ -108,57 +110,139 @@ class _ProfileScreenState extends State<ProfileScreen>
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 _buildHeroSliver(user, isDark),
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      SlideFadeTransition(
-                        delay: const Duration(milliseconds: 100),
-                        child: ImpactDashboard(
-                          user: user,
-                          isDark: isDark,
-                          scrollController: _scrollController,
+                if (!user.isPublicProfile)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildPrivatePlaceholder(isDark),
+                  )
+                else
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 100),
+                          child: ImpactDashboard(
+                            user: user,
+                            isDark: isDark,
+                            scrollController: _scrollController,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      SlideFadeTransition(
-                        delay: const Duration(milliseconds: 250),
-                        child: MilestoneGallery(
-                          user: user,
-                          isDark: isDark,
-                          scrollController: _scrollController,
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 250),
+                          child: MilestoneGallery(
+                            user: user,
+                            isDark: isDark,
+                            scrollController: _scrollController,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      SlideFadeTransition(
-                        delay: const Duration(milliseconds: 400),
-                        child: _buildBadgeGallery(user, isDark),
-                      ),
-                      const SizedBox(height: 28),
-                      SlideFadeTransition(
-                        delay: const Duration(milliseconds: 550),
-                        child: _buildSkillsSection(user, isDark),
-                      ),
-                      const SizedBox(height: 28),
-                      SlideFadeTransition(
-                        delay: const Duration(milliseconds: 700),
-                        child: _buildActionsSection(context, isDark, user),
-                      ),
-                      // Extra clearance so content scrolls above the bottom nav bar
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.bottom +
-                            kBottomNavigationBarHeight +
-                            24,
-                      ),
-                    ],
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 400),
+                          child: ImpactHeatmap(isDark: isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 550),
+                          child: _buildBadgeGallery(user, isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 700),
+                          child: _buildSkillsSection(user, isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 850),
+                          child: PrivacySettingsSection(isDark: isDark, user: user),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 1000),
+                          child: _buildActionsSection(context, isDark, user),
+                        ),
+                        // Extra clearance so content scrolls above the bottom nav bar
+                        SizedBox(
+                          height: MediaQuery.of(context).padding.bottom +
+                              kBottomNavigationBarHeight +
+                              24,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _buildPrivatePlaceholder(bool isDark) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 100),
+          child: Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark.withValues(alpha: 0.5) : Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.lock_person_rounded,
+              size: 100,
+              color: AppColors.primaryLight.withValues(alpha: 0.3),
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 250),
+          child: const Text(
+            'This Profile is Private',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.1,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 400),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'User privacy settings are enabled. Only approved followers can view their community impact and achievements.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: isDark ? Colors.white54 : Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 40),
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 550),
+          child: ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.person_add_rounded),
+            label: const Text('Request to View Impact'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryLight,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
