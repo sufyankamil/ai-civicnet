@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_theme.dart';
 import 'app_loader.dart';
 
@@ -46,10 +47,12 @@ class _PrimaryButtonState extends State<PrimaryButton> with SingleTickerProvider
   }
 
   void _handleTapDown(TapDownDetails details) {
+    HapticFeedback.lightImpact();
     _controller.forward();
   }
 
   void _handleTapUp(TapUpDetails details) {
+    HapticFeedback.mediumImpact();
     _controller.reverse();
     if (!widget.isLoading && widget.onPressed != null) {
       widget.onPressed!();

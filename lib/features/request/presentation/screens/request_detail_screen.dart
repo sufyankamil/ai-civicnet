@@ -20,6 +20,7 @@ import '../../../../components/rating_dialog.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/report_dialog.dart';
+import '../../../../components/success_animation.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final String requestId;
@@ -455,25 +456,28 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       children: [
                         Container(
                           margin: const EdgeInsets.only(right: 12),
-                          child: request.requesterAvatarUrl.isNotEmpty &&
-                                  (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
-                              ? CachedNetworkImage(
-                                  imageUrl: request.requesterAvatarUrl,
-                                  imageBuilder: (context, imageProvider) => CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage: imageProvider,
-                                  ),
-                                  errorWidget: (context, url, error) => const CircleAvatar(
+                          child: Hero(
+                            tag: 'avatar-${request.id}',
+                            child: request.requesterAvatarUrl.isNotEmpty &&
+                                    (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                                ? CachedNetworkImage(
+                                    imageUrl: request.requesterAvatarUrl,
+                                    imageBuilder: (context, imageProvider) => CircleAvatar(
+                                      radius: 20,
+                                      backgroundImage: imageProvider,
+                                    ),
+                                    errorWidget: (context, url, error) => const CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey,
+                                      child: Icon(Icons.person, color: Colors.white),
+                                    ),
+                                  )
+                                : const CircleAvatar(
                                     radius: 20,
                                     backgroundColor: Colors.grey,
                                     child: Icon(Icons.person, color: Colors.white),
                                   ),
-                                )
-                              : const CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, color: Colors.white),
-                                ),
+                          ),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1061,9 +1065,49 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       await SupabaseService().applyToRequest(widget.requestId);
       if (mounted) {
         setState(() => _applicationStatus = legacy.ApplicationStatus.pending);
-        ToastService.showSuccess(
-          context,
-          'Interest sent! Waiting for requester to accept.',
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SuccessAnimation(size: 120),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Interest Sent!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Waiting for requester to accept. You\'ll be notified once they respond.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      PrimaryButton(
+                        text: 'Got it',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -1242,22 +1286,45 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Row(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Success!'),
+                const SuccessAnimation(size: 120),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Task Completed!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Points have been awarded to both of you. Thank you for making our community better!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      PrimaryButton(
+                        text: 'Amazing',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-            content: const Text(
-              'Task completed. Points have been awarded to both of you.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
           ),
         );
       }

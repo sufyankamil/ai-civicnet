@@ -379,7 +379,6 @@ class SupabaseService {
        logger.d('DEBUG: Skills data type: ${skillsData.runtimeType}, Value: $skillsData');
 
       final skillsList = (skillsData as List?)?.map((e) => e.toString()).toList() ?? [];
-
       return User(
         id: data['id'],
         name: data['name'] ?? user.userMetadata?['name'] ?? 'Unknown',
@@ -411,6 +410,38 @@ class SupabaseService {
           skills: [],
         );
     }
+  }
+
+  /// Real-time stream for the current user's profile
+  Stream<User?> getCurrentUserProfileStream() {
+    final user = _client.auth.currentUser;
+    if (user == null) return Stream.value(null);
+
+    return _client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', user.id)
+        .map((data) {
+          if (data.isEmpty) return null;
+          final row = data.first;
+          final skillsList = (row['skills'] as List?)?.map((e) => e.toString()).toList() ?? [];
+          
+          return User(
+            id: row['id'],
+            name: row['name'] ?? user.userMetadata?['name'] ?? 'Unknown',
+            email: user.email ?? '',
+            avatarUrl: sanitizeAvatarUrl(row['avatar_url']),
+            rating: (row['rating'] ?? 0.0).toDouble(),
+            helpCount: row['help_count'] ?? 0,
+            reportCount: row['report_count'] ?? 0,
+            ratingCount: (row['rating_count'] ?? 0).toInt(),
+            points: row['points'] ?? 0,
+            skills: skillsList,
+            lat: (row['lat'] ?? 0.0).toDouble(),
+            lng: (row['lng'] ?? 0.0).toDouble(),
+            role: row['role'] ?? 'user',
+          );
+        });
   }
 
   // ... (existing update methods) ...

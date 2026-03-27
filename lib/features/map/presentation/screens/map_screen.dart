@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../theme/app_theme.dart';
 import '../viewmodels/map_viewmodel.dart';
 
@@ -18,42 +18,55 @@ class MapScreen extends StatelessWidget {
 
         return Stack(
           children: [
-            // Full Screen Map Placeholder
-            Container(
-              height: double.infinity,
-              width: double.infinity,
-               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                image: hasPermission && currentPosition != null ? DecorationImage(
-                  image: NetworkImage('https://maps.googleapis.com/maps/api/staticmap?center=${currentPosition.latitude},${currentPosition.longitude}&zoom=13&size=800x1200&key=${dotenv.env['GOOGLE_MAPS_API_KEY']}'),
-                  fit: BoxFit.cover,
-                ) : null,
-              ),
-              child: hasPermission 
-                ? Container(color: Colors.black.withValues(alpha: 0.1)) // Overlay
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.location_off, color: Colors.grey, size: 48),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Location permission not given',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[700],
+            // Interactive Google Map
+            hasPermission
+                ? GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: LatLng(
+                        currentPosition?.latitude ?? 0,
+                        currentPosition?.longitude ?? 0,
+                      ),
+                      zoom: 13,
+                    ),
+                    onMapCreated: viewModel.onMapCreated,
+                    markers: viewModel.markers,
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    mapToolbarEnabled: false,
+                    style: _getMapStyle(context),
+                  )
+                : Container(
+                    height: double.infinity,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.location_off,
+                              color: Colors.grey, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Location permission not given',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextButton(
-                          onPressed: viewModel.checkPermission,
-                          child: const Text('Grant Permission'),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: viewModel.checkPermission,
+                            child: const Text('Grant Permission'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-            ),
+            
+            if (viewModel.isLoading)
+              const Center(child: CircularProgressIndicator()),
             
             // Search Bar Overlay
             Positioned(
@@ -88,6 +101,42 @@ class MapScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Proximity Badge
+            if (viewModel.markers.isNotEmpty)
+              Positioned(
+                top: 125,
+                left: 16,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight.withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.people_alt_rounded,
+                          color: Colors.white, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${viewModel.markers.length} Active Neighbors Nearby',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
 
             // Bottom Sheet Preview (Mock)
             Positioned(
@@ -145,9 +194,26 @@ class MapScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            // Recenter Button
+            Positioned(
+              bottom: 180,
+              right: 16,
+              child: FloatingActionButton.small(
+                onPressed: viewModel.recenter,
+                backgroundColor: Theme.of(context).cardColor,
+                child: const Icon(Icons.my_location, color: AppColors.primaryLight),
+              ),
+            ),
           ],
         );
       }),
     );
+  }
+
+  String? _getMapStyle(BuildContext context) {
+    // Return a JSON string for map styling if needed, or null for default
+    // For a premium feel, we could use a custom retro or silver style
+    return null; 
   }
 }

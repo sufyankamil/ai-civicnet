@@ -41,24 +41,27 @@ class RequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _hasValidAvatar(request.requesterAvatarUrl)
-                      ? CachedNetworkImage(
-                          imageUrl: request.requesterAvatarUrl,
-                          imageBuilder: (context, imageProvider) => CircleAvatar(
-                            radius: 20,
-                            backgroundImage: imageProvider,
-                          ),
-                          errorWidget: (context, url, error) => const CircleAvatar(
+                  Hero(
+                    tag: 'avatar-${request.id}',
+                    child: _hasValidAvatar(request.requesterAvatarUrl)
+                        ? CachedNetworkImage(
+                            imageUrl: request.requesterAvatarUrl,
+                            imageBuilder: (context, imageProvider) => CircleAvatar(
+                              radius: 20,
+                              backgroundImage: imageProvider,
+                            ),
+                            errorWidget: (context, url, error) => const CircleAvatar(
+                              radius: 20,
+                              backgroundColor: Colors.grey,
+                              child: Icon(Icons.person, color: Colors.white),
+                            ),
+                          )
+                        : const CircleAvatar(
                             radius: 20,
                             backgroundColor: Colors.grey,
                             child: Icon(Icons.person, color: Colors.white),
                           ),
-                        )
-                      : const CircleAvatar(
-                          radius: 20,
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, color: Colors.white),
-                        ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../components/app_loader.dart';
 import '../components/verification_request_dialog.dart';
+import '../components/impact_dashboard.dart';
+import '../components/milestone_gallery.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
+import 'package:civic_net/features/profile/presentation/components/slide_fade_transition.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,7 +23,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
-  Future<User?>? _profileFuture;
+  Stream<User?>? _profileStream;
   Future<Map<String, dynamic>>? _eligibilityFuture;
   late final AnimationController _bannerController;
   late final Animation<double> _bannerAnim;
@@ -48,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _refreshProfile() {
     setState(() {
-      _profileFuture = SupabaseService().getCurrentUserProfile();
+      _profileStream = SupabaseService().getCurrentUserProfileStream();
       _eligibilityFuture = SupabaseService().checkVerificationEligibility();
     });
   }
@@ -67,8 +71,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: FutureBuilder<User?>(
-        future: _profileFuture,
+      body: StreamBuilder<User?>(
+        stream: _profileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const AppLoader();
@@ -98,7 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen>
           return RefreshIndicator(
             onRefresh: () async {
               _refreshProfile();
-              await _profileFuture;
             },
             child: CustomScrollView(
               controller: _scrollController,
@@ -110,15 +113,38 @@ class _ProfileScreenState extends State<ProfileScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 24),
-                      _buildStatsRow(user, isDark),
+                      SlideFadeTransition(
+                        delay: const Duration(milliseconds: 100),
+                        child: ImpactDashboard(
+                          user: user,
+                          isDark: isDark,
+                          scrollController: _scrollController,
+                        ),
+                      ),
                       const SizedBox(height: 28),
-                      _buildKarmaIndicator(user, isDark),
+                      SlideFadeTransition(
+                        delay: const Duration(milliseconds: 250),
+                        child: MilestoneGallery(
+                          user: user,
+                          isDark: isDark,
+                          scrollController: _scrollController,
+                        ),
+                      ),
                       const SizedBox(height: 28),
-                      _buildBadgeGallery(user, isDark),
+                      SlideFadeTransition(
+                        delay: const Duration(milliseconds: 400),
+                        child: _buildBadgeGallery(user, isDark),
+                      ),
                       const SizedBox(height: 28),
-                      _buildSkillsSection(user, isDark),
+                      SlideFadeTransition(
+                        delay: const Duration(milliseconds: 550),
+                        child: _buildSkillsSection(user, isDark),
+                      ),
                       const SizedBox(height: 28),
-                      _buildActionsSection(context, isDark, user),
+                      SlideFadeTransition(
+                        delay: const Duration(milliseconds: 700),
+                        child: _buildActionsSection(context, isDark, user),
+                      ),
                       // Extra clearance so content scrolls above the bottom nav bar
                       SizedBox(
                         height: MediaQuery.of(context).padding.bottom +
@@ -260,6 +286,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                     shape: BoxShape.circle,
                     color: Colors.white.withValues(alpha: 0.06),
                   ),
+                ),
+              ),
+              // Lottie Community Animation
+              Positioned(
+                right: -20,
+                bottom: -10,
+                child: Lottie.network(
+                  'https://lottie.host/6475659b-3127-4a0b-8d5b-21226c117b96/TirY3Y2W4x.json',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                 ),
               ),
               // Name + email overlay at bottom
@@ -425,68 +463,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ─── Stats Row ────────────────────────────────────────────────────────────
-
-  Widget _buildStatsRow(User user, bool isDark) {
-    final stats = [
-      (Icons.handshake_rounded, AppLocalizations.of(context)!.helps, user.helpCount.toString(), Colors.blue),
-      (Icons.star_rounded, AppLocalizations.of(context)!.rating, user.rating.toStringAsFixed(1), Colors.amber),
-      (Icons.emoji_events_rounded, AppLocalizations.of(context)!.points, user.points.toString(), Colors.orange),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, stats[0].$4, isDark)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, stats[1].$4, isDark)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, stats[2].$4, isDark)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-      IconData icon, String label, String value, Color iconColor, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: iconColor, size: 24),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryLight,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -723,14 +699,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: const Text('Got it'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          isDark: isDark,
-                        );
-                      }
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        isDark: isDark,
+                      );
+                    }
 
                       return _buildActionTile(
                         icon: Icons.verified_user_rounded,
@@ -908,74 +884,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     return AppLocalizations.of(context)!.newMember;
   }
 
-  // ─── Karma Indicator ──────────────────────────────────────────────────
 
-  Widget _buildKarmaIndicator(User user, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.civicKarma,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primaryLight,
-                    ),
-                  ),
-                  Text(
-                    user.karmaLevel,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.score,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  user.points.toString(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ─── Badge Gallery ──────────────────────────────────────────────────
 
