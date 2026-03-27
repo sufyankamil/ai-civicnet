@@ -3,6 +3,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../models/help_request_model.dart';
 import '../../domain/entities/request_enums.dart';
 import '../../../../core/utils/timeout_extension.dart';
+import '../../../../services/ai_service.dart';
 
 abstract class RequestRemoteDataSource {
   Future<List<dynamic>> getRawHelpRequests();
@@ -74,15 +75,24 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
       final userId = supabaseClient.auth.currentUser?.id;
       if (userId == null) throw ServerException('User not authenticated.');
 
+      // Generate AI embedding
+      final categoryStr = request.category.toString().split('.').last;
+      final embedding = await AiService().generateRequestEmbedding(
+        request.title,
+        request.description,
+        categoryStr,
+      );
+
       await supabaseClient.from('help_requests').insert({
         'requester_id': userId,
         'title': request.title,
         'description': request.description,
-        'category': request.category.toString().split('.').last,
+        'category': categoryStr,
         'urgency': request.urgency.toString().split('.').last,
         'lat': request.lat,
         'lng': request.lng,
         'location_name': request.locationName,
+        'embedding': embedding, // Save the vector
         'created_at': DateTime.now().toUtc().toIso8601String(),
         'status': 'open',
       }).withServerTimeout();

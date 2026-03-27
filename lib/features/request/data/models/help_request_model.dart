@@ -47,7 +47,7 @@ class HelpRequestModel extends HelpRequestEntity {
       ),
       postedAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       distance: 'Unknown', 
-      aiRelevanceScore: (json['ai_score'] ?? 0.85).toDouble(), // Use real score if available
+      aiRelevanceScore: (json['ai_score'] ?? json['similarity'] ?? 0.0).toDouble(),
       locationName: json['location_name'] ?? 'Unknown Location',
       lat: (json['lat'] ?? 0).toDouble(),
       lng: (json['lng'] ?? 0).toDouble(),

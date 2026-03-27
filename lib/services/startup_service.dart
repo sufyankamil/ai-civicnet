@@ -10,6 +10,8 @@ import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:civic_net/services/encryption_service.dart';
+import 'package:civic_net/services/ai_service.dart';
+
 class StartupService {
   static final StartupService _instance = StartupService._internal();
   factory StartupService() => _instance;
@@ -34,6 +36,11 @@ class StartupService {
     // 1. Firebase Core
     await Firebase.initializeApp();
     logger.i('Firebase Core initialized (${stopwatch.elapsedMilliseconds}ms)');
+
+    // 2. AiService
+    AiService().initialize();
+    logger.i('AiService initialized (${stopwatch.elapsedMilliseconds}ms)');
+
 
     // 2. Crashlytics Setup
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

@@ -249,7 +249,9 @@
   "earnedPoints": "मदद करने के लिए आपने {count} अंक अर्जित किए।",
   "noHelpersYet": "अभी तक कोई सहायक उपलब्ध नहीं है",
   "beTheFirstHelper": "समुदाय में शामिल होने वाले पहले व्यक्ति बनें!",
-  "communicateWithRequester": "अब आप अनुरोधकर्ता के साथ संवाद कर सकते हैं।",
+  "checkBackLater": "मददगारों के लिए बाद में वापस जाँच करें!",
+  "communicateWithRequester": "अब आप अनुरोधकर्ता के साथ संवाद कर सकते हैं。",
+
   "chatWithRequester": "अनुरोधकर्ता के साथ चैट करें",
   "imInterested": "मुझे रुचि है",
   "requestNoLongerOpen": "यह अनुरोध अब आवेदनों के लिए खुला नहीं है।",

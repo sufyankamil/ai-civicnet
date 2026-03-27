@@ -1598,6 +1598,12 @@ abstract class AppLocalizations {
   /// **'Be the first to join the community!'**
   String get beTheFirstHelper;
 
+  /// No description provided for @checkBackLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for community helpers!'**
+  String get checkBackLater;
+
   /// No description provided for @communicateWithRequester.
   ///
   /// In en, this message translates to:

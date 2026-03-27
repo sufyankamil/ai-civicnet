@@ -12,6 +12,8 @@ import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:civic_net/services/encryption_service.dart';
+import 'package:civic_net/services/ai_service.dart';
+
 import '../features/events/models/event_comment.dart';
 import '../core/utils/timeout_extension.dart';
 
@@ -148,20 +150,31 @@ class SupabaseService {
 
   // Create a new request
   Future<void> createHelpRequest(HelpRequest request) async {
+    final userId = _client.auth.currentUser!.id;
+    final categoryStr = request.category.toString().split('.').last;
+    
+    // Generate AI embedding for "True AI" matching
+    final embedding = await AiService().generateRequestEmbedding(
+      request.title, 
+      request.description, 
+      categoryStr
+    );
+
     await _client.from('help_requests').insert({
-      'requester_id': _client.auth.currentUser!.id,
+      'requester_id': userId,
       'title': request.title,
       'description': request.description,
-      'category': request.category.toString().split('.').last,
+      'category': categoryStr,
       'urgency': request.urgency.toString().split('.').last,
       'lat': request.lat,
       'lng': request.lng,
       'location_name': request.locationName,
-
+      'embedding': embedding, // Save the vector
       'created_at': DateTime.now().toUtc().toIso8601String(),
       'status': 'open',
     }).withServerTimeout();
   }
+
 
   Future<void> updateHelpRequestStatus(String requestId, RequestStatus status) async {
     await _client.from('help_requests').update({
@@ -526,16 +539,21 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
+    // Generate AI embedding for "True AI" matching
+    final embedding = await AiService().generateProfileEmbedding(name, skills);
+
     final updates = {
       'id': user.id,
       'name': name,
       'avatar_url': sanitizeAvatarUrl(avatarUrl),
       'skills': skills,
+      'embedding': embedding, // Save the vector
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
 
     await _client.from('profiles').upsert(updates).withServerTimeout();
   }
+
 
   Future<void> updateUserLocation(double lat, double lng) async {
     final user = _client.auth.currentUser;
@@ -552,11 +570,27 @@ class SupabaseService {
 
   Future<List<Helper>> getPotentialHelpers(HelpRequest request) async {
     try {
-      final response = await _client
-          .from('profiles')
-          .select()
-          .neq('id', request.requesterId) // exclude the requester
-          .limit(20); // Fetch more candidates to rank
+      // 1. Generate Query Embedding for the request if it doesn't have one
+      final queryEmbedding = await AiService().generateRequestEmbedding(
+        request.title, 
+        request.description, 
+        request.category.toString().split('.').last,
+        isQuery: true, // This is a search query
+      );
+
+
+      if (queryEmbedding == null) {
+        logger.w('Semantic Match: Failed to generate embedding, falling back to basic fetching.');
+        return []; // Or implement basic fallback here
+      }
+
+      // 2. Call semantic matching RPC "match_helpers_v3"
+      final response = await _client.rpc('match_helpers_v3', params: {
+        'query_embedding': queryEmbedding,
+        'match_threshold': 0.5,
+        'match_count': 5,
+        'excluded_id': request.requesterId,
+      }).withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
       final List<Helper> helpers = [];
@@ -567,65 +601,73 @@ class SupabaseService {
          final user = User(
           id: json['id'],
           name: json['name'] ?? 'Unknown',
-          email: '', // Email not public
+          email: '',
           avatarUrl: sanitizeAvatarUrl(json['avatar_url']),
           rating: (json['rating'] ?? 0.0).toDouble(),
           helpCount: json['help_count'] ?? 0,
           skills: skillsList,
           lat: (json['lat'] ?? 0.0).toDouble(),
           lng: (json['lng'] ?? 0.0).toDouble(),
-          isPublicProfile: json['is_public_profile'] ?? true,
-          showNeighborhood: json['show_neighborhood'] ?? true,
-          showImpactStats: json['show_impact_stats'] ?? true,
-          showAchievements: json['show_achievements'] ?? true,
+          isPublicProfile: true, // Defaulting if not in RPC
+          showNeighborhood: true,
+          showImpactStats: true,
+          showAchievements: true,
         );
 
-        // --- Scoring Logic ---
-        double score = 0.0;
-        List<String> reasons = [];
-
-        // 1. Skill Match (40%)
-        // Simple distinct string match; ideally fuzzy matching
-        bool hasSkill = user.skills.any((s) => s.toLowerCase().contains(request.category.toString().split('.').last.toLowerCase()));
-        if (hasSkill) {
-          score += 0.4;
-          reasons.add('Matches Category');
-        }
-
-        // 2. Distance (50%)
+        // Calculate distance for the UI
         String distanceStr = 'Unknown';
         if (user.lat != null && user.lng != null && user.lat != 0 && user.lng != 0 && request.lat != 0 && request.lng != 0) {
            double distKm = _calculateDistance(request.lat, request.lng, user.lat!, user.lng!);
            distanceStr = '${distKm.toStringAsFixed(1)} km';
-           
-           // Score decays with distance: 1.0 at 0km, 0.5 at 10km
-           double distanceScore = 1.0 / (1.0 + (distKm / 10.0));
-           score += (distanceScore * 0.5);
-           
-           if (distKm < 5.0) reasons.add('Nearby');
         }
-
-        // 3. Rating (10%)
-        score += (user.rating / 5.0) * 0.1;
-        if (user.rating > 4.5) reasons.add('Highly Rated');
 
         helpers.add(Helper(
           user: user,
-          matchScore: score,
+          matchScore: (json['similarity'] ?? 0.0).toDouble(),
           distance: distanceStr,
-          matchReasons: reasons,
+          matchReasons: ['Semantic Match', if ((json['similarity'] ?? 0.0) > 0.8) 'Highly Relevant'],
         ));
       }
 
-      // Sort by score descending
-      helpers.sort((a, b) => b.matchScore.compareTo(a.matchScore));
-
-      return helpers.take(5).toList(); // Return top 5
+      return helpers;
     } catch (e) {
-      logger.e('Error fetching helpers: $e');
+      logger.e('Error fetching helpers via semantic match: $e');
       return [];
     }
   }
+
+  /// True AI: Fetch help requests matching the user's skills using vector similarity
+  Future<List<HelpRequest>> getRecommendedHelpRequests() async {
+    final user = await getCurrentUserProfile();
+    if (user == null) return [];
+
+    try {
+      final profileEmbedding = await AiService().generateProfileEmbedding(
+        user.name, 
+        user.skills,
+        isQuery: true, // This is a search query
+      );
+
+      if (profileEmbedding == null) return [];
+
+      final response = await _client.rpc('match_requests_v3', params: {
+        'query_embedding': profileEmbedding,
+        'match_threshold': 0.6, // Restored to a more realistic similarity threshold
+        'match_count': 10,
+        'excluded_id': user.id, // Exclude the current user's own requests
+      }).withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) {
+        final req = HelpRequest.fromJson(json);
+        return req.copyWith(aiRelevanceScore: (json['similarity'] ?? 0.0).toDouble());
+      }).toList();
+    } catch (e) {
+      logger.e('Error fetching recommended requests: $e');
+      return [];
+    }
+  }
+
 
   // Haversine formula — returns distance in km
   double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {

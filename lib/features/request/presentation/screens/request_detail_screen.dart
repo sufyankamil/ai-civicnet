@@ -620,8 +620,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  AppLocalizations.of(context)!.beTheFirstHelper,
+                                  SupabaseService().currentUserId == request.requesterId
+                                      ? AppLocalizations.of(context)!.checkBackLater
+                                      : AppLocalizations.of(context)!.beTheFirstHelper,
                                   style: TextStyle(
+
                                     color: Colors.grey[600],
                                     fontSize: 12,
                                   ),

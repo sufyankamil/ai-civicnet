@@ -8,6 +8,7 @@ import '../features/request/domain/entities/request_enums.dart';
 import '../theme/app_theme.dart';
 import '../services/supabase_service.dart';
 import 'ai_match_badge.dart';
+import 'animated_glow_border.dart';
 
 class RequestCard extends StatelessWidget {
   final HelpRequestEntity request;
@@ -21,20 +22,24 @@ class RequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final locale = Localizations.localeOf(context).languageCode;
+    final isAiMatch = request.aiRelevanceScore > 0;
 
-    return Card(
-      elevation: 0,
+    Widget cardBody = Card(
+      elevation: isAiMatch ? 0 : 8, // Glow border adds its own shadow
+      shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        borderRadius: BorderRadius.circular(24),
+        side: isAiMatch 
+            ? BorderSide.none 
+            : BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.1), width: 1.5),
       ),
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.zero,
       child: InkWell(
         onTap: () => context.push('/request/${request.id}'),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -143,13 +148,23 @@ class RequestCard extends StatelessWidget {
                        ],
                      ),
                      const Spacer(),
-                     AiMatchBadge(score: request.aiRelevanceScore),
+                     if (isAiMatch) AiMatchBadge(score: request.aiRelevanceScore),
                    ],
                  ),
             ],
           ),
         ),
       ),
+    );
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: isAiMatch
+          ? AnimatedGlowBorder(
+              isActive: true,
+              child: cardBody,
+            )
+          : cardBody,
     );
   }
 

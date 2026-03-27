@@ -810,6 +810,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get beTheFirstHelper => 'Be the first to join the community!';
 
   @override
+  String get checkBackLater => 'Check back later for community helpers!';
+
+  @override
   String get communicateWithRequester =>
       'You can now communicate with the requester.';
 
