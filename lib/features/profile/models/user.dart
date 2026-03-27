@@ -57,4 +57,28 @@ class User {
   int get pointsInCurrentLevel => points % pointsPerRank;
   double get levelProgress => pointsInCurrentLevel / pointsPerRank;
   int get pointsToNextRank => pointsPerRank - pointsInCurrentLevel;
+  static User fromMap(Map<String, dynamic> data, {String? email}) {
+    final skillsData = data['skills'];
+    final List<String> skillsList = (skillsData is List) ? skillsData.map((e) => e.toString()).toList() : [];
+    
+    return User(
+      id: data['id'],
+      name: data['name'] ?? 'Unknown',
+      email: email ?? data['email'] ?? '',
+      avatarUrl: sanitizeAvatarUrl(data['avatar_url']),
+      rating: (data['rating'] ?? 0.0).toDouble(),
+      helpCount: data['help_count'] ?? 0,
+      reportCount: data['report_count'] ?? 0,
+      ratingCount: data['rating_count'] ?? 0,
+      points: data['points'] ?? 0,
+      skills: skillsList,
+      lat: (data['lat'] ?? 0.0).toDouble(),
+      lng: (data['lng'] ?? 0.0).toDouble(),
+      role: data['role'] ?? 'user',
+      isPublicProfile: data['is_public_profile'] ?? true,
+      showNeighborhood: data['show_neighborhood'] ?? true,
+      showImpactStats: data['show_impact_stats'] ?? true,
+      showAchievements: data['show_achievements'] ?? true,
+    );
+  }
 }

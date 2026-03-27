@@ -388,56 +388,39 @@ class SupabaseService {
           .eq('id', user.id)
           .maybeSingle().withServerTimeout();
 
-      logger.d('DEBUG: Raw profile data: $data'); // DEBUG LOG
+      if (data == null) throw Exception('Profile not found.');
 
-      // If data is null (meaning no profile row exists yet), throw to the catch block 
-      // or return a default user immediately.
-      if (data == null) {
-        throw Exception('Profile not found.');
-      }
-
-      final skillsData = data['skills'];
-       logger.d('DEBUG: Skills data type: ${skillsData.runtimeType}, Value: $skillsData');
-
-      final skillsList = (skillsData as List?)?.map((e) => e.toString()).toList() ?? [];
-      return User(
-        id: data['id'],
-        name: data['name'] ?? user.userMetadata?['name'] ?? 'Unknown',
-        email: user.email ?? '',
-        avatarUrl: sanitizeAvatarUrl(data['avatar_url']),
-        rating: (data['rating'] ?? 0.0).toDouble(),
-        helpCount: data['help_count'] ?? 0,
-        reportCount: data['report_count'] ?? 0,
-        ratingCount: data['rating_count'] ?? 0, // Mapped
-        points: data['points'] ?? 0,
-        skills: skillsList,
-        lat: (data['lat'] ?? 0.0).toDouble(),
-        lng: (data['lng'] ?? 0.0).toDouble(),
-        role: data['role'] ?? 'user',
-        isPublicProfile: data['is_public_profile'] ?? true,
-        showNeighborhood: data['show_neighborhood'] ?? true,
-        showImpactStats: data['show_impact_stats'] ?? true,
-        showAchievements: data['show_achievements'] ?? true,
-      );
+      return User.fromMap(data, email: user.email);
     } catch (e, stack) {
-        logger.e('DEBUG: Error parsing profile: $e\n$stack'); // DEBUG LOG
-        // If profile fetch fails (e.g. no row), return basic auth info
+        logger.e('DEBUG: Error parsing profile: $e\n$stack');
         return User(
           id: user.id,
           name: user.userMetadata?['name'] ?? 'Guest',
           email: user.email ?? '',
           avatarUrl: '',
-          rating: 0.0,
-          helpCount: 0,
-          reportCount: 0,
-          ratingCount: 0,
-          points: 0,
-          skills: [],
           isPublicProfile: true,
           showNeighborhood: true,
           showImpactStats: true,
           showAchievements: true,
         );
+    }
+  }
+
+  Future<List<User>> getActiveNeighbors() async {
+    try {
+      final response = await _client
+          .from('profiles')
+          .select()
+          .eq('show_neighborhood', true)
+          .not('lat', 'is', null)
+          .not('lng', 'is', null)
+          .withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => User.fromMap(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching active neighbors: $e');
+      return [];
     }
   }
 

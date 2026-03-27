@@ -58,10 +58,11 @@ class EncryptionService {
 
       final decrypted = _encrypter.decrypt(encrypted, iv: iv);
       
-      // Optionally log decrypted stuff or only on explicit errors
       return decrypted;
     } catch (e) {
-      // If decryption fails, it might be unencrypted legacy data. Just return it!
+      if (kDebugMode) {
+        logger.w('[ENCRYPT] Decryption failed for payload. It might be unencrypted legacy data or key mismatch. Error: $e');
+      }
       return encryptedBase64;
     }
   }

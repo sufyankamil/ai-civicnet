@@ -28,14 +28,14 @@ class _MainScaffoldState extends State<MainScaffold> {
       body: widget.child,
       bottomNavigationBar: SafeArea(
         child: Container(
-          margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           height: 70,
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(25),
+            color: Theme.of(context).cardColor.withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               )
@@ -46,11 +46,44 @@ class _MainScaffoldState extends State<MainScaffold> {
             children: [
                _buildNavItem(Icons.home_rounded, 0, '/home'),
                _buildNavItem(Icons.explore_rounded, 1, '/discover'),
-               _buildFabItem(),
+               const SizedBox(width: 48), // Space for FAB
                _buildNavItem(Icons.event_note_rounded, 2, '/events'),
                _buildNavItem(Icons.chat_bubble_rounded, 3, '/chat'),
             ],
           ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFab(),
+    );
+  }
+
+  Widget _buildFab() {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      child: GestureDetector(
+        onTap: () {
+          if (_selectedIndex == 1) { // Discover
+            context.push('/create-event');
+          } else {
+            context.push('/create-request');
+          }
+        },
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient(Theme.of(context).brightness),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryLight.withValues(alpha: 0.4),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
       ),
     );
@@ -64,10 +97,11 @@ class _MainScaffoldState extends State<MainScaffold> {
       color: isSelected 
           ? Theme.of(context).primaryColor 
           : Colors.grey,
+      size: 22, // Slightly smaller to fit 5 items
     );
 
-    // Apply badge only to the Chat tab (index 4)
-    if (index == 4) {
+    // Apply badge only to the Chat tab (index 3 now)
+    if (index == 3) {
       if (Get.isRegistered<ChatViewModel>()) {
         final chatVM = Get.find<ChatViewModel>();
         iconWidget = Stack(
