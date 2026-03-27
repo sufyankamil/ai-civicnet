@@ -21,8 +21,10 @@ class _MainScaffoldState extends State<MainScaffold> {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) { _selectedIndex = 0; }
     else if (location.startsWith('/discover')) { _selectedIndex = 1; }
-    else if (location.startsWith('/events')) { _selectedIndex = 2; }
-    else if (location.startsWith('/chat')) { _selectedIndex = 3; }
+    else if (location.startsWith('/map')) { _selectedIndex = 2; }
+    else if (location.startsWith('/ai-assistant')) { _selectedIndex = 3; }
+    else if (location.startsWith('/events')) { _selectedIndex = 4; }
+    else if (location.startsWith('/chat')) { _selectedIndex = 5; }
     
     return Scaffold(
       body: widget.child,
@@ -46,9 +48,11 @@ class _MainScaffoldState extends State<MainScaffold> {
             children: [
                _buildNavItem(Icons.home_rounded, 0, '/home'),
                _buildNavItem(Icons.explore_rounded, 1, '/discover'),
-               const SizedBox(width: 48), // Space for FAB
-               _buildNavItem(Icons.event_note_rounded, 2, '/events'),
-               _buildNavItem(Icons.chat_bubble_rounded, 3, '/chat'),
+               _buildNavItem(Icons.map_rounded, 2, '/map'),
+               const SizedBox(width: 44), // Space for FAB
+               _buildNavItem(Icons.smart_toy_rounded, 3, '/ai-assistant'),
+               _buildNavItem(Icons.event_note_rounded, 4, '/events'),
+               _buildNavItem(Icons.chat_bubble_rounded, 5, '/chat'),
             ],
           ),
         ),
@@ -100,8 +104,8 @@ class _MainScaffoldState extends State<MainScaffold> {
       size: 22, // Slightly smaller to fit 5 items
     );
 
-    // Apply badge only to the Chat tab (index 3 now)
-    if (index == 3) {
+    // Apply badge only to the Chat tab (index 5 now)
+    if (index == 5) {
       if (Get.isRegistered<ChatViewModel>()) {
         final chatVM = Get.find<ChatViewModel>();
         iconWidget = Stack(
@@ -153,35 +157,6 @@ class _MainScaffoldState extends State<MainScaffold> {
           borderRadius: BorderRadius.circular(16),
         ),
         child: iconWidget,
-      ),
-    );
-  }
-
-  Widget _buildFabItem() {
-    return GestureDetector(
-      onTap: () {
-        if (_selectedIndex == 2) {
-          context.push('/create-event');
-        } else {
-          context.push('/create-request');
-        }
-      },
-      child: Container(
-        width: 56,
-        height: 56,
-        transform: Matrix4.translationValues(0, -20, 0),
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient(Theme.of(context).brightness),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryLight.withValues(alpha: 0.4),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Icon(Icons.add, color: Colors.white, size: 32),
       ),
     );
   }

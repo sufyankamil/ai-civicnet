@@ -425,11 +425,6 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               return const SizedBox.shrink();
             },
           ),
-          IconButton(
-            onPressed: () => context.push('/map'),
-            icon: const Icon(Icons.map_rounded, color: AppColors.primaryLight),
-            tooltip: 'Community Map',
-          ),
           FutureBuilder(
             future: SupabaseService().getCurrentUserProfile(),
             builder: (context, snapshot) {
