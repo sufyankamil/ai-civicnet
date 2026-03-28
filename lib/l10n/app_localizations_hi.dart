@@ -18,6 +18,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get discoverTitle => 'खोजें';
 
   @override
+  String get communityTitle => 'समुदाय';
+
+  @override
   String get eventsTitle => 'कार्यक्रम';
 
   @override
@@ -815,8 +818,11 @@ class AppLocalizationsHi extends AppLocalizations {
       'समुदाय में शामिल होने वाले पहले व्यक्ति बनें!';
 
   @override
+  String get checkBackLater => 'मददगारों के लिए बाद में वापस जाँच करें!';
+
+  @override
   String get communicateWithRequester =>
-      'अब आप अनुरोधकर्ता के साथ संवाद कर सकते हैं।';
+      'अब आप अनुरोधकर्ता के साथ संवाद कर सकते हैं。';
 
   @override
   String get chatWithRequester => 'अनुरोधकर्ता के साथ चैट करें';

@@ -12,6 +12,7 @@ import '../viewmodels/request_viewmodel.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../components/app_loader.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../components/helper_card.dart';
 import '../../../../components/primary_button.dart';
@@ -19,6 +20,7 @@ import '../../../../components/rating_dialog.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/report_dialog.dart';
+import '../../../../components/success_animation.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final String requestId;
@@ -51,42 +53,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     _checkApplicationStatus();
   }
 
-  // temporary mapper to bridge older SupabaseService methods
-  legacy.HelpRequest _mapEntityToModel(HelpRequestEntity entity) {
-    return legacy.HelpRequest(
-      id: entity.id,
-      requesterId: entity.requesterId,
-      requesterName: entity.requesterName,
-      requesterAvatarUrl: entity.requesterAvatarUrl,
-      title: entity.title,
-      description: entity.description,
-      category: HelpCategory.values.firstWhere(
-        (e) =>
-            e.toString().split('.').last ==
-            entity.category.toString().split('.').last,
-        orElse: () => HelpCategory.other,
-      ),
-      urgency: legacy.UrgencyLevel.values.firstWhere(
-        (e) =>
-            e.toString().split('.').last ==
-            entity.urgency.toString().split('.').last,
-        orElse: () => legacy.UrgencyLevel.medium,
-      ),
-      postedAt: entity.postedAt,
-      distance: entity.distance,
-      aiRelevanceScore: entity.aiRelevanceScore,
-      locationName: entity.locationName,
-      lat: entity.lat,
-      lng: entity.lng,
-      status: legacy.RequestStatus.values.firstWhere(
-        (e) =>
-            e.toString().split('.').last ==
-            entity.status.toString().split('.').last,
-        orElse: () => legacy.RequestStatus.open,
-      ),
-      helperId: entity.helperId,
-    );
-  }
 
   Future<void> _loadApplications(String requesterId) async {
     if (SupabaseService().currentUserId != requesterId) {
@@ -174,7 +140,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     return Scaffold(
       body: Obx(() {
         if (_viewModel.isLoading && _viewModel.currentRequest == null) {
-          return const Center(child: CircularProgressIndicator.adaptive());
+          return const AppLoader();
         }
 
         final request = _viewModel.currentRequest;
@@ -221,6 +187,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     child: IconButton(
                       icon: const Icon(Icons.flag_outlined, color: Colors.white),
                       onPressed: () => _showReportRequestDialog(),
+                    ),
+                  ),
+                if (SupabaseService().currentUserId != null &&
+                    _viewModel.currentRequest != null &&
+                    SupabaseService().currentUserId ==
+                        _viewModel.currentRequest!.requesterId)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.white),
+                      onPressed: () => _showDeleteConfirmationDialog(),
                     ),
                   ),
               ],
@@ -490,25 +471,28 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       children: [
                         Container(
                           margin: const EdgeInsets.only(right: 12),
-                          child: request.requesterAvatarUrl.isNotEmpty &&
-                                  (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
-                              ? CachedNetworkImage(
-                                  imageUrl: request.requesterAvatarUrl,
-                                  imageBuilder: (context, imageProvider) => CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage: imageProvider,
-                                  ),
-                                  errorWidget: (context, url, error) => const CircleAvatar(
+                          child: Hero(
+                            tag: 'avatar-${request.id}',
+                            child: request.requesterAvatarUrl.isNotEmpty &&
+                                    (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                                ? CachedNetworkImage(
+                                    imageUrl: request.requesterAvatarUrl,
+                                    imageBuilder: (context, imageProvider) => CircleAvatar(
+                                      radius: 20,
+                                      backgroundImage: imageProvider,
+                                    ),
+                                    errorWidget: (context, url, error) => const CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey,
+                                      child: Icon(Icons.person, color: Colors.white),
+                                    ),
+                                  )
+                                : const CircleAvatar(
                                     radius: 20,
                                     backgroundColor: Colors.grey,
                                     child: Icon(Icons.person, color: Colors.white),
                                   ),
-                                )
-                              : const CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, color: Colors.white),
-                                ),
+                          ),
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,132 +556,115 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     ),
                     const SizedBox(height: 32),
 
-                    FutureBuilder<List<legacy.Helper>>(
-                      future: SupabaseService().getPotentialHelpers(
-                        _mapEntityToModel(request),
-                      ),
-                      builder: (context, snapshot) {
-                        List<legacy.Helper> helpers = [];
-                        if (snapshot.hasData) {
-                          final currentUserId = SupabaseService().currentUserId;
-                          helpers = snapshot.data!
-                              .where((h) => h.user.id != currentUserId)
-                              .toList();
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.auto_awesome,
-                                      color: AppColors.secondaryLight,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      AppLocalizations.of(context)!.communityHelpers,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                  ],
+                                const Icon(
+                                  Icons.auto_awesome,
+                                  color: AppColors.secondaryLight,
+                                  size: 20,
                                 ),
-                                if (helpers.length > 3)
-                                  TextButton(
-                                    onPressed: () => _showAllHelpersBottomSheet(
-                                      context,
-                                      helpers,
-                                    ),
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(AppLocalizations.of(context)!.viewAll),
+                                const SizedBox(width: 8),
+                                Text(
+                                  AppLocalizations.of(context)!.communityHelpers,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
                                   ),
+                                ),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              AppLocalizations.of(context)!.nearbyMembersHelp,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting)
-                              const Center(
-                                child: CircularProgressIndicator.adaptive(),
-                              )
-                            else if (snapshot.error != null)
-                              Text('Error loading helpers: ${snapshot.error}')
-                            else if (helpers.isEmpty)
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[100],
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey[300]!),
+                            if (_viewModel.potentialHelpers.length > 3)
+                              TextButton(
+                                onPressed: () => _showAllHelpersBottomSheet(
+                                  context,
+                                  _viewModel.potentialHelpers,
                                 ),
-                                child: Column(
-                                  children: [
-                                    const Icon(
-                                      Icons.people_outline,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      AppLocalizations.of(context)!.noHelpersYet,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[700],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      AppLocalizations.of(context)!.beTheFirstHelper,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
-                              )
-                            else
-                              Column(
-                                children: helpers
-                                    .take(3)
-                                    .map(
-                                      (helper) => HelperCard(
-                                        helper: helper,
-                                        onTap: () {
-                                          context.push(
-                                            '/profile/${helper.user.id}',
-                                          );
-                                        },
-                                      ),
-                                    )
-                                    .toList(),
+                                child: Text(AppLocalizations.of(context)!.viewAll),
                               ),
                           ],
-                        );
-                      },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppLocalizations.of(context)!.nearbyMembersHelp,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (_viewModel.isLoadingHelpers)
+                          const AppLoader()
+                        else if (_viewModel.potentialHelpers.isEmpty)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.people_outline,
+                                  size: 48,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  AppLocalizations.of(context)!.noHelpersYet,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  SupabaseService().currentUserId == request.requesterId
+                                      ? AppLocalizations.of(context)!.checkBackLater
+                                      : AppLocalizations.of(context)!.beTheFirstHelper,
+                                  style: TextStyle(
+
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Column(
+                            children: _viewModel.potentialHelpers
+                                .take(3)
+                                .map(
+                                  (helper) => HelperCard(
+                                    helper: helper,
+                                    onTap: () {
+                                      context.push(
+                                        '/profile/${helper.user.id}',
+                                      );
+                                    },
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 32),
 
@@ -860,9 +827,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(height: 16),
                       if (_isLoadingApplications)
-                        const Center(
-                          child: CircularProgressIndicator.adaptive(),
-                        )
+                        const AppLoader()
                       else if (_applications.isEmpty)
                         Text(
                           AppLocalizations.of(context)!.interestShown,
@@ -1118,9 +1083,49 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       await SupabaseService().applyToRequest(widget.requestId);
       if (mounted) {
         setState(() => _applicationStatus = legacy.ApplicationStatus.pending);
-        ToastService.showSuccess(
-          context,
-          'Interest sent! Waiting for requester to accept.',
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SuccessAnimation(size: 120),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Interest Sent!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Waiting for requester to accept. You\'ll be notified once they respond.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      PrimaryButton(
+                        text: 'Got it',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -1299,22 +1304,45 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Row(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.check_circle, color: Colors.green),
-                SizedBox(width: 8),
-                Text('Success!'),
+                const SuccessAnimation(size: 120),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Task Completed!',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Points have been awarded to both of you. Thank you for making our community better!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 24),
+                      PrimaryButton(
+                        text: 'Amazing',
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-            content: const Text(
-              'Task completed. Points have been awarded to both of you.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
           ),
         );
       }
@@ -1471,6 +1499,75 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         );
       },
     );
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text('Delete Request'),
+        content: const Text(
+          'Are you sure you want to delete this request? This action cannot be undone.',
+        ),
+        actions: [
+          adaptiveAction(
+            context: context,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          adaptiveAction(
+            context: context,
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteRequest();
+            },
+            isDestructiveAction: true,
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget adaptiveAction({
+    required BuildContext context,
+    required VoidCallback onPressed,
+    required Widget child,
+    bool isDestructiveAction = false,
+  }) {
+    final ThemeData theme = Theme.of(context);
+    switch (theme.platform) {
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return TextButton(
+          onPressed: onPressed,
+          style: isDestructiveAction
+              ? TextButton.styleFrom(foregroundColor: Colors.red)
+              : null,
+          child: child,
+        );
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return CupertinoDialogAction(
+          onPressed: onPressed,
+          isDestructiveAction: isDestructiveAction,
+          child: child,
+        );
+    }
+  }
+
+  Future<void> _deleteRequest() async {
+    final error = await _viewModel.deleteRequest(widget.requestId);
+    if (!mounted) return;
+
+    if (error == null) {
+      context.pop();
+      ToastService.showSuccess(context, 'Request deleted successfully');
+    } else {
+      ToastService.showError(context, error);
+    }
   }
 
   void _showReportRequestDialog() {

@@ -5,7 +5,7 @@ import '../../../../theme/app_theme.dart';
 
 class _FlowNode {
   final String id;
-  final String emoji;
+  final IconData icon;
   final String title;
   final String subtitle;
   final Color color;
@@ -13,7 +13,7 @@ class _FlowNode {
 
   const _FlowNode({
     required this.id,
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
@@ -24,7 +24,7 @@ class _FlowNode {
 const _nodes = <_FlowNode>[
   _FlowNode(
     id: 'post',
-    emoji: '📝',
+    icon: Icons.edit_note_rounded,
     title: 'Post a Task',
     subtitle: 'User describes what they need — skill, location & urgency.',
     color: Color(0xFF4A90E2),
@@ -32,7 +32,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'match',
-    emoji: '🔍',
+    icon: Icons.search_rounded,
     title: 'Smart Matching',
     subtitle: 'CivicNet ranks nearby helpers by skill, rating & availability.',
     color: Color(0xFF7B61FF),
@@ -40,7 +40,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'notify',
-    emoji: '🔔',
+    icon: Icons.notifications_active_rounded,
     title: 'Helpers Notified',
     subtitle: 'Push notifications ping eligible helpers in real time.',
     color: Color(0xFFFF9500),
@@ -48,7 +48,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'offer',
-    emoji: '🤝',
+    icon: Icons.handshake_rounded,
     title: 'Offer & Accept',
     subtitle: 'A helper taps "I can help". Requester reviews & accepts.',
     color: Color(0xFF50E3C2),
@@ -56,7 +56,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'fulfill',
-    emoji: '✅',
+    icon: Icons.check_circle_rounded,
     title: 'Task Fulfilled',
     subtitle: 'Task is marked done. Both parties rate each other.',
     color: Color(0xFF34C759),
@@ -64,7 +64,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'reward',
-    emoji: '⭐',
+    icon: Icons.stars_rounded,
     title: 'Points & Trust',
     subtitle: 'Helper earns points & boosts their community trust score.',
     color: Color(0xFFFF6B6B),
@@ -190,7 +190,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
           margin: const EdgeInsets.only(right: 16),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
+            gradient: AppColors.primaryGradient(Theme.of(context).brightness),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -284,8 +284,8 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                 color: Colors.white.withValues(alpha: 0.15),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
               ),
-              child: const Center(
-                child: Text('🚀', style: TextStyle(fontSize: 26)),
+              child: Center(
+                child: Icon(Icons.rocket_launch_rounded, size: 28, color: Colors.white.withValues(alpha: 0.9)),
               ),
             ),
           ],
@@ -376,9 +376,10 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                       ],
                     ),
                     child: Center(
-                      child: Text(
-                        node.emoji,
-                        style: const TextStyle(fontSize: 22),
+                      child: Icon(
+                        node.icon,
+                        color: Colors.white,
+                        size: 26,
                       ),
                     ),
                   ),

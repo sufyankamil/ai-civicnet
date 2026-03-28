@@ -1,10 +1,47 @@
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../features/request/domain/entities/help_request_entity.dart';
 import '../../../../features/request/domain/entities/request_enums.dart';
+import '../../../../features/request/models/help_request.dart' as model;
+
+import '../../../../services/supabase_service.dart';
+import '../../../../components/request_card_skeleton.dart';
+import '../../../../features/home/presentation/widgets/opportunity_card.dart';
 import 'package:go_router/go_router.dart';
 
-class DiscoverScreen extends StatelessWidget {
+
+class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
+
+  @override
+  State<DiscoverScreen> createState() => _DiscoverScreenState();
+}
+
+class _DiscoverScreenState extends State<DiscoverScreen> {
+  List<model.HelpRequest>? _recommendedRequests;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecommendations();
+  }
+
+  Future<void> _loadRecommendations() async {
+    try {
+      final requests = await SupabaseService().getRecommendedHelpRequests();
+      if (mounted) {
+        setState(() {
+          _recommendedRequests = requests;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,53 +49,188 @@ class DiscoverScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.discoverTitle, style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.discoverTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () {
+              setState(() => _isLoading = true);
+              _loadRecommendations();
+            },
+          ),
+        ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.categories,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+        child: RefreshIndicator(
+          onRefresh: _loadRecommendations,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- True AI Recommendations ---
+                _buildSectionHeader(
+                  context, 
+                  title: 'True AI: For You', 
+                  subtitle: 'Semantic matches based on your skills'
                 ),
-              ),
-              const SizedBox(height: 16),
-              GridView.builder(
-                padding: EdgeInsets.zero,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 1.1,
+                const SizedBox(height: 12),
+                _buildAiRecommendations(),
+                
+                const SizedBox(height: 32),
+                
+                // --- Categories ---
+                _buildSectionHeader(context, title: l10n.categories),
+                const SizedBox(height: 16),
+                GridView.builder(
+                  padding: EdgeInsets.zero,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 1.1,
+                  ),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: HelpCategory.values.length,
+                  itemBuilder: (context, index) {
+                    final category = HelpCategory.values[index];
+                    return _buildCategoryCard(
+                      context,
+                      title: _getCategoryTitle(l10n, category),
+                      icon: _getCategoryIcon(category),
+                      color: _getCategoryColor(category),
+                      category: category,
+                    );
+                  },
                 ),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: HelpCategory.values.length,
-                itemBuilder: (context, index) {
-                  final category = HelpCategory.values[index];
-                  return _buildCategoryCard(
-                    context,
-                    title: _getCategoryTitle(l10n, category),
-                    icon: _getCategoryIcon(category),
-                    color: _getCategoryColor(category),
-                    category: category,
-                  );
-                },
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
+  Widget _buildSectionHeader(BuildContext context, {required String title, String? subtitle}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        if (subtitle != null)
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).hintColor,
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAiRecommendations() {
+    if (_isLoading) {
+      return SizedBox(
+        height: 280,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: 3,
+          separatorBuilder: (context, index) => const SizedBox(width: 12),
+          itemBuilder: (context, index) => const SizedBox(
+            width: 300,
+            child: RequestCardSkeleton(),
+          ),
+        ),
+      );
+    }
+
+    if (_recommendedRequests == null || _recommendedRequests!.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Theme.of(context).dividerColor),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.auto_awesome_outlined, size: 40, color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
+            const SizedBox(height: 12),
+            const Text(
+              'No semantic matches yet.',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const Text(
+              'Try updating your skills in profile!',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 280,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _recommendedRequests!.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final request = _recommendedRequests![index];
+          // Convert Model to Entity for the RequestCard
+          final entity = HelpRequestEntity(
+            id: request.id,
+            requesterId: request.requesterId,
+            requesterName: request.requesterName,
+            requesterAvatarUrl: request.requesterAvatarUrl,
+            title: request.title,
+            description: request.description,
+            category: request.category,
+            urgency: UrgencyLevel.values.firstWhere(
+              (e) => e.toString().split('.').last == request.urgency.toString().split('.').last,
+              orElse: () => UrgencyLevel.medium,
+            ),
+            postedAt: request.postedAt,
+            distance: request.distance,
+            aiRelevanceScore: request.aiRelevanceScore,
+            locationName: request.locationName,
+            lat: request.lat,
+            lng: request.lng,
+            status: RequestStatusEnum.values.firstWhere(
+              (e) => e.toString().split('.').last == request.status.toString().split('.').last,
+              orElse: () => RequestStatusEnum.open,
+            ),
+            helperId: request.helperId,
+          );
+          
+          return OpportunityCard(
+            request: entity,
+            width: 320,
+            margin: EdgeInsets.only(
+              left: index == 0 ? 0 : 8,
+              right: index == _recommendedRequests!.length - 1 ? 0 : 8,
+              bottom: 24, // Glow needs space
+            ),
+          );
+
+        },
+      ),
+    );
+  }
+
 
   Widget _buildCategoryCard(
     BuildContext context, {
@@ -99,7 +271,7 @@ class DiscoverScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
@@ -173,3 +345,4 @@ class DiscoverScreen extends StatelessWidget {
     }
   }
 }
+

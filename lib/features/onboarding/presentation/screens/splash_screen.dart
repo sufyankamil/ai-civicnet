@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../components/app_loader.dart';
+
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
@@ -32,9 +34,7 @@ class SplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 48),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
+            const AppLoader(size: 50, color: Colors.white, iconData: Icons.handshake_rounded),
           ],
         ),
       ),

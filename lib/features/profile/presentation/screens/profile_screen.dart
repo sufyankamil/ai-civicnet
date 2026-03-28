@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../components/app_loader.dart';
 import '../components/verification_request_dialog.dart';
+import '../components/impact_dashboard.dart';
+import '../components/milestone_gallery.dart';
+import '../components/impact_heatmap.dart';
+import '../components/privacy_settings.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
+import 'package:civic_net/features/profile/presentation/components/slide_fade_transition.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,7 +25,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
-  Future<User?>? _profileFuture;
+  Stream<User?>? _profileStream;
   Future<Map<String, dynamic>>? _eligibilityFuture;
   late final AnimationController _bannerController;
   late final Animation<double> _bannerAnim;
@@ -47,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _refreshProfile() {
     setState(() {
-      _profileFuture = SupabaseService().getCurrentUserProfile();
+      _profileStream = SupabaseService().getCurrentUserProfileStream();
       _eligibilityFuture = SupabaseService().checkVerificationEligibility();
     });
   }
@@ -66,11 +73,11 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Scaffold(
       backgroundColor:
           isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: FutureBuilder<User?>(
-        future: _profileFuture,
+      body: StreamBuilder<User?>(
+        stream: _profileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return const AppLoader();
           }
 
           if (snapshot.data == null) {
@@ -97,41 +104,145 @@ class _ProfileScreenState extends State<ProfileScreen>
           return RefreshIndicator(
             onRefresh: () async {
               _refreshProfile();
-              await _profileFuture;
             },
             child: CustomScrollView(
               controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 _buildHeroSliver(user, isDark),
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      _buildStatsRow(user, isDark),
-                      const SizedBox(height: 28),
-                      _buildKarmaIndicator(user, isDark),
-                      const SizedBox(height: 28),
-                      _buildBadgeGallery(user, isDark),
-                      const SizedBox(height: 28),
-                      _buildSkillsSection(user, isDark),
-                      const SizedBox(height: 28),
-                      _buildActionsSection(context, isDark, user),
-                      // Extra clearance so content scrolls above the bottom nav bar
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.bottom +
-                            kBottomNavigationBarHeight +
-                            24,
-                      ),
-                    ],
+                if (!user.isPublicProfile)
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildPrivatePlaceholder(isDark),
+                  )
+                else
+                  SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 100),
+                          child: ImpactDashboard(
+                            user: user,
+                            isDark: isDark,
+                            scrollController: _scrollController,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 250),
+                          child: MilestoneGallery(
+                            user: user,
+                            isDark: isDark,
+                            scrollController: _scrollController,
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 400),
+                          child: ImpactHeatmap(isDark: isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 550),
+                          child: _buildBadgeGallery(user, isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 700),
+                          child: _buildSkillsSection(user, isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 850),
+                          child: PrivacySettingsSection(isDark: isDark, user: user),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 1000),
+                          child: _buildActionsSection(context, isDark, user),
+                        ),
+                        // Extra clearance so content scrolls above the bottom nav bar
+                        SizedBox(
+                          height: MediaQuery.of(context).padding.bottom +
+                              kBottomNavigationBarHeight +
+                              24,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           );
         },
       ),
+    );
+  }
+
+  Widget _buildPrivatePlaceholder(bool isDark) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 100),
+          child: Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.surfaceDark.withValues(alpha: 0.5) : Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.lock_person_rounded,
+              size: 100,
+              color: AppColors.primaryLight.withValues(alpha: 0.3),
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 250),
+          child: const Text(
+            'This Profile is Private',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.1,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 400),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'User privacy settings are enabled. Only approved followers can view their community impact and achievements.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: isDark ? Colors.white54 : Colors.grey[600],
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 40),
+        SlideFadeTransition(
+          delay: const Duration(milliseconds: 550),
+          child: ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.person_add_rounded),
+            label: const Text('Request to View Impact'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryLight,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -259,6 +370,18 @@ class _ProfileScreenState extends State<ProfileScreen>
                     shape: BoxShape.circle,
                     color: Colors.white.withValues(alpha: 0.06),
                   ),
+                ),
+              ),
+              // Lottie Community Animation
+              Positioned(
+                right: -20,
+                bottom: -10,
+                child: Lottie.network(
+                  'https://lottie.host/6475659b-3127-4a0b-8d5b-21226c117b96/TirY3Y2W4x.json',
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                 ),
               ),
               // Name + email overlay at bottom
@@ -424,68 +547,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // ─── Stats Row ────────────────────────────────────────────────────────────
-
-  Widget _buildStatsRow(User user, bool isDark) {
-    final stats = [
-      ('🤝', AppLocalizations.of(context)!.helps, user.helpCount.toString()),
-      ('⭐', AppLocalizations.of(context)!.rating, user.rating.toStringAsFixed(1)),
-      ('🏆', AppLocalizations.of(context)!.points, user.points.toString()),
-    ];
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, isDark)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, isDark)),
-          const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, isDark)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-      String emoji, String label, String value, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primaryLight,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -722,14 +783,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: const Text('Got it'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          isDark: isDark,
-                        );
-                      }
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        isDark: isDark,
+                      );
+                    }
 
                       return _buildActionTile(
                         icon: Icons.verified_user_rounded,
@@ -758,6 +819,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   onTap: () => context.push('/commitment'),
                   isDark: isDark,
                 ),
+                _buildDivider(isDark),
                 _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
@@ -906,74 +968,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     return AppLocalizations.of(context)!.newMember;
   }
 
-  // ─── Karma Indicator ──────────────────────────────────────────────────
 
-  Widget _buildKarmaIndicator(User user, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                color: AppColors.primaryLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.psychology_rounded, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.civicKarma,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primaryLight,
-                    ),
-                  ),
-                  Text(
-                    user.karmaLevel,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.score,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                Text(
-                  user.points.toString(),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ─── Badge Gallery ──────────────────────────────────────────────────
 
@@ -998,7 +993,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(
                 height: 100,
-                child: Center(child: CircularProgressIndicator.adaptive()),
+                child: AppLoader(),
               );
             }
             final badges = snapshot.data ?? [];

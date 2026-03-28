@@ -65,3 +65,14 @@ class UpdateRequestStatusUseCase implements UseCase<void, UpdateRequestStatusPar
     return await repository.updateHelpRequestStatus(params.requestId, params.status);
   }
 }
+
+class DeleteHelpRequestUseCase implements UseCase<void, String> {
+  final RequestRepository repository;
+
+  DeleteHelpRequestUseCase(this.repository);
+
+  @override
+  Future<Either<Failure, void>> call(String requestId) async {
+    return await repository.deleteHelpRequest(requestId);
+  }
+}

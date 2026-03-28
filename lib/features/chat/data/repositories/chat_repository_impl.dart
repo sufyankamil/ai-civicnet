@@ -33,6 +33,8 @@ class ChatRepositoryImpl implements ChatRepository {
       type: model.type,
       createdAt: model.createdAt,
       isRead: model.isRead,
+      isDeleted: model.isDeleted,
+      replyToId: model.replyToId,
     );
   }
 
@@ -56,13 +58,24 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, void>> sendMessage(String conversationId, String content, {String type = 'text'}) async {
+  Future<Either<Failure, void>> sendMessage(String conversationId, String content, {String type = 'text', String? replyToId}) async {
     try {
-      await remoteDataSource.sendMessage(conversationId, content, type: type);
+      await remoteDataSource.sendMessage(conversationId, content, type: type, replyToId: replyToId);
       return const Right(null);
     } catch (e) {
       logger.e('Failed to send message', error: e);
       return Left(ServerFailure('Failed to send message: \$e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteMessage(String messageId) async {
+    try {
+      await remoteDataSource.deleteMessage(messageId);
+      return const Right(null);
+    } catch (e) {
+      logger.e('Failed to delete message', error: e);
+      return Left(ServerFailure('Failed to delete message: \$e'));
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../domain/usecases/chat_usecases.dart';
 import '../../domain/entities/chat_conversation_entity.dart';
 import '../../domain/entities/message_entity.dart';
+import '../../domain/usecases/delete_message_usecase.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../core/usecases/usecase.dart';
 
@@ -13,12 +14,14 @@ class ChatViewModel extends GetxController {
   final SendMessageUseCase sendMessageUseCase;
   final MarkConversationAsReadUseCase markConversationAsReadUseCase;
   final MarkAllConversationsAsReadUseCase markAllConversationsAsReadUseCase;
+  final DeleteMessageUseCase deleteMessageUseCase;
 
   ChatViewModel({
     required this.getConversationsUseCase,
     required this.sendMessageUseCase,
     required this.markConversationAsReadUseCase,
     required this.markAllConversationsAsReadUseCase,
+    required this.deleteMessageUseCase,
   });
 
   final RxList<ChatConversationEntity> _conversations = <ChatConversationEntity>[].obs;
@@ -26,9 +29,13 @@ class ChatViewModel extends GetxController {
   final RxBool _isSending = false.obs;
   RealtimeChannel? _messageSubscription;
   StreamSubscription? _authSubscription;
+  final RxList<MessageEntity> _messages = <MessageEntity>[].obs;
+  final Rx<MessageEntity?> _replyingTo = Rx<MessageEntity?>(null);
   String? _currentUserId;
 
   List<ChatConversationEntity> get conversations => _conversations;
+  List<MessageEntity> get messages => _messages;
+  MessageEntity? get replyingTo => _replyingTo.value;
   bool get isLoading => _isLoading.value;
   bool get isSending => _isSending.value;
 
@@ -102,6 +109,10 @@ class ChatViewModel extends GetxController {
     super.onClose();
   }
 
+  void setReplyingTo(MessageEntity? message) {
+    _replyingTo.value = message;
+  }
+
   Future<void> fetchConversations() async {
     _isLoading.value = true;
     final result = await getConversationsUseCase(const NoParams());
@@ -127,13 +138,36 @@ class ChatViewModel extends GetxController {
     if (content.isEmpty || _isSending.value) return false;
     
     _isSending.value = true;
-    final params = SendMessageParams(conversationId: conversationId, content: content, type: type);
+    
+    // Capture reply ID and clear it immediately for UI responsiveness
+    final replyToId = _replyingTo.value?.id;
+    _replyingTo.value = null; 
+    
+    final params = SendMessageParams(
+      conversationId: conversationId, 
+      content: content, 
+      type: type,
+      replyToId: replyToId,
+    );
     final result = await sendMessageUseCase(params);
     
     _isSending.value = false;
     return result.fold(
       (failure) {
         logger.e('Failed to send message: ${failure.message}');
+        return false;
+      },
+      (_) => true,
+    );
+  }
+
+  Future<bool> deleteMessage(String messageId) async {
+    final params = DeleteMessageParams(messageId: messageId);
+    final result = await deleteMessageUseCase(params);
+    
+    return result.fold(
+      (failure) {
+        logger.e('Failed to delete message: ${failure.message}');
         return false;
       },
       (_) => true,

@@ -95,7 +95,7 @@ class PollCard extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
               child: AppHaptic(
-                onTap: hasVoted ? null : () => onVote(option.id),
+                onTap: (hasVoted || poll.isExpired) ? null : () => onVote(option.id),
                 child: Container(
                   width: double.infinity,
                   height: 48,
@@ -160,7 +160,7 @@ class PollCard extends StatelessWidget {
           }),
           const SizedBox(height: 8),
           Text(
-            '${AppLocalizations.of(context)!.votesCountSummary(totalVotes)} • ${AppLocalizations.of(context)!.daysLeft(poll.endDate.difference(DateTime.now()).inDays)}',
+            '${AppLocalizations.of(context)!.votesCountSummary(totalVotes)} • ${poll.isExpired ? AppLocalizations.of(context)!.ended : AppLocalizations.of(context)!.daysLeft(poll.daysLeft)}',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[500],

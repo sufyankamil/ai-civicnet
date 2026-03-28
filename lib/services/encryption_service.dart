@@ -28,7 +28,7 @@ class EncryptionService {
   /// In debug mode (Option B), it logs the unencrypted format beautifully.
   String encryptPayload(String plainText) {
     if (kDebugMode) {
-      logger.i('🔒 [EncryptionService] Encrypting (Option B Visibility):\n$plainText');
+      logger.i('[ENCRYPT] [EncryptionService] Encrypting (Option B Visibility):\n$plainText');
     }
     
     // For CBC mode, we must prepend the IV to the encrypted text so we can decrypt it later.
@@ -39,7 +39,7 @@ class EncryptionService {
     final result = base64Encode(iv.bytes + encrypted.bytes);
     
     if (kDebugMode) {
-      logger.d('🔒 [EncryptionService] Generated Cipher: $result');
+      logger.d('[ENCRYPT] [EncryptionService] Generated Cipher: $result');
     }
     return result;
   }
@@ -58,10 +58,11 @@ class EncryptionService {
 
       final decrypted = _encrypter.decrypt(encrypted, iv: iv);
       
-      // Optionally log decrypted stuff or only on explicit errors
       return decrypted;
     } catch (e) {
-      // If decryption fails, it might be unencrypted legacy data. Just return it!
+      if (kDebugMode) {
+        logger.w('[ENCRYPT] Decryption failed for payload. It might be unencrypted legacy data or key mismatch. Error: $e');
+      }
       return encryptedBase64;
     }
   }

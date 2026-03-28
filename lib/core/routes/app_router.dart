@@ -44,6 +44,7 @@ import '../../features/events/presentation/screens/create_event_screen.dart';
 import '../../features/events/presentation/screens/event_detail_screen.dart';
 import '../../features/events/presentation/screens/location_picker_screen.dart';
 import '../../features/profile/presentation/screens/admin_panel_screen.dart';
+import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 String lastAppLocation = '/';
@@ -307,6 +308,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
             );
           },
         ),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/ai-assistant',
+        builder: (context, state) => const AiAssistantScreen(),
       ),
     ],
   );

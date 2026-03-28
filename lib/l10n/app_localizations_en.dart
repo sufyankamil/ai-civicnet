@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoverTitle => 'Discover';
 
   @override
+  String get communityTitle => 'Community';
+
+  @override
   String get eventsTitle => 'Events';
 
   @override
@@ -808,6 +811,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get beTheFirstHelper => 'Be the first to join the community!';
+
+  @override
+  String get checkBackLater => 'Check back later for community helpers!';
 
   @override
   String get communicateWithRequester =>

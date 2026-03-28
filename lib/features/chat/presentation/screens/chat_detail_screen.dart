@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 
 import '../../domain/entities/message_entity.dart';
 import '../viewmodels/chat_viewmodel.dart';
-import '../../../../services/supabase_service.dart'; // Temporarily for currentUserId if needed, or via viewmodel
+import '../../../../services/supabase_service.dart';
 
 import '../../../../services/toast_service.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -48,6 +48,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   // Blocking State
   bool _isBlockedByMe = false;
   List<String> _blockedUserIds = [];
+
+  MessageEntity? _selectedMessage;
 
   @override
   void initState() {
@@ -116,40 +118,278 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
+  Widget _buildReplyPreview() {
+    return Obx(() {
+      final replyingTo = _viewModel.replyingTo;
+      if (replyingTo == null) return const SizedBox.shrink();
+
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          border: const Border(top: BorderSide(color: Colors.grey, width: 0.2)),
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Reply to ${replyingTo.senderId == SupabaseService().currentUserId ? 'yourself' : 'User'}', // Ideally fetching name
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                    Text(
+                      replyingTo.isDeleted ? 'This message was deleted' : replyingTo.content,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, size: 20),
+                onPressed: () => _viewModel.setReplyingTo(null),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildReplyHeader(MessageEntity message, List<MessageEntity> allMessages) {
+    if (message.replyToId == null) return const SizedBox.shrink();
+
+    final repliedMessage = allMessages.firstWhereOrNull((m) => m.id == message.replyToId);
+    
+    final isMe = message.senderId == SupabaseService().currentUserId;
+    
+    if (repliedMessage == null) {
+      // Fallback if the original message isn't in memory
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(
+              color: isMe ? Colors.white : AppColors.primaryLight,
+              width: 4,
+            ),
+          ),
+        ),
+        child: Text(
+          'Original message not available',
+          style: TextStyle(
+            fontSize: 12,
+            color: isMe ? Colors.white70 : Colors.black54,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    final bool repliedIsMe = repliedMessage.senderId == SupabaseService().currentUserId;
+
+    return GestureDetector(
+      onTap: () => _scrollToMessage(repliedMessage.id),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(
+              color: isMe ? Colors.white : AppColors.primaryLight,
+              width: 4,
+            ),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              repliedIsMe ? 'You' : 'User',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+                color: isMe ? Colors.white : AppColors.primaryLight,
+              ),
+            ),
+            Text(
+              repliedMessage.isDeleted ? 'This message was deleted' : repliedMessage.content,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 12,
+                color: isMe ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _scrollToMessage(String messageId) {
+    // Advanced logic required for actual scrolling in ListView.builder
+    // For now this serves as a skeleton for tap-to-scroll.
+  }
+
+  Widget _buildMessageInput() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(
+                  _isListening ? Icons.mic : Icons.mic_none,
+                  color: _isListening ? Colors.red : Colors.grey,
+                ),
+                onPressed: _listen,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _messageController,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: _isListening ? 'Listening...' : 'Type a message...',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: const BorderSide(color: AppColors.primaryLight, width: 1.5),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
+                    ),
+                    filled: true,
+                    fillColor: _isListening
+                        ? Colors.red.withValues(alpha: 0.1)
+                        : Theme.of(context).cardColor,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
+                  onSubmitted: (_) => _sendMessage(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Obx(() => IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: _viewModel.isSending 
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
+                  : const Icon(Icons.send, color: AppColors.primaryLight),
+                onPressed: _viewModel.isSending ? null : _sendMessage,
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Current user can be abstracted, assuming SupabaseService().currentUserId for convenience
     final currentUserId = SupabaseService().currentUserId;
 
     return Scaffold(
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: _showBlockOptions,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.grey[200],
-                backgroundImage: (widget.otherUserAvatar != null && widget.otherUserAvatar!.isNotEmpty) 
-                    ? NetworkImage(widget.otherUserAvatar!) 
-                    : null,
-                child: (widget.otherUserAvatar == null || widget.otherUserAvatar!.isEmpty) 
-                    ? const Icon(Icons.person, size: 16, color: Colors.white) 
-                    : null,
+      appBar: _selectedMessage != null
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => setState(() => _selectedMessage = null),
               ),
-              const SizedBox(width: 8),
-              Text(widget.otherUserName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_drop_down, size: 20),
-            ],
-          ),
-        ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 1,
-        iconTheme: IconThemeData(color: Theme.of(context).textTheme.bodyLarge?.color),
-      ),
-      body: Column(
+              title: const Text('1', style: TextStyle(fontSize: 20)),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.reply),
+                  onPressed: () {
+                    _viewModel.setReplyingTo(_selectedMessage!);
+                    setState(() => _selectedMessage = null);
+                  },
+                ),
+                if (_selectedMessage!.senderId == currentUserId && DateTime.now().difference(_selectedMessage!.createdAt).inMinutes < 10 && !_selectedMessage!.isDeleted)
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      _confirmDeleteMessage(_selectedMessage!);
+                      setState(() => _selectedMessage = null);
+                    },
+                  ),
+                IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+              ],
+              backgroundColor: Colors.teal[800], // Match WhatsApp Android selection color
+              iconTheme: const IconThemeData(color: Colors.white),
+              titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
+            )
+          : AppBar(
+              title: GestureDetector(
+                onTap: _showBlockOptions,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: (widget.otherUserAvatar != null && widget.otherUserAvatar!.isNotEmpty) 
+                          ? NetworkImage(widget.otherUserAvatar!) 
+                          : null,
+                      child: (widget.otherUserAvatar == null || widget.otherUserAvatar!.isEmpty) 
+                          ? const Icon(Icons.person, size: 16, color: Colors.white) 
+                          : null,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(widget.otherUserName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.arrow_drop_down, size: 20),
+                  ],
+                ),
+              ),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 1,
+              iconTheme: IconThemeData(color: Theme.of(context).textTheme.bodyLarge?.color),
+            ),
+      body: GestureDetector(
+        onTap: () {
+          if (_selectedMessage != null) setState(() => _selectedMessage = null);
+        },
+        child: Column(
         children: [
           if (_showSafetyWarning)
             Container(
@@ -162,7 +402,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                    const SizedBox(width: 8),
                    Expanded(
                      child: Text(
-                       'Please respect community guidelines. Do not share personal details. Report users if needed.',
+                       'Tip: Swipe right on any message to reply, or long-press your message within 10 mins to delete it.',
                        style: TextStyle(fontSize: 12, color: Colors.black87),
                      ),
                    ),
@@ -188,47 +428,45 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   return Center(child: Text('No messages yet', style: TextStyle(color: Colors.grey)));
                 }
 
-                final messages = snapshot.data!.where((m) => !_blockedUserIds.contains(m.senderId)).toList();
-                
-                if (messages.isEmpty) {
-                   return Center(child: Text(AppLocalizations.of(context)!.noMessagesYet, style: TextStyle(color: Colors.grey)));
-                }
+                 final messages = snapshot.data!.where((m) => !_blockedUserIds.contains(m.senderId)).toList();
+                 
+                 if (messages.isEmpty) {
+                    return Center(child: Text(AppLocalizations.of(context)!.noMessagesYet, style: TextStyle(color: Colors.grey)));
+                 }
 
-                // Only auto-scroll when a new message actually arrives
-                if (messages.length > _previousMessageCount) {
-                  _previousMessageCount = messages.length;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOut,
-                      );
-                    }
-                    // Mark any newly arrived messages as read
-                    _viewModel.markConversationAsRead(widget.conversationId);
-                  });
-                }
+                 // Use a reversed list so newest messages are at bottom and auto-scrolled
+                 final displayMessages = messages.reversed.toList();
 
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    final isMe = message.senderId == currentUserId;
-                    
-                    bool showDateHeader = false;
-                    if (index == 0) {
-                      showDateHeader = true;
-                    } else {
-                      final prevMessage = messages[index - 1];
-                      final prevDate = DateTime(prevMessage.createdAt.year, prevMessage.createdAt.month, prevMessage.createdAt.day);
-                      final currDate = DateTime(message.createdAt.year, message.createdAt.month, message.createdAt.day);
-                      if (currDate.isAfter(prevDate)) {
-                        showDateHeader = true;
-                      }
-                    }
+                 // Mark conversation as read
+                 if (messages.length > _previousMessageCount) {
+                   _previousMessageCount = messages.length;
+                   WidgetsBinding.instance.addPostFrameCallback((_) {
+                     _viewModel.markConversationAsRead(widget.conversationId);
+                   });
+                 }
+
+                 return ListView.builder(
+                   controller: _scrollController,
+                   padding: const EdgeInsets.all(16),
+                   reverse: true, // Start from the bottom
+                   itemCount: displayMessages.length,
+                   itemBuilder: (context, index) {
+                     final message = displayMessages[index];
+                     final isMe = message.senderId == currentUserId;
+                     
+                     bool showDateHeader = false;
+                     // In a reversed list, the oldest message has the highest index
+                     if (index == displayMessages.length - 1) {
+                       showDateHeader = true;
+                     } else {
+                       // Compare with the next older message (higher index)
+                       final nextOlderMessage = displayMessages[index + 1];
+                       final olderDate = DateTime(nextOlderMessage.createdAt.year, nextOlderMessage.createdAt.month, nextOlderMessage.createdAt.day);
+                       final currDate = DateTime(message.createdAt.year, message.createdAt.month, message.createdAt.day);
+                       if (currDate.isAfter(olderDate)) {
+                         showDateHeader = true;
+                       }
+                     }
 
                     return Column(
                       key: ValueKey(message.id),
@@ -252,43 +490,60 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           ),
                         Align(
                           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-                            decoration: BoxDecoration(
-                              color: isMe ? AppColors.primaryLight : Colors.grey[200],
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(16),
-                                topRight: const Radius.circular(16),
-                                bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
-                                bottomRight: isMe ? Radius.zero : const Radius.circular(16),
-                              ),
+                          child: Dismissible(
+                            key: ValueKey('reply_${message.id}'),
+                            direction: DismissDirection.startToEnd, // Swipe Right to reply
+                            confirmDismiss: (direction) async {
+                              _viewModel.setReplyingTo(message);
+                              return false; // Don't actually dismiss the element
+                            },
+                            background: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.only(left: 16),
+                              child: Icon(Icons.reply, color: AppColors.primaryLight),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  message.content,
-                                  style: TextStyle(
-                                    color: isMe ? Colors.white : Colors.black87,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  timeago.format(message.createdAt, locale: 'en_short'),
-                                  style: TextStyle(
-                                    color: isMe ? Colors.white70 : Colors.grey[600],
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                            child: message.isDeleted 
+                                ? _buildBubbleContent(message, isMe, displayMessages)
+                                : Theme.of(context).platform == TargetPlatform.iOS
+                                    ? CupertinoContextMenu(
+                                        actions: [
+                                          CupertinoContextMenuAction(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              _viewModel.setReplyingTo(message);
+                                            },
+                                            trailingIcon: CupertinoIcons.reply,
+                                            child: const Text('Reply'),
+                                          ),
+                                          if (isMe && DateTime.now().difference(message.createdAt).inMinutes < 10)
+                                            CupertinoContextMenuAction(
+                                              isDestructiveAction: true,
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                _confirmDeleteMessage(message);
+                                              },
+                                              trailingIcon: CupertinoIcons.delete,
+                                              child: const Text('Delete'),
+                                            ),
+                                        ],
+                                        child: Material(
+                                          color: Colors.transparent,
+                                          child: _buildBubbleContent(message, isMe, displayMessages),
+                                        ),
+                                      )
+                                    : GestureDetector(
+                                        onLongPress: () => setState(() => _selectedMessage = message),
+                                        child: Container(
+                                          color: _selectedMessage?.id == message.id 
+                                              ? AppColors.primaryLight.withValues(alpha: 0.2)
+                                              : Colors.transparent,
+                                          child: _buildBubbleContent(message, isMe, displayMessages),
+                                        ),
+                                      ),
                         ),
-                      ],
-                    );
+                      ),
+                    ],
+                  );
                   },
                 );
               },
@@ -313,73 +568,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             )
           else
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -4))],
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(
-                          _isListening ? Icons.mic : Icons.mic_none,
-                          color: _isListening ? Colors.red : Colors.grey,
-                        ),
-                        onPressed: _listen,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextField(
-                          controller: _messageController,
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: _isListening ? 'Listening...' : 'Type a message...',
-                            hintStyle: TextStyle(color: Colors.grey),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24),
-                              borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24),
-                              borderSide: const BorderSide(color: AppColors.primaryLight, width: 1.5),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24),
-                              borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3), width: 1),
-                            ),
-                            filled: true,
-                            fillColor: _isListening
-                                ? Colors.red.withValues(alpha: 0.1)
-                                : Theme.of(context).cardColor,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          ),
-                          textCapitalization: TextCapitalization.sentences,
-                          onSubmitted: (_) => _sendMessage(),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Obx(() => IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: _viewModel.isSending 
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
-                          : const Icon(Icons.send, color: AppColors.primaryLight),
-                        onPressed: _viewModel.isSending ? null : _sendMessage,
-                      )),
-                    ],
-                  ),
-                ),
-              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildReplyPreview(),
+                _buildMessageInput(),
+              ],
             ),
         ],
+      ),
       ),
     );
   }
@@ -580,6 +777,108 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       if (mounted) ToastService.showInfo(context, 'User reported and blocked');
     } else {
       if (mounted) ToastService.showError(context, 'Failed to report user.');
+    }
+  }
+
+  Widget _buildBubbleContent(MessageEntity message, bool isMe, List<MessageEntity> displayMessages) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+      decoration: BoxDecoration(
+        color: message.isDeleted 
+            ? Colors.grey[100]
+            : (isMe ? AppColors.primaryLight : Colors.grey[200]),
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(16),
+          topRight: const Radius.circular(16),
+          bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
+          bottomRight: isMe ? Radius.zero : const Radius.circular(16),
+        ),
+        border: message.isDeleted ? Border.all(color: Colors.grey[300]!) : null,
+      ),
+      child: Column(
+        crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          if (message.replyToId != null)
+            _buildReplyHeader(message, displayMessages),
+          if (message.isDeleted)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.block, size: 14, color: Colors.grey[500]),
+                const SizedBox(width: 4),
+                Text(
+                  'This message was deleted',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            )
+          else
+            Text(
+              message.content,
+              style: TextStyle(
+                color: isMe ? Colors.white : Colors.black87,
+                fontSize: 15,
+              ),
+            ),
+          const SizedBox(height: 4),
+          Text(
+            timeago.format(message.createdAt, locale: 'en_short'),
+            style: TextStyle(
+              color: message.isDeleted 
+                  ? Colors.grey[400]
+                  : (isMe ? Colors.white70 : Colors.grey[600]),
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteMessage(MessageEntity message) {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text('Delete message?'),
+        content: const Text('This message will be deleted for everyone in this chat.'),
+        actions: [
+          if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+            CupertinoDialogAction(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessage(message);
+              }, 
+              child: const Text('Delete'),
+            ),
+          ] else ...[
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessage(message);
+              }, 
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ]
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteMessage(MessageEntity message) async {
+    final success = await _viewModel.deleteMessage(message.id);
+    if (success) {
+      if (mounted) ToastService.showSuccess(context, 'Message deleted');
+    } else {
+      if (mounted) ToastService.showError(context, 'Failed to delete message');
     }
   }
 }

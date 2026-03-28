@@ -38,11 +38,14 @@ android {
     val mapsApiKey = localProperties.getProperty("googleMapsApiKey") ?: ""
 
     signingConfigs {
-        create("release") {
-            storeFile = file(keystoreProperties["storeFile"] as String)
-            storePassword = keystoreProperties["storePassword"] as String
-            keyAlias = keystoreProperties["keyAlias"] as String
-            keyPassword = keystoreProperties["keyPassword"] as String
+        val storeFileProp = keystoreProperties["storeFile"] as? String
+        if (storeFileProp != null) {
+            create("release") {
+                storeFile = file(storeFileProp)
+                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+            }
         }
     }
 
@@ -57,7 +60,9 @@ android {
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (signingConfigs.findByName("release") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

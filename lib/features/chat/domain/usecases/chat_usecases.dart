@@ -18,8 +18,14 @@ class SendMessageParams {
   final String conversationId;
   final String content;
   final String type;
+  final String? replyToId;
 
-  SendMessageParams({required this.conversationId, required this.content, this.type = 'text'});
+  SendMessageParams({
+    required this.conversationId, 
+    required this.content, 
+    this.type = 'text',
+    this.replyToId,
+  });
 }
 
 class SendMessageUseCase implements UseCase<void, SendMessageParams> {
@@ -28,7 +34,12 @@ class SendMessageUseCase implements UseCase<void, SendMessageParams> {
 
   @override
   Future<Either<Failure, void>> call(SendMessageParams params) {
-    return repository.sendMessage(params.conversationId, params.content, type: params.type);
+    return repository.sendMessage(
+      params.conversationId, 
+      params.content, 
+      type: params.type, 
+      replyToId: params.replyToId,
+    );
   }
 }
 

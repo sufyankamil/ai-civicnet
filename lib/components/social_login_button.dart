@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_loader.dart';
 
 class SocialLoginButton extends StatelessWidget {
   final Widget icon;
@@ -47,14 +48,10 @@ class SocialLoginButton extends StatelessWidget {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: isLoading
-                    ? SizedBox(
-                        key: const ValueKey('spinner'),
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.grey.shade400,
-                        ),
+                    ? const AppLoader(
+                        key: ValueKey('spinner'),
+                        size: 20,
+                        centered: false,
                       )
                     : SizedBox(
                         key: const ValueKey('icon'),

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/models.dart';
 import '../../../../components/event_card.dart';
+import '../../../../components/event_card_skeleton.dart';
 import '../viewmodels/events_viewmodel.dart';
 
 class EventsListScreen extends StatelessWidget {
@@ -90,7 +91,11 @@ class EventsListScreen extends StatelessWidget {
         final currentEvents = upcoming ? viewModel.upcomingEvents : viewModel.pastEvents;
 
         if (viewModel.isLoading && currentEvents.isEmpty) {
-          return const Center(child: CircularProgressIndicator.adaptive());
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: 5,
+            itemBuilder: (context, index) => const EventCardSkeleton(),
+          );
         }
 
         if (currentEvents.isEmpty) {

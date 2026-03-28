@@ -9,6 +9,7 @@ import '../../domain/entities/chat_conversation_entity.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/supabase_service.dart';
+import '../../../../components/chat_card_skeleton.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -171,7 +172,11 @@ class _ChatScreenState extends State<ChatScreen> {
             Expanded(
               child: Obx(() {
                 if (viewModel.isLoading && viewModel.conversations.isEmpty) {
-                  return const Center(child: CircularProgressIndicator.adaptive());
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    itemCount: 8,
+                    itemBuilder: (context, index) => const ChatCardSkeleton(),
+                  );
                 }
 
                 var filteredChats = viewModel.conversations;
@@ -312,7 +317,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               margin: const EdgeInsets.only(left: 8),
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                gradient: AppColors.primaryGradient,
+                                gradient: AppColors.primaryGradient(isDark ? Brightness.dark : Brightness.light),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(

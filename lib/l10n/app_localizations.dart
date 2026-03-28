@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Discover'**
   String get discoverTitle;
 
+  /// No description provided for @communityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get communityTitle;
+
   /// No description provided for @eventsTitle.
   ///
   /// In en, this message translates to:
@@ -1597,6 +1603,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Be the first to join the community!'**
   String get beTheFirstHelper;
+
+  /// No description provided for @checkBackLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for community helpers!'**
+  String get checkBackLater;
 
   /// No description provided for @communicateWithRequester.
   ///
