@@ -5,8 +5,8 @@ import '../../../../features/request/domain/entities/request_enums.dart';
 import '../../../../features/request/models/help_request.dart' as model;
 
 import '../../../../services/supabase_service.dart';
-import '../../../../components/request_card.dart';
 import '../../../../components/request_card_skeleton.dart';
+import '../../../../features/home/presentation/widgets/opportunity_card.dart';
 import 'package:go_router/go_router.dart';
 
 
@@ -142,7 +142,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget _buildAiRecommendations() {
     if (_isLoading) {
       return SizedBox(
-        height: 220,
+        height: 280,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: 3,
@@ -183,7 +183,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
 
     return SizedBox(
-      height: 220,
+      height: 280,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _recommendedRequests!.length,
@@ -216,9 +216,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             helperId: request.helperId,
           );
           
-          return SizedBox(
-            width: 300,
-            child: RequestCard(request: entity),
+          return OpportunityCard(
+            request: entity,
+            width: 320,
+            margin: EdgeInsets.only(
+              left: index == 0 ? 0 : 8,
+              right: index == _recommendedRequests!.length - 1 ? 0 : 8,
+              bottom: 24, // Glow needs space
+            ),
           );
 
         },

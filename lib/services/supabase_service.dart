@@ -677,6 +677,8 @@ class SupabaseService {
   Future<List<HelpRequest>> getRecommendedHelpRequests() async {
     final user = await getCurrentUserProfile();
     if (user == null) return [];
+    
+    logger.d('AI MATCH DEBUG: Checking recommendations for User "${user.name}" with Skills: ${user.skills}');
 
     try {
       final profileEmbedding = await AiService().generateProfileEmbedding(
@@ -689,7 +691,7 @@ class SupabaseService {
 
       final response = await _client.rpc('match_requests_v3', params: {
         'query_embedding': profileEmbedding,
-        'match_threshold': 0.6,
+        'match_threshold': 0.3,
         // Restored to a more realistic similarity threshold
         'match_count': 10,
         'excluded_id': user.id,

@@ -18,6 +18,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get discoverTitle => 'खोजें';
 
   @override
+  String get communityTitle => 'समुदाय';
+
+  @override
   String get eventsTitle => 'कार्यक्रम';
 
   @override

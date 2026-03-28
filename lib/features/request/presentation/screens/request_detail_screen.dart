@@ -189,6 +189,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       onPressed: () => _showReportRequestDialog(),
                     ),
                   ),
+                if (SupabaseService().currentUserId != null &&
+                    _viewModel.currentRequest != null &&
+                    SupabaseService().currentUserId ==
+                        _viewModel.currentRequest!.requesterId)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.white),
+                      onPressed: () => _showDeleteConfirmationDialog(),
+                    ),
+                  ),
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: Stack(
@@ -1484,6 +1499,75 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         );
       },
     );
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text('Delete Request'),
+        content: const Text(
+          'Are you sure you want to delete this request? This action cannot be undone.',
+        ),
+        actions: [
+          adaptiveAction(
+            context: context,
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          adaptiveAction(
+            context: context,
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteRequest();
+            },
+            isDestructiveAction: true,
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget adaptiveAction({
+    required BuildContext context,
+    required VoidCallback onPressed,
+    required Widget child,
+    bool isDestructiveAction = false,
+  }) {
+    final ThemeData theme = Theme.of(context);
+    switch (theme.platform) {
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return TextButton(
+          onPressed: onPressed,
+          style: isDestructiveAction
+              ? TextButton.styleFrom(foregroundColor: Colors.red)
+              : null,
+          child: child,
+        );
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return CupertinoDialogAction(
+          onPressed: onPressed,
+          isDestructiveAction: isDestructiveAction,
+          child: child,
+        );
+    }
+  }
+
+  Future<void> _deleteRequest() async {
+    final error = await _viewModel.deleteRequest(widget.requestId);
+    if (!mounted) return;
+
+    if (error == null) {
+      context.pop();
+      ToastService.showSuccess(context, 'Request deleted successfully');
+    } else {
+      ToastService.showError(context, error);
+    }
   }
 
   void _showReportRequestDialog() {

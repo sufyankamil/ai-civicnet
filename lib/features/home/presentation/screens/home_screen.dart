@@ -14,6 +14,7 @@ import '../../../../components/request_card_skeleton.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/poll_card.dart';
 import '../widgets/guild_card.dart';
+import '../widgets/opportunity_card.dart';
 import '../../../news/presentation/components/news_section.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../models/models.dart';
@@ -348,15 +349,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 isScrollable: false,
                 labelColor: Theme.of(context).primaryColor,
                 unselectedLabelColor: Colors.grey,
-                indicatorWeight: 3,
+                indicatorWeight: 4,
                 indicatorSize: TabBarIndicatorSize.label,
-                indicatorPadding: const EdgeInsets.symmetric(horizontal: 16),
                 indicatorColor: Theme.of(context).primaryColor,
                 dividerColor: Colors.transparent,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 tabs: [
                   Tab(text: AppLocalizations.of(context)!.homeTitle),
-                  Tab(text: AppLocalizations.of(context)!.discoverTitle),
+                  Tab(text: AppLocalizations.of(context)!.communityTitle),
                 ],
               ),
             ),
@@ -454,83 +454,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Widget _buildRequestsTab(AppLocalizations l10n) {
     return Column(
       children: [
-        // Polls Section (Active Polls)
+        // 2. AI Opportunity Card (Proactive Matching)
         Obx(() {
-          if (_viewModel.polls.isEmpty) return const SizedBox.shrink();
-          
-          // Show a summary card that opens a bottom sheet for all active polls
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-            child: InkWell(
-              onTap: () => _showPollsBottomSheet(context, l10n),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryLight,
-                      AppColors.primaryLight.withValues(alpha: 0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primaryLight.withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.poll_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.activePolls,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            l10n.pollsCount(_viewModel.polls.length),
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
+          final topMatch = _viewModel.topRecommendation;
+          // Only show if similarity is high enough for a "Premium" match feel (e.g. > 0.6)
+          if (topMatch == null || topMatch.aiRelevanceScore < 0.6) {
+            return const SizedBox.shrink();
+          }
+          return OpportunityCard(request: topMatch);
         }),
 
         // Guilds Row (Discovery)
@@ -610,7 +541,65 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildNewsTab(AppLocalizations l10n) {
-    return NewsSection(searchQuery: _newsSearchQuery);
+    return Column(
+      children: [
+        // Polls Moved to Discover tab
+        Obx(() {
+          if (_viewModel.polls.isEmpty) return const SizedBox.shrink();
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: InkWell(
+              onTap: () => _showPollsBottomSheet(context, l10n),
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryLight,
+                      AppColors.primaryLight.withValues(alpha: 0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.poll_rounded, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.activePolls,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          Text(
+                            l10n.pollsCount(_viewModel.polls.length),
+                            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+        Expanded(child: NewsSection(searchQuery: _newsSearchQuery)),
+      ],
+    );
   }
 
   Widget _buildSafetyBanner(AppLocalizations l10n) {

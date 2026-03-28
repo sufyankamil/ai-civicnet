@@ -26,9 +26,8 @@ class AiService {
 
     // Chat model for RAG and interaction
     _chatModel = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-flash-latest',
       apiKey: apiKey,
-      requestOptions: const RequestOptions(apiVersion: 'v1'),
     );
 
     _isInitialized = true;
@@ -126,6 +125,36 @@ class AiService {
     } else {
       final response = await _chatModel!.generateContent(content);
       return response.text ?? 'I apologize, but I am unable to generate a response at the moment.';
+    }
+  }
+
+  /// Categorizes a help request based on its title and description.
+  Future<String?> categorizeRequest(String title, String description) async {
+    if (!_isInitialized || _chatModel == null) initialize();
+
+    final systemPrompt = 'You are an AI assistant for a local community networking app (CivicNet). '
+        'Your task is to categorize a user\'s help request into exactly one of the following categories:\n'
+        '- ERRANDS\n'
+        '- TECHSUPPORT\n'
+        '- EMERGENCY\n'
+        '- EDUCATION\n'
+        '- TRANSPORT\n'
+        '- HOUSEHOLD\n'
+        '- HEALTH\n'
+        '- OTHER\n\n'
+        'Analyze the title and description of the request and respond ONLY with the exact category name in all caps. '
+        'Do not provide any explanation or extra text.';
+
+    final prompt = '$systemPrompt\n\n'
+        'Title: $title\n'
+        'Description: $description';
+
+    try {
+      final response = await _chatModel!.generateContent([Content.text(prompt)]);
+      return response.text?.trim().toUpperCase();
+    } catch (e) {
+      logger.e('AiService: Error categorizing request', error: e);
+      return null;
     }
   }
 }

@@ -11,12 +11,14 @@ class RequestViewModel extends GetxController {
   final GetHelpRequestUseCase getHelpRequestUseCase;
   final GetMyHelpRequestsUseCase getMyHelpRequestsUseCase;
   final UpdateRequestStatusUseCase updateRequestStatusUseCase;
+  final DeleteHelpRequestUseCase deleteHelpRequestUseCase;
 
   RequestViewModel({
     required this.createHelpRequestUseCase,
     required this.getHelpRequestUseCase,
     required this.getMyHelpRequestsUseCase,
     required this.updateRequestStatusUseCase,
+    required this.deleteHelpRequestUseCase,
   });
 
   final RxBool _isLoading = false.obs;
@@ -126,6 +128,20 @@ class RequestViewModel extends GetxController {
     return result.fold(
       (failure) => failure.message,
       (_) => null,
+    );
+  }
+
+  Future<String?> deleteRequest(String id) async {
+    _isLoading.value = true;
+    final result = await deleteHelpRequestUseCase(id);
+    _isLoading.value = false;
+
+    return result.fold(
+      (failure) => failure.message,
+      (_) {
+        _currentRequest.value = null;
+        return null;
+      },
     );
   }
 }

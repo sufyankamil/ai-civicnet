@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoverTitle => 'Discover';
 
   @override
+  String get communityTitle => 'Community';
+
+  @override
   String get eventsTitle => 'Events';
 
   @override

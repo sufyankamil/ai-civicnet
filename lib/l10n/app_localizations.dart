@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Discover'**
   String get discoverTitle;
 
+  /// No description provided for @communityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get communityTitle;
+
   /// No description provided for @eventsTitle.
   ///
   /// In en, this message translates to:

@@ -10,6 +10,7 @@ import '../../domain/entities/request_enums.dart';
 import '../viewmodels/request_viewmodel.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/logger_service.dart';
+import '../../../../services/ai_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CreateRequestScreen extends StatefulWidget {
@@ -63,9 +64,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   }
 
   void _detectCategory() async {
-    final text = '${_titleController.text} ${_descController.text}'
-        .toLowerCase();
-    if (text.length < 5) {
+    final title = _titleController.text.trim();
+    final description = _descController.text.trim();
+
+    if (title.length + description.length < 10) {
       ToastService.showInfo(
         context,
         'Please enter more details to auto-categorize.',
@@ -74,27 +76,20 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     }
 
     setState(() => _isCategorizing = true);
-    await Future.delayed(const Duration(milliseconds: 1500));
+
+    final aiService = AiService();
+    final categoryString = await aiService.categorizeRequest(title, description);
 
     if (!mounted) return;
 
     HelpCategory? detected;
-    if (text.contains('leak') ||
-        text.contains('water') ||
-        text.contains('fire')) {
-      detected = HelpCategory.emergency;
-    } else if (text.contains('computer') ||
-        text.contains('wifi') ||
-        text.contains('phone')) {
-      detected = HelpCategory.techSupport;
-    } else if (text.contains('math') ||
-        text.contains('teach') ||
-        text.contains('tutor')) {
-      detected = HelpCategory.education;
-    } else if (text.contains('clean') ||
-        text.contains('move') ||
-        text.contains('fix')) {
-      detected = HelpCategory.household;
+    if (categoryString != null) {
+      for (var cat in HelpCategory.values) {
+        if (cat.name.toUpperCase() == categoryString) {
+          detected = cat;
+          break;
+        }
+      }
     }
 
     if (detected != null) {

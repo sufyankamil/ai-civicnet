@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:get/get.dart';
 import '../../../request/domain/entities/help_request_entity.dart';
 import '../../../request/domain/usecases/request_usecases.dart';
+import '../../../request/domain/entities/request_enums.dart' as domain;
 import '../../../../core/usecases/usecase.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../models/models.dart';
+import '../../../../services/logger_service.dart';
 
 class HomeViewModel extends GetxController {
   final GetHelpRequestsUseCase getHelpRequestsUseCase;
@@ -16,6 +18,7 @@ class HomeViewModel extends GetxController {
   final RxList<Poll> _polls = <Poll>[].obs;
   final RxList<Guild> _guilds = <Guild>[].obs;
   final RxBool _isLoading = false.obs;
+  final Rxn<HelpRequestEntity> _topRecommendation = Rxn<HelpRequestEntity>();
   final RxString _searchQuery = ''.obs;
   final RxString _selectedFilter = 'All'.obs;
   
@@ -23,6 +26,7 @@ class HomeViewModel extends GetxController {
   bool _isDisposed = false;
 
   List<HelpRequestEntity> get filteredRequests => _filteredRequests;
+  HelpRequestEntity? get topRecommendation => _topRecommendation.value;
   List<Poll> get polls => _polls;
   List<Guild> get guilds => _guilds;
   bool get isLoading => _isLoading.value;
@@ -34,7 +38,7 @@ class HomeViewModel extends GetxController {
     super.onInit();
     // Subscribe to requests changes
     getHelpRequestsUseCase.repository.subscribeToHelpRequests(_onRequestsUpdated);
-    fetchRequests();
+    refreshHome();
     fetchPolls();
     fetchGuilds();
     
@@ -44,6 +48,46 @@ class HomeViewModel extends GetxController {
         _checkWarnings();
       }
     });
+  }
+
+  Future<void> fetchTopRecommendation() async {
+    try {
+      final recommendations = await SupabaseService().getRecommendedHelpRequests();
+      if (recommendations.isNotEmpty) {
+        // Recommendations are sorted by similarity in the RPC
+        final first = recommendations.first;
+        logger.d('AI MATCH DEBUG: Found "${first.title}" with Relevance Score: ${first.aiRelevanceScore}');
+        
+        _topRecommendation.value = HelpRequestEntity(
+          id: first.id,
+          title: first.title,
+          description: first.description,
+          category: first.category,
+          urgency: domain.UrgencyLevel.values.firstWhere(
+            (e) => e.name == first.urgency.name,
+            orElse: () => domain.UrgencyLevel.medium,
+          ), 
+          postedAt: first.postedAt,
+          distance: first.distance,
+          aiRelevanceScore: first.aiRelevanceScore,
+          locationName: first.locationName,
+          lat: first.lat,
+          lng: first.lng,
+          requesterId: first.requesterId,
+          requesterName: first.requesterName,
+          requesterAvatarUrl: first.requesterAvatarUrl,
+          status: domain.RequestStatusEnum.values.firstWhere(
+            (e) => e.name == first.status.name,
+            orElse: () => domain.RequestStatusEnum.open,
+          ),
+        );
+      } else {
+        _topRecommendation.value = null;
+      }
+    } catch (e) {
+      logger.e('Error fetching top recommendation: $e');
+      _topRecommendation.value = null;
+    }
   }
 
   @override
@@ -56,8 +100,15 @@ class HomeViewModel extends GetxController {
 
   void _onRequestsUpdated() {
     if (!_isDisposed) {
-      fetchRequests();
+      refreshHome();
     }
+  }
+
+  Future<void> refreshHome() async {
+    await Future.wait([
+      fetchRequests(),
+      fetchTopRecommendation(),
+    ]);
   }
 
   Future<void> fetchRequests() async {
