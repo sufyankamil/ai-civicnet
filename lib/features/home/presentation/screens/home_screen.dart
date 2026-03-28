@@ -14,7 +14,8 @@ import '../../../../components/request_card_skeleton.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/poll_card.dart';
 import '../widgets/guild_card.dart';
-import '../widgets/opportunity_card.dart';
+import '../widgets/ai_match_header_delegate.dart';
+import '../widgets/community_briefing_card.dart';
 import '../../../news/presentation/components/news_section.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../models/models.dart';
@@ -310,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
             // Search Bar
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: TextField(
                 controller: _searchController,
                 onChanged: (value) {
@@ -378,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildHeader(AppLocalizations l10n) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Row(
         children: [
           Expanded(
@@ -452,91 +453,109 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildRequestsTab(AppLocalizations l10n) {
-    return Column(
-      children: [
-        // 2. AI Opportunity Card (Proactive Matching)
-        Obx(() {
-          final topMatch = _viewModel.topRecommendation;
-          // Only show if similarity is high enough for a "Premium" match feel (e.g. > 0.6)
-          if (topMatch == null || topMatch.aiRelevanceScore < 0.6) {
-            return const SizedBox.shrink();
-          }
-          return OpportunityCard(request: topMatch);
-        }),
+    return RefreshIndicator(
+      onRefresh: _viewModel.fetchRequests,
+      child: CustomScrollView(
+        slivers: [
+          // 0. AI Community Briefing (The Scribe)
+          SliverToBoxAdapter(
+            child: Obx(() => CommunityBriefingCard(
+              briefing: _viewModel.communityBriefing,
+              isLoading: _viewModel.isBriefingLoading,
+              onRefresh: _viewModel.fetchCommunityBriefing,
+            )),
+          ),
 
-        // Guilds Row (Discovery)
-        Obx(() => _viewModel.guilds.isEmpty 
-          ? const SizedBox.shrink()
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.findYourGuild,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+          // 1. AI Match (Transforming Header)
+          Obx(() {
+            final topMatch = _viewModel.topRecommendation;
+            if (topMatch == null || topMatch.aiRelevanceScore < 0.6) {
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
+            return SliverPersistentHeader(
+              key: ValueKey('ai_match_${topMatch.id}'), // Stabilize pinned header
+              pinned: true,
+              delegate: AiMatchHeaderDelegate(request: topMatch),
+            );
+          }),
+
+          // 2. Guilds Section
+          SliverToBoxAdapter(
+            child: Obx(() => _viewModel.guilds.isEmpty 
+              ? const SizedBox.shrink()
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.findYourGuild,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          TextButton(
+                            onPressed: () { /* TODO: Navigator to full discovery */ },
+                            child: Text(l10n.seeAll),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () { /* TODO: Navigator to full discovery */ },
-                        child: Text(l10n.seeAll),
+                    ),
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _viewModel.guilds.length,
+                        itemBuilder: (context, index) {
+                          final guild = _viewModel.guilds[index];
+                          return GuildCard(
+                            guild: guild,
+                            onToggleJoin: () => _viewModel.toggleGuildMembership(guild),
+                          );
+                        },
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+            ),
+          ),
+
+          // 3. Requests List
+          Obx(() {
+            if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => const RequestCardSkeleton(),
+                    childCount: 5,
                   ),
                 ),
-                SizedBox(
-                  height: 200,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _viewModel.guilds.length,
-                    itemBuilder: (context, index) {
-                      final guild = _viewModel.guilds[index];
-                      return GuildCard(
-                        guild: guild,
-                        onToggleJoin: () => _viewModel.toggleGuildMembership(guild),
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            )
-        ),
-        
-        // List
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _viewModel.fetchRequests,
-            child: Obx(() {
-              if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: 5,
-                  itemBuilder: (context, index) => const RequestCardSkeleton(),
-                );
-              }
-              
-              if (_viewModel.filteredRequests.isEmpty) {
-                return _buildRequestPlaceholder(l10n);
-              }
+              );
+            }
+            
+            if (_viewModel.filteredRequests.isEmpty) {
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildRequestPlaceholder(l10n),
+              );
+            }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+            return SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverList.builder(
                 itemCount: _viewModel.filteredRequests.length,
                 itemBuilder: (context, index) {
                   return RequestCard(request: _viewModel.filteredRequests[index]);
                 },
-              );
-            }),
-          ),
-        ),
-      ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 

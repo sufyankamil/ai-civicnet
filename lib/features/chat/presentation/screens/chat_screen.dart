@@ -47,7 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             // --- Premium Header ---
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
               child: Row(
                 children: [
                   Expanded(
@@ -132,7 +132,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
             // --- Modern Search Bar ---
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
               child: TextField(
                 controller: _searchController,
                 onChanged: (val) => setState(() => _searchQuery = val.toLowerCase()),
@@ -165,8 +165,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
             ),
-
-            const SizedBox(height: 10),
 
             // --- Conversations List ---
             Expanded(

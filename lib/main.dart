@@ -34,7 +34,7 @@ SharedPreferences? prefsGlobal;
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set up timeago localization
+  // Set up time ago localization
   timeago.setLocaleMessages('hi', timeago.HiMessages());
   timeago.setLocaleMessages('en', timeago.EnMessages());
 
