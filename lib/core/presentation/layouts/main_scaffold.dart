@@ -228,7 +228,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   Widget _buildFab() {
     return Container(
-      margin: const EdgeInsets.only(top: 20),
+      margin: const EdgeInsets.only(top: 8),
       child: GestureDetector(
         onTap: () {
           if (_selectedIndex == 1) { // Discover

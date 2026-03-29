@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/haptic_buttons.dart';
 import '../../../../models/models.dart';
 import '../../../../features/profile/models/user.dart' as profile;
 import '../viewmodels/map_viewmodel.dart';
@@ -40,7 +41,7 @@ class MapScreen extends StatelessWidget {
                     style: _getMapStyle(context),
                     onTap: (_) => viewModel.deselect(),
                   )
-                : _buildNoPermissionView(viewModel),
+                : _buildNoPermissionView(viewModel, context),
             
             if (viewModel.isLoading)
               const Center(child: CircularProgressIndicator()),
@@ -57,11 +58,11 @@ class MapScreen extends StatelessWidget {
                   // Search Bar
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildSearchBar(),
+                    child: _buildSearchBar(context),
                   ),
                   const SizedBox(height: 12),
                   // Category Filters
-                  _buildCategoryFilters(viewModel),
+                  _buildCategoryFilters(viewModel, context),
                 ],
               ),
             ),
@@ -87,23 +88,28 @@ class MapScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNoPermissionView(MapViewModel viewModel) {
+  Widget _buildNoPermissionView(MapViewModel viewModel, BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: double.infinity,
       width: double.infinity,
-      color: Colors.grey[200],
+      color: isDark ? const Color(0xFF121212) : Colors.grey[200],
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.location_off, color: Colors.grey, size: 48),
+            Icon(Icons.location_off, color: isDark ? Colors.white38 : Colors.grey, size: 48),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Location permission not given',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.bold, 
+                color: isDark ? Colors.white60 : Colors.grey[700],
+              ),
             ),
             const SizedBox(height: 8),
-            TextButton(
+            AppElevatedButton(
               onPressed: viewModel.checkPermission,
               child: const Text('Grant Permission'),
             ),
@@ -113,32 +119,44 @@ class MapScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       height: 50,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1), 
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
         children: [
-          const Icon(Icons.search, color: Colors.grey),
+          Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
-          const Expanded(
-            child: Text('Search area...', style: TextStyle(color: Colors.grey)),
+          Expanded(
+            child: Text(
+              'Search area...', 
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+            ),
           ),
-          const VerticalDivider(width: 20, indent: 10, endIndent: 10),
+          VerticalDivider(
+            width: 20, 
+            indent: 12, 
+            endIndent: 12, 
+            color: Theme.of(context).dividerColor,
+          ),
           const Icon(Icons.tune_rounded, color: AppColors.primaryLight),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryFilters(MapViewModel viewModel) {
+  Widget _buildCategoryFilters(MapViewModel viewModel, BuildContext context) {
     final categories = ['All', 'Emergency', 'TechSupport', 'Household', 'Neighbors'];
     return SizedBox(
       height: 40,
@@ -155,12 +173,18 @@ class MapScreen extends StatelessWidget {
             selected: isSelected,
             onSelected: (_) => viewModel.selectCategory(cat),
             selectedColor: AppColors.primaryLight,
+            backgroundColor: Theme.of(context).cardColor,
             labelStyle: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
             showCheckmark: false,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                color: isSelected ? AppColors.primaryLight : Colors.transparent,
+              ),
+            ),
           );
         },
       ),
@@ -273,7 +297,92 @@ class MapScreen extends StatelessWidget {
     ]
     ''';
 
+  static const String _darkMapStyleJson = r'''
+    [
+      {"elementType": "geometry", "stylers": [{"color": "#242f3e"}]},
+      {"elementType": "labels.text.stroke", "stylers": [{"color": "#242f3e"}]},
+      {"elementType": "labels.text.fill", "stylers": [{"color": "#746855"}]},
+      {
+        "featureType": "administrative.locality",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#d59563"}]
+      },
+      {
+        "featureType": "poi",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#d59563"}]
+      },
+      {
+        "featureType": "poi.park",
+        "elementType": "geometry",
+        "stylers": [{"color": "#263c3f"}]
+      },
+      {
+        "featureType": "poi.park",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#6b9a76"}]
+      },
+      {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [{"color": "#38414e"}]
+      },
+      {
+        "featureType": "road",
+        "elementType": "geometry.stroke",
+        "stylers": [{"color": "#212a37"}]
+      },
+      {
+        "featureType": "road",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#9ca5b3"}]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "geometry",
+        "stylers": [{"color": "#746855"}]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [{"color": "#1f2835"}]
+      },
+      {
+        "featureType": "road.highway",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#f3d19c"}]
+      },
+      {
+        "featureType": "transit",
+        "elementType": "geometry",
+        "stylers": [{"color": "#2f3948"}]
+      },
+      {
+        "featureType": "transit.station",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#d59563"}]
+      },
+      {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [{"color": "#17263c"}]
+      },
+      {
+        "featureType": "water",
+        "elementType": "labels.text.fill",
+        "stylers": [{"color": "#515c6d"}]
+      },
+      {
+        "featureType": "water",
+        "elementType": "labels.text.stroke",
+        "stylers": [{"color": "#17263c"}]
+      }
+    ]
+    ''';
+
   String? _getMapStyle(BuildContext context) {
-    return _mapStyleJson;
+    return Theme.of(context).brightness == Brightness.dark 
+        ? _darkMapStyleJson 
+        : _mapStyleJson;
   }
 }

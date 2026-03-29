@@ -150,11 +150,107 @@ class AiService {
         'Description: $description';
 
     try {
-      final response = await _chatModel!.generateContent([Content.text(prompt)]);
+      final response = await _chatModel!.generateContent(
+          [Content.text(prompt)]);
       return response.text?.trim().toUpperCase();
     } catch (e) {
+      if (e.toString().contains('503') || e.toString().contains('SERVICE_UNAVAILABLE')) {
+        // Simple retry once after 2 seconds for 503 during categorization
+        await Future.delayed(const Duration(seconds: 2));
+        try {
+          final retryResponse = await _chatModel!.generateContent([Content.text(prompt)]);
+          return retryResponse.text?.trim().toUpperCase();
+        } catch (_) { /* fall through */ }
+      }
       logger.e('AiService: Error categorizing request', error: e);
       return null;
+    }
+  }
+
+  /// Generates a local fallback briefing if the AI is unavailable.
+  String generateLocalBriefing({
+    required List<dynamic> requests,
+    required List<dynamic> events,
+    required dynamic user,
+  }) {
+    final hour = DateTime.now().hour;
+    String greeting;
+    if (hour < 12) {
+      greeting = 'Good morning';
+    } else if (hour < 17) {
+      greeting = 'Good afternoon';
+    } else if (hour < 21) {
+      greeting = 'Good evening';
+    } else {
+      greeting = 'Hello there';
+    }
+
+    final requestCount = requests.length;
+    final eventCount = events.length;
+
+    return '$greeting! Your community is active today. '
+        'Currently, there are $requestCount neighbors looking for help nearby, and $eventCount upcoming events in your guilds.\n\n'
+        'Check out "${requests.isNotEmpty ? requests.first.title : 'the map'}" to see how your expertise can make an impact. '
+        'Every act of kindness helps you reach your next community milestone!\n\n'
+        'Keep up the great work—you have already impacted ${user.neighborsImpacted} neighbors across the network.';
+  }
+
+  String _getTimeOfDayContext() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) return 'Morning (a fresh start)';
+    if (hour >= 12 && hour < 17) return 'Afternoon (active and buzzing)';
+    if (hour >= 17 && hour < 21) return 'Evening (winding down but still engaged)';
+    return 'Night (peaceful and reflective, planning for tomorrow)';
+  }
+
+  /// Generates a personalized community briefing.
+  Future<String> generateCommunityBriefing({
+    required List<dynamic> requests,
+    required List<dynamic> events,
+    required dynamic user,
+  }) async {
+    if (!_isInitialized || _chatModel == null) initialize();
+
+    final timeOfDay = _getTimeOfDayContext();
+    final requestsText = requests.take(3).map((r) => 
+      '- ${r.title} (${r.category.toString().split('.').last}) at ${r.distance ?? 'nearby'}'
+    ).join('\n');
+
+    final eventsText = events.isEmpty 
+        ? 'No upcoming guild events today.' 
+        : events.take(2).map((e) => '- ${e.title} in your joined guild').join('\n');
+
+    final userStats = 'Points: ${user.points}, People Helped: ${user.helpCount}, Level: ${user.karmaLevel}';
+
+    final systemPrompt = 'You are the "CivicNet Scribe," a friendly and inspiring community AI. '
+        'Your goal is to write a short, personalized briefing for a user in a neighborhood networking app. '
+        'The current time of day is: $timeOfDay.\n\n'
+        'Keep it to exactly 3 short, punchy paragraphs in a professional magazine style. '
+        'Paragraph 1: Warm neighborhood greeting appropriate for the current time ($timeOfDay) and a summary of the current vibe. '
+        'Paragraph 2: Highlight 1-2 ways they could help today (or plan for tomorrow if it is night) based on the requests provided. '
+        'Paragraph 3: A boost of encouragement based on their impact stats and a clear call to action.\n\n';
+
+    final prompt = '$systemPrompt'
+        'Community Data:\n'
+        'Requests nearby:\n$requestsText\n\n'
+        'Events:\n$eventsText\n\n'
+        'User Stats: $userStats\n\n'
+        'Write the briefing now. Use friendly but professional language. Avoid using "Dear [Name]" at the start, just start with an appropriate greeting like "Good morning", "Good evening", or "Hello, neighbor".';
+
+    try {
+      final response = await _chatModel!.generateContent([Content.text(prompt)]);
+      return response.text?.trim() ?? generateLocalBriefing(requests: requests, events: events, user: user);
+    } catch (e) {
+      if (e.toString().contains('503') || e.toString().contains('SERVICE_UNAVAILABLE')) {
+        // Automatic retry once for the briefing
+        await Future.delayed(const Duration(seconds: 2));
+        try {
+          final retryResponse = await _chatModel!.generateContent([Content.text(prompt)]);
+          return retryResponse.text?.trim() ?? generateLocalBriefing(requests: requests, events: events, user: user);
+        } catch (_) { /* fall through */ }
+      }
+      logger.e('AiService: Error generating community briefing', error: e);
+      return generateLocalBriefing(requests: requests, events: events, user: user);
     }
   }
 }

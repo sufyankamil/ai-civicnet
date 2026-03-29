@@ -7,6 +7,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../models/models.dart';
 import '../../../../services/logger_service.dart';
+import '../../../../services/ai_service.dart';
 
 class HomeViewModel extends GetxController {
   final GetHelpRequestsUseCase getHelpRequestsUseCase;
@@ -21,6 +22,8 @@ class HomeViewModel extends GetxController {
   final Rxn<HelpRequestEntity> _topRecommendation = Rxn<HelpRequestEntity>();
   final RxString _searchQuery = ''.obs;
   final RxString _selectedFilter = 'All'.obs;
+  final RxString _communityBriefing = ''.obs;
+  final RxBool _isBriefingLoading = false.obs;
   
   Timer? _debounce;
   bool _isDisposed = false;
@@ -32,6 +35,8 @@ class HomeViewModel extends GetxController {
   bool get isLoading => _isLoading.value;
   String get selectedFilter => _selectedFilter.value;
   String get searchQuery => _searchQuery.value;
+  String get communityBriefing => _communityBriefing.value;
+  bool get isBriefingLoading => _isBriefingLoading.value;
 
   @override
   void onInit() {
@@ -108,7 +113,34 @@ class HomeViewModel extends GetxController {
     await Future.wait([
       fetchRequests(),
       fetchTopRecommendation(),
+      fetchCommunityBriefing(),
     ]);
+  }
+
+  Future<void> fetchCommunityBriefing() async {
+    if (_communityBriefing.value.isNotEmpty && !isLoading) return; // Only fetch if empty or refreshing fully
+
+    _isBriefingLoading.value = true;
+    try {
+      final user = await SupabaseService().getCurrentUserProfile();
+      if (user == null) return;
+
+      // Get some context data
+      final recentRequests = _allRequests.take(5).toList();
+      final upcomingEvents = await SupabaseService().getEvents(); 
+      
+      final briefing = await AiService().generateCommunityBriefing(
+        requests: recentRequests,
+        events: upcomingEvents,
+        user: user,
+      );
+      
+      _communityBriefing.value = briefing;
+    } catch (e) {
+      logger.e('Error fetching community briefing: $e');
+    } finally {
+      _isBriefingLoading.value = false;
+    }
   }
 
   Future<void> fetchRequests() async {
@@ -217,15 +249,22 @@ class HomeViewModel extends GetxController {
   }
 
   Future<void> _checkWarnings() async {
-    final user = await SupabaseService().getCurrentUserProfile();
-    if (user != null && user.reportCount > 2) {
-      // Trigger dialog through GetX dialog
-      Get.defaultDialog(
-        title: 'Warning Issued',
-        middleText: 'Your account has been reported by multiple users for violating community guidelines. Please ensure you respect other users and follow our safety guidelines. Continued reports will result in a temporary ban.',
-        textConfirm: 'I Understand',
-        onConfirm: () => Get.back(),
-      );
+    try {
+      final user = await SupabaseService().getCurrentUserProfile();
+      if (user != null && user.reportCount > 2) {
+        // Safe dialog call using GetX with context check
+        if (Get.context != null) {
+          Get.defaultDialog(
+            title: 'Warning Issued',
+            middleText: 'Your account has been reported by multiple users for violating community guidelines. Please ensure you respect other users and follow our safety guidelines. Continued reports will result in a temporary ban.',
+            textConfirm: 'I Understand',
+            onConfirm: () => Get.back(),
+            barrierDismissible: false,
+          );
+        }
+      }
+    } catch (e) {
+      logger.e('Error checking user warnings: $e');
     }
   }
 }
