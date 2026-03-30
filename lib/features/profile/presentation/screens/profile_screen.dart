@@ -689,6 +689,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                   isDark: isDark,
                 ),
                 _buildDivider(isDark),
+                _buildActionTile(
+                  icon: Icons.inventory_2_outlined,
+                  iconColor: Colors.teal,
+                  label: 'My Assets',
+                  onTap: () => context.push('/my-assets'),
+                  isDark: isDark,
+                ),
+                _buildDivider(isDark),
                 if (user.role == 'super_admin')
                   FutureBuilder<int>(
                     future: SupabaseService().getPendingRequestsCount(),

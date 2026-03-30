@@ -79,8 +79,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildAiRecommendations(),
+                const SizedBox(height: 8),
                 
-                const SizedBox(height: 32),
+                // --- Community Asset Library ---
+                _buildAssetLibraryBanner(context),
+                const SizedBox(height: 24),
                 
                 // --- Categories ---
                 _buildSectionHeader(context, title: l10n.categories),
@@ -222,7 +225,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             margin: EdgeInsets.only(
               left: index == 0 ? 0 : 8,
               right: index == _recommendedRequests!.length - 1 ? 0 : 8,
-              bottom: 24, // Glow needs space
+              bottom: 0,
             ),
           );
 
@@ -343,6 +346,83 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       case HelpCategory.transport:
         return Colors.teal;
     }
+  }
+
+  Widget _buildAssetLibraryBanner(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/asset-library'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor,
+              Theme.of(context).primaryColor.withValues(alpha: 0.7),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Community Asset Library',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Borrow tools, transport, and equipment from your neighbors.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Explore Library',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            const Icon(
+              Icons.inventory_2_outlined,
+              size: 60,
+              color: Colors.white24,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

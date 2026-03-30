@@ -24,6 +24,7 @@ import 'features/map/di/map_binding.dart';
 import 'features/chat/di/chat_binding.dart';
 import 'features/events/di/events_binding.dart';
 import 'features/profile/di/profile_binding.dart';
+import 'features/assets/di/assets_binding.dart';
 import 'features/onboarding/presentation/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -82,6 +83,7 @@ class _RootAppState extends State<RootApp> {
     await initMapDI();
     await initChatDI();
     await initEventsDI();
+    await initAssetsDI();
     ProfileBinding().dependencies();
 
     // Read the initial deep-link URI BEFORE Supabase.initialize() so we can

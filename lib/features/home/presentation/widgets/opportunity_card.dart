@@ -24,7 +24,6 @@ class OpportunityCard extends StatefulWidget {
 class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _rotationAnimation;
-  late Animation<double> _breathingAnimation;
 
   @override
   void initState() {
@@ -35,11 +34,6 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
     )..repeat();
 
     _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(_controller);
-    
-    // Breathing effect for the aura
-    _breathingAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
   }
 
   @override
@@ -69,18 +63,6 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                     margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primaryLight.withValues(alpha: 0.2 * _breathingAnimation.value),
-                          blurRadius: 20 * _breathingAnimation.value,
-                          spreadRadius: 2 * _breathingAnimation.value,
-                        ),
-                        BoxShadow(
-                          color: const Color(0xFF6248FF).withValues(alpha: 0.15 * _breathingAnimation.value),
-                          blurRadius: 40 * _breathingAnimation.value,
-                          spreadRadius: -5 * _breathingAnimation.value,
-                        ),
-                      ],
                     ),
                   ),
                 ),
