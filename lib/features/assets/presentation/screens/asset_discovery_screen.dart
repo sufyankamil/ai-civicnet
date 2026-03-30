@@ -79,7 +79,7 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 0.75,
+                    childAspectRatio: 0.68,
                   ),
                   itemCount: controller.publicAssets.length,
                   itemBuilder: (context, index) {

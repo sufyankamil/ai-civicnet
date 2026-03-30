@@ -72,7 +72,7 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.68,
             ),
             itemCount: controller.myAssets.length,
             itemBuilder: (context, index) {

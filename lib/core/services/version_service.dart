@@ -58,24 +58,15 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Advanced Map',
-      description: 'Find help and tools easily with our new interactive discovery map.',
-      icon: Icons.map_outlined,
+      title: 'Enhanced Asset Cards',
+      description: 'Better visibility for community assets with improved layouts and longer titles.',
+      icon: Icons.auto_awesome_mosaic_outlined,
     ),
     UpdateNote(
-      title: 'Radius Filter',
-      description: 'Search for assets and neighbors within 1km to 50km.',
-      icon: Icons.track_changes_outlined,
-    ),
-    UpdateNote(
-      title: 'Search any Area',
-      description: 'Explore other neighborhoods by panning the map and refreshing.',
-      icon: Icons.explore_outlined,
-    ),
-    UpdateNote(
-      title: 'Borrow Tools',
-      description: 'Discover shared community gear directly on the map.',
-      icon: Icons.inventory_2_outlined,
+      title: 'Priority Status',
+      description: 'Your application status is now pinned to the top of help requests for quick tracking.',
+      icon: Icons.notification_important_outlined,
     ),
   ];
 }
+
