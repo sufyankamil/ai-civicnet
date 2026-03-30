@@ -58,24 +58,24 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Share Tools',
-      description: 'Easily borrow gear, tools, and equipment from your neighbors.',
-      icon: Icons.inventory_2_outlined,
+      title: 'Advanced Map',
+      description: 'Find help and tools easily with our new interactive discovery map.',
+      icon: Icons.map_outlined,
     ),
     UpdateNote(
-      title: 'AI Smart Help',
-      description: 'Get automatic suggestions for the best tools needed for your tasks.',
-      icon: Icons.auto_awesome,
+      title: 'Radius Filter',
+      description: 'Search for assets and neighbors within 1km to 50km.',
+      icon: Icons.track_changes_outlined,
     ),
     UpdateNote(
-      title: 'Faster Messaging',
-      description: 'Start chats instantly with helpful, pre-filled messages.',
-      icon: Icons.chat_bubble_outline,
-    ),
-    UpdateNote(
-      title: 'Cleaner Design',
-      description: 'Enjoy smoother navigation and a fresh look across the app.',
+      title: 'Search any Area',
+      description: 'Explore other neighborhoods by panning the map and refreshing.',
       icon: Icons.explore_outlined,
+    ),
+    UpdateNote(
+      title: 'Borrow Tools',
+      description: 'Discover shared community gear directly on the map.',
+      icon: Icons.inventory_2_outlined,
     ),
   ];
 }
