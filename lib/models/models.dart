@@ -12,3 +12,4 @@ export '../features/news/models/announcement.dart';
 export '../features/home/models/poll.dart';
 export '../features/home/models/guild.dart';
 export '../features/home/models/badge.dart';
+export '../features/assets/models/asset.dart';

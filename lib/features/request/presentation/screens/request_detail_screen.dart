@@ -3,23 +3,26 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:get/get.dart';
-
-import '../../../../models/models.dart' as legacy;
 import '../../domain/entities/help_request_entity.dart';
 import '../../domain/entities/request_enums.dart';
 import '../viewmodels/request_viewmodel.dart';
-import '../../../../services/supabase_service.dart';
-import '../../../../services/logger_service.dart';
+import 'package:get/get.dart';
+
+import '../../../../models/models.dart' as legacy;
 import '../../../../theme/app_theme.dart';
 import '../../../../components/app_loader.dart';
+import '../../../../services/logger_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../../features/assets/presentation/viewmodels/assets_viewmodel.dart';
+import '../../../../features/assets/widgets/asset_card.dart';
+import '../../../../features/assets/models/asset.dart' as asset_models;
 import '../../../../components/helper_card.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../components/rating_dialog.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/report_dialog.dart';
+import '../../../../services/supabase_service.dart';
 import '../../../../components/success_animation.dart';
 
 class RequestDetailScreen extends StatefulWidget {
@@ -41,6 +44,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   bool _hasFetchedApplications = false;
   bool _hasRated = false;
   int _ratingGiven = 0; // tracks the star value submitted
+  List<asset_models.CommunityAsset> _matchedAssets = [];
+  bool _isLoadingAssets = false;
 
   @override
   void initState() {
@@ -51,6 +56,22 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   Future<void> _fetchData() async {
     await _viewModel.fetchHelpRequest(widget.requestId);
     _checkApplicationStatus();
+    
+    // Fetch matching tools/assets using the new AssetsViewModel
+    if (_viewModel.currentRequest != null) {
+      if (mounted) setState(() => _isLoadingAssets = true);
+      try {
+        final assets = await Get.find<AssetsViewModel>().getMatchForRequest(_viewModel.currentRequest!);
+        if (mounted) {
+          setState(() {
+            _matchedAssets = assets;
+            _isLoadingAssets = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) setState(() => _isLoadingAssets = false);
+      }
+    }
   }
 
 
@@ -110,7 +131,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     }
   }
 
-  Future<void> _startChatWithUser(String userId, String userName) async {
+  Future<void> _startChatWithUser(String userId, String userName, {String? initialMessage}) async {
     if (_isStartingChat) return;
     setState(() => _isStartingChat = true);
 
@@ -119,9 +140,14 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       if (!mounted) return;
 
       final encodedName = Uri.encodeComponent(userName);
-      context.push(
-        '/chat-detail?id=$conversationId&name=$encodedName&uid=$userId',
-      );
+      String url = '/chat-detail?id=$conversationId&name=$encodedName&uid=$userId';
+      
+      if (initialMessage != null && initialMessage.isNotEmpty) {
+        final encodedMsg = Uri.encodeComponent(initialMessage);
+        url += '&msg=$encodedMsg';
+      }
+
+      context.push(url);
     } catch (e) {
       if (mounted) {
         logger.e('Error starting chat', error: e);
@@ -666,7 +692,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 12),
+                    _buildSuggestedTools(),
+                    const SizedBox(height: 12),
 
                     if (SupabaseService().currentUserId !=
                         request.requesterId) ...[
@@ -806,32 +834,52 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         child: Text(
                           AppLocalizations.of(context)!.yourRequest,
                           style: TextStyle(
-                            color: Colors.grey[600],
+                            color: Theme.of(context).primaryColor,
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                           ),
                         ),
                       ),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
 
                     if (SupabaseService().currentUserId ==
                         request.requesterId) ...[
                       const Divider(),
                       const SizedBox(height: 16),
-                      Text(
-                        'Applications (${_applications.length})',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.group_outlined,
+                            color: AppColors.primaryLight,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Applications (${_applications.length})',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       if (_isLoadingApplications)
                         const AppLoader()
                       else if (_applications.isEmpty)
-                        Text(
-                          AppLocalizations.of(context)!.interestShown,
-                          style: TextStyle(color: Colors.grey[600]),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              AppLocalizations.of(context)!.interestShown,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
                         )
                       else
                         ..._applications.map(
@@ -1205,9 +1253,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       return;
     }
 
-    // NOTE: showAdaptiveDialog / AlertDialog.adaptive cannot be used here because
-    // CupertinoAlertDialog does not support unconstrained list content (causes layout crash).
-    // We use a plain AlertDialog with a TextButton cancel for iOS compat.
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1624,5 +1669,116 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       case 'applied': return l10n.interestSent;
       default: return status;
     }
+  }
+
+  Widget _buildSuggestedTools() {
+    if (_isLoadingAssets) {
+      return const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Scanning Community Assets...',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          SizedBox(height: 16),
+          AppLoader(),
+        ],
+      );
+    }
+
+    if (_matchedAssets.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.auto_awesome, color: AppColors.primaryLight, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'Suggested Community Tools',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Neighbors have listed these assets that could help with this task:',
+          style: TextStyle(color: Colors.grey, fontSize: 13),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 250,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: _matchedAssets.length,
+            itemBuilder: (context, index) {
+              final asset = _matchedAssets[index];
+              return Container(
+                width: 180,
+                margin: const EdgeInsets.only(right: 16),
+                child: AssetCard(
+                  asset: asset,
+                  onTap: () => _showAssetDetails(asset),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showAssetDetails(legacy.CommunityAsset asset) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(asset.title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (asset.imageUrl != null)
+              Container(
+                height: 150,
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: NetworkImage(asset.imageUrl!),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            Text(asset.description),
+            const SizedBox(height: 16),
+            const Text(
+              'This tool belongs to a neighbor. If you need it to help with this request, we suggest contacting the requester first to see if they want you to bring it.',
+              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final requestTitle = _viewModel.currentRequest?.title ?? 'my request';
+              final msg = 'Hi, I\'m interested in your "${asset.title}" for $requestTitle. Is it available?';
+              _startChatWithUser(
+                asset.ownerId, 
+                asset.ownerName ?? 'Asset Owner',
+                initialMessage: msg,
+              );
+            },
+            child: const Text('Contact Owner'),
+          ),
+        ],
+      ),
+    );
   }
 }

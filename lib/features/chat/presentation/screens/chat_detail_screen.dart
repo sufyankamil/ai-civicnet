@@ -20,6 +20,7 @@ class ChatDetailScreen extends StatefulWidget {
   final String otherUserName;
   final String otherUserId;
   final String? otherUserAvatar;
+  final String? initialMessage;
 
   const ChatDetailScreen({
     super.key,
@@ -27,6 +28,7 @@ class ChatDetailScreen extends StatefulWidget {
     required this.otherUserName,
     required this.otherUserId,
     this.otherUserAvatar,
+    this.initialMessage,
   });
 
   @override
@@ -57,6 +59,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _initSpeech();
     _checkBlockStatus();
     _viewModel.markConversationAsRead(widget.conversationId);
+    
+    // Pre-fill initial message if provided
+    if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
+      _messageController.text = widget.initialMessage!;
+    }
   }
 
   Future<void> _checkBlockStatus() async {

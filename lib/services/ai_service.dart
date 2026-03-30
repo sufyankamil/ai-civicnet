@@ -79,6 +79,15 @@ class AiService {
     );
   }
 
+  /// Helper to generate a combined embedding for a community asset.
+  Future<List<double>?> generateAssetEmbedding(String title, String description, String category, {bool isQuery = false}) async {
+    final combinedText = 'Asset: $title\nCategory: $category\nDescription: $description';
+    return generateEmbedding(
+      combinedText, 
+      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument
+    );
+  }
+
   /// Generates a search query for the RAG system based on the user's message.
   Future<String> generateSearchQuery(String userMessage) async {
     if (!_isInitialized || _chatModel == null) initialize();

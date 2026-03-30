@@ -16,8 +16,10 @@ import '../widgets/poll_card.dart';
 import '../widgets/guild_card.dart';
 import '../widgets/ai_match_header_delegate.dart';
 import '../widgets/community_briefing_card.dart';
+import '../widgets/update_notice_modal.dart';
 import '../../../news/presentation/components/news_section.dart';
 import '../../../../widgets/haptic_buttons.dart';
+import '../../../../core/services/version_service.dart';
 import '../../../../models/models.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -56,6 +58,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _checkLocationPermission();
       _checkFeedbackPrompt();
       _checkSafetyBanner();
+      _checkVersionUpdate();
     });
   }
 
@@ -72,6 +75,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     await prefs.setBool('safety_banner_dismissed', true);
     if (mounted) {
       setState(() => _showSafetyBanner = false);
+    }
+  }
+
+  Future<void> _checkVersionUpdate() async {
+    final newVersion = await VersionService.checkUpdateNeeded();
+    if (newVersion != null && mounted) {
+      // Small additional delay to allow the home screen to settle
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (!mounted) return;
+      
+      UpdateNoticeModal.show(
+        context,
+        AppUpdates.currentUpdates,
+        () => VersionService.markAsNotified(),
+      );
     }
   }
 

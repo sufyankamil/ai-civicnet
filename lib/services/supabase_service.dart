@@ -13,6 +13,7 @@ import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:civic_net/services/encryption_service.dart';
 import 'package:civic_net/services/ai_service.dart';
+import '../features/request/domain/entities/help_request_entity.dart';
 
 import '../features/events/models/event_comment.dart';
 import '../core/utils/timeout_extension.dart';
@@ -1983,7 +1984,160 @@ class SupabaseService {
       return [];
     }
   }
-    // --- AI Assistant & RAG ---
+  // --- Community Asset Library ---
+
+  Future<void> createCommunityAsset(CommunityAsset asset, File? imageFile) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    String? imageUrl;
+    if (imageFile != null) {
+      imageUrl = await _uploadAssetImage(imageFile, asset.id);
+    }
+
+    // Generate AI embedding for semantic matching
+    final embedding = await AiService().generateAssetEmbedding(
+      asset.title,
+      asset.description,
+      asset.category.name,
+    );
+    final assetMap = asset.toJson();
+    assetMap['embedding'] = embedding;
+    if (imageUrl != null) assetMap['image_url'] = imageUrl;
+
+    await _client.from('community_assets').insert(assetMap).withServerTimeout();
+  }
+
+  Future<List<CommunityAsset>> getMyAssets() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return [];
+
+    try {
+      final response = await _client
+          .from('community_assets')
+          .select()
+          .eq('owner_id', user.id)
+          .order('created_at', ascending: false)
+          .withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => CommunityAsset.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching my assets: $e');
+      return [];
+    }
+  }
+
+  Future<List<CommunityAsset>> getPublicAssets({AssetCategory? category}) async {
+    try {
+      var query = _client.from('community_assets').select().neq('status', 'private');
+
+      if (category != null) {
+        query = query.eq('category', category.name);
+      }
+
+      final response = await query.order('created_at', ascending: false).withServerTimeout();
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => CommunityAsset.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching public assets: $e');
+      return [];
+    }
+  }
+
+  Future<void> updateCommunityAsset(CommunityAsset asset, File? imageFile) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    Map<String, dynamic> updates = {
+      'title': asset.title,
+      'description': asset.description,
+      'category': asset.category.name,
+      'status': asset.status.name,
+      'updated_at': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    if (imageFile != null) {
+      updates['image_url'] = await _uploadAssetImage(imageFile, asset.id);
+    }
+
+    // Re-generate embedding if title/description/category changed
+    final embedding = await AiService().generateAssetEmbedding(
+      asset.title,
+      asset.description,
+      asset.category.name,
+    );
+    updates['embedding'] = embedding;
+
+    await _client
+        .from('community_assets')
+        .update(updates)
+        .eq('id', asset.id)
+        .eq('owner_id', user.id)
+        .withServerTimeout();
+  }
+
+  Future<void> deleteCommunityAsset(String assetId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await _client
+        .from('community_assets')
+        .delete()
+        .eq('id', assetId)
+        .eq('owner_id', user.id)
+        .withServerTimeout();
+  }
+
+  Future<String?> _uploadAssetImage(File imageFile, String assetId) async {
+    try {
+      final fileName = 'asset_${assetId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final path = 'public/$fileName';
+
+      await _client.storage.from('asset-images').upload(
+            path,
+            imageFile,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      return _client.storage.from('asset-images').getPublicUrl(path);
+    } catch (e) {
+      logger.e('Error uploading asset image: $e');
+      return null;
+    }
+  }
+
+  /// AI Matching: Find community assets that could help with a specific help request
+  Future<List<CommunityAsset>> matchAssetsForRequest(HelpRequestEntity request) async {
+    if (_client.auth.currentSession == null) return [];
+    try {
+      // 1. Generate query embedding for the request description
+      final queryEmbedding = await AiService().generateAssetEmbedding(
+        request.title,
+        request.description,
+        request.category.toString().split('.').last,
+        isQuery: true,
+      );
+
+      if (queryEmbedding == null) return [];
+
+      // 2. Call RPC match_assets_v1
+      final response = await _client.rpc('match_assets_v1', params: {
+        'query_embedding': queryEmbedding,
+        'match_threshold': 0.4,
+        'match_count': 5,
+        'excluded_id': request.requesterId,
+      }).withServerTimeout();
+
+      final List<dynamic> data = response as List<dynamic>;
+      return data.map((json) => CommunityAsset.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error matching assets for request: $e');
+      return [];
+    }
+  }
+
+  // --- AI Assistant & RAG ---
 
     Future<String> searchCommunityContent({
       required List<double> queryEmbedding,

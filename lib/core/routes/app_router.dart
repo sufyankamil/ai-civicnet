@@ -45,6 +45,8 @@ import '../../features/events/presentation/screens/event_detail_screen.dart';
 import '../../features/events/presentation/screens/location_picker_screen.dart';
 import '../../features/profile/presentation/screens/admin_panel_screen.dart';
 import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
+import '../../features/assets/presentation/screens/my_assets_screen.dart';
+import '../../features/assets/presentation/screens/asset_discovery_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 String lastAppLocation = '/';
@@ -211,11 +213,13 @@ GoRouter createRouter({String initialLocation = '/'}) {
           final otherUserName = state.uri.queryParameters['name'] ?? 'Chat';
           final otherUserId = state.uri.queryParameters['uid'] ?? '';
           final otherUserAvatar = state.uri.queryParameters['avatar'];
+          final initialMessage = state.uri.queryParameters['msg'];
           return ChatDetailScreen(
             conversationId: conversationId,
             otherUserName: otherUserName,
             otherUserId: otherUserId,
             otherUserAvatar: otherUserAvatar,
+            initialMessage: initialMessage,
           );
         },
       ),
@@ -313,6 +317,16 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/ai-assistant',
         builder: (context, state) => const AiAssistantScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/my-assets',
+        builder: (context, state) => const MyAssetsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/asset-library',
+        builder: (context, state) => const AssetDiscoveryScreen(),
       ),
     ],
   );
