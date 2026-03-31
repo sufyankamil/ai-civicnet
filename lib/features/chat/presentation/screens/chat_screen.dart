@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -209,133 +210,191 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildConversationCard(BuildContext context, ChatConversationEntity chat, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            context.push('/chat-detail?id=${chat.id}&name=${chat.otherUserName}&uid=${chat.otherUserId}&avatar=${Uri.encodeComponent(chat.otherUserAvatar)}').then((_) {
-              viewModel.fetchConversations();
-            });
-          },
+    return Dismissible(
+      key: Key('conv_${chat.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.red,
           borderRadius: BorderRadius.circular(24),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+      ),
+      confirmDismiss: (direction) async {
+        return await _showDeleteConfirmation(context, chat);
+      },
+      onDismissed: (direction) async {
+        final success = await viewModel.deleteConversation(chat.id);
+        if (context.mounted) {
+          if (success) {
+            ToastService.showSuccess(context, 'Conversation deleted');
+          } else {
+            ToastService.showError(context, 'Failed to delete conversation');
+          }
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              context.push('/chat-detail?id=${chat.id}&name=${chat.otherUserName}&uid=${chat.otherUserId}&avatar=${Uri.encodeComponent(chat.otherUserAvatar)}').then((_) {
+                viewModel.fetchConversations();
+              });
+            },
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.surfaceDark : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                  width: 1,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                // Avatar with online status (if available, mockup for now)
-                Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 32,
-                      backgroundColor: Colors.grey[200],
-                      backgroundImage: chat.otherUserAvatar.isNotEmpty 
-                          ? NetworkImage(chat.otherUserAvatar) 
-                          : null,
-                      child: chat.otherUserAvatar.isEmpty 
-                          ? const Icon(Icons.person, size: 32, color: Colors.white) 
-                          : null,
-                    ),
-                    if (chat.unreadCount > 0)
-                      Positioned(
-                        right: 2,
-                        top: 2,
-                        child: Container(
-                          width: 14,
-                          height: 14,
-                          decoration: BoxDecoration(
-                            color: Colors.green,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: isDark ? AppColors.surfaceDark : Colors.white, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Avatar with online status (if available, mockup for now)
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 32,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: chat.otherUserAvatar.isNotEmpty 
+                            ? NetworkImage(chat.otherUserAvatar) 
+                            : null,
+                        child: chat.otherUserAvatar.isEmpty 
+                            ? const Icon(Icons.person, size: 32, color: Colors.white) 
+                            : null,
+                      ),
+                      if (chat.unreadCount > 0)
+                        Positioned(
+                          right: 2,
+                          top: 2,
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: isDark ? AppColors.surfaceDark : Colors.white, width: 2),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            chat.otherUserName,
-                            style: TextStyle(
-                              fontWeight: chat.unreadCount > 0 ? FontWeight.bold : FontWeight.w600,
-                              fontSize: 16,
-                              color: isDark ? Colors.white : AppColors.textPrimaryLight,
-                            ),
-                          ),
-                          Text(
-                            timeago.format(chat.lastMessageTime, locale: 'en_short'),
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              chat.lastMessage,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                    ],
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              chat.otherUserName,
                               style: TextStyle(
-                                color: chat.unreadCount > 0 
-                                    ? (isDark ? Colors.white : Colors.black87)
-                                    : Colors.grey[600],
-                                fontWeight: chat.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
-                                fontSize: 14,
+                                fontWeight: chat.unreadCount > 0 ? FontWeight.bold : FontWeight.w600,
+                                fontSize: 16,
+                                color: isDark ? Colors.white : AppColors.textPrimaryLight,
                               ),
                             ),
-                          ),
-                          if (chat.unreadCount > 0)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                gradient: AppColors.primaryGradient(isDark ? Brightness.dark : Brightness.light),
-                                borderRadius: BorderRadius.circular(10),
+                            Text(
+                              timeago.format(chat.lastMessageTime, locale: 'en_short'),
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
                               ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Expanded(
                               child: Text(
-                                chat.unreadCount.toString(),
+                                chat.lastMessage,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  color: chat.unreadCount > 0 
+                                      ? (isDark ? Colors.white : Colors.black87)
+                                      : Colors.grey[600],
+                                  fontWeight: chat.unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
+                                  fontSize: 14,
                                 ),
                               ),
                             ),
-                        ],
-                      ),
-                    ],
+                            if (chat.unreadCount > 0)
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient(isDark ? Brightness.dark : Brightness.light),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  chat.unreadCount.toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<bool?> _showDeleteConfirmation(BuildContext context, ChatConversationEntity chat) async {
+    return await showAdaptiveDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text('Delete conversation?'),
+        actions: [
+          if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete'),
+            ),
+          ] else ...[
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ]
+        ],
       ),
     );
   }
@@ -378,6 +437,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
+          const SizedBox(height: 100),
         ],
       ),
     );

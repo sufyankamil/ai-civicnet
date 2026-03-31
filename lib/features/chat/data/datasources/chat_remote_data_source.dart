@@ -49,4 +49,8 @@ class ChatRemoteDataSource {
   Future<void> reportUser(String userId, String reason) {
     return supabaseService.reportUser(userId, reason);
   }
+
+  Future<void> deleteConversation(String conversationId) {
+    return supabaseService.deleteConversation(conversationId);
+  }
 }

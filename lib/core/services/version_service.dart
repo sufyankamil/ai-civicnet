@@ -58,14 +58,14 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Enhanced Asset Cards',
-      description: 'Better visibility for community assets with improved layouts and longer titles.',
-      icon: Icons.auto_awesome_mosaic_outlined,
+      title: 'Delete for Me',
+      description: 'Clear your own chat history and hide conversations without affecting the other participant.',
+      icon: Icons.delete_sweep_rounded,
     ),
     UpdateNote(
-      title: 'Priority Status',
-      description: 'Your application status is now pinned to the top of help requests for quick tracking.',
-      icon: Icons.notification_important_outlined,
+      title: 'Modernized Tech Stack',
+      description: 'Upgraded core Firebase and notification services to the latest major versions for better stability.',
+      icon: Icons.system_update_rounded,
     ),
   ];
 }

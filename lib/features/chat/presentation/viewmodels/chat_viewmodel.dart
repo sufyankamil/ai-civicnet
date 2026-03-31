@@ -4,6 +4,7 @@ import '../../domain/usecases/chat_usecases.dart';
 import '../../domain/entities/chat_conversation_entity.dart';
 import '../../domain/entities/message_entity.dart';
 import '../../domain/usecases/delete_message_usecase.dart';
+import '../../domain/usecases/delete_conversation_usecase.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../core/usecases/usecase.dart';
 
@@ -15,6 +16,7 @@ class ChatViewModel extends GetxController {
   final MarkConversationAsReadUseCase markConversationAsReadUseCase;
   final MarkAllConversationsAsReadUseCase markAllConversationsAsReadUseCase;
   final DeleteMessageUseCase deleteMessageUseCase;
+  final DeleteConversationUseCase deleteConversationUseCase;
 
   ChatViewModel({
     required this.getConversationsUseCase,
@@ -22,6 +24,7 @@ class ChatViewModel extends GetxController {
     required this.markConversationAsReadUseCase,
     required this.markAllConversationsAsReadUseCase,
     required this.deleteMessageUseCase,
+    required this.deleteConversationUseCase,
   });
 
   final RxList<ChatConversationEntity> _conversations = <ChatConversationEntity>[].obs;
@@ -171,6 +174,24 @@ class ChatViewModel extends GetxController {
         return false;
       },
       (_) => true,
+    );
+  }
+
+  Future<bool> deleteConversation(String conversationId) async {
+    final params = DeleteConversationParams(conversationId: conversationId);
+    final result = await deleteConversationUseCase(params);
+    
+    return result.fold(
+      (failure) {
+        logger.e('Failed to delete conversation: ${failure.message}');
+        return false;
+      },
+      (_) {
+        // Optimistically remove from local list
+        _conversations.removeWhere((c) => c.id == conversationId);
+        _updateUnreadCount();
+        return true;
+      },
     );
   }
 

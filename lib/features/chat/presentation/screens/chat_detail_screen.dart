@@ -359,7 +359,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       setState(() => _selectedMessage = null);
                     },
                   ),
-                IconButton(icon: const Icon(Icons.more_vert), onPressed: () {}),
+                  IconButton(
+                    icon: const Icon(Icons.more_vert), 
+                    onPressed: () {
+                      _showConversationMenu(context);
+                    }
+                  ),
               ],
               backgroundColor: Colors.teal[800], // Match WhatsApp Android selection color
               iconTheme: const IconThemeData(color: Colors.white),
@@ -603,6 +608,101 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     } else {
       if (mounted) ToastService.showError(context, 'Failed to send message.');
     }
+  }
+
+  void _showConversationMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline, color: Colors.red),
+                title: const Text('Delete Conversation', style: TextStyle(color: Colors.red)),
+                subtitle: const Text('Clear history and hide this chat'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDeleteConversation();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.block, color: Colors.grey),
+                title: const Text('Block User'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showBlockOptions();
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteConversation() {
+    showAdaptiveDialog(
+      context: context,
+      builder: (context) => AlertDialog.adaptive(
+        title: const Text('Delete conversation?'),
+        actions: [
+          if (Theme.of(context).platform == TargetPlatform.iOS) ...[
+            CupertinoDialogAction(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                final success = await _viewModel.deleteConversation(widget.conversationId);
+                if (!mounted) return;
+                if (success) {
+                  navigator.pop(); // Go back to conversation list
+                  // ignore: use_build_context_synchronously
+                  ToastService.showSuccess(context, 'Conversation deleted');
+                } else {
+                  // ignore: use_build_context_synchronously
+                  ToastService.showError(context, 'Failed to delete conversation');
+                }
+              }, 
+              child: const Text('Delete'),
+            ),
+          ] else ...[
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final navigator = Navigator.of(context);
+                final success = await _viewModel.deleteConversation(widget.conversationId);
+                if (!mounted) return;
+                if (success) {
+                  navigator.pop(); // Go back to conversation list
+                  // ignore: use_build_context_synchronously
+                  ToastService.showSuccess(context, 'Conversation deleted');
+                } else {
+                  // ignore: use_build_context_synchronously
+                  ToastService.showError(context, 'Failed to delete conversation');
+                }
+              }, 
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ]
+        ],
+      ),
+    );
   }
 
   void _showBlockOptions() {
