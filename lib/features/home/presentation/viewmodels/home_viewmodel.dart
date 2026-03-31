@@ -8,6 +8,7 @@ import '../../../../services/supabase_service.dart';
 import '../../../../models/models.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../services/ai_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeViewModel extends GetxController {
   final GetHelpRequestsUseCase getHelpRequestsUseCase;
@@ -117,8 +118,29 @@ class HomeViewModel extends GetxController {
     ]);
   }
 
-  Future<void> fetchCommunityBriefing() async {
-    if (_communityBriefing.value.isNotEmpty && !isLoading) return; // Only fetch if empty or refreshing fully
+  Future<void> fetchCommunityBriefing({bool force = false}) async {
+    // Only apply timing/frequency logic if not a manual force-refresh
+    if (!force) {
+      final now = DateTime.now();
+      
+      // 1. Time Check: Only show after 11:00 AM
+      if (now.hour < 11) {
+        logger.d('AI Scribe: Suppressed briefing - too early (Hour: ${now.hour})');
+        _communityBriefing.value = '';
+        return;
+      }
+
+      // 2. Frequency Check: Only show once per day
+      final prefs = await SharedPreferences.getInstance();
+      final lastDate = prefs.getString('last_community_briefing_date');
+      final todayDate = "${now.year}-${now.month}-${now.day}";
+
+      if (lastDate == todayDate) {
+        logger.d('AI Scribe: Suppressed briefing - already shown today ($todayDate)');
+        _communityBriefing.value = '';
+        return;
+      }
+    }
 
     _isBriefingLoading.value = true;
     try {
@@ -136,6 +158,15 @@ class HomeViewModel extends GetxController {
       );
       
       _communityBriefing.value = briefing;
+
+      // If briefing was successfully shown (not empty and not the local fallback), mark as seen
+      if (!force && briefing.isNotEmpty && !briefing.contains(' neighborhood is bustling')) {
+        final prefs = await SharedPreferences.getInstance();
+        final now = DateTime.now();
+        final todayDate = "${now.year}-${now.month}-${now.day}";
+        await prefs.setString('last_community_briefing_date', todayDate);
+        logger.d('AI Scribe: Briefing marked as seen for $todayDate');
+      }
     } catch (e) {
       logger.e('Error fetching community briefing: $e');
     } finally {

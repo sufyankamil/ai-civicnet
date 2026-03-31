@@ -1,10 +1,18 @@
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:upgrader/upgrader.dart';
 import '../../../services/logger_service.dart';
 import 'package:flutter/material.dart';
 
 class VersionService {
   static const String _kLastNotifiedVersionKey = 'last_notified_version';
+
+  static final Upgrader _upgrader = Upgrader(
+    debugLogging: false,
+    durationUntilAlertAgain: const Duration(days: 1),
+  );
+
+  static Upgrader get upgrader => _upgrader;
 
   /// Compares the current app version with the last version the user was notified about.
   /// Returns null if no update is needed, otherwise returns the current version string.
@@ -24,6 +32,26 @@ class VersionService {
       return null;
     } catch (e) {
       logger.e('Error checking version update', error: e);
+      return null;
+    }
+  }
+
+  /// Checks if a new version is available on the Store (App Store / Play Store).
+  /// Returns the new version string if available, otherwise null.
+  static Future<String?> checkStoreUpdateAvailable() async {
+    try {
+      await _upgrader.initialize();
+      final isAvailable = _upgrader.isUpdateAvailable();
+      
+      if (isAvailable) {
+        final storeVersion = _upgrader.currentAppStoreVersion;
+        logger.d('Store Update Available: Current: ${_upgrader.currentInstalledVersion} -> Store: $storeVersion');
+        return storeVersion;
+      }
+      
+      return null;
+    } catch (e) {
+      logger.e('Error checking store update', error: e);
       return null;
     }
   }
@@ -58,14 +86,24 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Delete for Me',
-      description: 'Clear your own chat history and hide conversations without affecting the other participant.',
-      icon: Icons.delete_sweep_rounded,
+      title: 'AI Daily Briefing',
+      description: 'Wake up to a personalized summary of your neighborhood activities every morning at 11:00 AM.',
+      icon: Icons.auto_awesome_rounded,
     ),
     UpdateNote(
-      title: 'Modernized Tech Stack',
-      description: 'Upgraded core Firebase and notification services to the latest major versions for better stability.',
+      title: 'Smart Update Alerts',
+      description: 'Get notified as soon as new features are available in the App Store or Play Store.',
       icon: Icons.system_update_rounded,
+    ),
+    UpdateNote(
+      title: 'Enhanced Map Discovery',
+      description: 'New radius-based search helps you find precisely what you need in your immediate community.',
+      icon: Icons.location_searching_rounded,
+    ),
+    UpdateNote(
+      title: 'Private Chat History',
+      description: "Clear your own chat logs without affecting others with the new 'Delete for Me' option.",
+      icon: Icons.delete_sweep_rounded,
     ),
   ];
 }

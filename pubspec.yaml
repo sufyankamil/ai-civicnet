@@ -1,7 +1,7 @@
 name: civic_net
 description: "A community networking app built with Flutter."
 publish_to: 'none'
-version: 1.1.0+32
+version: 1.1.0+33
 
 environment:
   sdk: ^3.9.2
@@ -60,6 +60,7 @@ dependencies:
   printing: ^5.14.3
   google_generative_ai: ^0.4.4
   uuid: ^4.5.3
+  upgrader: ^12.5.0
 
 
 dev_dependencies:
