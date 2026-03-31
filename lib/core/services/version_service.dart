@@ -58,24 +58,15 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Share Tools',
-      description: 'Easily borrow gear, tools, and equipment from your neighbors.',
-      icon: Icons.inventory_2_outlined,
+      title: 'Enhanced Asset Cards',
+      description: 'Better visibility for community assets with improved layouts and longer titles.',
+      icon: Icons.auto_awesome_mosaic_outlined,
     ),
     UpdateNote(
-      title: 'AI Smart Help',
-      description: 'Get automatic suggestions for the best tools needed for your tasks.',
-      icon: Icons.auto_awesome,
-    ),
-    UpdateNote(
-      title: 'Faster Messaging',
-      description: 'Start chats instantly with helpful, pre-filled messages.',
-      icon: Icons.chat_bubble_outline,
-    ),
-    UpdateNote(
-      title: 'Cleaner Design',
-      description: 'Enjoy smoother navigation and a fresh look across the app.',
-      icon: Icons.explore_outlined,
+      title: 'Priority Status',
+      description: 'Your application status is now pinned to the top of help requests for quick tracking.',
+      icon: Icons.notification_important_outlined,
     ),
   ];
 }
+

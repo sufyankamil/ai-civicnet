@@ -448,6 +448,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
+                    _buildApplicationStatusBanner(request),
+
 
                     if (request.status == RequestStatusEnum.completed &&
                         request.helperId == SupabaseService().currentUserId)
@@ -698,122 +700,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
                     if (SupabaseService().currentUserId !=
                         request.requesterId) ...[
-                      if (_applicationStatus != null)
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color:
-                                  _applicationStatus ==
-                                      legacy.ApplicationStatus.accepted
-                                  ? Colors.green.withValues(alpha: 0.1)
-                                  : _applicationStatus ==
-                                        legacy.ApplicationStatus.rejected
-                                  ? Colors.grey.withValues(alpha: 0.12)
-                                  : Colors.orange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color:
-                                    _applicationStatus ==
-                                        legacy.ApplicationStatus.accepted
-                                    ? Colors.green
-                                    : _applicationStatus ==
-                                          legacy.ApplicationStatus.rejected
-                                    ? Colors.grey
-                                    : Colors.orange,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      _applicationStatus ==
-                                              legacy.ApplicationStatus.accepted
-                                          ? Icons.check_circle
-                                          : _applicationStatus ==
-                                                legacy
-                                                    .ApplicationStatus
-                                                    .rejected
-                                          ? Icons.sentiment_neutral_outlined
-                                          : Icons.access_time_filled,
-                                      color:
-                                          _applicationStatus ==
-                                              legacy.ApplicationStatus.accepted
-                                          ? Colors.green
-                                          : _applicationStatus ==
-                                                legacy
-                                                    .ApplicationStatus
-                                                    .rejected
-                                          ? Colors.grey
-                                          : Colors.orange,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _getLocalizedApplicationStatus(_applicationStatus!.name),
-                                      style: TextStyle(
-                                        color:
-                                            _applicationStatus ==
-                                                legacy
-                                                    .ApplicationStatus
-                                                    .accepted
-                                            ? Colors.green[800]
-                                            : _applicationStatus ==
-                                                  legacy
-                                                      .ApplicationStatus
-                                                      .rejected
-                                            ? Colors.grey[700]
-                                            : Colors.orange[800],
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (_applicationStatus ==
-                                    legacy.ApplicationStatus.accepted) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    AppLocalizations.of(context)!.communicateWithRequester,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.green,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  ElevatedButton.icon(
-                                    onPressed: () => _startChat(request),
-                                    icon: const Icon(Icons.chat),
-                                    label: Text(AppLocalizations.of(context)!.chatWithRequester),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.green,
-                                      foregroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                  ),
-                                ] else if (_applicationStatus ==
-                                    legacy.ApplicationStatus.rejected) ...[
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'The requester has chosen someone else.\nKeep looking — there are more requests!',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        )
-                      else
+                      if (_applicationStatus == null)
                         Opacity(
                           opacity: request.status != RequestStatusEnum.open
                               ? 0.5
@@ -1708,7 +1595,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 250,
+          height: 280,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: _matchedAssets.length,
@@ -1781,4 +1668,84 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       ),
     );
   }
+
+  Widget _buildApplicationStatusBanner(HelpRequestEntity request) {
+    if (_applicationStatus == null) return const SizedBox.shrink();
+
+    final Color color;
+    final IconData icon;
+
+    switch (_applicationStatus!) {
+      case legacy.ApplicationStatus.accepted:
+        color = Colors.green;
+        icon = Icons.check_circle;
+        break;
+      case legacy.ApplicationStatus.rejected:
+        color = Colors.grey;
+        icon = Icons.sentiment_neutral_outlined;
+        break;
+      case legacy.ApplicationStatus.pending:
+        color = Colors.orange;
+        icon = Icons.access_time_filled;
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getLocalizedApplicationStatus(_applicationStatus!.name),
+                  style: TextStyle(
+                    color: color.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                if (_applicationStatus == legacy.ApplicationStatus.accepted)
+                  Text(
+                    AppLocalizations.of(context)!.communicateWithRequester,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: color.withValues(alpha: 0.7),
+                    ),
+                  )
+                else if (_applicationStatus == legacy.ApplicationStatus.rejected)
+                  const Text(
+                    'The requester chose someone else. Keep looking!',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
+              ],
+            ),
+          ),
+          if (_applicationStatus == legacy.ApplicationStatus.accepted)
+            TextButton.icon(
+              onPressed: () => _startChat(request),
+              icon: Icon(Icons.chat, size: 16, color: color),
+              label: Text(
+                'Chat',
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                backgroundColor: color.withValues(alpha: 0.1),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
+

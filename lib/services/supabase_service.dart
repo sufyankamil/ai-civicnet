@@ -23,6 +23,10 @@ List<HelpRequest> parseHelpRequests(List<dynamic> data) {
   return data.map((json) => HelpRequest.fromJson(json)).toList();
 }
 
+List<CommunityAsset> parseCommunityAssets(List<dynamic> data) {
+  return data.map((json) => CommunityAsset.fromJson(json)).toList();
+}
+
 class SupabaseService {
   // Service for Supabase interactions
   static final SupabaseService _instance = SupabaseService._internal();
@@ -208,13 +212,15 @@ class SupabaseService {
         .map((data) => data.map((json) => HelpRequest.fromJson(json)).toList());
   }
 
-  // Fetch requests (future)
-  Future<List<HelpRequest>> getHelpRequests() async {
+  // Fetch requests (future) with optional radius and center
+  Future<List<HelpRequest>> getHelpRequests({double? centerLat, double? centerLng, double? radiusKm}) async {
     try {
-      final response = await _client
+      final query = _client
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
-          .order('created_at', ascending: false).withServerTimeout();
+          .select('*, profiles:requester_id(name, avatar_url, lat, lng)')
+          .order('created_at', ascending: false);
+
+      final response = await query.withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
 
@@ -236,24 +242,29 @@ class SupabaseService {
                 .toList();
       }
 
-      if (currentUserProfile != null) {
-        // Calculate dynamic distances
-        if (currentUserProfile.lat != null && currentUserProfile.lng != null &&
-            currentUserProfile.lat != 0 && currentUserProfile.lng != 0) {
-          requests = requests.map((r) {
-            if (r.lat != 0 && r.lng != 0) { // Valid request location check
-              double distKm = _calculateDistance(
-                  r.lat, r.lng, currentUserProfile.lat!,
-                  currentUserProfile.lng!);
-              return r.copyWith(distance: '${distKm.toStringAsFixed(1)} km');
-            }
-            return r.copyWith(distance: 'Unknown');
+      // Dynamic distance calculation and filtering
+      final lat = centerLat ?? currentUserProfile?.lat;
+      final lng = centerLng ?? currentUserProfile?.lng;
+
+      if (lat != null && lng != null && lat != 0 && lng != 0) {
+        requests = requests.map((r) {
+          if (r.lat != 0 && r.lng != 0) {
+            double distKm = _calculateDistance(r.lat, r.lng, lat, lng);
+            return r.copyWith(distance: '${distKm.toStringAsFixed(1)} km');
+          }
+          return r.copyWith(distance: 'Unknown');
+        }).toList();
+
+        // Apply radius filter if provided
+        if (radiusKm != null) {
+          requests = requests.where((r) {
+            if (r.lat == 0 || r.lng == 0) return false;
+            double dist = _calculateDistance(r.lat, r.lng, lat, lng);
+            return dist <= radiusKm;
           }).toList();
-        } else {
-          // User location is unknown, all distances should be unknown
-          requests =
-              requests.map((r) => r.copyWith(distance: 'Unknown')).toList();
         }
+      } else {
+        requests = requests.map((r) => r.copyWith(distance: 'Unknown')).toList();
       }
 
       return requests;
@@ -435,7 +446,7 @@ class SupabaseService {
     }
   }
 
-  Future<List<User>> getActiveNeighbors() async {
+  Future<List<User>> getActiveNeighbors({double? centerLat, double? centerLng, double? radiusKm}) async {
     try {
       final response = await _client
           .from('profiles')
@@ -446,7 +457,21 @@ class SupabaseService {
           .withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
-      return data.map((json) => User.fromMap(json)).toList();
+      List<User> neighbors = data.map((json) => User.fromMap(json)).toList();
+
+      final currentUserProfile = await getCurrentUserProfile();
+      final lat = centerLat ?? currentUserProfile?.lat;
+      final lng = centerLng ?? currentUserProfile?.lng;
+
+      if (lat != null && lng != null && lat != 0 && lng != 0 && radiusKm != null) {
+        neighbors = neighbors.where((n) {
+          if (n.lat == null || n.lng == null) return false;
+          double dist = _calculateDistance(n.lat!, n.lng!, lat, lng);
+          return dist <= radiusKm;
+        }).toList();
+      }
+
+      return neighbors;
     } catch (e) {
       logger.e('Error fetching active neighbors: $e');
       return [];
@@ -711,6 +736,39 @@ class SupabaseService {
     }
   }
 
+
+  // --- Community Assets Discovery ---
+
+  Future<List<CommunityAsset>> getCommunityAssets({double? centerLat, double? centerLng, double? radiusKm, String? category}) async {
+    try {
+      var query = _client.from('community_assets').select('*, profiles:owner_id(name, avatar_url, lat, lng)');
+      
+      if (category != null && category != 'All') {
+        query = query.eq('category', category);
+      }
+
+      final response = await query.neq('status', 'private').order('created_at', ascending: false).withServerTimeout();
+      final List<dynamic> data = response as List<dynamic>;
+      List<CommunityAsset> assets = await compute(parseCommunityAssets, data);
+
+      final currentUserProfile = await getCurrentUserProfile();
+      final lat = centerLat ?? currentUserProfile?.lat;
+      final lng = centerLng ?? currentUserProfile?.lng;
+
+      if (lat != null && lng != null && lat != 0 && lng != 0 && radiusKm != null) {
+        assets = assets.where((a) {
+          if (a.lat == null || a.lng == null) return false;
+          double dist = _calculateDistance(a.lat!, a.lng!, lat, lng);
+          return dist <= radiusKm;
+        }).toList();
+      }
+
+      return assets;
+    } catch (e) {
+      logger.e('Error fetching community assets: $e');
+      return [];
+    }
+  }
 
   // Haversine formula — returns distance in km
   double _calculateDistance(double lat1, double lng1, double lat2,
