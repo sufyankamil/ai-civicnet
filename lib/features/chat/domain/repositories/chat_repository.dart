@@ -15,4 +15,5 @@ abstract class ChatRepository {
   Future<Either<Failure, List<String>>> getBlockedUserIds();
   Future<Either<Failure, bool>> isUserBlocked(String userId);
   Future<Either<Failure, void>> reportUser(String userId, String reason);
+  Future<Either<Failure, void>> deleteConversation(String conversationId);
 }

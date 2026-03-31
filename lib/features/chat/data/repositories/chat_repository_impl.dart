@@ -150,4 +150,15 @@ class ChatRepositoryImpl implements ChatRepository {
       return Left(ServerFailure('Failed to mark all as read: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> deleteConversation(String conversationId) async {
+    try {
+      await remoteDataSource.deleteConversation(conversationId);
+      return const Right(null);
+    } catch (e) {
+      logger.e('Failed to delete conversation', error: e);
+      return Left(ServerFailure('Failed to delete conversation: $e'));
+    }
+  }
 }

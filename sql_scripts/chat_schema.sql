@@ -28,6 +28,10 @@ create policy "Users can insert conversations they are part of"
   on conversations for insert
   with check (auth.uid() = any(participant_ids));
 
+create policy "Users can update their own conversations"
+  on conversations for update
+  using (auth.uid() = any(participant_ids));
+
 -- RLS Policies for Messages
 alter table messages enable row level security;
 

@@ -402,7 +402,7 @@ class SupabaseService {
           helpCount: data['help_count'] ?? 0,
           reportCount: data['report_count'] ?? 0,
           ratingCount: (data['rating_count'] ?? 0).toInt(),
-          points: data['points'] ?? 0,
+          points: (data['points'] ?? 0).toInt(),
           skills: skillsList,
           lat: (data['lat'] ?? 0.0).toDouble(),
           lng: (data['lng'] ?? 0.0).toDouble(),
@@ -836,18 +836,35 @@ class SupabaseService {
 
         if (otherId.isEmpty) continue;
 
+        // Check for point-in-time deletion
+        final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
+        final String? lastDeletedAtStr = deletionTimestamps[user.id];
+        final DateTime? lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
+
         final profile = await _client.from('profiles').select().eq(
             'id', otherId).maybeSingle().withServerTimeout();
         final name = profile?['name'] ?? 'Unknown User';
         final avatar = profile?['avatar_url'] ?? '';
 
-        final lastMsgRes = await _client
+        // Only fetch messages sent AFTER the last deletion timestamp
+        var lastMsgQuery = _client
             .from('messages')
             .select()
-            .eq('conversation_id', conv['id'])
+            .eq('conversation_id', conv['id']);
+        
+        if (lastDeletedAt != null) {
+          lastMsgQuery = lastMsgQuery.gt('created_at', lastDeletedAt.toUtc().toIso8601String());
+        }
+
+        final lastMsgRes = await lastMsgQuery
             .order('created_at', ascending: false)
             .limit(1)
             .maybeSingle().withServerTimeout();
+
+        // If no message appears after deletion, the conversation is effectively hidden
+        if (lastMsgRes == null && lastDeletedAt != null) {
+          continue;
+        }
 
         final unreadMessagesRes = await _client
             .from('messages')
@@ -879,6 +896,31 @@ class SupabaseService {
     } catch (e, stack) {
       logger.e('Error fetching conversations: $e\n$stack');
       return [];
+    }
+  }
+
+  Future<void> deleteConversation(String conversationId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      // Fetch current deletion timestamps
+      final response = await _client
+          .from('conversations')
+          .select('user_deletion_timestamps')
+          .eq('id', conversationId)
+          .single().withServerTimeout();
+      
+      final Map<String, dynamic> timestamps = Map<String, dynamic>.from(response['user_deletion_timestamps'] ?? {});
+      timestamps[user.id] = DateTime.now().toUtc().toIso8601String();
+
+      await _client.from('conversations').update({
+        'user_deletion_timestamps': timestamps,
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', conversationId).withServerTimeout();
+    } catch (e) {
+      logger.e('Error deleting conversation: $e');
+      rethrow;
     }
   }
 
@@ -920,20 +962,41 @@ class SupabaseService {
   }
 
   Stream<List<Message>> getMessagesStream(String conversationId) {
+    final user = _client.auth.currentUser;
+    if (user == null) return const Stream.empty();
+
+    // We fetch the conversation to get its deletion timestamp, then fetch messages
     return _client
-        .from('messages')
+        .from('conversations')
         .stream(primaryKey: ['id'])
-        .eq('conversation_id', conversationId)
-        .order('created_at', ascending: true)
-        .map((data) =>
-        data.map((json) {
-          final mutableJson = Map<String, dynamic>.from(json);
-          if (mutableJson['content'] != null) {
-            mutableJson['content'] =
-                EncryptionService().decryptPayload(mutableJson['content']);
-          }
-          return Message.fromJson(mutableJson);
-        }).toList());
+        .eq('id', conversationId)
+        .asyncMap((convList) async {
+          if (convList.isEmpty) return <Message>[];
+          final conv = convList.first;
+          final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
+          final String? lastDeletedAtStr = deletionTimestamps[user.id];
+          final DateTime? lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
+          
+          // Now fetch the actual messages
+          final messagesRes = await _client
+              .from('messages')
+              .select()
+              .eq('conversation_id', conversationId)
+              .order('created_at', ascending: true).withServerTimeout();
+          
+          final List<dynamic> data = messagesRes as List<dynamic>;
+          return data.map((json) {
+            final mutableJson = Map<String, dynamic>.from(json);
+            if (mutableJson['content'] != null) {
+              mutableJson['content'] =
+                  EncryptionService().decryptPayload(mutableJson['content']);
+            }
+            return Message.fromJson(mutableJson);
+          }).where((m) {
+            if (lastDeletedAt == null) return true;
+            return m.createdAt.isAfter(lastDeletedAt);
+          }).toList();
+        });
   }
 
   Future<void> sendMessage(String conversationId, String content,

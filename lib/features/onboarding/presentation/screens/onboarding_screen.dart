@@ -451,7 +451,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           const SizedBox(width: 39),
           AnimatedBuilder(
             animation: _flowController,
-            builder: (_, __) => CustomPaint(
+            builder: (_, _) => CustomPaint(
               size: const Size(8, 32),
               painter: _PacketPainter(
                 from: from,
