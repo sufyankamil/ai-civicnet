@@ -21,6 +21,7 @@ import '../../../news/presentation/components/news_section.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../core/services/version_service.dart';
 import '../../../../models/models.dart';
+import '../widgets/update_popup.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? initialFilter;
@@ -85,10 +86,31 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       await Future.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
       
-      UpdateNoticeModal.show(
+      await UpdateNoticeModal.show(
         context,
         AppUpdates.currentUpdates,
         () => VersionService.markAsNotified(),
+      );
+    }
+
+    // Check for Store Updates after "What's New" or if no "What's New" was shown
+    if (mounted) {
+      _checkStoreUpdate();
+    }
+  }
+
+  Future<void> _checkStoreUpdate() async {
+    // Add a slight delay if What's New was just shown, or just a general delay for startup stability
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    final storeVersion = await VersionService.checkStoreUpdateAvailable();
+    if (storeVersion != null && mounted) {
+      UpdatePopup.show(
+        context,
+        newVersion: storeVersion,
+        onUpdate: () => VersionService.upgrader.sendUserToAppStore(),
+        onLater: () => logger.d('User chose to update later'),
       );
     }
   }
@@ -211,6 +233,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _showFeedbackInvitation() {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
@@ -477,11 +500,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         slivers: [
           // 0. AI Community Briefing (The Scribe)
           SliverToBoxAdapter(
-            child: Obx(() => CommunityBriefingCard(
-              briefing: _viewModel.communityBriefing,
-              isLoading: _viewModel.isBriefingLoading,
-              onRefresh: _viewModel.fetchCommunityBriefing,
-            )),
+            child: Obx(() {
+              if (_viewModel.communityBriefing.isEmpty && !_viewModel.isBriefingLoading) {
+                return const SizedBox.shrink();
+              }
+              
+              return CommunityBriefingCard(
+                briefing: _viewModel.communityBriefing,
+                isLoading: _viewModel.isBriefingLoading,
+                onRefresh: () => _viewModel.fetchCommunityBriefing(force: true),
+              );
+            }),
           ),
 
           // 1. AI Match (Transforming Header)
@@ -715,6 +744,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void _showPollsBottomSheet(BuildContext context, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => DraggableScrollableSheet(
