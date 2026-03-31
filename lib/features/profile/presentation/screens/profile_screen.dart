@@ -10,7 +10,7 @@ import '../components/verification_request_dialog.dart';
 import '../components/impact_dashboard.dart';
 import '../components/milestone_gallery.dart';
 import '../components/impact_heatmap.dart';
-import '../components/privacy_settings.dart';
+// import '../components/privacy_settings.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
@@ -154,11 +154,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                           child: _buildSkillsSection(user, isDark),
                         ),
                         const SizedBox(height: 28),
+                        /*
                         SlideFadeTransition(
                           delay: const Duration(milliseconds: 850),
                           child: PrivacySettingsSection(isDark: isDark, user: user),
                         ),
                         const SizedBox(height: 28),
+                        */
                         SlideFadeTransition(
                           delay: const Duration(milliseconds: 1000),
                           child: _buildActionsSection(context, isDark, user),
