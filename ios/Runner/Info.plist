@@ -36,6 +36,8 @@
 		<string>This app needs access to location to show help requests near you.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>This app needs access to location to show help requests near you.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>This app needs access to location to show help requests near you.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>We need access to your microphone to send voice messages.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
