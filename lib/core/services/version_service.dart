@@ -86,24 +86,29 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Premium Visual Identity',
-      description: "Experience our new 'AI Aura' aesthetic, featuring a beautifully redesigned app icon and immersive launch screens.",
-      icon: Icons.diamond_rounded,
+      title: 'Request Detail Renovation',
+      description: "A complete 'Aura' makeover for the Request Detail screen, featuring glassmorphic cards and improved community engagement.",
+      icon: Icons.auto_awesome_rounded,
     ),
     UpdateNote(
-      title: 'Fluid Authentication',
-      description: 'Logging in and signing up is now smoother than ever with upgraded glassmorphic designs and flowing entry animations.',
-      icon: Icons.animation_rounded,
+      title: 'Modern New Request Flow',
+      description: 'We have redesigned the New Request form with premium chips, interactive maps, and AI-powered categorization.',
+      icon: Icons.add_circle_rounded,
     ),
     UpdateNote(
-      title: 'Refined Navigation',
-      description: 'We have perfected the bottom navigation alignment and moved the Community AI to your Profile for a cleaner layout.',
-      icon: Icons.space_dashboard_rounded,
+      title: 'Interactive Discoveries',
+      description: 'Tap on any location map to open it directly in Google Maps or Apple Maps for seamless navigation.',
+      icon: Icons.map_rounded,
     ),
     UpdateNote(
-      title: 'Upgraded Web Experience',
-      description: "Our Privacy Policy, Terms, and Support pages have been completely overhauled to match CivicNet's premium feel.",
-      icon: Icons.language_rounded,
+      title: 'Premium Modal Experience',
+      description: "Asset details and suggested tools now feature a high-fidelity 'Aura' design with better typography and layout.",
+      icon: Icons.view_quilt_rounded,
+    ),
+    UpdateNote(
+      title: 'Header Refinements',
+      description: "Better readability in Home Screen header and a quick access 'My Activity' icon to track your history.",
+      icon: Icons.history_rounded,
     ),
   ];
 }

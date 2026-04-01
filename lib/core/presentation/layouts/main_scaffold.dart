@@ -116,17 +116,24 @@ class _MainScaffoldState extends State<MainScaffold> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(35),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Theme.of(context).brightness == Brightness.light
-                            ? Colors.white.withValues(alpha: 0.7)
-                            : Colors.black.withValues(alpha: 0.5),
+                            ? Colors.white.withValues(alpha: 0.6)
+                            : Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(35),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          width: 1,
+                          color: (Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.white).withValues(alpha: 0.15),
+                          width: 1.5,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -134,26 +141,23 @@ class _MainScaffoldState extends State<MainScaffold> {
 
                 // 2. Sliding Highlight
                 AnimatedPositioned(
-                  duration: _isDragging ? Duration.zero : const Duration(milliseconds: 300),
-                  curve: Curves.easeOutCubic,
+                  duration: _isDragging ? Duration.zero : const Duration(milliseconds: 400),
+                  curve: Curves.easeOutBack,
                   left: targetX,
                   top: 0,
                   bottom: 0,
                   width: itemWidth,
                   child: Center(
                     child: Container(
-                      width: 44,
-                      height: 44,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                           BoxShadow(
-                             color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
-                             blurRadius: 8,
-                             spreadRadius: 0,
-                           )
-                        ]
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
                     ),
                   ),

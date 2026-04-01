@@ -31,7 +31,7 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
 
     return Container(
       padding: EdgeInsets.fromLTRB(horizontalPadding, 2.0, horizontalPadding, 16.0),
-      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: t > 0.5 ? (t - 0.5) * 2 : 0.0), // Fade in background as it sticks
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: t > 0.5 ? (t - 0.5) * 2 : 0.0),
       child: AppHaptic(
         onTap: () => context.push('/request/${request.id}'),
         child: Container(
@@ -41,28 +41,44 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                AppColors.primaryLight.withValues(alpha: 0.9),
-                const Color(0xFF6248FF).withValues(alpha: 0.9),
+                AppColors.primaryLight.withValues(alpha: 0.8),
+                const Color(0xFF6248FF).withValues(alpha: 0.8),
               ],
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryLight.withValues(alpha: 0.3 * (1 - t * 0.5)),
-                blurRadius: 15 * (1 - t * 0.5),
-                offset: Offset(0, 5 * (1 - t * 0.5)),
+                color: AppColors.primaryLight.withValues(alpha: 0.2 * (1 - t * 0.5)),
+                blurRadius: 20 * (1 - t * 0.5),
+                offset: Offset(0, 10 * (1 - t * 0.5)),
               ),
             ],
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
           ),
           clipBehavior: Clip.antiAlias,
           child: Stack(
             children: [
-              // Glass effect for the pill
+              // Glass highlight
+              Positioned(
+                top: -30,
+                right: -30,
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
               BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   padding: EdgeInsets.all(cardPadding),
                   decoration: BoxDecoration(
-                   color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.1),
+                   color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.05),
                    borderRadius: BorderRadius.circular(borderRadius),
                   ),
                   child: Column(
@@ -74,7 +90,7 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _buildMatchBadge(matchPercentage),
-                            const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                            const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -82,7 +98,7 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                       Row(
                         children: [
                           if (t > 0.5) ...[
-                             const Icon(Icons.auto_awesome, color: Colors.white, size: 18),
+                             const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
                              const SizedBox(width: 8),
                           ],
                           Expanded(
@@ -92,12 +108,12 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                               children: [
                                 if (t < 0.3) 
                                   const Text(
-                                    'TRUE AI: TOP MATCH',
+                                    'PREMIUM AI MATCH',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 9,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
-                                      letterSpacing: 1.5,
+                                      letterSpacing: 2.0,
                                     ),
                                   ),
                                 Text(
@@ -107,6 +123,13 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                     height: 1.1,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withValues(alpha: 0.2),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -128,7 +151,7 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                             request.description,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.8),
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

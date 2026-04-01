@@ -1,8 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../l10n/app_localizations.dart';
 
 import '../../../../theme/app_theme.dart';
@@ -14,13 +16,11 @@ import '../../../../components/request_card_skeleton.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/poll_card.dart';
 import '../widgets/guild_card.dart';
-import '../widgets/ai_match_header_delegate.dart';
 import '../widgets/community_briefing_card.dart';
 import '../widgets/update_notice_modal.dart';
 import '../../../news/presentation/components/news_section.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../core/services/version_service.dart';
-import '../../../../models/models.dart';
 import '../widgets/update_popup.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -33,6 +33,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+  static bool _hasShownLocationPrompt = false;
   final HomeViewModel _viewModel = Get.find<HomeViewModel>();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _filterScrollController = ScrollController();
@@ -40,56 +41,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   bool _showSafetyBanner = false;
   String _newsSearchQuery = '';
 
-  List<String> _getSortedFilterKeys(AppLocalizations l10n) {
-    final allKeys = ['All', 'Recommended', 'Emergency', 'Tech Support', 'Household'];
-    final selected = _viewModel.selectedFilter;
-    
-    if (selected == 'All') return allKeys;
-    
-    final sorted = List<String>.from(allKeys);
-    final index = sorted.indexOf(selected);
-    if (index != -1) {
-      sorted.removeAt(index);
-      sorted.insert(0, selected);
-    }
-    return sorted;
-  }
-
-  Color _getFilterColor(String filterKey) {
-    switch (filterKey) {
-      case 'Emergency':
-        return Colors.red;
-      case 'Household':
-        return Colors.orange;
-      case 'Tech Support':
-        return Colors.blue;
-      case 'Recommended':
-        return Colors.purple; // AI Aura
-      default:
-        return AppColors.primaryLight;
-    }
-  }
-
-  String _getFilterLabel(String key, AppLocalizations l10n) {
-    switch (key) {
-      case 'All': return l10n.categoryAll;
-      case 'Recommended': return l10n.categoryRecommended;
-      case 'Emergency': return l10n.categoryEmergency;
-      case 'Tech Support': return l10n.categoryTechSupport;
-      case 'Household': return l10n.categoryHousehold;
-      default: return key;
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
-        setState(() {
-          // Trigger rebuild to update search hint
-        });
+        setState(() {}); // Update search hint
       }
     });
 
@@ -104,6 +62,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _checkVersionUpdate();
     });
   }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    _filterScrollController.dispose();
+    super.dispose();
+  }
+
+  // --- Logic Helpers ---
 
   Future<void> _checkSafetyBanner() async {
     final prefs = await SharedPreferences.getInstance();
@@ -124,28 +92,16 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   Future<void> _checkVersionUpdate() async {
     final newVersion = await VersionService.checkUpdateNeeded();
     if (newVersion != null && mounted) {
-      // Small additional delay to allow the home screen to settle
       await Future.delayed(const Duration(milliseconds: 1500));
       if (!mounted) return;
-      
-      await UpdateNoticeModal.show(
-        context,
-        AppUpdates.currentUpdates,
-        () => VersionService.markAsNotified(),
-      );
+      await UpdateNoticeModal.show(context, AppUpdates.currentUpdates, () => VersionService.markAsNotified());
     }
-
-    // Check for Store Updates after "What's New" or if no "What's New" was shown
-    if (mounted) {
-      _checkStoreUpdate();
-    }
+    if (mounted) _checkStoreUpdate();
   }
 
   Future<void> _checkStoreUpdate() async {
-    // Add a slight delay if What's New was just shown, or just a general delay for startup stability
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
-
     final storeVersion = await VersionService.checkStoreUpdateAvailable();
     if (storeVersion != null && mounted) {
       UpdatePopup.show(
@@ -157,119 +113,84 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _tabController.dispose();
-    _filterScrollController.dispose();
-    super.dispose();
-  }
-
   Future<void> _checkLocationPermission() async {
-    await Future.delayed(const Duration(seconds: 1)); // Reduced delay for better UX
-    if (!mounted) return;
-
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted || _hasShownLocationPrompt) return;
+    
     final user = await SupabaseService().getCurrentUserProfile();
-    if (user != null && (user.lat == 0.0 || user.lng == 0.0 || user.lat == null)) {
+    if (user != null && (user.lat == 0.0 || user.lat == null)) {
+       _hasShownLocationPrompt = true;
        if (!mounted) return;
-       
        showDialog(
          context: context,
          barrierDismissible: false,
          builder: (context) {
            final l10n = AppLocalizations.of(context)!;
            return AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.location_on, color: AppColors.primaryLight, size: 28),
-              const SizedBox(width: 8),
-              Text(l10n.locationPermissionTitle),
-            ],
-          ),
-          content: Text(l10n.locationPermissionDesc),
-          actions: [
-            AppHaptic(
-              onTap: () => Navigator.of(context).pop(),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
+            title: Row(
+              children: [
+                const Icon(Icons.location_on, color: AppColors.primaryLight, size: 28),
+                const SizedBox(width: 8),
+                Text(l10n.locationPermissionTitle),
+              ],
+            ),
+            content: Text(l10n.locationPermissionDesc),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
                 child: Text(l10n.notNow, style: const TextStyle(color: Colors.grey)),
               ),
-            ),
-            AppElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _requestLocationUpdates();
-              },
-              child: Text(l10n.allowAccess),
-            ),
-           ],
-         );
-       },
-     );
+              AppElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _requestLocationUpdates();
+                },
+                child: Text(l10n.allowAccess),
+              ),
+             ],
+           );
+         },
+       );
     }
   }
 
   Future<void> _requestLocationUpdates() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      if (mounted) ToastService.showInfo(context, 'Location services are disabled.');
-      return;
-    }
+    if (!serviceEnabled) return;
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-         if (mounted) ToastService.showInfo(context, 'Location permission denied.');
-         return;
-      }
+      if (permission == LocationPermission.denied) return;
     }
-    
-    if (permission == LocationPermission.deniedForever) {
-      if (mounted) ToastService.showInfo(context, 'Location permissions are permanently denied, we cannot request permissions.');
-      return;
-    }
+    if (permission == LocationPermission.deniedForever) return;
 
     try {
       final position = await Geolocator.getCurrentPosition();
       await SupabaseService().updateUserLocation(position.latitude, position.longitude);
-      if (mounted) ToastService.showSuccess(context, 'Location updated successfully!');
-      
+      if (mounted) ToastService.showSuccess(context, 'Location updated!');
       _viewModel.fetchRequests();
     } catch (e) {
       logger.e('Error updating location: $e');
-      if (mounted) ToastService.showError(context, 'Unable to update location. Please try again.');
     }
   }
 
   Future<void> _checkFeedbackPrompt() async {
-    // Wait for 12 seconds as requested (10-15s range)
     await Future.delayed(const Duration(seconds: 12));
     if (!mounted) return;
-
     final prefs = await SharedPreferences.getInstance();
-    
-    // Check Grace Period (Minimum 3 launches)
     final launchCount = prefs.getInt('app_launch_count') ?? 0;
-    if (launchCount < 3) {
-      logger.d('Feedback prompt suppressed: New user (Launch $launchCount < 3)');
-      return;
-    }
+    if (launchCount < 3) return;
 
     final lastPromptTimeStr = prefs.getString('last_feedback_prompt_time');
-    final lastPromptType = prefs.getString('last_feedback_prompt_type'); // 'submit' or 'ignore'
+    final lastPromptType = prefs.getString('last_feedback_prompt_type');
 
     if (lastPromptTimeStr != null) {
       final lastPromptTime = DateTime.parse(lastPromptTimeStr);
-      final now = DateTime.now();
-      final difference = now.difference(lastPromptTime).inDays;
-
+      final difference = DateTime.now().difference(lastPromptTime).inDays;
       if (lastPromptType == 'submit' && difference < 30) return;
       if (lastPromptType == 'ignore' && difference < 5) return;
     }
-
-    if (!mounted) return;
-
     _showFeedbackInvitation();
   }
 
@@ -282,743 +203,708 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(bottom: 24),
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
             const Icon(Icons.favorite_rounded, color: AppColors.accentLight, size: 48),
             const SizedBox(height: 16),
-            Text(
-              AppLocalizations.of(context)!.enjoyingApp,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(AppLocalizations.of(context)!.enjoyingApp, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            Text(
-              AppLocalizations.of(context)!.feedbackDescription,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.5,
-              ),
-            ),
+            Text(AppLocalizations.of(context)!.feedbackDescription, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 32),
             Row(
               children: [
                 Expanded(
                   child: TextButton(
-                    onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
-                      await prefs.setString('last_feedback_prompt_type', 'ignore');
-                      if (context.mounted) Navigator.pop(context);
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.maybeLater,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(AppLocalizations.of(context)!.maybeLater),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () async {
+                  child: AppElevatedButton(
+                    onPressed: () {
                       Navigator.pop(context);
-                      // Navigator to feedback screen
-                      await context.push('/feedback');
-                      
-                      // If they came back from feedback, we assume they submitted or at least engaged
-                      // The FeedbackScreen will handle the submission logic, but we mark it here too
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
-                      await prefs.setString('last_feedback_prompt_type', 'submit');
+                      context.push('/feedback');
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryLight,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.giveFeedback,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    child: Text(AppLocalizations.of(context)!.giveFeedback),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
           ],
         ),
       ),
     );
   }
+
+  // --- Build Methods ---
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(l10n),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-            // Search Bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) {
-                  if (_tabController.index == 0) {
-                    _viewModel.onSearchChanged(value);
-                  } else {
-                    setState(() {
-                      _newsSearchQuery = value;
-                    });
-                  }
-                },
-                decoration: InputDecoration(
-                  hintText: _tabController.index == 0 
-                      ? l10n.searchHelp 
-                      : l10n.searchNews,
-                  hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainer,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          gradient: RadialGradient(
+            center: const Alignment(0.7, -0.6),
+            radius: 1.5,
+            colors: [
+              AppColors.primaryLight.withValues(alpha: isDark ? 0.08 : 0.05),
+              Theme.of(context).scaffoldBackgroundColor,
+            ],
+            stops: const [0.0, 0.8],
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: CustomScrollView(
+            slivers: [
+              _buildModernSliverAppBar(l10n),
+              _buildPinnedSearchAndTabs(l10n),
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    if (_showSafetyBanner) _buildSafetyBanner(l10n),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: _tabController.index == 0
+                          ? _buildRequestsTabContent(l10n)
+                          : _buildNewsTabContent(l10n),
+                    ),
+                  ],
                 ),
               ),
-            ),
-
-            _buildFilters(l10n),
-            if (_showSafetyBanner) _buildSafetyBanner(l10n),
-
-            // TabBar for switching between Requests and News
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: TabBar(
-                controller: _tabController,
-                isScrollable: false,
-                labelColor: Theme.of(context).primaryColor,
-                unselectedLabelColor: Colors.grey,
-                indicatorWeight: 4,
-                indicatorSize: TabBarIndicatorSize.label,
-                indicatorColor: Theme.of(context).primaryColor,
-                dividerColor: Colors.transparent,
-                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                tabs: [
-                  Tab(text: AppLocalizations.of(context)!.homeTitle),
-                  Tab(text: AppLocalizations.of(context)!.communityTitle),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildRequestsTab(l10n),
-                  _buildNewsTab(l10n),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.appTitle,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  l10n.findMatches,
+  Widget _buildModernSliverAppBar(AppLocalizations l10n) {
+    return SliverAppBar(
+      expandedHeight: 108,
+      floating: false,
+      pinned: false,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+          child: _buildHeaderCompact(l10n),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCompact(AppLocalizations l10n) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FutureBuilder(
+              future: SupabaseService().getCurrentUserProfile(),
+              builder: (context, snapshot) {
+                final name = snapshot.data?.name ?? 'Friend';
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                return Text(
+                  'Hey, $name!',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                    fontWeight: FontWeight.w500,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: () => context.push('/activity'),
-            icon: const Icon(Icons.assignment_outlined, color: Colors.grey),
-          ),
-          FutureBuilder(
-            future: SupabaseService().getCurrentUserProfile(),
-            builder: (context, snapshot) {
-              final user = snapshot.data;
-              if (user != null && (user.role == 'admin' || user.role == 'super_admin')) {
-                return IconButton(
-                  onPressed: () => context.push('/create-poll'),
-                  icon: const Icon(Icons.add_circle_outline, color: AppColors.primaryLight),
                 );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          IconButton(
-            onPressed: () => context.push('/map'),
-            icon: const Icon(Icons.map_outlined, color: Colors.grey),
-            tooltip: 'Map Discovery',
-          ),
-          FutureBuilder(
-            future: SupabaseService().getCurrentUserProfile(),
-            builder: (context, snapshot) {
-               final user = snapshot.data;
-               final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
-               
-               return InkWell(
-                 onTap: () => context.push('/profile'), 
-                 borderRadius: BorderRadius.circular(20),
-                 child: Padding(
-                   padding: const EdgeInsets.all(4.0),
-                   child: CircleAvatar(
-                     radius: 20,
-                     backgroundColor: Colors.grey,
-                     backgroundImage: hasAvatar ? NetworkImage(user.avatarUrl) : null,
-                     child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white),
-                   ),
-                 ),
-               );
-             }
-           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRequestsTab(AppLocalizations l10n) {
-    return RefreshIndicator(
-      onRefresh: _viewModel.fetchRequests,
-      child: CustomScrollView(
-        slivers: [
-          // 0. AI Community Briefing (The Scribe)
-          SliverToBoxAdapter(
-            child: Obx(() {
-              if (_viewModel.communityBriefing.isEmpty && !_viewModel.isBriefingLoading) {
-                return const SizedBox.shrink();
-              }
-              
-              return CommunityBriefingCard(
-                briefing: _viewModel.communityBriefing,
-                isLoading: _viewModel.isBriefingLoading,
-                onRefresh: () => _viewModel.fetchCommunityBriefing(force: true),
-              );
-            }),
-          ),
-
-          // 1. AI Match (Transforming Header)
-          Obx(() {
-            final topMatch = _viewModel.topRecommendation;
-            final bool isListEmpty = _viewModel.filteredRequests.isEmpty;
-            
-            if (topMatch == null || topMatch.aiRelevanceScore < 0.6) {
-              return const SliverToBoxAdapter(child: SizedBox.shrink());
-            }
-            return SliverPersistentHeader(
-              // Include isListEmpty in key to force rebuild when height/pinned state changes
-              key: ValueKey('ai_match_${topMatch.id}_$isListEmpty'), 
-              pinned: !isListEmpty,
-              delegate: AiMatchHeaderDelegate(
-                request: topMatch,
-                maxExtentValue: isListEmpty ? 175.0 : 240.0,
-              ),
-            );
-          }),
-
-          // 2. Guilds Section
-          SliverToBoxAdapter(
-            child: Obx(() => _viewModel.guilds.isEmpty 
-              ? const SizedBox.shrink()
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            l10n.findYourGuild,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          TextButton(
-                            onPressed: () { /* TODO: Navigator to full discovery */ },
-                            child: Text(l10n.seeAll),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _viewModel.guilds.length,
-                        itemBuilder: (context, index) {
-                          final guild = _viewModel.guilds[index];
-                          return GuildCard(
-                            guild: guild,
-                            onToggleJoin: () => _viewModel.toggleGuildMembership(guild),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
+              },
             ),
-          ),
-
-          // 3. Requests List
-          Obx(() {
-            if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => const RequestCardSkeleton(),
-                    childCount: 5,
-                  ),
-                ),
-              );
-            }
-            
-            if (_viewModel.filteredRequests.isEmpty) {
-              return SliverFillRemaining(
-                hasScrollBody: false,
-                child: _buildRequestPlaceholder(l10n),
-              );
-            }
-
-            return SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              sliver: SliverList.builder(
-                itemCount: _viewModel.filteredRequests.length,
-                itemBuilder: (context, index) {
-                  return RequestCard(request: _viewModel.filteredRequests[index]);
-                },
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNewsTab(AppLocalizations l10n) {
-    return Column(
-      children: [
-        // Polls Moved to Discover tab
-        Obx(() {
-          if (_viewModel.polls.isEmpty) return const SizedBox.shrink();
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: InkWell(
-              onTap: () => _showPollsBottomSheet(context, l10n),
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primaryLight,
-                      AppColors.primaryLight.withValues(alpha: 0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.poll_rounded, color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.activePolls,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                          Text(
-                            l10n.pollsCount(_viewModel.polls.length),
-                            style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 11),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }),
-        Expanded(child: NewsSection(searchQuery: _newsSearchQuery)),
+            Text(l10n.appTitle, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.7)),
+          ],
+        ),
+        Row(
+          children: [
+            _buildHeaderIconButton(Icons.history_rounded, () => context.push('/activity')),
+            const SizedBox(width: 12),
+            _buildProfileAvatar(),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildSafetyBanner(AppLocalizations l10n) {
-    if (!_showSafetyBanner) return const SizedBox.shrink();
+  Widget _buildHeaderIconButton(IconData icon, VoidCallback onTap, {bool isClose = false}) {
+     return AppHaptic(
+       onTap: onTap,
+       child: Container(
+         padding: const EdgeInsets.all(10),
+         decoration: BoxDecoration(
+           color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: isClose ? 0.1 : 0.05),
+           shape: BoxShape.circle,
+         ),
+         child: Icon(icon, size: isClose ? 18 : 22, color: isClose ? Colors.grey[400] : Colors.grey[600]),
+       ),
+     );
+  }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.accentLight.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accentLight.withValues(alpha: 0.2)),
+  Widget _buildProfileAvatar() {
+    return FutureBuilder(
+      future: SupabaseService().getCurrentUserProfile(),
+      builder: (context, snapshot) {
+        final user = snapshot.data;
+        final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
+        return AppHaptic(
+          onTap: () => context.push('/profile'),
+          child: Hero(
+            tag: 'profile-avatar',
+            child: Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(gradient: AppColors.auraGradient, shape: BoxShape.circle),
+              child: CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: hasAvatar ? CachedNetworkImageProvider(user.avatarUrl) : null,
+                child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white, size: 20),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPinnedSearchAndTabs(AppLocalizations l10n) {
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _PinnedHeaderDelegate(
+        child: Container(
+          decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85)),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Column(
+                children: [
+                  Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 8), child: _buildAuraSearch(l10n)),
+                  _buildFloatingTabs(l10n),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _buildAuraSearch(AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1), width: 1),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => _tabController.index == 0 ? _viewModel.onSearchChanged(v) : setState(() => _newsSearchQuery = v),
+        decoration: InputDecoration(
+          hintText: _tabController.index == 0 ? l10n.searchHelp : l10n.searchNews,
+          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[400], size: 22),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingTabs(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(22),
+        ),
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            color: Theme.of(context).primaryColor,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [BoxShadow(color: Theme.of(context).primaryColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))],
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.grey[600],
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          dividerColor: Colors.transparent,
+          tabs: [Tab(text: l10n.homeTitle), Tab(text: l10n.communityTitle)],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequestsTabContent(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
       child: Column(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          _buildFiltersModern(l10n),
+          Obx(() => (_viewModel.communityBriefing.isNotEmpty || _viewModel.isBriefingLoading || _viewModel.topRecommendation != null)
+              ? _buildAiInsightSection(l10n) : const SizedBox.shrink()),
+          Obx(() => _viewModel.guilds.isEmpty ? const SizedBox.shrink() : _buildGuildsSection(l10n)),
+          _buildRequestsList(l10n),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNewsTabContent(AppLocalizations l10n) {
+    return Column(
+      children: [
+        Obx(() => _viewModel.polls.isEmpty ? const SizedBox.shrink() : _buildPollsTriggerCard(l10n)),
+        NewsSection(searchQuery: _newsSearchQuery),
+      ],
+    );
+  }
+
+  Widget _buildFiltersModern(AppLocalizations l10n) {
+    final filters = ['All', 'Recommended', 'Emergency', 'Tech Support', 'Household'];
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          return Obx(() {
+            final isSelected = _viewModel.selectedFilter == filter;
+            final color = _getFilterColor(filter);
+            return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: AppHaptic(
+              onTap: () => _viewModel.onFilterSelected(filter),
+              child: AnimatedScale(
+                scale: isSelected ? 1.05 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutBack,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 90,
+                  decoration: BoxDecoration(
+                    color: isSelected ? color : color.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? Colors.white.withValues(alpha: 0.2) : color.withValues(alpha: 0.1), 
+                      width: isSelected ? 2 : 1,
+                    ),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.4),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 4),
+                        ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.white.withValues(alpha: 0.2) : Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _getFilterIcon(filter), 
+                          color: isSelected ? Colors.white : color, 
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _getFilterLabel(filter, l10n), 
+                        style: TextStyle(
+                          fontSize: 10, 
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold, 
+                          color: isSelected ? Colors.white : color,
+                        ), 
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            );
+          });
+        },
+      ),
+    );
+  }
+
+  Color _getFilterColor(String f) {
+    if (f == 'Emergency') return Colors.red;
+    if (f == 'Household') return Colors.orange;
+    if (f == 'Tech Support') return Colors.blue;
+    if (f == 'Recommended') return Colors.purple;
+    return AppColors.primaryLight;
+  }
+
+  IconData _getFilterIcon(String f) {
+    if (f == 'All') return Icons.grid_view_rounded;
+    if (f == 'Recommended') return Icons.auto_awesome_rounded;
+    if (f == 'Emergency') return Icons.bolt_rounded;
+    if (f == 'Tech Support') return Icons.biotech_rounded;
+    if (f == 'Household') return Icons.home_rounded;
+    return Icons.category_rounded;
+  }
+
+  String _getFilterLabel(String k, AppLocalizations l) {
+    if (k == 'All') return l.categoryAll;
+    if (k == 'Recommended') return l.categoryRecommended;
+    if (k == 'Emergency') return l.categoryEmergency;
+    if (k == 'Tech Support') return l.categoryTechSupport;
+    if (k == 'Household') return l.categoryHousehold;
+    return k;
+  }
+
+  Widget _buildAiInsightSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_viewModel.communityBriefing.isNotEmpty || _viewModel.isBriefingLoading)
+          CommunityBriefingCard(
+            briefing: _viewModel.communityBriefing,
+            isLoading: _viewModel.isBriefingLoading,
+            onRefresh: () => _viewModel.fetchCommunityBriefing(force: true),
+          ),
+        if (_viewModel.topRecommendation != null && _viewModel.topRecommendation!.aiRelevanceScore > 0.6)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: RequestCard(request: _viewModel.topRecommendation!),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildGuildsSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(padding: const EdgeInsets.fromLTRB(20, 8, 16, 12), child: Text(l10n.findYourGuild, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+        SizedBox(
+          height: 170,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _viewModel.guilds.length,
+            itemBuilder: (context, index) {
+              final guild = _viewModel.guilds[index];
+              return GuildCard(guild: guild, onToggleJoin: () => _viewModel.toggleGuildMembership(guild));
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPollsTriggerCard(AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: AppHaptic(
+        onTap: () => _showPollsBottomSheet(l10n),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+            ),
+          ),
+          child: Row(
             children: [
-              const Icon(Icons.shield_rounded, color: AppColors.accentLight, size: 24),
-              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: AppColors.auraGradient,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primaryLight.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.how_to_vote_rounded, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.communityCommitment,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: AppColors.accentLight,
-                      ),
+                      l10n.activePolls,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
                     ),
-                    const SizedBox(height: 4),
                     Text(
-                      l10n.safetyDescription,
+                      'Voice your opinion in community decisions',
                       style: TextStyle(
-                        fontSize: 12,
-                        height: 1.4,
+                        fontSize: 13,
+                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5),
                       ),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                onPressed: _dismissSafetyBanner,
-                icon: const Icon(Icons.close_rounded, size: 20, color: Colors.grey),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Obx(() => Text(
+                  '${_viewModel.polls.length}',
+                  style: const TextStyle(
+                    color: AppColors.primaryLight,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                  ),
+                )),
               ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right_rounded, color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.3)),
             ],
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton(
-              onPressed: () => context.push('/commitment'),
-              style: TextButton.styleFrom(
-                backgroundColor: AppColors.accentLight.withValues(alpha: 0.1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text(
-                l10n.learnMoreSafety,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.accentLight,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  void _showPollsBottomSheet(BuildContext context, AppLocalizations l10n) {
+  void _showPollsBottomSheet(AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
-      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        builder: (_, scrollController) => Container(
+      builder: (context) => _buildPollsSheetContent(l10n),
+    );
+  }
+
+  Widget _buildPollsSheetContent(AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                color: (isDark ? AppColors.glassSurfaceDark : AppColors.glassSurfaceLight).withValues(alpha: 0.8),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            l10n.activePolls,
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                          ),
+                          _buildHeaderIconButton(Icons.close_rounded, () => Navigator.pop(context), isClose: true),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Obx(() => ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
+                        itemCount: _viewModel.polls.length,
+                        itemBuilder: (context, index) {
+                          final poll = _viewModel.polls[index];
+                          return PollCard(
+                            poll: poll,
+                            onVote: (id) => _viewModel.voteInPoll(poll.id, id),
+                            isCreator: false,
+                          );
+                        },
+                      )),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 24),
-              Text(
-                l10n.activePolls,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: Obx(() => ListView.builder(
-                  controller: scrollController,
-                  itemCount: _viewModel.polls.length,
-                  itemBuilder: (context, index) {
-                    final poll = _viewModel.polls[index];
-                    return FutureBuilder(
-                      future: SupabaseService().getCurrentUserProfile(),
-                      builder: (context, snapshot) {
-                        final user = snapshot.data;
-                        return PollCard(
-                          poll: poll,
-                          isCreator: user?.id == poll.creatorId,
-                          onVote: (optionId) => _viewModel.voteInPoll(poll.id, optionId),
-                          onDelete: () => _showDeletePollDialog(poll),
-                        );
-                      }
-                    );
-                  },
-                )),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showDeletePollDialog(Poll poll) {
-    showAdaptiveDialog(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: Text(AppLocalizations.of(context)!.deletePoll),
-        content: Text(AppLocalizations.of(context)!.deletePollConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              _viewModel.deletePoll(poll.id);
-              Navigator.pop(context);
-            },
-            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String filterKey, String label) {
-    final isSelected = _viewModel.selectedFilter == filterKey;
-    final categoryColor = _getFilterColor(filterKey);
-    
-    return Padding(
-      padding: const EdgeInsets.only(right: 8.0),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        child: FilterChip(
-          label: AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 300),
-            style: TextStyle(
-              color: isSelected ? categoryColor : Theme.of(context).colorScheme.onSurface,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              fontSize: 13,
             ),
-            child: Text(label),
           ),
-          selected: isSelected,
-          onSelected: (selected) {
-            if (selected) {
-              _viewModel.onFilterSelected(filterKey);
-              // Animate scroll to front when selected
-              _filterScrollController.animateTo(
-                0, 
-                duration: const Duration(milliseconds: 500), 
-                curve: Curves.easeOutCubic,
-              );
-            }
-          },
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          selectedColor: categoryColor.withValues(alpha: 0.1),
-          checkmarkColor: categoryColor,
-          side: BorderSide(
-            color: isSelected ? categoryColor : Colors.grey.shade300,
-            width: isSelected ? 1.5 : 1,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          visualDensity: VisualDensity.compact,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilters(AppLocalizations l10n) {
-    return SizedBox(
-      height: 50,
-      child: Obx(() {
-        final sortedKeys = _getSortedFilterKeys(l10n);
-        return ListView.builder(
-          controller: _filterScrollController,
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-          itemCount: sortedKeys.length,
-          itemBuilder: (context, index) {
-            final key = sortedKeys[index];
-            return AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
-              layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
-                return currentChild!; // Disable default layout to keep list order
-              },
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: const Offset(0.2, 0),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              key: ValueKey(key),
-              child: _buildFilterChip(key, _getFilterLabel(key, l10n)),
-            );
-          },
         );
-      }),
+      },
     );
   }
 
-  Widget _buildRequestPlaceholder(AppLocalizations l10n) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildSafetyBanner(AppLocalizations l10n) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.accentLight.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.accentLight.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.search_off_rounded, size: 80, color: Colors.grey[300]),
-          const SizedBox(height: 20),
-          Text(
-            l10n.noRequests,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+          const Icon(Icons.shield_rounded, color: AppColors.accentLight, size: 24),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.communityCommitment, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.accentLight)),
+                const SizedBox(height: 4),
+                Text(l10n.safetyDescription, style: const TextStyle(fontSize: 12, height: 1.4)),
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-          Text(
-            l10n.noRequestsDescription,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 28),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              OutlinedButton.icon(
-                onPressed: _viewModel.fetchRequests,
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(l10n.refresh),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              FilledButton.icon(
-                onPressed: () => context.push('/create-request'),
-                icon: const Icon(Icons.add),
-                label: Text(l10n.postRequest),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ],
-          ),
+          _buildHeaderIconButton(Icons.close_rounded, _dismissSafetyBanner, isClose: true),
         ],
       ),
     );
   }
+
+  Widget _buildRequestsList(AppLocalizations l10n) {
+    return Obx(() {
+      if (_viewModel.isLoading && _viewModel.filteredRequests.isEmpty) {
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: 5,
+          itemBuilder: (context, index) => const RequestCardSkeleton(),
+        );
+      }
+      if (_viewModel.filteredRequests.isEmpty) {
+        final filter = _viewModel.selectedFilter;
+        final icon = _getFilterIcon(filter);
+        final color = _getFilterColor(filter);
+        
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(40, 60, 40, 80),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, size: 64, color: color.withValues(alpha: 0.5)),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  filter == 'All' ? l10n.noRequests : 'No $filter Requests',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20, 
+                    fontWeight: FontWeight.w900, 
+                    color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.noRequestsDescription,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14, 
+                    color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+                    height: 1.5,
+                  ),
+                ),
+                if (filter != 'All') ...[
+                  const SizedBox(height: 32),
+                  AppHaptic(
+                    onTap: () => _viewModel.onFilterSelected('All'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.refresh_rounded, size: 18, color: AppColors.primaryLight),
+                          SizedBox(width: 8),
+                          Text(
+                            'Show All Requests',
+                            style: TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      }
+
+      return ListView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _viewModel.filteredRequests.length,
+        itemBuilder: (context, index) => RequestCard(request: _viewModel.filteredRequests[index]),
+      );
+    });
+  }
+}
+
+class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  _PinnedHeaderDelegate({required this.child});
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+  @override
+  double get maxExtent => 125;
+  @override
+  double get minExtent => 125;
+  @override
+  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) => true;
 }

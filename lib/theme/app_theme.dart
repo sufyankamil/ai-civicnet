@@ -20,6 +20,13 @@ class AppColors {
   static const Color surfaceVariantDark = Color(0xFF232232); // For inputs/chips
   static const Color textPrimaryDark = Color(0xFFF9F9FB); // Off-white for less eye strain
   static const Color textSecondaryDark = Color(0xFFA7A9BE); 
+  
+  // Aura & Glass Effects
+  static const Color glassSurfaceLight = Color(0x99FFFFFF); // 60% White
+  static const Color glassSurfaceDark = Color(0x33161622); // 20% surfaceDark
+  static const Color auraPrimary = Color(0xFF7B61FF);
+  static const Color auraSecondary = Color(0xFF6248FF);
+  static const Color auraAccent = Color(0xFFFF6B6B);
 
   // Gradients
   static const LinearGradient primaryGradientLight = LinearGradient(
@@ -37,6 +44,12 @@ class AppColors {
   static LinearGradient primaryGradient(Brightness brightness) {
     return brightness == Brightness.dark ? primaryGradientDark : primaryGradientLight;
   }
+
+  static const LinearGradient auraGradient = LinearGradient(
+    colors: [auraPrimary, auraSecondary],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 }
 
 class AppTheme {

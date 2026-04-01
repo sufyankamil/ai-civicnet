@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -7,6 +8,9 @@ import 'package:civic_net/models/models.dart';
 import 'package:civic_net/services/supabase_service.dart';
 import 'package:civic_net/services/toast_service.dart';
 import '../screens/announcement_detail_screen.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../../components/animated_glow_border.dart';
+import '../../../../widgets/haptic_buttons.dart';
 
 class AnnouncementCard extends StatelessWidget {
   final Announcement announcement;
@@ -49,204 +53,274 @@ class AnnouncementCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final categoryColor = _getCategoryColor(announcement.category);
+    final glassColor = isDark ? AppColors.glassSurfaceDark : AppColors.glassSurfaceLight;
 
-    return Container(
+    Widget cardContent = Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+          width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AnnouncementDetailScreen(announcement: announcement),
-                ),
-              );
-            },
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (announcement.imageUrl != null && announcement.imageUrl!.isNotEmpty)
-                  CachedNetworkImage(
-                    imageUrl: announcement.imageUrl!,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      height: 180,
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      child: const Center(child: CircularProgressIndicator.adaptive()),
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            color: glassColor,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AnnouncementDetailScreen(announcement: announcement),
                     ),
-                    errorWidget: (context, url, error) => const SizedBox.shrink(),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  );
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (announcement.imageUrl != null && announcement.imageUrl!.isNotEmpty)
+                      Stack(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: categoryColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: categoryColor.withValues(alpha: 0.3)),
+                          CachedNetworkImage(
+                            imageUrl: announcement.imageUrl!,
+                            height: 200,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Container(
+                              height: 200,
+                              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                              child: const Center(child: CircularProgressIndicator.adaptive()),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(_getCategoryIcon(announcement.category), 
-                                     size: 14, color: categoryColor),
-                                const SizedBox(width: 4),
-                                Text(
-                                  announcement.category.name.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: categoryColor,
-                                  ),
+                            errorWidget: (context, url, error) => const SizedBox.shrink(),
+                          ),
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.4),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                          Text(
-                            timeago.format(announcement.createdAt),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              announcement.title,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
                               ),
                             ),
                           ),
-                          if (announcement.isVerified)
-                            const Padding(
-                              padding: EdgeInsets.only(left: 4.0),
-                              child: Icon(Icons.verified_rounded, 
-                                         color: Colors.blue, size: 20),
-                            ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        announcement.content,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: theme.colorScheme.onSurfaceVariant,
-                          height: 1.5,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (announcement.sourceUrl != null) ...[
-                        const SizedBox(height: 12),
-                        InkWell(
-                          onTap: () => _launchURL(announcement.sourceUrl!),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: theme.primaryColor.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: theme.primaryColor.withValues(alpha: 0.1)),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.link_rounded, size: 14, color: theme.primaryColor),
-                                const SizedBox(width: 6),
-                                Text(
-                                  AppLocalizations.of(context)!.sourceInformation,
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: categoryColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(_getCategoryIcon(announcement.category), 
+                                         size: 14, color: categoryColor),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      announcement.category.name.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 0.5,
+                                        color: categoryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                timeago.format(announcement.createdAt),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  announcement.title,
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.primaryColor,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.3,
+                                    height: 1.2,
+                                    color: theme.colorScheme.onSurface,
                                   ),
                                 ),
-                              ],
-                            ),
+                              ),
+                              if (announcement.isVerified)
+                                Container(
+                                  margin: const EdgeInsets.only(left: 8, top: 4),
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.verified_rounded, 
+                                             color: Colors.blue, size: 16),
+                                ),
+                            ],
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 12,
-                            backgroundColor: Colors.grey.withValues(alpha: 0.2),
-                            backgroundImage: (announcement.authorAvatarUrl != null && 
-                                              announcement.authorAvatarUrl!.isNotEmpty)
-                                ? NetworkImage(announcement.authorAvatarUrl!)
-                                : null,
-                            child: (announcement.authorAvatarUrl == null || 
-                                    announcement.authorAvatarUrl!.isEmpty)
-                                ? const Icon(Icons.person, size: 14, color: Colors.grey)
-                                : null,
-                          ),
-                          const SizedBox(width: 8),
+                          const SizedBox(height: 12),
                           Text(
-                            announcement.authorName ?? 'Community Leader',
+                            announcement.content,
                             style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: theme.colorScheme.onSurface,
+                              fontSize: 15,
+                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                              height: 1.6,
                             ),
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const Spacer(),
-                          Text(
-                            AppLocalizations.of(context)!.readMore,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: theme.primaryColor,
+                          if (announcement.sourceUrl != null && announcement.sourceUrl!.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            AppHaptic(
+                              onTap: () => _launchURL(announcement.sourceUrl!),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: theme.primaryColor.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: theme.primaryColor.withValues(alpha: 0.15)),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.link_rounded, size: 16, color: theme.primaryColor),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      AppLocalizations.of(context)!.sourceInformation,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
+                          ],
+                          const SizedBox(height: 20),
+                          Container(
+                            height: 1,
+                            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
                           ),
-                          Icon(Icons.chevron_right_rounded, 
-                               size: 16, color: theme.primaryColor),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.auraGradient,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: Colors.grey[200],
+                                  backgroundImage: (announcement.authorAvatarUrl != null && 
+                                                    announcement.authorAvatarUrl!.isNotEmpty)
+                                      ? CachedNetworkImageProvider(announcement.authorAvatarUrl!)
+                                      : null,
+                                  child: (announcement.authorAvatarUrl == null || 
+                                          announcement.authorAvatarUrl!.isEmpty)
+                                      ? const Icon(Icons.person, size: 16, color: Colors.grey)
+                                      : null,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      announcement.authorName ?? 'Community Leader',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: theme.colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Official Source',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context)!.readMore,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w800,
+                                      color: theme.primaryColor,
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right_rounded, 
+                                       size: 18, color: theme.primaryColor),
+                                ],
+                              ),
+                            ],
+                          ),
+                          _buildAdminActions(context),
                         ],
                       ),
-                      _buildAdminActions(context),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
+
+    if (announcement.isVerified) {
+      return AnimatedGlowBorder(
+        borderRadius: 24,
+        child: cardContent,
+      );
+    }
+    return cardContent;
   }
 
   void _launchURL(String url) async {
@@ -271,7 +345,7 @@ class AnnouncementCard extends StatelessWidget {
         return Column(
           children: [
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
+              padding: EdgeInsets.symmetric(vertical: 12),
               child: Divider(),
             ),
             Row(
@@ -279,35 +353,61 @@ class AnnouncementCard extends StatelessWidget {
               children: [
                 Text(
                   isSuperAdmin ? AppLocalizations.of(context)!.superAdminActions : AppLocalizations.of(context)!.adminActions,
-                  style: TextStyle(
-                    fontSize: 10,
+                  style: const TextStyle(
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
                   ),
                 ),
                 const Spacer(),
                 if (isSuperAdmin)
-                  TextButton.icon(
-                    onPressed: () => _handleVerify(context, !announcement.isVerified),
-                    icon: Icon(
-                      announcement.isVerified ? Icons.unpublished_rounded : Icons.verified_rounded,
-                      size: 18,
-                      color: announcement.isVerified ? Colors.orange : Colors.blue,
-                    ),
-                    label: Text(
-                      announcement.isVerified ? AppLocalizations.of(context)!.unverify : AppLocalizations.of(context)!.verify,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: announcement.isVerified ? Colors.orange : Colors.blue,
+                  AppHaptic(
+                    onTap: () => _handleVerify(context, !announcement.isVerified),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: (announcement.isVerified ? Colors.orange : Colors.blue).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            announcement.isVerified ? Icons.unpublished_rounded : Icons.verified_rounded,
+                            size: 16,
+                            color: announcement.isVerified ? Colors.orange : Colors.blue,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            announcement.isVerified ? AppLocalizations.of(context)!.unverify : AppLocalizations.of(context)!.verify,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: announcement.isVerified ? Colors.orange : Colors.blue,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                TextButton.icon(
-                  onPressed: () => _handleDelete(context),
-                  icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.red),
-                  label: Text(
-                    AppLocalizations.of(context)!.delete,
-                    style: const TextStyle(fontSize: 12, color: Colors.red),
+                const SizedBox(width: 8),
+                AppHaptic(
+                  onTap: () => _handleDelete(context),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                        const SizedBox(width: 6),
+                        Text(
+                          AppLocalizations.of(context)!.delete,
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],

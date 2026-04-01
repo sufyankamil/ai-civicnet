@@ -488,32 +488,23 @@ class SupabaseService {
         .stream(primaryKey: ['id'])
         .eq('id', user.id)
         .map((data) {
-      if (data.isEmpty) return null;
-      final row = data.first;
-      final skillsList = (row['skills'] as List?)
-          ?.map((e) => e.toString())
-          .toList() ?? [];
-
-      return User(
-        id: row['id'],
-        name: row['name'] ?? user.userMetadata?['name'] ?? 'Unknown',
-        email: user.email ?? '',
-        avatarUrl: sanitizeAvatarUrl(row['avatar_url']),
-        rating: (row['rating'] ?? 0.0).toDouble(),
-        helpCount: row['help_count'] ?? 0,
-        reportCount: row['report_count'] ?? 0,
-        ratingCount: (row['rating_count'] ?? 0).toInt(),
-        points: row['points'] ?? 0,
-        skills: skillsList,
-        lat: (row['lat'] ?? 0.0).toDouble(),
-        lng: (row['lng'] ?? 0.0).toDouble(),
-        role: row['role'] ?? 'user',
-        isPublicProfile: row['is_public_profile'] ?? true,
-        showNeighborhood: row['show_neighborhood'] ?? true,
-        showImpactStats: row['show_impact_stats'] ?? true,
-        showAchievements: row['show_achievements'] ?? true,
-      );
-    });
+          try {
+            if (data.isEmpty) {
+              logger.w('Stream emitted empty data for user ${user.id}');
+              return null;
+            }
+            final row = data.first;
+            // Use User.fromMap for consistency
+            return User.fromMap(row, email: user.email);
+          } catch (e) {
+            logger.e('Error mapping profile stream: $e');
+            return null;
+          }
+        })
+        .handleError((error) {
+          logger.e('Profile stream error: $error');
+          return null;
+        });
   }
 
   Future<void> updatePrivacySettings(Map<String, bool> settings) async {
