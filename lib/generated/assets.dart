@@ -23,6 +23,9 @@ class $AssetsIconsGen {
   final AssetGenImage civicnetFeatureGraphic = const AssetGenImage(
     'assets/icons/civicnet_feature_graphic.png',
   );
+  final AssetGenImage splashIconTransparent = const AssetGenImage(
+    'assets/icons/splash_icon_transparent.png',
+  );
 }
 
 class AssetGenImage {
