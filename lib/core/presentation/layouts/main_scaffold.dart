@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
 import '../../../features/chat/presentation/viewmodels/chat_viewmodel.dart';
@@ -20,15 +21,14 @@ class _MainScaffoldState extends State<MainScaffold> {
   bool _isDragging = false;
   double _dragX = 0;
   int _lastHapticIndex = -1;
+  bool _isBottomNavVisible = true;
 
   final List<NavConfig> _navItems = [
     NavConfig(Icons.home_rounded, '/home', 0),
     NavConfig(Icons.explore_rounded, '/discover', 1),
-    NavConfig(Icons.map_rounded, '/map', 2),
     NavConfig(null, '', -1), // Spacer for FAB
-    NavConfig(Icons.smart_toy_rounded, '/ai-assistant', 3),
-    NavConfig(Icons.event_note_rounded, '/events', 4),
-    NavConfig(Icons.chat_bubble_rounded, '/chat', 5),
+    NavConfig(Icons.event_note_rounded, '/events', 2),
+    NavConfig(Icons.chat_bubble_rounded, '/chat', 3),
   ];
 
   @override
@@ -36,17 +36,58 @@ class _MainScaffoldState extends State<MainScaffold> {
     final String location = GoRouterState.of(context).uri.toString();
     if (location.startsWith('/home')) { _selectedIndex = 0; }
     else if (location.startsWith('/discover')) { _selectedIndex = 1; }
-    else if (location.startsWith('/map')) { _selectedIndex = 2; }
-    else if (location.startsWith('/ai-assistant')) { _selectedIndex = 3; }
-    else if (location.startsWith('/events')) { _selectedIndex = 4; }
-    else if (location.startsWith('/chat')) { _selectedIndex = 5; }
+    else if (location.startsWith('/events')) { _selectedIndex = 2; }
+    else if (location.startsWith('/chat')) { _selectedIndex = 3; }
 
     return Scaffold(
-      extendBody: true, // Allow content to show behind the glass bar
-      body: widget.child,
-      bottomNavigationBar: _buildGlassBottomNav(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: _buildFab(),
+      extendBody: true,
+      body: Stack(
+        children: [
+          NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              if (notification.direction == ScrollDirection.forward) {
+                if (!_isBottomNavVisible) setState(() => _isBottomNavVisible = true);
+              } else if (notification.direction == ScrollDirection.reverse) {
+                if (_isBottomNavVisible) setState(() => _isBottomNavVisible = false);
+              }
+              return true;
+            },
+            child: widget.child,
+          ),
+          
+          // Floating Bottom Navigation Bar Overlay
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedSlide(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOutCubic,
+              offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 1.2),
+              child: _buildGlassBottomNav(),
+            ),
+          ),
+
+          // Floating Action Button Overlay
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0, // Align exactly to edge so SafeArea handles the notch
+            child: SafeArea(
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 2.8),
+                child: Padding(
+                  // 4 (nav bottom margin) + 35 (half nav height) - 28 (half FAB height) = 11
+                  padding: const EdgeInsets.only(bottom: 11),
+                  child: Center(child: _buildFab()),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -54,21 +95,20 @@ class _MainScaffoldState extends State<MainScaffold> {
     return SafeArea(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final barWidth = constraints.maxWidth - 48; // 24 padding each side
+          final barWidth = constraints.maxWidth - 48;
           final itemWidth = barWidth / _navItems.length;
 
-          // Calculate where the highlight should be
           double targetX;
           if (_isDragging) {
             targetX = (_dragX - 24 - (itemWidth / 2)).clamp(0, barWidth - itemWidth);
           } else {
-            // Find current logical index position (mapping 0-5 index to 0-6 position)
+            // Current logical index position (mapping 0-5 index to 0-6 position)
             int posIndex = _navItems.indexWhere((n) => n.index == _selectedIndex);
             targetX = posIndex * itemWidth;
           }
 
           return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            margin: const EdgeInsets.only(left: 24, right: 24, bottom: 4, top: 20),
             height: 70,
             child: Stack(
               children: [
@@ -160,11 +200,10 @@ class _MainScaffoldState extends State<MainScaffold> {
                   },
                   child: Row(
                     children: _navItems.map((item) {
-                      if (item.index == -1) {
-                        return const SizedBox(width: 44);
-                      }
                       return Expanded(
-                        child: _buildNavItemWidget(item),
+                        child: item.index == -1 
+                          ? const SizedBox.shrink() 
+                          : _buildNavItemWidget(item),
                       );
                     }).toList(),
                   ),
@@ -227,9 +266,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   }
 
   Widget _buildFab() {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      child: GestureDetector(
+    return GestureDetector(
         onTap: () {
           if (_selectedIndex == 1) { // Discover
             context.push('/create-event');
@@ -251,8 +288,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           ),
           child: const Icon(Icons.add, color: Colors.white, size: 32),
         ),
-      ),
-    );
+      );
   }
 }
 

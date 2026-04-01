@@ -5,7 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Privacy Policy – CivicNet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #7B61FF;
+            --primary-dark: #5A42E0;
+            --bg: #F8F7FF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --card-bg: #FFFFFF;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -13,85 +25,172 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f9fafb;
-            color: #1f2937;
-            line-height: 1.7;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
         header {
-            background: linear-gradient(135deg, #7B61FF, #9D85FF);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background-attachment: fixed;
             color: white;
-            padding: 40px 24px 32px;
+            padding: 60px 24px 80px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
-        header h1 {
-            font-size: 2rem;
-            font-weight: 700;
+        /* Subtle Aura Effect */
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
         }
 
-        header p {
-            margin-top: 8px;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.95rem;
-            font-weight: 500;
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            margin-bottom: 24px;
         }
 
         .app-logo {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
-            vertical-align: middle;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 22px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .app-logo:hover {
+            transform: translateY(-5px);
+        }
+
+        header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            position: relative;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0.9;
         }
 
         main {
-            max-width: 760px;
-            margin: 40px auto;
-            padding: 0 24px 60px;
+            max-width: 800px;
+            margin: -40px auto 60px;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
 
-        h2 {
-            font-size: 1.15rem;
-            font-weight: 700;
-            color: #7B61FF;
-            margin: 32px 0 10px;
-            border-left: 4px solid #9D85FF;
-            padding-left: 12px;
-        }
-
-        p,
-        li {
-            font-size: 0.97rem;
-            color: #374151;
-        }
-
-        ul {
-            padding-left: 20px;
-            margin-top: 6px;
-        }
-
-        li {
-            margin-bottom: 6px;
-        }
-
-        a {
-            color: #3b82f6;
+        @media (max-width: 640px) {
+            header { padding: 40px 20px 60px; }
+            main { margin: -30px 16px 40px; padding: 24px; border-radius: 24px; }
+            header h1 { font-size: 2.2rem; }
         }
 
         .updated {
             text-align: center;
-            font-size: 0.85rem;
-            color: #6b7280;
-            margin-bottom: 32px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 40px 0 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            margin-right: 12px;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        p, li {
+            font-size: 1rem;
+            color: #4B5563;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            padding-left: 16px;
+            list-style: none;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-color: var(--primary);
         }
 
         footer {
             text-align: center;
-            font-size: 0.82rem;
-            color: #9ca3af;
-            padding: 20px;
-            border-top: 1px solid #e5e7eb;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            background: white;
+            border-top: 1px solid #E5E7EB;
         }
     </style>
 </head>
@@ -99,7 +198,9 @@
 <body>
 
     <header>
-        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <div class="logo-container">
+            <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        </div>
         <h1>CivicNet</h1>
         <p>Privacy Policy</p>
     </header>

@@ -86,10 +86,6 @@ class _RootAppState extends State<RootApp> {
     await initAssetsDI();
     ProfileBinding().dependencies();
 
-    // Read the initial deep-link URI BEFORE Supabase.initialize() so we can
-    // detect a password-recovery link. The PASSWORD_RECOVERY auth event fires
-    // INSIDE Supabase.initialize() and cannot be caught by a stream listener
-    // added afterward, so we check the URI directly here instead.
     try {
       final initialUri = await AppLinks().getInitialLink();
       if (initialUri != null) {

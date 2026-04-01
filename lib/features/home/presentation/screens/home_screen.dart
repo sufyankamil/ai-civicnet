@@ -35,9 +35,51 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   final HomeViewModel _viewModel = Get.find<HomeViewModel>();
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   bool _showSafetyBanner = false;
   String _newsSearchQuery = '';
+
+  List<String> _getSortedFilterKeys(AppLocalizations l10n) {
+    final allKeys = ['All', 'Recommended', 'Emergency', 'Tech Support', 'Household'];
+    final selected = _viewModel.selectedFilter;
+    
+    if (selected == 'All') return allKeys;
+    
+    final sorted = List<String>.from(allKeys);
+    final index = sorted.indexOf(selected);
+    if (index != -1) {
+      sorted.removeAt(index);
+      sorted.insert(0, selected);
+    }
+    return sorted;
+  }
+
+  Color _getFilterColor(String filterKey) {
+    switch (filterKey) {
+      case 'Emergency':
+        return Colors.red;
+      case 'Household':
+        return Colors.orange;
+      case 'Tech Support':
+        return Colors.blue;
+      case 'Recommended':
+        return Colors.purple; // AI Aura
+      default:
+        return AppColors.primaryLight;
+    }
+  }
+
+  String _getFilterLabel(String key, AppLocalizations l10n) {
+    switch (key) {
+      case 'All': return l10n.categoryAll;
+      case 'Recommended': return l10n.categoryRecommended;
+      case 'Emergency': return l10n.categoryEmergency;
+      case 'Tech Support': return l10n.categoryTechSupport;
+      case 'Household': return l10n.categoryHousehold;
+      default: return key;
+    }
+  }
 
   @override
   void initState() {
@@ -119,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void dispose() {
     _searchController.dispose();
     _tabController.dispose();
+    _filterScrollController.dispose();
     super.dispose();
   }
 
@@ -342,13 +385,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
     return Scaffold(
       body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(l10n),
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeader(l10n),
 
             // Search Bar
             Padding(
@@ -467,6 +510,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               return const SizedBox.shrink();
             },
           ),
+          IconButton(
+            onPressed: () => context.push('/map'),
+            icon: const Icon(Icons.map_outlined, color: Colors.grey),
+            tooltip: 'Map Discovery',
+          ),
           FutureBuilder(
             future: SupabaseService().getCurrentUserProfile(),
             builder: (context, snapshot) {
@@ -516,13 +564,19 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // 1. AI Match (Transforming Header)
           Obx(() {
             final topMatch = _viewModel.topRecommendation;
+            final bool isListEmpty = _viewModel.filteredRequests.isEmpty;
+            
             if (topMatch == null || topMatch.aiRelevanceScore < 0.6) {
               return const SliverToBoxAdapter(child: SizedBox.shrink());
             }
             return SliverPersistentHeader(
-              key: ValueKey('ai_match_${topMatch.id}'), // Stabilize pinned header
-              pinned: true,
-              delegate: AiMatchHeaderDelegate(request: topMatch),
+              // Include isListEmpty in key to force rebuild when height/pinned state changes
+              key: ValueKey('ai_match_${topMatch.id}_$isListEmpty'), 
+              pinned: !isListEmpty,
+              delegate: AiMatchHeaderDelegate(
+                request: topMatch,
+                maxExtentValue: isListEmpty ? 175.0 : 240.0,
+              ),
             );
           }),
 
@@ -830,44 +884,86 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildFilterChip(String filterKey, String label) {
     final isSelected = _viewModel.selectedFilter == filterKey;
+    final categoryColor = _getFilterColor(filterKey);
+    
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) {
-          if (selected) _viewModel.onFilterSelected(filterKey);
-        },
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-        checkmarkColor: Theme.of(context).primaryColor,
-        labelStyle: TextStyle(
-          color: isSelected ? Theme.of(context).primaryColor : null,
-          fontWeight: isSelected ? FontWeight.bold : null,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: FilterChip(
+          label: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
+            style: TextStyle(
+              color: isSelected ? categoryColor : Theme.of(context).colorScheme.onSurface,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 13,
+            ),
+            child: Text(label),
           ),
+          selected: isSelected,
+          onSelected: (selected) {
+            if (selected) {
+              _viewModel.onFilterSelected(filterKey);
+              // Animate scroll to front when selected
+              _filterScrollController.animateTo(
+                0, 
+                duration: const Duration(milliseconds: 500), 
+                curve: Curves.easeOutCubic,
+              );
+            }
+          },
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          selectedColor: categoryColor.withValues(alpha: 0.1),
+          checkmarkColor: categoryColor,
+          side: BorderSide(
+            color: isSelected ? categoryColor : Colors.grey.shade300,
+            width: isSelected ? 1.5 : 1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          visualDensity: VisualDensity.compact,
         ),
       ),
     );
   }
 
   Widget _buildFilters(AppLocalizations l10n) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-      child: Obx(() => Row(
-        children: [
-          _buildFilterChip('All', l10n.categoryAll),
-          _buildFilterChip('Recommended', l10n.categoryRecommended),
-          _buildFilterChip('Emergency', l10n.categoryEmergency),
-          _buildFilterChip('Tech Support', l10n.categoryTechSupport),
-          _buildFilterChip('Household', l10n.categoryHousehold),
-        ],
-      )),
+    return SizedBox(
+      height: 50,
+      child: Obx(() {
+        final sortedKeys = _getSortedFilterKeys(l10n);
+        return ListView.builder(
+          controller: _filterScrollController,
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+          itemCount: sortedKeys.length,
+          itemBuilder: (context, index) {
+            final key = sortedKeys[index];
+            return AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+                return currentChild!; // Disable default layout to keep list order
+              },
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.2, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              key: ValueKey(key),
+              child: _buildFilterChip(key, _getFilterLabel(key, l10n)),
+            );
+          },
+        );
+      }),
     );
   }
 

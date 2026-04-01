@@ -11,6 +11,9 @@ import 'package:get/get.dart';
 import '../viewmodels/auth_viewmodel.dart';
 import '../../../../components/social_icons.dart';
 import '../../../../services/toast_service.dart';
+import '../components/auth_background.dart';
+import '../../../profile/presentation/components/slide_fade_transition.dart';
+import 'dart:ui';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -100,164 +103,248 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).primaryColor),
+          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Theme.of(context).primaryColor),
           onPressed: () => context.pop(),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.createAccount,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  AppLocalizations.of(context)!.joinCommunity,
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                const SizedBox(height: 32),
-
-                CustomTextField(
-                  hintText: AppLocalizations.of(context)!.fullName,
-                  prefixIcon: Icons.person_outline,
-                  controller: _nameController,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) return AppLocalizations.of(context)!.enterName;
-                    if (value.trim().length < 3) return AppLocalizations.of(context)!.nameTooShort;
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  hintText: AppLocalizations.of(context)!.emailAddress,
-                  prefixIcon: Icons.email_outlined,
-                  controller: _emailController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterEmail;
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  hintText: AppLocalizations.of(context)!.password,
-                  prefixIcon: Icons.lock_outline,
-                  obscureText: _obscurePassword,
-                  controller: _passwordController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterPasswordSignup;
-                    if (value.length < 8) return AppLocalizations.of(context)!.passwordTooShort;
-                    if (!value.contains(RegExp(r'[A-Z]'))) return AppLocalizations.of(context)!.passwordUppercase;
-                    if (!value.contains(RegExp(r'[a-z]'))) return AppLocalizations.of(context)!.passwordLowercase;
-                    if (!value.contains(RegExp(r'[0-9]'))) return AppLocalizations.of(context)!.passwordNumber;
-                    return null;
-                  },
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword
-                        ? Icons.visibility_off
-                        : Icons.visibility),
-                    onPressed: () =>
-                        setState(() => _obscurePassword = !_obscurePassword),
-                  ),
-                ),
-                // Live password requirements widget
-                if (_passwordController.text.isNotEmpty) ...
-                  _buildPasswordRequirements(),
-                // Terms and Conditions checkbox
-                const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+      body: AuthBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: Checkbox(
-                        value: _acceptTerms,
-                        activeColor: Theme.of(context).primaryColor,
-                        side: BorderSide(
-                          color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.6),
-                          width: 1.5,
+                    SlideFadeTransition(
+                      delay: const Duration(milliseconds: 100),
+                      child: Text(
+                        AppLocalizations.of(context)!.createAccount,
+                        style: TextStyle(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : Theme.of(context).primaryColor,
+                          letterSpacing: -1,
                         ),
-                        onChanged: (value) {
-                          setState(() {
-                            _acceptTerms = value ?? false;
-                          });
-                        },
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => launchUrl(
-                          Uri.parse('https://privacypolicy-ruddy.vercel.app/terms'),
-                          mode: LaunchMode.externalApplication,
+                    const SizedBox(height: 8),
+                    SlideFadeTransition(
+                      delay: const Duration(milliseconds: 250),
+                      child: Text(
+                        AppLocalizations.of(context)!.joinCommunity,
+                        style: TextStyle(
+                          fontSize: 16, 
+                          color: isDark ? Colors.white60 : Colors.grey[600],
+                          fontWeight: FontWeight.w500,
                         ),
-                        child: Text.rich(
-                          TextSpan(
-                            text: AppLocalizations.of(context)!.agreeTerms(AppLocalizations.of(context)!.termsAndConditions).split(AppLocalizations.of(context)!.termsAndConditions).first,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.7),
-                            ),
-                            children: [
-                              TextSpan(
-                                text: AppLocalizations.of(context)!.termsAndConditions,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline,
-                                ),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Premium Glassmorphic Card
+                    SlideFadeTransition(
+                      delay: const Duration(milliseconds: 400),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                            decoration: BoxDecoration(
+                              color: isDark 
+                                ? Colors.white.withValues(alpha: 0.05) 
+                                : Colors.white.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(32),
+                              border: Border.all(
+                                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                width: 1.5,
                               ),
-                            ],
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SlideFadeTransition(
+                                    delay: const Duration(milliseconds: 450),
+                                    child: CustomTextField(
+                                      hintText: AppLocalizations.of(context)!.fullName,
+                                      prefixIcon: Icons.person_outline,
+                                      controller: _nameController,
+                                      validator: (value) {
+                                        if (value == null || value.trim().isEmpty) return AppLocalizations.of(context)!.enterName;
+                                        if (value.trim().length < 3) return AppLocalizations.of(context)!.nameTooShort;
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  SlideFadeTransition(
+                                    delay: const Duration(milliseconds: 550),
+                                    child: CustomTextField(
+                                      hintText: AppLocalizations.of(context)!.emailAddress,
+                                      prefixIcon: Icons.email_outlined,
+                                      controller: _emailController,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterEmail;
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  SlideFadeTransition(
+                                    delay: const Duration(milliseconds: 650),
+                                    child: CustomTextField(
+                                      hintText: AppLocalizations.of(context)!.password,
+                                      prefixIcon: Icons.lock_outline,
+                                      obscureText: _obscurePassword,
+                                      controller: _passwordController,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterPasswordSignup;
+                                        if (value.length < 8) return AppLocalizations.of(context)!.passwordTooShort;
+                                        if (!value.contains(RegExp(r'[A-Z]'))) return AppLocalizations.of(context)!.passwordUppercase;
+                                        if (!value.contains(RegExp(r'[a-z]'))) return AppLocalizations.of(context)!.passwordLowercase;
+                                        if (!value.contains(RegExp(r'[0-9]'))) return AppLocalizations.of(context)!.passwordNumber;
+                                        return null;
+                                      },
+                                      suffixIcon: IconButton(
+                                        icon: Icon(_obscurePassword
+                                            ? Icons.visibility_off
+                                            : Icons.visibility),
+                                        onPressed: () =>
+                                            setState(() => _obscurePassword = !_obscurePassword),
+                                      ),
+                                    ),
+                                  ),
+                                  
+                                  // Password requirements within the glass card
+                                  if (_passwordController.text.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 12),
+                                      child: Column(
+                                        children: _buildPasswordRequirements(),
+                                      ),
+                                    ),
+                                    
+                                  const SizedBox(height: 12),
+                                  SlideFadeTransition(
+                                    delay: const Duration(milliseconds: 750),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: Checkbox(
+                                            value: _acceptTerms,
+                                            activeColor: Theme.of(context).primaryColor,
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            side: BorderSide(
+                                              color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.6),
+                                              width: 1.5,
+                                            ),
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _acceptTerms = value ?? false;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () => launchUrl(
+                                              Uri.parse('https://privacypolicy-ruddy.vercel.app/terms'),
+                                              mode: LaunchMode.externalApplication,
+                                            ),
+                                            child: Text.rich(
+                                              TextSpan(
+                                                text: AppLocalizations.of(context)!.agreeTerms(AppLocalizations.of(context)!.termsAndConditions).split(AppLocalizations.of(context)!.termsAndConditions).first,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.7),
+                                                ),
+                                                children: [
+                                                  TextSpan(
+                                                    text: AppLocalizations.of(context)!.termsAndConditions,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: Theme.of(context).primaryColor,
+                                                      fontWeight: FontWeight.w600,
+                                                      decoration: TextDecoration.underline,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 28),
+                                  SlideFadeTransition(
+                                    delay: const Duration(milliseconds: 850),
+                                    child: Obx(() => PrimaryButton(
+                                      text: AppLocalizations.of(context)!.signup,
+                                      isLoading: _authViewModel.isLoading,
+                                      onPressed: _acceptTerms ? _handleSignup : null,
+                                    )),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Obx(() => PrimaryButton(
-                  text: AppLocalizations.of(context)!.signup,
-                  isLoading: _authViewModel.isLoading,
-                  onPressed: _acceptTerms ? _handleSignup : null,
-                )),
 
-
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('${AppLocalizations.of(context)!.alreadyHaveAccount.split('?').first}?'),
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: Text(AppLocalizations.of(context)!.login,
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor)),
+                    const SizedBox(height: 32),
+                    SlideFadeTransition(
+                      delay: const Duration(milliseconds: 600),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${AppLocalizations.of(context)!.alreadyHaveAccount.split('?').first}?',
+                            style: TextStyle(color: isDark ? Colors.white60 : Colors.grey[700]),
+                          ),
+                          TextButton(
+                            onPressed: () => context.pop(),
+                            child: Text(
+                              AppLocalizations.of(context)!.login,
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
-                // TODO: Re-enable social login in next release
-                // const SizedBox(height: 24),
-                // _buildDivider(),
-                // const SizedBox(height: 24),
-                // _buildSocialButtons(),
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
           ),
         ),
@@ -326,18 +413,18 @@ class _SignupScreenState extends State<SignupScreen> {
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             child: Icon(
-              met ? Icons.check_circle : Icons.radio_button_unchecked,
+              met ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
               key: ValueKey(met),
               size: 16,
-              color: met ? const Color(0xFF1B5E20) : Colors.grey.shade400,
+              color: met ? Colors.green[400] : Colors.grey.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(
-              fontSize: 12.5,
-              color: met ? const Color(0xFF1B5E20) : Colors.grey.shade500,
+              fontSize: 12,
+              color: met ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87) : Colors.grey.withValues(alpha: 0.6),
               fontWeight: met ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
