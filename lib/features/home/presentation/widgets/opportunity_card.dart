@@ -99,7 +99,7 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                             decoration: BoxDecoration(
                               color: isDark 
                                   ? Colors.black.withValues(alpha: 0.7) 
-                                  : Colors.white.withValues(alpha: 0.8),
+                                  : Colors.black.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(22.5),
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
@@ -134,9 +134,10 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                 const SizedBox(height: 8),
                                 Text(
                                   widget.request.title,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 22,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
                                     letterSpacing: -0.5,
                                   ),
                                   maxLines: 1, // Fixed line count for carousel consistency
@@ -148,7 +149,7 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                   style: TextStyle(
                                     fontSize: 14,
                                     height: 1.4,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                   ),
                                   maxLines: 1, // Fixed line count for carousel consistency
                                   overflow: TextOverflow.ellipsis,
@@ -176,11 +177,15 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
-                                      child: Text(
-                                        widget.request.requesterName,
-                                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                        child: Text(
+                                          widget.request.requesterName,
+                                          style: TextStyle(
+                                            fontSize: 13, 
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.white,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
                                     ),
                                     const SizedBox(width: 8),
                                     Container(

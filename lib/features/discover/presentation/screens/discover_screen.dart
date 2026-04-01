@@ -71,6 +71,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // --- Categories ---
+                _buildSectionHeader(context, title: l10n.categories),
+                const SizedBox(height: 12),
+                _buildHorizontalCategories(l10n),
+                const SizedBox(height: 24),
+
                 // --- True AI Recommendations ---
                 _buildSectionHeader(
                   context, 
@@ -79,40 +85,76 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildAiRecommendations(),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 
                 // --- Community Asset Library ---
+                _buildSectionHeader(
+                  context, 
+                  title: 'Community Assets', 
+                  subtitle: 'Borrow resources from neighbors'
+                ),
+                const SizedBox(height: 12),
                 _buildAssetLibraryBanner(context),
                 const SizedBox(height: 24),
-                
-                // --- Categories ---
-                _buildSectionHeader(context, title: l10n.categories),
-                const SizedBox(height: 16),
-                GridView.builder(
-                  padding: EdgeInsets.zero,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 1.1,
-                  ),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: HelpCategory.values.length,
-                  itemBuilder: (context, index) {
-                    final category = HelpCategory.values[index];
-                    return _buildCategoryCard(
-                      context,
-                      title: _getCategoryTitle(l10n, category),
-                      icon: _getCategoryIcon(category),
-                      color: _getCategoryColor(category),
-                      category: category,
-                    );
-                  },
-                ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalCategories(AppLocalizations l10n) {
+    return SizedBox(
+      height: 100,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: HelpCategory.values.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final category = HelpCategory.values[index];
+          return _buildCategoryChip(
+            context,
+            title: _getCategoryTitle(l10n, category),
+            icon: _getCategoryIcon(category),
+            color: _getCategoryColor(category),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryChip(BuildContext context, {required String title, required IconData icon, required Color color}) {
+    return InkWell(
+      onTap: () => context.push('/home?filter=$title'),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 85,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+            ),
+          ],
         ),
       ),
     );
@@ -145,7 +187,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   Widget _buildAiRecommendations() {
     if (_isLoading) {
       return SizedBox(
-        height: 280,
+        height: 220,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: 3,
@@ -186,7 +228,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
 
     return SizedBox(
-      height: 280,
+      height: 220,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: _recommendedRequests!.length,
@@ -234,56 +276,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-
-  Widget _buildCategoryCard(
-    BuildContext context, {
-    required String title,
-    required IconData icon,
-    required Color color,
-    required HelpCategory category,
-  }) {
-    return InkWell(
-      onTap: () {
-        context.go('/home?filter=$title');
-      },
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            )
-          ],
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 32),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   String _getCategoryTitle(AppLocalizations l10n, HelpCategory category) {
     switch (category) {

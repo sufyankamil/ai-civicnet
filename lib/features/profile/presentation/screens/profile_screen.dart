@@ -10,7 +10,6 @@ import '../components/verification_request_dialog.dart';
 import '../components/impact_dashboard.dart';
 import '../components/milestone_gallery.dart';
 import '../components/impact_heatmap.dart';
-// import '../components/privacy_settings.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
@@ -71,9 +70,21 @@ class _ProfileScreenState extends State<ProfileScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: StreamBuilder<User?>(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: isDark 
+                  ? const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
+                      begin: Alignment.topRight, end: Alignment.bottomLeft)
+                  : const LinearGradient(
+                      colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
+                      begin: Alignment.topRight, end: Alignment.bottomLeft),
+            ),
+          ),
+          StreamBuilder<User?>(
         stream: _profileStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -132,6 +143,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(height: 28),
                         SlideFadeTransition(
                           delay: const Duration(milliseconds: 250),
+                          child: _buildSkillsSection(user, isDark),
+                        ),
+                        const SizedBox(height: 28),
+                        SlideFadeTransition(
+                          delay: const Duration(milliseconds: 400),
                           child: MilestoneGallery(
                             user: user,
                             isDark: isDark,
@@ -140,18 +156,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ),
                         const SizedBox(height: 28),
                         SlideFadeTransition(
-                          delay: const Duration(milliseconds: 400),
+                          delay: const Duration(milliseconds: 550),
                           child: ImpactHeatmap(isDark: isDark),
                         ),
                         const SizedBox(height: 28),
                         SlideFadeTransition(
-                          delay: const Duration(milliseconds: 550),
-                          child: _buildBadgeGallery(user, isDark),
-                        ),
-                        const SizedBox(height: 28),
-                        SlideFadeTransition(
                           delay: const Duration(milliseconds: 700),
-                          child: _buildSkillsSection(user, isDark),
+                          child: _buildBadgeGallery(user, isDark),
                         ),
                         const SizedBox(height: 28),
                         /*
@@ -165,12 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           delay: const Duration(milliseconds: 1000),
                           child: _buildActionsSection(context, isDark, user),
                         ),
-                        // Extra clearance so content scrolls above the bottom nav bar
-                        SizedBox(
-                          height: MediaQuery.of(context).padding.bottom +
-                              kBottomNavigationBarHeight +
-                              24,
-                        ),
+                        const SizedBox(height: 160),
                       ],
                     ),
                   ),
@@ -178,6 +184,8 @@ class _ProfileScreenState extends State<ProfileScreen>
             ),
           );
         },
+      ),
+        ],
       ),
     );
   }
@@ -316,17 +324,31 @@ class _ProfileScreenState extends State<ProfileScreen>
           duration: const Duration(milliseconds: 200),
           child: IgnorePointer(
             ignoring: !_isCollapsed,
-            child: IconButton(
-              tooltip: AppLocalizations.of(context)!.editProfile,
-              icon: Icon(
-                Icons.edit_rounded,
-                color: AppColors.primaryLight,
-                size: 22,
-              ),
-              onPressed: () async {
-                await context.push('/edit-profile');
-                if (context.mounted) _refreshProfile();
-              },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: 'Community AI',
+                  icon: const Icon(
+                    Icons.smart_toy_outlined,
+                    color: AppColors.primaryLight,
+                    size: 22,
+                  ),
+                  onPressed: () => context.push('/ai-assistant'),
+                ),
+                IconButton(
+                  tooltip: AppLocalizations.of(context)!.editProfile,
+                  icon: Icon(
+                    Icons.edit_rounded,
+                    color: AppColors.primaryLight,
+                    size: 22,
+                  ),
+                  onPressed: () async {
+                    await context.push('/edit-profile');
+                    if (context.mounted) _refreshProfile();
+                  },
+                ),
+              ],
             ),
           ),
         ),
@@ -386,160 +408,143 @@ class _ProfileScreenState extends State<ProfileScreen>
                   errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                 ),
               ),
-              // Name + email overlay at bottom
+              // Name + email overlay at bottom (CENTERED, PREMIUM)
               Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withValues(alpha: 0.35),
+                        Colors.black.withValues(alpha: 0.6),
+                        Colors.black.withValues(alpha: 0.95), // Deep dark for emphasis
                       ],
                     ),
                   ),
-                  child: Row(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Avatar with ring
+                      // Avatar with glowing AI ring
                       Container(
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
+                            begin: Alignment.topLeft, end: Alignment.bottomRight,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 12,
+                              color: const Color(0xFF7B61FF).withValues(alpha: 0.5),
+                              blurRadius: 18,
+                              spreadRadius: 2,
                               offset: const Offset(0, 4),
                             ),
                           ],
                         ),
                         child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).scaffoldBackgroundColor,
+                          padding: const EdgeInsets.all(3),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1E1B4B), // Deep slate to separate ring
                             shape: BoxShape.circle,
                           ),
                           child: user.avatarUrl.isNotEmpty
                               ? CachedNetworkImage(
                                   imageUrl: user.avatarUrl,
                                   imageBuilder: (context, imageProvider) => CircleAvatar(
-                                    radius: 38,
+                                    radius: 46,
                                     backgroundImage: imageProvider,
                                   ),
                                   errorWidget: (context, url, error) => const CircleAvatar(
-                                    radius: 38,
+                                    radius: 46,
                                     backgroundColor: Colors.grey,
-                                    child: Icon(Icons.person, size: 40, color: Colors.white),
+                                    child: Icon(Icons.person, size: 48, color: Colors.white),
                                   ),
                                 )
                               : const CircleAvatar(
-                                  radius: 38,
+                                  radius: 46,
                                   backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                                  child: Icon(Icons.person, size: 48, color: Colors.white),
                                 ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 16),
+                      // Text center
+                      Text(
+                        displayName,
+                        style: const TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800, // Premium Bold
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      if (user.email.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          user.email,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      // Glass Trust Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            width: 1,
+                          ),
+                          // Premium soft blur locally for badge
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                            )
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
+                            Icon(
+                              (user.role == 'admin' || user.role == 'super_admin')
+                                  ? Icons.verified_user_rounded
+                                  : Icons.stars_rounded, // Premium icon
+                              color: (user.role == 'admin' || user.role == 'super_admin')
+                                  ? Colors.amber[300]
+                                  : Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
                             Text(
-                              displayName,
+                              _trustLevel(user),
                               style: TextStyle(
-                                fontSize: 22,
+                                fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              user.email.isEmpty ? AppLocalizations.of(context)!.noEmail : user.email,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.8),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-                            // Trust badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
+                                letterSpacing: 0.5,
                                 color: (user.role == 'admin' || user.role == 'super_admin')
-                                    ? Colors.amber.withValues(alpha: 0.3)
-                                    : Colors.white.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: (user.role == 'admin' || user.role == 'super_admin')
-                                        ? Colors.amber.withValues(alpha: 0.6)
-                                        : Colors.white.withValues(alpha: 0.4)),
-                                boxShadow: (user.role == 'admin' || user.role == 'super_admin')
-                                    ? [
-                                        BoxShadow(
-                                          color: Colors.amber.withValues(alpha: 0.2),
-                                          blurRadius: 8,
-                                          spreadRadius: 1,
-                                        )
-                                      ]
-                                    : null,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    (user.role == 'admin' || user.role == 'super_admin')
-                                        ? Icons.verified_user_rounded
-                                        : Icons.verified_rounded,
-                                    color: (user.role == 'admin' || user.role == 'super_admin')
-                                        ? Colors.amber[100]
-                                        : Colors.white,
-                                    size: 13,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _trustLevel(user),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: (user.role == 'admin' || user.role == 'super_admin')
-                                          ? Colors.amber[50]
-                                          : Colors.white,
-                                    ),
-                                  ),
-                                ],
+                                    ? Colors.amber[100]
+                                    : Colors.white,
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      // Edit avatar button
-                      IconButton(
-                        onPressed: () async {
-                          await context.push('/edit-profile');
-                          if (mounted) _refreshProfile();
-                        },
-                        icon: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.4)),
-                          ),
-                          child: const Icon(Icons.edit_rounded,
-                              color: Colors.white, size: 18),
                         ),
                       ),
                     ],

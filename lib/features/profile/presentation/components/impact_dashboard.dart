@@ -126,16 +126,34 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark 
+              ? [const Color(0xFF1E293B).withValues(alpha: 0.8), const Color(0xFF0F172A).withValues(alpha: 0.9)]
+              : [Colors.white, const Color(0xFFF8FAFC)],
+        ),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: isDark ? Colors.black.withValues(alpha: 0.3) : AppColors.primaryLight.withValues(alpha: 0.08),
+            blurRadius: 24,
+            spreadRadius: -4,
+            offset: const Offset(0, 8),
           ),
+          // Inner subtle glow for light mode
+          if (!isDark)
+            BoxShadow(
+              color: Colors.white,
+              blurRadius: 10,
+              spreadRadius: 5,
+            ),
         ],
       ),
       child: Column(
@@ -320,38 +338,57 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
     final isDark = widget.isDark;
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12), // Slightly larger tap target
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withValues(alpha: 0.2),
+                  color.withValues(alpha: 0.05),
+                ],
+              ),
               shape: BoxShape.circle,
-              border: onTap != null 
-                ? Border.all(color: color.withValues(alpha: 0.3), width: 1)
-                : null,
+              border: Border.all(
+                color: color.withValues(alpha: onTap != null ? 0.4 : 0.1), 
+                width: 1
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.15),
+                  blurRadius: 12,
+                  spreadRadius: -2,
+                )
+              ],
             ),
             child: ParallaxCard(
               scrollController: widget.scrollController,
               parallaxSpeed: 0.3,
-              child: Icon(icon, color: color, size: 18),
+              child: Icon(icon, color: color, size: 22), // Slightly larger icon
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 22,
+              fontWeight: FontWeight.w900, // Extrabold for premium numbers
+              letterSpacing: -0.5,
               color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
+          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 9,
-              color: Colors.grey[600],
-              letterSpacing: 0.5,
+              fontSize: 10,
+              fontWeight: FontWeight.w600, // Slightly bolder but smaller
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              letterSpacing: 0.3,
               decoration: onTap != null ? TextDecoration.underline : null,
               decorationColor: color.withValues(alpha: 0.4),
             ),
