@@ -117,8 +117,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     await Future.delayed(const Duration(seconds: 1));
     if (!mounted || _hasShownLocationPrompt) return;
     
-    final user = await SupabaseService().getCurrentUserProfile();
-    if (user != null && (user.lat == 0.0 || user.lat == null)) {
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
        _hasShownLocationPrompt = true;
        if (!mounted) return;
        showDialog(
@@ -136,16 +136,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
             content: Text(l10n.locationPermissionDesc),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.notNow, style: const TextStyle(color: Colors.grey)),
-              ),
               AppElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
-                  _requestLocationUpdates();
+                  final permission = await Geolocator.checkPermission();
+                  if (permission == LocationPermission.deniedForever) {
+                    await Geolocator.openAppSettings();
+                  } else {
+                    _requestLocationUpdates();
+                  }
                 },
-                child: Text(l10n.allowAccess),
+                child: Center(child: Text(l10n.allowAccess)),
               ),
              ],
            );
@@ -326,6 +327,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               },
             ),
             Text(l10n.appTitle, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.7)),
+            Text(
+              l10n.findMatches,
+              style: TextStyle(
+                fontSize: 12,
+                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.5),
+                letterSpacing: 0.2,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
         Row(
@@ -348,7 +358,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
            color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: isClose ? 0.1 : 0.05),
            shape: BoxShape.circle,
          ),
-         child: Icon(icon, size: isClose ? 18 : 22, color: isClose ? Colors.grey[400] : Colors.grey[600]),
+         child: Icon(
+           icon, 
+           size: isClose ? 18 : 22, 
+           color: isClose 
+               ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[700]) 
+               : Colors.grey[600]
+         ),
        ),
      );
   }
@@ -477,6 +493,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   Widget _buildFiltersModern(AppLocalizations l10n) {
     final filters = ['All', 'Recommended', 'Emergency', 'Tech Support', 'Household'];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       height: 120,
       child: ListView.builder(
@@ -500,10 +517,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                   duration: const Duration(milliseconds: 300),
                   width: 90,
                   decoration: BoxDecoration(
-                    color: isSelected ? color : color.withValues(alpha: 0.08),
+                    color: isSelected ? color : (isDark ? Colors.white.withValues(alpha: 0.05) : color.withValues(alpha: 0.08)),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected ? Colors.white.withValues(alpha: 0.2) : color.withValues(alpha: 0.1), 
+                      color: isSelected ? Colors.white.withValues(alpha: 0.2) : (isDark ? color.withValues(alpha: 0.2) : color.withValues(alpha: 0.1)), 
                       width: isSelected ? 2 : 1,
                     ),
                     boxShadow: [
@@ -528,7 +545,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         ),
                         child: Icon(
                           _getFilterIcon(filter), 
-                          color: isSelected ? Colors.white : color, 
+                          color: isSelected ? Colors.white : (isDark ? color.withValues(alpha: 0.7) : color), 
                           size: 24,
                         ),
                       ),
@@ -538,7 +555,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                         style: TextStyle(
                           fontSize: 10, 
                           fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold, 
-                          color: isSelected ? Colors.white : color,
+                          color: isSelected ? Colors.white : (isDark ? color.withValues(alpha: 0.8) : color),
                         ), 
                         textAlign: TextAlign.center,
                       ),
@@ -885,12 +902,15 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         );
       }
 
+      final list = _viewModel.filteredRequests.where((r) => 
+        !(_viewModel.topRecommendation?.id == r.id && _viewModel.topRecommendation!.aiRelevanceScore > 0.6)).toList();
+
       return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _viewModel.filteredRequests.length,
-        itemBuilder: (context, index) => RequestCard(request: _viewModel.filteredRequests[index]),
+        itemCount: list.length,
+        itemBuilder: (context, index) => RequestCard(request: list[index]),
       );
     });
   }

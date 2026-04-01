@@ -78,16 +78,18 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.appFeedback, style: TextStyle(fontWeight: FontWeight.w600)),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.appFeedback, style: const TextStyle(fontWeight: FontWeight.w600)),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 100), // Added bottom padding for keyboard clearance
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Center(
               child: Column(
                 children: [
@@ -256,6 +258,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

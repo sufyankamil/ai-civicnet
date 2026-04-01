@@ -86,29 +86,24 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Request Detail Renovation',
-      description: "A complete 'Aura' makeover for the Request Detail screen, featuring glassmorphic cards and improved community engagement.",
+      title: 'AI Neighborhood Connection',
+      description: "Experience 'AI RECOMMENDED' matches that highlight the best ways to help your neighbors with a glowing personalized touch.",
       icon: Icons.auto_awesome_rounded,
     ),
     UpdateNote(
-      title: 'Modern New Request Flow',
-      description: 'We have redesigned the New Request form with premium chips, interactive maps, and AI-powered categorization.',
-      icon: Icons.add_circle_rounded,
+      title: 'Enhanced Home Screen',
+      description: "A refined header and subtitle system that shows you exactly what's happening 'near you' at a single glance.",
+      icon: Icons.home_rounded,
     ),
     UpdateNote(
-      title: 'Interactive Discoveries',
-      description: 'Tap on any location map to open it directly in Google Maps or Apple Maps for seamless navigation.',
-      icon: Icons.map_rounded,
+      title: 'Dark Mode Perfection',
+      description: 'Reimagined category filters with higher contrast and better visibility, specifically tuned for a premium dark mode experience.',
+      icon: Icons.dark_mode_rounded,
     ),
     UpdateNote(
-      title: 'Premium Modal Experience',
-      description: "Asset details and suggested tools now feature a high-fidelity 'Aura' design with better typography and layout.",
-      icon: Icons.view_quilt_rounded,
-    ),
-    UpdateNote(
-      title: 'Header Refinements',
-      description: "Better readability in Home Screen header and a quick access 'My Activity' icon to track your history.",
-      icon: Icons.history_rounded,
+      title: 'Privacy & Transparency',
+      description: 'Updated location permission flows and clearer descriptions to ensure you always know how your data is being used.',
+      icon: Icons.privacy_tip_rounded,
     ),
   ];
 }

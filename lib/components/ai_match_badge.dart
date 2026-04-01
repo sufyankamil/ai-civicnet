@@ -46,11 +46,14 @@ class AiMatchBadge extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
-            '${(score.isFinite ? score * 100 : 0).toInt()}% $text',
+            score > 0.6 
+              ? 'AI RECOMMENDED • ${(score.isFinite ? score * 100 : 0).toInt()}%' 
+              : '${(score.isFinite ? score * 100 : 0).toInt()}% $text',
             style: TextStyle(
               color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+              fontSize: score > 0.6 ? 10 : 12,
+              fontWeight: FontWeight.w900,
+              letterSpacing: score > 0.6 ? 0.5 : 0,
             ),
           ),
         ],

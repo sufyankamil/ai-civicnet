@@ -41,16 +41,19 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   @override
   void initState() {
     super.initState();
-    _checkPermission();
+    _checkPermission(request: false);
   }
 
-  Future<void> _checkPermission() async {
+  Future<void> _checkPermission({bool request = false}) async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
 
     LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
+    if (permission == LocationPermission.denied && request) {
       permission = await Geolocator.requestPermission();
+    } else if (permission == LocationPermission.deniedForever && request) {
+      await Geolocator.openAppSettings();
+      return;
     }
 
     Position? pos;
@@ -419,8 +422,16 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                             children: [
                               Icon(Icons.location_off_rounded, color: Colors.grey[400], size: 40),
                               const SizedBox(height: 12),
-                              Text('Location Permission Missing', style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold)),
-                              TextButton(onPressed: _checkPermission, child: const Text('Try Again')),
+                              Text(
+                                _permission == LocationPermission.deniedForever 
+                                  ? 'Location Access Restricted' 
+                                  : 'Location Permission Missing', 
+                                style: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold)
+                              ),
+                              TextButton(
+                                onPressed: () => _permission == LocationPermission.deniedForever ? Geolocator.openAppSettings() : _checkPermission(request: true), 
+                                child: Text(_permission == LocationPermission.deniedForever ? 'Go to Settings' : 'Grant Permission')
+                              ),
                             ],
                           ),
                         ),

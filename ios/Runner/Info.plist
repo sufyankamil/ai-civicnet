@@ -33,11 +33,11 @@
 		<key>NSFaceIDUsageDescription</key>
 		<string>CivicNet needs Face ID to securely and quickly log you in.</string>
 		<key>NSLocationAlwaysUsageDescription</key>
-		<string>This app needs access to location to show help requests near you.</string>
+		<string>CivicNet uses your location to discover nearby help requests, community events, and matches within your neighborhood.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>This app needs access to location to show help requests near you.</string>
+		<string>CivicNet uses your location to discover nearby help requests, community events, and matches within your neighborhood.</string>
 		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-		<string>This app needs access to location to show help requests near you.</string>
+		<string>Your location is used to alert you to urgent community needs and updates in your immediate area.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>We need access to your microphone to send voice messages.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
@@ -71,7 +71,6 @@
 		<array>
 			<string>remote-notification</string>
 			<string>fetch</string>
-			<string>location</string>
 		</array>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>

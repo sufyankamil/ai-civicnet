@@ -607,7 +607,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notNow => 'Not Now';
 
   @override
-  String get allowAccess => 'Allow Access';
+  String get allowAccess => 'Continue';
 
   @override
   String get deletePoll => 'Delete Poll';
@@ -858,7 +858,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationPermissionDesc =>
-      'To show accurate help requests and matches near you, Civic Net needs access to your location.';
+      'To connect you with help requests and community matches in your immediate neighborhood, CivicNet requires location access.';
 
   @override
   String get communityEvent => 'COMMUNITY EVENT';
