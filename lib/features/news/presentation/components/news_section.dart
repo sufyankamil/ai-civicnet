@@ -5,6 +5,7 @@ import 'announcement_card.dart';
 import '../screens/create_announcement_screen.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import 'announcement_card_skeleton.dart';
+import '../../../../theme/app_theme.dart';
 
 class NewsSection extends StatefulWidget {
   final String? searchQuery;
@@ -29,18 +30,10 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
   @override
   bool get wantKeepAlive => true;
 
-  Future<void> _handleRefresh() async {
-    setState(() {
-      _announcementsStream = SupabaseService().getAnnouncementsStream();
-    });
-    // Stream updates are handled by StreamBuilder, we just return a future that completes quickly
-    // to hide the indicator once the state is updated.
-    await Future.delayed(const Duration(milliseconds: 500));
-  }
-
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required by AutomaticKeepAliveClientMixin
+    super.build(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return FutureBuilder<User?>(
       future: _userProfileFuture,
@@ -52,15 +45,18 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
           stream: _announcementsStream,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: 3,
-                itemBuilder: (context, index) => const AnnouncementCardSkeleton(),
+              return Column(
+                children: List.generate(3, (index) => const AnnouncementCardSkeleton()),
               );
             }
             
             if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
+                ),
+              );
             }
             
             List<Announcement> announcements = snapshot.data ?? [];
@@ -74,77 +70,119 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
               }).toList();
             }
             
-            return RefreshIndicator(
-              onRefresh: _handleRefresh,
-              child: Stack(
-                children: [
-                  if (announcements.isEmpty)
-                    ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                        Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
-                                  ? Icons.search_off_rounded 
-                                  : Icons.newspaper_rounded, 
-                                size: 64, 
-                                color: Colors.grey.withValues(alpha: 0.3)
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
-                                  ? 'No matches found' 
-                                  : 'No announcements yet',
-                                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    ListView.builder(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        right: 16,
-                        top: 16,
-                        bottom: 100, // Extra space for FAB
-                      ),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: announcements.length,
-                      itemBuilder: (context, index) {
-                        return AnnouncementCard(
-                          announcement: announcements[index],
-                          onTap: () {},
+            return Column(
+              children: [
+                if (announcements.isEmpty)
+                  _buildEmptyState(isDark)
+                else
+                  ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: announcements.length,
+                    itemBuilder: (context, index) {
+                      return AnnouncementCard(
+                        announcement: announcements[index],
+                        onTap: () {},
+                      );
+                    },
+                  ),
+                if (isAdmin)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                    child: AppHaptic(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
                         );
                       },
-                    ),
-                  if (isAdmin)
-                    Positioned(
-                      bottom: 24,
-                      right: 24,
-                      child: AppFloatingActionButton.extended(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
-                          );
-                        },
-                        label: const Text('Post News'),
-                        icon: const Icon(Icons.add_comment_rounded),
-                        backgroundColor: Theme.of(context).primaryColor,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.auraGradient,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryLight.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.add_comment_rounded, color: Colors.white, size: 20),
+                            SizedBox(width: 12),
+                            Text(
+                              'Post News',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
+                ? Icons.search_off_rounded 
+                : Icons.newspaper_rounded, 
+              size: 64, 
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
+              ? 'No matches found' 
+              : 'No announcements yet',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
+              ? 'Try a different search term.'
+              : 'Stay tuned for official updates from your community.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.3),
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

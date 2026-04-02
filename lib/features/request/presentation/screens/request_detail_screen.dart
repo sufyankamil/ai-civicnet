@@ -1,5 +1,7 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import '../../../../widgets/haptic_buttons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -46,6 +48,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   int _ratingGiven = 0; // tracks the star value submitted
   List<asset_models.CommunityAsset> _matchedAssets = [];
   bool _isLoadingAssets = false;
+  bool _isStartingChat = false;
 
   @override
   void initState() {
@@ -186,52 +189,27 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         return CustomScrollView(
           slivers: [
             SliverAppBar(
-              expandedHeight: 200,
+              expandedHeight: 220,
               pinned: true,
-              leading: Container(
-                margin: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => context.pop(),
-                ),
-              ),
+              stretch: true,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              elevation: 0,
+              leading: _buildGlassIconButton(Icons.arrow_back_rounded, () => context.pop()),
               actions: [
                 if (SupabaseService().currentUserId != null &&
                     _viewModel.currentRequest != null &&
                     SupabaseService().currentUserId !=
                         _viewModel.currentRequest!.requesterId)
-                  Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.flag_outlined, color: Colors.white),
-                      onPressed: () => _showReportRequestDialog(),
-                    ),
-                  ),
+                  _buildGlassIconButton(Icons.flag_outlined, () => _showReportRequestDialog()),
                 if (SupabaseService().currentUserId != null &&
                     _viewModel.currentRequest != null &&
                     SupabaseService().currentUserId ==
                         _viewModel.currentRequest!.requesterId)
-                  Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.white),
-                      onPressed: () => _showDeleteConfirmationDialog(),
-                    ),
-                  ),
+                  _buildGlassIconButton(Icons.delete_outline_rounded, () => _showDeleteConfirmationDialog()),
+                const SizedBox(width: 8),
               ],
               flexibleSpace: FlexibleSpaceBar(
+                stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
                 background: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -241,9 +219,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         alignment: Alignment.center,
                         children: [
                           Opacity(
-                            opacity: 0.1,
+                            opacity: 0.25,
                             child: Image.network(
-                              'https://maps.googleapis.com/maps/api/staticmap?center=${request.lat},${request.lng}&zoom=12&size=600x400&style=feature:all|element:labels|visibility:off&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}',
+                              'https://maps.googleapis.com/maps/api/staticmap?center=${request.lat},${request.lng}&zoom=13&size=600x400&style=feature:all|element:labels|visibility:off&style=feature:road|element:geometry|color:0x444444&style=feature:water|element:geometry|color:0x111111&key=${dotenv.env["GOOGLE_MAPS_API_KEY"]}',
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
@@ -251,34 +229,37 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                                   Container(color: AppColors.primaryDark),
                             ),
                           ),
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
+                          // Premium Location Pulse
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 1.0, end: 1.5),
+                            duration: const Duration(seconds: 2),
+                            curve: Curves.easeInOut,
+                            builder: (context, value, child) {
+                              return Container(
+                                padding: EdgeInsets.all(12 * value),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.1),
+                                  color: AppColors.primaryLight.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.2),
+                                ),
+                                child: child,
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                gradient: AppColors.auraGradient,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.primaryLight.withValues(alpha: 0.3),
+                                    blurRadius: 20,
+                                    spreadRadius: 5,
                                   ),
-                                ),
-                                child: const Icon(
-                                  Icons.location_on,
-                                  color: AppColors.secondaryLight,
-                                  size: 40,
-                                ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                AppLocalizations.of(context)!.approximateLocation,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                              child: const Icon(Icons.location_on_rounded, color: Colors.white, size: 32),
+                            ),
+                            onEnd: () {},
                           ),
                         ],
                       ),
@@ -289,11 +270,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withValues(alpha: 0.4),
+                            Colors.black.withValues(alpha: 0.6),
                             Colors.transparent,
                             Theme.of(context).scaffoldBackgroundColor,
                           ],
-                          stops: const [0.0, 0.5, 1.0],
+                          stops: const [0.0, 0.4, 1.0],
                         ),
                       ),
                     ),
@@ -304,449 +285,113 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.secondaryLight.withValues(
-                              alpha: 0.1,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _getLocalizedCategory(request.category.name),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.secondaryLight,
-                            ),
-                          ),
-                        ),
-                        if (request.distance.isNotEmpty &&
-                            request.distance.toLowerCase() != 'unknown') ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            request.distance,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            request.title,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(
-                                context,
-                              ).textTheme.bodyLarge?.color,
-                            ),
-                          ),
-                        ),
-                        if (SupabaseService().currentUserId ==
-                            request.requesterId)
-                          PopupMenuButton<RequestStatusEnum>(
-                            initialValue: request.status,
-                            onSelected: (status) =>
-                                _updateHelpRequestStatus(status),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  _buildPremiumChip(
+                                    _getLocalizedCategory(request.category.name),
+                                    _getCategoryColor(request.category.name),
+                                  ),
+                                  if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      request.distance,
+                                      style: TextStyle(color: Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ],
                               ),
-                              decoration: BoxDecoration(
-                                color: _statusColor(
-                                  request.status,
-                                ).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _statusColor(request.status),
+                              const SizedBox(height: 12),
+                              Text(
+                                request.title,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: -0.5,
                                 ),
                               ),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    request.status
-                                        .toString()
-                                        .split('.')
-                                        .last
-                                        .toUpperCase(),
-                                    style: TextStyle(
-                                      color: _statusColor(request.status),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.arrow_drop_down,
-                                    color: _statusColor(request.status),
-                                    size: 16,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            itemBuilder: (context) => RequestStatusEnum.values
-                                .map(
-                                  (s) => PopupMenuItem(
-                                    value: s,
-                                    child: Text(
-                                      s
-                                          .toString()
-                                          .split('.')
-                                          .last
-                                          .toUpperCase(),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          )
-                        else
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: _statusColor(
-                                request.status,
-                              ).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: _statusColor(request.status),
-                              ),
-                            ),
-                            child: Text(
-                              request.status
-                                  .toString()
-                                  .split('.')
-                                  .last
-                                  .toUpperCase(),
-                              style: TextStyle(
-                                color: _statusColor(request.status),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
+                            ],
                           ),
+                        ),
+                        _buildStatusIndicator(request),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildApplicationStatusBanner(request),
-
-
-                    if (request.status == RequestStatusEnum.completed &&
-                        request.helperId == SupabaseService().currentUserId)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.green),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.stars,
-                              color: Colors.orange,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Task Completed!',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green[800],
-                                    ),
-                                  ),
-                                  Text(
-                                    'You earned 15 points for helping out.',
-                                    style: TextStyle(
-                                      color: Colors.green[800],
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
                     const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(right: 12),
-                          child: Hero(
-                            tag: 'avatar-${request.id}',
-                            child: request.requesterAvatarUrl.isNotEmpty &&
-                                    (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
-                                ? CachedNetworkImage(
-                                    imageUrl: request.requesterAvatarUrl,
-                                    imageBuilder: (context, imageProvider) => CircleAvatar(
-                                      radius: 20,
-                                      backgroundImage: imageProvider,
-                                    ),
-                                    errorWidget: (context, url, error) => const CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Colors.grey,
-                                      child: Icon(Icons.person, color: Colors.white),
-                                    ),
-                                  )
-                                : const CircleAvatar(
-                                    radius: 20,
-                                    backgroundColor: Colors.grey,
-                                    child: Icon(Icons.person, color: Colors.white),
-                                  ),
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              request.requesterName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              AppLocalizations.of(context)!.requester,
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        if (SupabaseService().currentUserId !=
-                            request.requesterId)
-                          IconButton(
-                            icon: _isStartingChat
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator.adaptive(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.chat_bubble_outline,
-                                    color: AppColors.primaryLight,
-                                  ),
-                            onPressed: () => _startChat(request),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(),
-                    const SizedBox(height: 16),
+                    _buildUserSection(request),
+                    const SizedBox(height: 24),
+                    const Divider(height: 1),
+                    const SizedBox(height: 24),
 
                     Text(
-                      AppLocalizations.of(context)!.description,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                      AppLocalizations.of(context)!.description.toUpperCase(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                        letterSpacing: 1.5,
+                        color: Colors.grey[500],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     Text(
                       request.description,
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
-                        height: 1.5,
+                        fontSize: 16,
+                        height: 1.6,
+                        color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[800],
                       ),
                     ),
                     const SizedBox(height: 32),
 
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.auto_awesome,
-                                  color: AppColors.secondaryLight,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)!.communityHelpers,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (_viewModel.potentialHelpers.length > 3)
-                              TextButton(
-                                onPressed: () => _showAllHelpersBottomSheet(
-                                  context,
-                                  _viewModel.potentialHelpers,
-                                ),
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 4,
-                                  ),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                child: Text(AppLocalizations.of(context)!.viewAll),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          AppLocalizations.of(context)!.nearbyMembersHelp,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        if (_viewModel.isLoadingHelpers)
-                          const AppLoader()
-                        else if (_viewModel.potentialHelpers.isEmpty)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            child: Column(
-                              children: [
-                                const Icon(
-                                  Icons.people_outline,
-                                  size: 48,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  AppLocalizations.of(context)!.noHelpersYet,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  SupabaseService().currentUserId == request.requesterId
-                                      ? AppLocalizations.of(context)!.checkBackLater
-                                      : AppLocalizations.of(context)!.beTheFirstHelper,
-                                  style: TextStyle(
-
-                                    color: Colors.grey[600],
-                                    fontSize: 12,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          Column(
-                            children: _viewModel.potentialHelpers
-                                .take(3)
-                                .map(
-                                  (helper) => HelperCard(
-                                    helper: helper,
-                                    onTap: () {
-                                      context.push(
-                                        '/profile/${helper.user.id}',
-                                      );
-                                    },
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+                    _buildHelpersSection(),
+                    const SizedBox(height: 24),
                     _buildSuggestedTools(),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 32),
 
-                    if (SupabaseService().currentUserId !=
-                        request.requesterId) ...[
+                    if (SupabaseService().currentUserId != request.requesterId) ...[
                       if (_applicationStatus == null)
-                        Opacity(
-                          opacity: request.status != RequestStatusEnum.open
-                              ? 0.5
-                              : 1.0,
-                          child: PrimaryButton(
-                            text: AppLocalizations.of(context)!.imInterested,
-                            isLoading: _isApplying || _isCheckingStatus,
-                            onPressed: request.status == RequestStatusEnum.open
-                                ? () => _applyToRequest()
-                                : () => ToastService.showInfo(
-                                    context,
-                                    AppLocalizations.of(context)!.requestNoLongerOpen,
-                                  ),
-                          ),
+                        PrimaryButton(
+                          text: AppLocalizations.of(context)!.imInterested,
+                          isLoading: _isApplying || _isCheckingStatus,
+                          onPressed: request.status == RequestStatusEnum.open
+                              ? () => _applyToRequest()
+                              : () => ToastService.showInfo(
+                                  context,
+                                  AppLocalizations.of(context)!.requestNoLongerOpen,
+                                ),
                         ),
                     ] else ...[
-                      Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.yourRequest,
-                          style: TextStyle(
-                            color: Theme.of(context).primaryColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
+                      _buildRequesterActions(request),
                     ],
-                    const SizedBox(height: 16),
-
-                    if (SupabaseService().currentUserId ==
-                        request.requesterId) ...[
+                    
+                    if (SupabaseService().currentUserId == request.requesterId) ...[
+                      const SizedBox(height: 32),
                       const Divider(),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.group_outlined,
-                            color: AppColors.primaryLight,
-                            size: 22,
-                          ),
+                          const Icon(Icons.group_outlined, color: AppColors.primaryLight, size: 22),
                           const SizedBox(width: 8),
                           Text(
-                            'Applications (${_applications.length})',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
+                            'Applications (${_applications.length})'.toUpperCase(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 1.0,
+                              color: Colors.grey[500],
                             ),
                           ),
                         ],
@@ -761,127 +406,14 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                             child: Text(
                               AppLocalizations.of(context)!.interestShown,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 15,
-                              ),
+                              style: TextStyle(color: Colors.grey[600], fontSize: 14),
                             ),
                           ),
                         )
                       else
-                        ..._applications.map(
-                          (app) => Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const CircleAvatar(
-                                      radius: 20,
-                                      backgroundColor: Colors.grey,
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          app.applicantName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          app.status ==
-                                                  legacy
-                                                      .ApplicationStatus
-                                                      .accepted
-                                              ? 'Accepted'
-                                              : app.status ==
-                                                    legacy
-                                                        .ApplicationStatus
-                                                        .rejected
-                                              ? 'Not Selected'
-                                              : 'Awaiting Review',
-                                          style: TextStyle(
-                                            color:
-                                                app.status ==
-                                                    legacy
-                                                        .ApplicationStatus
-                                                        .accepted
-                                                ? Colors.green
-                                                : app.status ==
-                                                      legacy
-                                                          .ApplicationStatus
-                                                          .rejected
-                                                ? Colors.grey
-                                                : Colors.orange,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (app.status ==
-                                      legacy.ApplicationStatus.accepted)
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.chat_bubble_outline,
-                                        color: AppColors.primaryLight,
-                                      ),
-                                      onPressed: () => _startChatWithUser(
-                                        app.applicantId,
-                                        app.applicantName,
-                                      ),
-                                    ),
-
-                                  if (app.status ==
-                                      legacy.ApplicationStatus.pending) ...[
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.check_circle_outline,
-                                        color: Colors.green,
-                                      ),
-                                      onPressed: () => _updateStatus(
-                                        app.id,
-                                        legacy.ApplicationStatus.accepted,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.cancel_outlined,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () => _updateStatus(
-                                        app.id,
-                                        legacy.ApplicationStatus.rejected,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 32),
+                        ..._applications.map((app) => _buildApplicationCard(app, request)),
                     ],
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 48),
                   ],
                 ),
               ),
@@ -901,48 +433,31 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
           if (_hasRated) {
             return SafeArea(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.1),
+                  border: const Border(top: BorderSide(color: Colors.amber, width: 0.5)),
                 ),
-                color: Colors.amber.withValues(alpha: 0.08),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'You rated',
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 14,
+                    const Icon(Icons.stars_rounded, color: Colors.amber, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('YOUR RATING', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.amber, letterSpacing: 1.0)),
+                          Row(
+                            children: List.generate(
+                              5,
+                              (i) => Icon(i < _ratingGiven ? Icons.star_rounded : Icons.star_border_rounded, color: Colors.amber, size: 20),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Show filled/empty stars based on submitted rating
-                    Row(
-                      children: List.generate(
-                        5,
-                        (i) => Icon(
-                          i < _ratingGiven ? Icons.star : Icons.star_border,
-                          color: Colors.amber,
-                          size: 22,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '($_ratingGiven/5)',
-                      style: TextStyle(
-                        color: Colors.amber[800],
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
+                    Text('$_ratingGiven / 5', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.amber)),
                   ],
                 ),
               ),
@@ -955,23 +470,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Theme.of(context).cardColor,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
+                  border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
                 ),
-                child: ElevatedButton.icon(
+                child: PrimaryButton(
+                  text: 'SUBMIT RATING',
                   onPressed: _showRatingDialog,
-                  icon: const Icon(Icons.star),
-                  label: const Text('Rate User'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.amber,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
                 ),
               ),
             );
@@ -982,35 +485,6 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
   }
 
-  bool _isStartingChat = false;
-
-  Future<void> _startChat(HelpRequestEntity request) async {
-    if (_isStartingChat) return;
-    if (SupabaseService().currentUserId == request.requesterId) {
-      ToastService.showInfo(context, 'You cannot chat with yourself');
-      return;
-    }
-
-    setState(() => _isStartingChat = true);
-    try {
-      final conversationId = await SupabaseService().createConversation(
-        request.requesterId,
-      );
-      if (mounted) {
-        final encodedName = Uri.encodeComponent(request.requesterName);
-        context.push(
-          '/chat-detail?id=$conversationId&name=$encodedName&uid=${request.requesterId}',
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        logger.e('Error starting chat', error: e);
-        ToastService.showError(context, 'Unable to start chat with this user.');
-      }
-    } finally {
-      if (mounted) setState(() => _isStartingChat = false);
-    }
-  }
 
   Future<void> _applyToRequest() async {
     setState(() => _isApplying = true);
@@ -1558,51 +1032,151 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     }
   }
 
-  Widget _buildSuggestedTools() {
-    if (_isLoadingAssets) {
-      return const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Scanning Community Assets...',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+  Widget _buildUserSection(HelpRequestEntity request) {
+    return Row(
+      children: [
+        Hero(
+          tag: 'avatar-${request.id}',
+          child: Container(
+            padding: const EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
+            ),
+            child: request.requesterAvatarUrl.isNotEmpty && (request.requesterAvatarUrl.startsWith('http'))
+                ? CachedNetworkImage(
+                    imageUrl: request.requesterAvatarUrl,
+                    imageBuilder: (context, imageProvider) => CircleAvatar(radius: 20, backgroundImage: imageProvider),
+                    errorWidget: (context, url, error) => const CircleAvatar(radius: 20, backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                  )
+                : const CircleAvatar(radius: 20, backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
           ),
-          SizedBox(height: 16),
-          AppLoader(),
-        ],
-      );
-    }
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(request.requesterName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
+            Text(AppLocalizations.of(context)!.requester, style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+          ],
+        ),
+        const Spacer(),
+        if (SupabaseService().currentUserId != request.requesterId)
+          AppHaptic(
+            onTap: () => _startChat(request),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: _isStartingChat
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
+                  : const Icon(Icons.chat_bubble_rounded, color: AppColors.primaryLight, size: 18),
+            ),
+          ),
+      ],
+    );
+  }
 
+  Widget _buildHelpersSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.communityHelpers.toUpperCase(),
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.0, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+            if (_viewModel.potentialHelpers.length > 3)
+              TextButton(
+                onPressed: () => _showAllHelpersBottomSheet(context, _viewModel.potentialHelpers),
+                child: Text(AppLocalizations.of(context)!.viewAll, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          AppLocalizations.of(context)!.nearbyMembersHelp,
+          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+        ),
+        const SizedBox(height: 16),
+        if (_viewModel.isLoadingHelpers)
+          const AppLoader()
+        else if (_viewModel.potentialHelpers.isEmpty)
+          _buildEmptyHelpers()
+        else
+          ..._viewModel.potentialHelpers.take(3).map((helper) => HelperCard(
+                helper: helper,
+                onTap: () => context.push('/profile/${helper.user.id}'),
+              )),
+      ],
+    );
+  }
+
+  Widget _buildEmptyHelpers() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.people_alt_rounded, size: 40, color: Colors.grey.withValues(alpha: 0.3)),
+          const SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context)!.noHelpersYet,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Be the first to help out in your community!',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuggestedTools() {
+    if (_isLoadingAssets) return const AppLoader();
     if (_matchedAssets.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Row(
+        Row(
           children: [
-            Icon(Icons.auto_awesome, color: AppColors.primaryLight, size: 20),
-            SizedBox(width: 8),
+            const Icon(Icons.construction_rounded, color: Colors.blueAccent, size: 20),
+            const SizedBox(width: 8),
             Text(
-              'Suggested Community Tools',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              'SUGGESTED TOOLS'.toUpperCase(),
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.0, color: Colors.grey[500]),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        const Text(
-          'Neighbors have listed these assets that could help with this task:',
-          style: TextStyle(color: Colors.grey, fontSize: 13),
-        ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         SizedBox(
-          height: 280,
+          height: 250,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: _matchedAssets.length,
             itemBuilder: (context, index) {
               final asset = _matchedAssets[index];
               return Container(
-                width: 180,
+                width: 200,
                 margin: const EdgeInsets.only(right: 16),
                 child: AssetCard(
                   asset: asset,
@@ -1616,57 +1190,146 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
   }
 
-  void _showAssetDetails(legacy.CommunityAsset asset) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(asset.title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (asset.imageUrl != null)
+  Widget _buildRequesterActions(HelpRequestEntity request) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
               Container(
-                height: 150,
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    image: NetworkImage(asset.imageUrl!),
-                    fit: BoxFit.cover,
-                  ),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: AppColors.primaryLight.withValues(alpha: 0.1), shape: BoxShape.circle),
+                child: const Icon(Icons.star_rounded, color: AppColors.primaryLight, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Manage Your Request',
+                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.2),
                 ),
               ),
-            Text(asset.description),
-            const SizedBox(height: 16),
-            const Text(
-              'This tool belongs to a neighbor. If you need it to help with this request, we suggest contacting the requester first to see if they want you to bring it.',
-              style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final requestTitle = _viewModel.currentRequest?.title ?? 'my request';
-              final msg = 'Hi, I\'m interested in your "${asset.title}" for $requestTitle. Is it available?';
-              _startChatWithUser(
-                asset.ownerId, 
-                asset.ownerName ?? 'Asset Owner',
-                initialMessage: msg,
-              );
-            },
-            child: const Text('Contact Owner'),
+          const SizedBox(height: 16),
+          Text(
+            'Keep an eye on applications from neighbors who want to help.',
+            style: TextStyle(color: Colors.grey[600], fontSize: 13, height: 1.4),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildGlassIconButton(IconData icon, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      margin: const EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+        border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
+      ),
+      child: ClipOval(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: IconButton(
+            icon: Icon(icon, color: Colors.white, size: 20),
+            onPressed: onTap,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          color: color,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusIndicator(HelpRequestEntity request) {
+    final status = request.status;
+    final color = _statusColor(status);
+    final isOwner = SupabaseService().currentUserId == request.requesterId;
+
+    if (isOwner) {
+      return PopupMenuButton<RequestStatusEnum>(
+        initialValue: status,
+        onSelected: (s) => _updateHelpRequestStatus(s),
+        child: _buildStatusChipContent(status, color, true),
+        itemBuilder: (context) => RequestStatusEnum.values
+            .map(
+              (s) => PopupMenuItem(
+                value: s,
+                child: Text(
+                  s.toString().split('.').last.toUpperCase(),
+                  style: TextStyle(color: _statusColor(s), fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    return _buildStatusChipContent(status, color, false);
+  }
+
+  Widget _buildStatusChipContent(RequestStatusEnum status, Color color, bool isInteractive) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            status.toString().split('.').last.toUpperCase(),
+            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+          if (isInteractive) ...[
+            const SizedBox(width: 4),
+            Icon(Icons.keyboard_arrow_down_rounded, color: color, size: 16),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Color _getCategoryColor(String category) {
+    if (category == 'Emergency') return Colors.redAccent;
+    if (category == 'Household') return Colors.orangeAccent;
+    if (category == 'Tech Support') return Colors.blueAccent;
+    if (category == 'Food') return Colors.greenAccent;
+    return AppColors.secondaryLight;
   }
 
   Widget _buildApplicationStatusBanner(HelpRequestEntity request) {
@@ -1677,73 +1340,347 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
     switch (_applicationStatus!) {
       case legacy.ApplicationStatus.accepted:
-        color = Colors.green;
-        icon = Icons.check_circle;
+        color = Colors.greenAccent;
+        icon = Icons.check_circle_rounded;
         break;
       case legacy.ApplicationStatus.rejected:
         color = Colors.grey;
-        icon = Icons.sentiment_neutral_outlined;
+        icon = Icons.info_outline_rounded;
         break;
       case legacy.ApplicationStatus.pending:
-        color = Colors.orange;
-        icon = Icons.access_time_filled;
+        color = Colors.orangeAccent;
+        icon = Icons.pending_rounded;
         break;
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        gradient: LinearGradient(
+          colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getLocalizedApplicationStatus(_applicationStatus!.name),
-                  style: TextStyle(
-                    color: color.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                  _getLocalizedApplicationStatus(_applicationStatus!.name).toUpperCase(),
+                  style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
                 ),
-                if (_applicationStatus == legacy.ApplicationStatus.accepted)
-                  Text(
-                    AppLocalizations.of(context)!.communicateWithRequester,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: color.withValues(alpha: 0.7),
-                    ),
-                  )
-                else if (_applicationStatus == legacy.ApplicationStatus.rejected)
-                  const Text(
-                    'The requester chose someone else. Keep looking!',
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
-                  ),
+                const SizedBox(height: 4),
+                Text(
+                  _applicationStatus == legacy.ApplicationStatus.accepted
+                      ? AppLocalizations.of(context)!.communicateWithRequester
+                      : _applicationStatus == legacy.ApplicationStatus.rejected
+                          ? 'The requester chose someone else for this task.'
+                          : 'Your interest has been noted. Please wait for a response.',
+                  style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.8), height: 1.3),
+                ),
               ],
             ),
           ),
           if (_applicationStatus == legacy.ApplicationStatus.accepted)
-            TextButton.icon(
-              onPressed: () => _startChat(request),
-              icon: Icon(Icons.chat, size: 16, color: color),
-              label: Text(
-                'Chat',
-                style: TextStyle(color: color, fontWeight: FontWeight.bold),
-              ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                backgroundColor: color.withValues(alpha: 0.1),
+            AppHaptic(
+              onTap: () => _startChat(request),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))],
+                ),
+                child: const Text('CHAT', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildApplicationCard(legacy.RequestApplication app, HelpRequestEntity request) {
+    final statusColor = app.status == legacy.ApplicationStatus.accepted
+        ? Colors.greenAccent
+        : app.status == legacy.ApplicationStatus.rejected
+            ? Colors.grey
+            : Colors.orangeAccent;
+
+    return Container(
+      key: ValueKey(app.id),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: statusColor.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: statusColor.withValues(alpha: 0.1),
+                child: Icon(Icons.person_rounded, color: statusColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(app.applicantName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Applied ${timeago.format(app.createdAt)}',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              _buildPremiumChip(
+                app.status.name.toUpperCase(),
+                statusColor,
+              ),
+            ],
+          ),
+          if (app.status == legacy.ApplicationStatus.pending) ...[
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => _updateStatus(app.id, legacy.ApplicationStatus.rejected),
+                    style: TextButton.styleFrom(foregroundColor: Colors.grey),
+                    child: const Text('Decline'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _updateStatus(app.id, legacy.ApplicationStatus.accepted),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.greenAccent.withValues(alpha: 0.1),
+                      foregroundColor: Colors.greenAccent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ] else if (app.status == legacy.ApplicationStatus.accepted) ...[
+            const SizedBox(height: 12),
+            AppHaptic(
+              onTap: () => _startChatWithUser(app.applicantId, app.applicantName),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.chat_bubble_rounded, color: AppColors.primaryLight, size: 16),
+                    SizedBox(width: 8),
+                    Text('Message Applicant', style: TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.bold, fontSize: 13)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _startChat(HelpRequestEntity request) {
+    _startChatWithUser(request.requesterId, request.requesterName);
+  }
+
+  void _showAssetDetails(asset_models.CommunityAsset asset) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 30,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top Image / Header
+              Stack(
+                children: [
+                  if (asset.imageUrl != null)
+                    Container(
+                      height: 220,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: NetworkImage(asset.imageUrl!),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(gradient: AppColors.auraGradient),
+                      child: const Icon(Icons.construction_rounded, color: Colors.white, size: 64),
+                    ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: IconButton.filled(
+                      onPressed: () => Navigator.pop(context),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.3),
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ),
+                ],
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        _buildPremiumChip(asset.category.name, AppColors.secondaryLight),
+                        const Spacer(),
+                        if (asset.similarity != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.bolt_rounded, color: Colors.amber, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${(asset.similarity! * 100).toInt()}% MATCH',
+                                  style: const TextStyle(
+                                    color: Colors.amber,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      asset.title,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      asset.description,
+                      style: TextStyle(
+                        fontSize: 15,
+                        height: 1.5,
+                        color: isDark ? Colors.grey[400] : Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.1)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight.withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.info_outline_rounded, color: AppColors.primaryLight, size: 20),
+                          ),
+                          const SizedBox(width: 16),
+                          const Expanded(
+                            child: Text(
+                              'Coordinate with the neighbor to bring this tool.',
+                              style: TextStyle(
+                                fontSize: 13, 
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primaryLight,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    PrimaryButton(
+                      text: 'I CAN BRING THIS',
+                      onPressed: () {
+                        Navigator.pop(context);
+                        final requestTitle = _viewModel.currentRequest?.title ?? 'my request';
+                        final msg = 'Hi, I saw your "${asset.title}" and can bring it to help with "$requestTitle".';
+                        _startChatWithUser(asset.ownerId, asset.ownerName ?? 'Neighbor', initialMessage: msg);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

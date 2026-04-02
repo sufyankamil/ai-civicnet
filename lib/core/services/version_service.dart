@@ -86,24 +86,24 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Premium Visual Identity',
-      description: "Experience our new 'AI Aura' aesthetic, featuring a beautifully redesigned app icon and immersive launch screens.",
-      icon: Icons.diamond_rounded,
+      title: 'AI Neighborhood Connection',
+      description: "Experience 'AI RECOMMENDED' matches that highlight the best ways to help your neighbors with a glowing personalized touch.",
+      icon: Icons.auto_awesome_rounded,
     ),
     UpdateNote(
-      title: 'Fluid Authentication',
-      description: 'Logging in and signing up is now smoother than ever with upgraded glassmorphic designs and flowing entry animations.',
-      icon: Icons.animation_rounded,
+      title: 'Enhanced Home Screen',
+      description: "A refined header and subtitle system that shows you exactly what's happening 'near you' at a single glance.",
+      icon: Icons.home_rounded,
     ),
     UpdateNote(
-      title: 'Refined Navigation',
-      description: 'We have perfected the bottom navigation alignment and moved the Community AI to your Profile for a cleaner layout.',
-      icon: Icons.space_dashboard_rounded,
+      title: 'Dark Mode Perfection',
+      description: 'Reimagined category filters with higher contrast and better visibility, specifically tuned for a premium dark mode experience.',
+      icon: Icons.dark_mode_rounded,
     ),
     UpdateNote(
-      title: 'Upgraded Web Experience',
-      description: "Our Privacy Policy, Terms, and Support pages have been completely overhauled to match CivicNet's premium feel.",
-      icon: Icons.language_rounded,
+      title: 'Privacy & Transparency',
+      description: 'Updated location permission flows and clearer descriptions to ensure you always know how your data is being used.',
+      icon: Icons.privacy_tip_rounded,
     ),
   ];
 }

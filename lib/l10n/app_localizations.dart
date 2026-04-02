@@ -1211,7 +1211,7 @@ abstract class AppLocalizations {
   /// No description provided for @allowAccess.
   ///
   /// In en, this message translates to:
-  /// **'Allow Access'**
+  /// **'Continue'**
   String get allowAccess;
 
   /// No description provided for @deletePoll.
@@ -1685,7 +1685,7 @@ abstract class AppLocalizations {
   /// No description provided for @locationPermissionDesc.
   ///
   /// In en, this message translates to:
-  /// **'To show accurate help requests and matches near you, Civic Net needs access to your location.'**
+  /// **'To connect you with help requests and community matches in your immediate neighborhood, CivicNet requires location access.'**
   String get locationPermissionDesc;
 
   /// No description provided for @communityEvent.

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,7 +7,6 @@ import '../l10n/app_localizations.dart';
 import '../features/request/domain/entities/help_request_entity.dart';
 import '../features/request/domain/entities/request_enums.dart';
 import '../theme/app_theme.dart';
-import '../services/supabase_service.dart';
 import 'ai_match_badge.dart';
 import 'animated_glow_border.dart';
 
@@ -24,134 +24,147 @@ class RequestCard extends StatelessWidget {
     final locale = Localizations.localeOf(context).languageCode;
     final isAiMatch = request.aiRelevanceScore > 0;
 
-    Widget cardBody = Card(
-      elevation: isAiMatch ? 0 : 8, // Glow border adds its own shadow
-      shadowColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
-      color: Theme.of(context).cardColor,
-      shape: RoundedRectangleBorder(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    Widget cardBody = Container(
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(24),
-        side: isAiMatch 
-            ? BorderSide.none 
-            : BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.1), width: 1.5),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+          width: 1,
+        ),
       ),
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        onTap: () => context.push('/request/${request.id}'),
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: InkWell(
+            onTap: () => context.push('/request/${request.id}'),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Hero(
-                    tag: 'avatar-${request.id}',
-                    child: _hasValidAvatar(request.requesterAvatarUrl)
-                        ? CachedNetworkImage(
-                            imageUrl: request.requesterAvatarUrl,
-                            imageBuilder: (context, imageProvider) => CircleAvatar(
-                              radius: 20,
-                              backgroundImage: imageProvider,
-                            ),
-                            errorWidget: (context, url, error) => const CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.grey,
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
-                          )
-                        : const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Hero(
+                        tag: 'avatar-${request.id}',
+                        child: Container(
+                          padding: const EdgeInsets.all(1.5),
+                          decoration: BoxDecoration(
+                            gradient: isAiMatch ? AppColors.auraGradient : null,
+                            color: isAiMatch ? null : Colors.grey[300],
+                            shape: BoxShape.circle,
                           ),
+                          child: _hasValidAvatar(request.requesterAvatarUrl)
+                              ? CachedNetworkImage(
+                                  imageUrl: request.requesterAvatarUrl,
+                                  imageBuilder: (context, imageProvider) => CircleAvatar(
+                                    radius: 18,
+                                    backgroundImage: imageProvider,
+                                  ),
+                                  errorWidget: (context, url, error) => CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor: Colors.grey[200],
+                                    child: const Icon(Icons.person, color: Colors.white, size: 18),
+                                  ),
+                                )
+                              : CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: Colors.grey[200],
+                                  child: const Icon(Icons.person, color: Colors.white, size: 18),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              request.title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${request.requesterName} • ${timeago.format(request.postedAt, locale: locale)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      _buildCategoryChip(context, request.category),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.title,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${request.requesterName} • ${timeago.format(request.postedAt, locale: locale)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                  const SizedBox(height: 12),
+                  Text(
+                    request.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.4,
+                      color: isDark ? Colors.white.withValues(alpha: 0.8) : Colors.black87,
                     ),
                   ),
-                  _buildCategoryChip(context, request.category),
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown')
+                              Row(
+                                children: [
+                                  Icon(Icons.near_me_rounded, size: 12, color: Theme.of(context).primaryColor),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    request.distance,
+                                    style: TextStyle(
+                                      fontSize: 11, 
+                                      fontWeight: FontWeight.w800, 
+                                      color: Theme.of(context).primaryColor,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            if (request.locationName != 'Current Location') ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.location_on_outlined, size: 12, color: Colors.grey[500]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    request.locationName,
+                                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (isAiMatch) AiMatchBadge(score: request.aiRelevanceScore),
+                    ],
+                  ),
                 ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                request.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 16),
-              if (request.requesterId == SupabaseService().currentUserId)
-                Row(
-                  children: [
-                    Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Text(
-                       request.locationName,
-                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
-                )
-              else
-                 Row(
-                   crossAxisAlignment: CrossAxisAlignment.end,
-                   children: [
-                     Column(
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                         children: [
-                          if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
-                            Row(
-                              children: [
-                                Icon(Icons.location_on_outlined, size: 14, color: Theme.of(context).primaryColor),
-                                const SizedBox(width: 4),
-                                Text(
-                                  request.distance,
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                                ),
-                              ],
-                            ),
-                            if (request.locationName != 'Current Location') const SizedBox(height: 4),
-                          ],
-                          if (request.locationName != 'Current Location')
-                            Row(
-                              children: [
-                                Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
-                                const SizedBox(width: 4),
-                                Text(
-                                  request.locationName,
-                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                ),
-                              ],
-                            ),
-                       ],
-                     ),
-                     const Spacer(),
-                     if (isAiMatch) AiMatchBadge(score: request.aiRelevanceScore),
-                   ],
-                 ),
-            ],
+            ),
           ),
         ),
       ),

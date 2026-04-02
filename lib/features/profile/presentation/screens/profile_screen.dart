@@ -87,8 +87,26 @@ class _ProfileScreenState extends State<ProfileScreen>
           StreamBuilder<User?>(
         stream: _profileStream,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
             return const AppLoader();
+          }
+
+          if (snapshot.hasError) {
+             return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline_rounded, size: 56, color: Colors.redAccent),
+                  const SizedBox(height: 16),
+                  Text('Error: ${snapshot.error}', // TODO: Localize
+                      style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 16),
+                  AppElevatedButton(
+                      onPressed: _refreshProfile,
+                      child: const Text('Retry')),
+                ],
+              ),
+            );
           }
 
           if (snapshot.data == null) {
