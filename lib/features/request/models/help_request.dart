@@ -1,14 +1,6 @@
+import "../domain/entities/request_enums.dart";
 import '../../profile/models/user.dart';
 
-enum HelpCategory {
-  errands,
-  techSupport,
-  emergency,
-  education,
-  transport,
-  household,
-  other, health
-}
 
 enum UrgencyLevel {
   low,
@@ -96,8 +88,9 @@ class HelpRequest {
     return HelpRequest(
       id: json['id'].toString(),
       requesterId: json['requester_id'] ?? '',
-      requesterName: profile['name'] ?? 'Unknown',
-      requesterAvatarUrl: sanitizeAvatarUrl(profile['avatar_url']) == '' ? 'https://i.pravatar.cc/150' : sanitizeAvatarUrl(profile['avatar_url']), // Fallback
+      requesterName: json['requester_name'] ?? profile['name'] ?? 'Unknown',
+      requesterAvatarUrl: sanitizeAvatarUrl(json['requester_avatar_url'] ?? profile['avatar_url']),
+
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       category: HelpCategory.values.firstWhere(
@@ -110,7 +103,7 @@ class HelpRequest {
       ),
       postedAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
       distance: 'Unknown', 
-      aiRelevanceScore: (json['ai_score'] ?? 0.85).toDouble(), // Use real score if available
+      aiRelevanceScore: (json['ai_score'] ?? json['similarity'] ?? 0.0).toDouble(), // Only use actual RPC scores
       locationName: json['location_name'] ?? 'Unknown Location',
       lat: (json['lat'] ?? 0).toDouble(),
       lng: (json['lng'] ?? 0).toDouble(),

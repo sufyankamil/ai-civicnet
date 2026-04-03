@@ -1,9 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../l10n/app_localizations.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 import '../models/models.dart';
+import '../features/request/domain/entities/request_enums.dart';
 import '../theme/app_theme.dart';
 import '../services/supabase_service.dart';
 import 'ai_match_badge.dart';
@@ -20,7 +23,7 @@ class HelpRequestCard extends StatelessWidget {
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+        side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
       ),
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
@@ -34,11 +37,25 @@ class HelpRequestCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.grey,
-                    child: Icon(Icons.person, color: Colors.white),
-                  ),
+                  request.requesterAvatarUrl.isNotEmpty &&
+                          (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                      ? CachedNetworkImage(
+                          imageUrl: request.requesterAvatarUrl,
+                          imageBuilder: (context, imageProvider) => CircleAvatar(
+                            radius: 20,
+                            backgroundImage: imageProvider,
+                          ),
+                          errorWidget: (context, url, error) => const CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, color: Colors.white),
+                          ),
+                        )
+                      : const CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -55,10 +72,10 @@ class HelpRequestCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${request.requesterName} • ${timeago.format(request.postedAt)}',
+                          AppLocalizations.of(context)!.postedByTime(request.requesterName, timeago.format(request.postedAt)),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Colors.grey[600],
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -78,11 +95,11 @@ class HelpRequestCard extends StatelessWidget {
               if (request.requesterId == SupabaseService().currentUserId)
                 Row(
                   children: [
-                    Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
+                    Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     const SizedBox(width: 4),
                     Text(
                       request.locationName,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                   ],
                 )
@@ -93,27 +110,30 @@ class HelpRequestCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
-                            const SizedBox(width: 4),
-                            Text(
-                              request.distance,
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.map_outlined, size: 14, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(
-                              request.locationName,
-                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
+                        if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                          Row(
+                            children: [
+                              Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                request.distance,
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                              ),
+                            ],
+                          ),
+                          if (request.locationName != 'Current Location') const SizedBox(height: 4),
+                        ],
+                        if (request.locationName != 'Current Location')
+                          Row(
+                            children: [
+                              Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              const SizedBox(width: 4),
+                              Text(
+                                request.locationName,
+                                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              ),
+                            ],
+                          ),
                       ],
                     ),
                     const Spacer(),
@@ -134,37 +154,53 @@ class HelpRequestCard extends StatelessWidget {
     switch (category) {
       case HelpCategory.emergency:
         color = AppColors.accentLight;
-        text = 'Emergency';
+        text = AppLocalizations.of(context)!.emergency;
         break;
       case HelpCategory.techSupport:
         color = Colors.blue;
-        text = 'Tech';
+        text = AppLocalizations.of(context)!.tech;
         break;
       case HelpCategory.education:
         color = Colors.purple;
-        text = 'Education';
+        text = AppLocalizations.of(context)!.education;
         break;
       case HelpCategory.household:
         color = Colors.orange;
-        text = 'Household';
+        text = AppLocalizations.of(context)!.household;
         break;
-      default:
+      case HelpCategory.transport:
+        color = Colors.teal;
+        text = AppLocalizations.of(context)!.transport;
+        break;
+      case HelpCategory.health:
+        color = Colors.pink;
+        text = AppLocalizations.of(context)!.health;
+        break;
+      case HelpCategory.errands:
+        color = Colors.brown;
+        text = AppLocalizations.of(context)!.errands;
+        break;
+      case HelpCategory.other:
         color = Colors.grey;
-        text = 'General';
+        text = AppLocalizations.of(context)!.general;
+        break;
     }
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: isDark ? 0.2 : 0.1),
         borderRadius: BorderRadius.circular(8),
+        border: isDark ? Border.all(color: color.withValues(alpha: 0.3), width: 1) : null,
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
+          color: isDark ? color.withValues(alpha: 0.9) : color,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

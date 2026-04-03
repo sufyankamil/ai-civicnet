@@ -1,3 +1,4 @@
+import 'package:civic_net/services/logger_service.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/auth_usecases.dart';
@@ -35,6 +36,7 @@ class AuthViewModel extends GetxController {
   Future<String?> signIn(String email, String password) async {
     _isLoading.value = true;
     final result = await signInUseCase(SignInParams(email, password));
+    logger.e('AuthViewModel signIn result: $result');
     _isLoading.value = false;
 
     return result.fold(

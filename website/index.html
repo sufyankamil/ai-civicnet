@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Privacy Policy – CivicNet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B61FF;
+            --primary-dark: #5A42E0;
+            --bg: #F8F7FF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --card-bg: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background-attachment: fixed;
+            color: white;
+            padding: 60px 24px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle Aura Effect */
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 22px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .app-logo:hover {
+            transform: translateY(-5px);
+        }
+
+        header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            position: relative;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 800px;
+            margin: -40px auto 60px;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 40px 20px 60px; }
+            main { margin: -30px 16px 40px; padding: 24px; border-radius: 24px; }
+            header h1 { font-size: 2.2rem; }
+        }
+
+        .updated {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 40px 0 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            margin-right: 12px;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        p, li {
+            font-size: 1rem;
+            color: #4B5563;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            padding-left: 16px;
+            list-style: none;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            background: white;
+            border-top: 1px solid #E5E7EB;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        </div>
+        <h1>CivicNet</h1>
+        <p>Privacy Policy</p>
+    </header>
+
+    <main>
+        <p class="updated">Last updated: March 2, 2026</p>
+
+        <p>
+            CivicNet ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy
+            explains how we collect, use, and safeguard your information when you use our mobile application.
+        </p>
+
+        <h2>1. Information We Collect</h2>
+        <ul>
+            <li><strong>Account Information:</strong> Name, email address, and profile picture provided during sign-up.
+            </li>
+            <li><strong>Location Data:</strong> Your approximate or precise location when you choose to share it, to
+                display nearby community help requests on the map.</li>
+            <li><strong>User-Generated Content:</strong> Help requests, messages, ratings, and profile information you
+                submit.</li>
+            <li><strong>Device Information:</strong> Device type, operating system, and push notification token for
+                sending notifications.</li>
+            <li><strong>Usage Data:</strong> App interactions and crash reports to improve stability.</li>
+        </ul>
+
+        <h2>2. How We Use Your Information</h2>
+        <ul>
+            <li>To display your profile and connect you with community members needing help.</li>
+            <li>To show nearby help requests based on your location.</li>
+            <li>To send push notifications about your requests and responses.</li>
+            <li>To track your help stats (requests completed, points earned).</li>
+            <li>To improve app performance via crash analytics.</li>
+        </ul>
+
+        <h2>3. Third-Party Services</h2>
+        <p>We use the following trusted third-party services to power CivicNet:</p>
+        <ul>
+            <li><strong>Supabase</strong> – Secure database and authentication. <a href="https://supabase.com/privacy"
+                    target="_blank">Privacy Policy</a></li>
+            <li><strong>Firebase (Google)</strong> – Push notifications and crash reporting. <a
+                    href="https://firebase.google.com/support/privacy" target="_blank">Privacy Policy</a></li>
+            <li><strong>Google Maps</strong> – Displaying maps and location services. <a
+                    href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a></li>
+        </ul>
+
+        <h2>4. Data Sharing</h2>
+        <p>
+            We do <strong>not</strong> sell, rent, or trade your personal information.
+            Your data is only shared with third-party providers listed above as necessary to operate the app.
+            Your help requests visible to others on the map only show what you explicitly post.
+        </p>
+
+        <h2>5. Data Retention</h2>
+        <p>
+            We retain your data as long as your account is active. You may request deletion of your account
+            and all associated data at any time via the app's settings or by contacting us.
+        </p>
+
+        <h2>6. Your Rights</h2>
+        <ul>
+            <li>Access or correct your personal data via the Profile section in the app.</li>
+            <li>Delete your account and all data from the app settings.</li>
+            <li>Revoke location access at any time via your device settings.</li>
+            <li>Opt out of push notifications via your device settings.</li>
+        </ul>
+
+        <h2>7. Children's Privacy</h2>
+        <p>
+            CivicNet is not directed to children under the age of 13. We do not knowingly collect
+            personal information from children under 13.
+        </p>
+
+        <h2>8. Security</h2>
+        <p>
+            We implement industry-standard security measures including encrypted data transmission (HTTPS/TLS),
+            secure authentication, and row-level security policies on our database.
+        </p>
+
+        <h2>9. Changes to This Policy</h2>
+        <p>
+            We may update this Privacy Policy from time to time. We will notify you of any significant
+            changes via a notification in the app or by updating the date at the top of this page.
+        </p>
+
+        <h2>10. Contact Us</h2>
+        <p>
+            If you have any questions about this Privacy Policy, please contact us at:<br />
+            <a href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a>
+        </p>
+    </main>
+
+    <footer>
+        &copy; 2026 CivicNet. All rights reserved.
+    </footer>
+
+</body>
+
+</html>

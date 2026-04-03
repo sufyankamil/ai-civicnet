@@ -1,105 +1,92 @@
 # Project Architecture
 
-## 1. Current Architecture Analysis
+## 1. Project Organization
 
-The `community_net` Flutter project currently follows a traditional **Layered Architecture by Type**.
+The project follows a **Feature-First Clean Architecture** approach, ensuring high modularity and separation of concerns.
 
-### Current Structure:
+### Directory Structure:
 ```
 lib/
-├── components/   # Reusable UI widgets
-├── models/       # Data models
-├── screens/      # UI screens organized by feature/domain
-├── services/     # Third-party integrations & Business logic
-├── theme/        # App styling
-├── widgets/      # General widgets
-└── main.dart     # Entry point
+├── core/             # App-wide utilities, constants, and base classes
+├── features/         # 🟢 Feature-First Modules (Clean Architecture)
+│   ├── home/         # Home screen, Community feed, and AI matching UI
+│   ├── discover/     # Root-level search, categories, and AI carousels
+│   ├── auth/         # Authentication & User Profiles
+│   ├── events/       # Events, RSVP, and Event Comments
+│   └── request/      # Help requests, creation, and details
+├── services/         # Infrastructure implementations (Supabase, AI/Gemini)
+├── components/       # Reusable global UI widgets
+├── theme/            # App styling & design system (Premium Aura/Glassmorphism)
+└── main.dart         # Entry point and dependency initialization
 ```
-
-### Problems with the Current Architecture:
-1. **Tight Coupling (UI & Services)**: The Presentation layer (screens) interacts directly with the Data/Service layer. For instance, `LoginScreen` directly calls `SupabaseService().signIn()`. This makes unit testing the UI or business logic extremely difficult.
-2. **Lack of State Management**: There is no dedicated state management solution (like Provider, Riverpod, or BLoC) for managing the UI state based on business logic. State is handled locally using `StatefulWidget` and `setState`, which becomes unmanageable as the app scales.
-3. **No Domain Layer**: The business logic is scattered across UI components and generic "Services". There are no clear UseCases or abstract repositories defining the contracts.
-4. **Poor Scalability**: Organizing files by type (`screens/`, `services/`, `models/`) rather than by feature means that as the app grows, developers have to jump between multiple distant folders to work on a single feature.
 
 ---
 
-## 2. Target Architecture: Clean Architecture
+## 2. AI Opportunity Matching Engine
 
-To ensure the project is scalable, maintainable, and testable, we are migrating to **Clean Architecture** combined with a **Feature-First folder structure** and the **MVVM (Model-View-ViewModel)** pattern in the presentation layer.
+The core innovation of CivicNet is the **Proactive AI Matching** system, which connects users with help requests based on their skill sets.
 
-### Target Structure:
-```
-lib/
-├── core/                   # App-wide core files (errors, network, constants, utils, di)
-├── components/             # Reusable global UI widgets (e.g., PrimaryButton)
-├── theme/                  # Theme configuration
-├── features/               # Feature-first modules
-│   ├── auth/
-│   │   ├── domain/         # Entities, Repository Interfaces, UseCases
-│   │   ├── data/           # Models, Repository Implementations, Data Sources
-│   │   └── presentation/   # ViewModels (MVVM), Screens, Feature Widgets
-│   ├── home/
-│   ├── discover/
-│   ...
-└── main.dart               # App entry and initialization
-```
-
-### The Three Layers:
-#### 1. Presentation Layer (MVVM)
-* **View**: The UI (Screens, Widgets). It only listens to state changes and propagates user actions to the ViewModel.
-* **ViewModel**: Manages the state for the view and interacts with the Domain layer (UseCases). It does not know anything about Flutter UI details.
-
-#### 2. Domain Layer
-* **Entities**: Pure Dart classes representing core business objects.
-* **UseCases**: Encapsulate specific business rules (e.g., `LoginUseCase`, `FetchUserRequestsUseCase`).
-* **Repositories (Abstract)**: Interfaces defining the contracts for data operations.
-* *Rule*: **This layer NEVER imports Flutter or any external data/UI libraries.**
-
-#### 3. Data Layer
-* **Models**: Extensions of Entities with fromJson/toJson serialization methods.
-* **Data Sources**: Remote (Supabase API) and Local (Hive, SharedPreferences) sources.
-* **Repositories (Implementation)**: Act as the single source of truth, fetching from data sources and mapping models to entities the Domain layer expects.
+### Semantic Matching Flow:
+1.  **AI Embeddings**: The `AIService` utilizes the Google Gemini model to generate vector embeddings for both user skills (from profiles) and help request descriptions.
+2.  **Vector Similarity**: We use Supabase RPC `match_requests_v3` to perform a cosine similarity search between the user's skill-vector and available requests.
+3.  **Tuned Recall**: The match threshold is strategically set to `0.3` (semantic) and `0.6` (for premium "Top Match" UI badges) to ensure a high-quality "For You" experience.
+4.  **Real-Time Recommendations**: The `HomeViewModel` and `DiscoverScreen` reactively fetch the `_topRecommendation` and `_recommendedRequests` upon every data refresh or auth-state change.
 
 ---
 
-## 3. Data Flow Architecture Diagram
+## 3. UI Design System: "Premium AI Aura"
+
+The app utilizes a custom **High-Fidelity UI System** designed to feel state-of-the-art and "alive."
+
+### Core Design Components:
+*   **Iridescent Aura (OpportunityCard)**: Uses an animated `SweepGradient` behind a glassmorphic surface to create a "liquid light" border effect.
+*   **Breathing Glow**: High-performance `AnimationController` drives a multi-layered `BoxShadow` that expands and contracts, indicating active AI matching.
+*   **Advanced Glassmorphism**: Utilizes `BackdropFilter` with `sigma: 20` and inner satin gradients to provide physical depth and high-end texture.
+*   **Dynamic Contrast Tuning**: Components automatically adjust label colors (e.g., pure white on vibrant purples) to maintain accessibility without sacrificing aesthetics.
+
+---
+
+## 4. Navigation & Community Structure
+
+To maintain a clean and action-oriented feed, the navigation has been centralized into distinct zones:
+
+*   **🏠 Home Feed**: Prioritizes urgent AI matching and local help requests.
+*   **👥 Community (Sub-Tab)**: Houses local neighborhood news and active community polls.
+*   **🧭 Discover (Root Tab)**: Serves as the primary exploration hub for categories and broad AI matching carousels.
+
+---
+
+## 5. Reactive State Synchronization
+
+*   **Global Auth Listener**: Core viewmodels listen directly to the Supabase `onAuthStateChange` stream.
+*   **Location Filtering**: Location-based data is automatically refreshed upon login/logout, ensuring users always see relative distances and localized matches.
+*   **Haptic Integration**: Custom `AppHaptic` wrappers are used project-wide to provide tactile feedback during interactions.
+
+---
+
+## 6. Project Data Flow
 
 ```mermaid
 graph TD
-    subgraph Presentation Layer [Presentation Layer (MVVM)]
-        UI[UI/View - Screens & Widgets]
-        VM[ViewModel / StateNotifier]
+    subgraph Presentation_Layer [Presentation (MVVM/GetX)]
+        UI[View / Screen]
+        VM[ViewModel]
         UI -- User Actions --> VM
-        VM -- State Updates --> UI
+        VM -- RxState Updates --> UI
     end
 
-    subgraph Domain Layer [Domain Layer (Business Logic)]
-        UC[UseCases]
-        RI[Repository Interfaces]
-        E[Entities]
-        VM -- Executes --> UC
-        UC -- Uses --> RI
-        UC -. Returns .-> E
+    subgraph Service_Logic [Infrastructure Services]
+        SS[SupabaseService]
+        AI[AIService / Gemini]
+        VM -- Calls --> SS
+        SS -- Calls AI --> AI
+        SS -- Returns Data --> VM
     end
 
-    subgraph Data Layer [Data Layer (Data Source)]
-        RI_Impl[Repository Implementations]
-        DS_Remote[Remote Data Source (Supabase/API)]
-        DS_Local[Local Data Source (Hive/Cache)]
-        M[Data Models]
-        RI_Impl -. Implements .- RI
-        RI_Impl -- Calls --> DS_Remote
-        RI_Impl -- Calls --> DS_Local
-        DS_Remote -. Returns .-> M
-        DS_Local -. Returns .-> M
-        RI_Impl -- Maps Models to --> E
+    subgraph Database_Layer [Supabase Backend]
+        DB[(PostgreSQL)]
+        RPC[match_requests_v3]
+        SS -- Vector Search --> RPC
+        RPC -- Semantic Match --> DB
     end
 ```
-
-### Strict Rules to Follow:
-1. No API calls directly inside UI components.
-2. No business logic inside Widgets.
-3. No Firebase/Supabase HTTP logic directly inside the UI.
-4. The Domain layer must be pure Dart.
-5. Repositories must implement abstract contracts from the Domain layer.

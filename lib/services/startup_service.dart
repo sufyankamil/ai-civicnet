@@ -9,6 +9,9 @@ import 'package:civic_net/services/firebase_service.dart';
 import 'package:civic_net/services/cache_service.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
+import 'package:civic_net/services/encryption_service.dart';
+import 'package:civic_net/services/ai_service.dart';
+
 class StartupService {
   static final StartupService _instance = StartupService._internal();
   factory StartupService() => _instance;
@@ -17,14 +20,27 @@ class StartupService {
   bool _isInitialized = false;
 
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    // Always reschedule the daily notification (outside _isInitialized guard)
+    // so a code change to the schedule time takes effect on the next cold start.
+    if (_isInitialized) {
+      await NotificationService().scheduleDailyCheckInNotification();
+      return;
+    }
 
     final stopwatch = Stopwatch()..start();
     logger.i('Starting App Initialization...');
 
+    EncryptionService().initialize();
+    logger.i('Encryption Service initialized');
+
     // 1. Firebase Core
     await Firebase.initializeApp();
     logger.i('Firebase Core initialized (${stopwatch.elapsedMilliseconds}ms)');
+
+    // 2. AiService
+    AiService().initialize();
+    logger.i('AiService initialized (${stopwatch.elapsedMilliseconds}ms)');
+
 
     // 2. Crashlytics Setup
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
@@ -40,7 +56,7 @@ class StartupService {
     );
     logger.i('Supabase initialized (${stopwatch.elapsedMilliseconds}ms)');
 
-    // 4. Parallel Services
+    // 4. Parallel Services (FirebaseService also calls NotificationService().initialize())
     await Future.wait([
       FirebaseService().initialize(),
       CacheService().initialize(),

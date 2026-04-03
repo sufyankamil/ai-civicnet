@@ -3,6 +3,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:get/get.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:civic_net/features/home/presentation/viewmodels/home_viewmodel.dart';
+import 'dart:io';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -38,6 +42,83 @@ class FirebaseService {
       sound: true,
     );
 
+    // Subscribe to global requests topic to receive new request notifications
+    try {
+      if (Platform.isIOS) {
+        final apnsToken = await _messaging.getAPNSToken();
+        if (apnsToken != null) {
+          await _messaging.subscribeToTopic('global_requests');
+          logger.i('Subscribed to global_requests topic');
+        } else {
+          logger.w('APNS token not available, skipping topic subscription');
+        }
+      } else {
+        await _messaging.subscribeToTopic('global_requests');
+        logger.i('Subscribed to global_requests topic');
+      }
+    } catch (e) {
+      logger.e('Error subscribing to global_requests: $e');
+    }
+    
+    // Subscribe to their own user ID topic dynamically so it works even if they log in later
+    try {
+      String? currentUserTopic;
+
+      // Subscribe synchronously on init if already logged in (fixes Hot Restart bug)
+      final initialUser = Supabase.instance.client.auth.currentUser;
+      if (initialUser != null) {
+        final safeTopic = 'user_${initialUser.id}'.replaceAll('-', '_');
+        
+        bool canSubscribe = true;
+        if (Platform.isIOS) {
+          final apnsToken = await _messaging.getAPNSToken();
+          if (apnsToken == null) {
+            canSubscribe = false;
+            logger.w('APNS token not available for personal topic init');
+          }
+        }
+        
+        if (canSubscribe) {
+          await _messaging.subscribeToTopic(safeTopic);
+          currentUserTopic = safeTopic;
+          logger.i('Subscribed to personal FCM topic synchronously on init: $safeTopic');
+        }
+      }
+
+      Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+        final user = data.session?.user;
+        if (user != null) {
+          final safeTopic = 'user_${user.id}'.replaceAll('-', '_');
+          if (currentUserTopic != safeTopic) {
+            if (currentUserTopic != null) {
+              await _messaging.unsubscribeFromTopic(currentUserTopic!).catchError((e) => logger.e('Unsubscribe error: $e'));
+            }
+            
+            bool canSubscribe = true;
+            if (Platform.isIOS) {
+              final apnsToken = await _messaging.getAPNSToken();
+              if (apnsToken == null) {
+                canSubscribe = false;
+                logger.w('APNS token not available for personal topic change');
+              }
+            }
+
+            if (canSubscribe) {
+              await _messaging.subscribeToTopic(safeTopic);
+              currentUserTopic = safeTopic;
+              logger.i('Subscribed to personal FCM topic via listener: $safeTopic');
+            }
+          }
+        } else if (user == null && currentUserTopic != null) {
+          await _messaging.unsubscribeFromTopic(currentUserTopic!);
+          logger.i('Unsubscribed from personal topic: $currentUserTopic');
+          currentUserTopic = null;
+        }
+      });
+    } catch (e) {
+      logger.e('Could not setup personal topic listener: $e');
+    }
+
     // Initialize local notifications
     await NotificationService().initialize();
 
@@ -46,8 +127,19 @@ class FirebaseService {
       
       // Get the token
       try {
-        String? token = await _messaging.getToken();
-        logger.i('FCM Token: $token');
+        bool canGetToken = true;
+        if (Platform.isIOS) {
+          final apnsToken = await _messaging.getAPNSToken();
+          if (apnsToken == null) {
+            canGetToken = false;
+            logger.w('APNS token not available, skipping FCM token retrieval');
+          }
+        }
+        
+        if (canGetToken) {
+          String? token = await _messaging.getToken();
+          logger.i('FCM Token: $token');
+        }
       } catch (e) {
         logger.e('FCM Token Error: $e');
         logger.w('Note: FCM on iOS requires a real device and "Push Notifications" capability in Xcode.');
@@ -69,16 +161,31 @@ class FirebaseService {
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         logger.i('A new onMessageOpenedApp event was published!');
         logger.d('Message background data: ${message.data}');
+        _refreshHomeFeed();
       });
 
-      // Get initial message if the app was opened from a terminated state
-      RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-      if (initialMessage != null) {
-        logger.i('App opened from terminated state by a notification');
-        logger.d('Initial Message data: ${initialMessage.data}');
+      try {
+        RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage().timeout(const Duration(milliseconds: 500));
+        if (initialMessage != null) {
+          logger.i('App opened from terminated state by a notification');
+          logger.d('Initial Message data: ${initialMessage.data}');
+          _refreshHomeFeed();
+        }
+      } catch (e) {
+        logger.w('Timeout or error getting initial message: $e');
       }
     } else {
       logger.w('User declined or has not accepted permission');
+    }
+  }
+
+  void _refreshHomeFeed() {
+    try {
+      final homeViewModel = Get.find<HomeViewModel>();
+      homeViewModel.fetchRequests();
+      logger.i('Successfully triggered home feed refresh from notification.');
+    } catch (e) {
+      logger.e('Error attempting to refresh home feed: $e');
     }
   }
 }

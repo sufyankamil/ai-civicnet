@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../theme/app_theme.dart';
 
 // ─── Data Model ─────────────────────────────────────────────────────────────
 
 class _FlowNode {
   final String id;
-  final String emoji;
+  final IconData icon;
   final String title;
   final String subtitle;
   final Color color;
@@ -14,7 +13,7 @@ class _FlowNode {
 
   const _FlowNode({
     required this.id,
-    required this.emoji,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.color,
@@ -25,7 +24,7 @@ class _FlowNode {
 const _nodes = <_FlowNode>[
   _FlowNode(
     id: 'post',
-    emoji: '📝',
+    icon: Icons.edit_note_rounded,
     title: 'Post a Task',
     subtitle: 'User describes what they need — skill, location & urgency.',
     color: Color(0xFF4A90E2),
@@ -33,7 +32,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'match',
-    emoji: '🔍',
+    icon: Icons.search_rounded,
     title: 'Smart Matching',
     subtitle: 'CivicNet ranks nearby helpers by skill, rating & availability.',
     color: Color(0xFF7B61FF),
@@ -41,7 +40,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'notify',
-    emoji: '🔔',
+    icon: Icons.notifications_active_rounded,
     title: 'Helpers Notified',
     subtitle: 'Push notifications ping eligible helpers in real time.',
     color: Color(0xFFFF9500),
@@ -49,7 +48,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'offer',
-    emoji: '🤝',
+    icon: Icons.handshake_rounded,
     title: 'Offer & Accept',
     subtitle: 'A helper taps "I can help". Requester reviews & accepts.',
     color: Color(0xFF50E3C2),
@@ -57,7 +56,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'fulfill',
-    emoji: '✅',
+    icon: Icons.check_circle_rounded,
     title: 'Task Fulfilled',
     subtitle: 'Task is marked done. Both parties rate each other.',
     color: Color(0xFF34C759),
@@ -65,7 +64,7 @@ const _nodes = <_FlowNode>[
   ),
   _FlowNode(
     id: 'reward',
-    emoji: '⭐',
+    icon: Icons.stars_rounded,
     title: 'Points & Trust',
     subtitle: 'Helper earns points & boosts their community trust score.',
     color: Color(0xFFFF6B6B),
@@ -184,19 +183,19 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
       ),
       title: Text(
         'How CivicNet Works',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
       ),
       actions: [
         Container(
           margin: const EdgeInsets.only(right: 16),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient,
+            gradient: AppColors.primaryGradient(Theme.of(context).brightness),
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            'v1.0',
-            style: GoogleFonts.poppins(
+            'v1.1',
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -236,7 +235,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
               children: [
                 Text(
                   'The Journey of a Task',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -245,7 +244,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                 const SizedBox(height: 6),
                 Text(
                   'From posting to fulfillment — see\nhow your request flows through\nthe CivicNet ecosystem.',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 13,
                     color: Colors.white.withValues(alpha: 0.85),
                     height: 1.5,
@@ -285,8 +284,8 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                 color: Colors.white.withValues(alpha: 0.15),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
               ),
-              child: const Center(
-                child: Text('🚀', style: TextStyle(fontSize: 26)),
+              child: Center(
+                child: Icon(Icons.rocket_launch_rounded, size: 28, color: Colors.white.withValues(alpha: 0.9)),
               ),
             ),
           ],
@@ -307,7 +306,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
           const SizedBox(height: 4),
           Text(
             'Tap any step to learn more',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
             ),
@@ -377,9 +376,10 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                       ],
                     ),
                     child: Center(
-                      child: Text(
-                        node.emoji,
-                        style: const TextStyle(fontSize: 22),
+                      child: Icon(
+                        node.icon,
+                        color: Colors.white,
+                        size: 26,
                       ),
                     ),
                   ),
@@ -392,7 +392,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                           children: [
                             Text(
                               'Step ${index + 1}',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                                 color: node.color,
@@ -414,7 +414,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                         const SizedBox(height: 2),
                         Text(
                           node.title,
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
@@ -429,7 +429,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                             padding: const EdgeInsets.only(top: 6),
                             child: Text(
                               node.subtitle,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 12.5,
                                 color: isDark
                                     ? AppColors.textSecondaryDark
@@ -480,7 +480,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
   Widget _buildSectionLabel(String text, bool isDark) {
     return Text(
       text,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),

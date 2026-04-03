@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
@@ -66,23 +66,43 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   Future<void> _contactSupport() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'support@civicnet.app',
+      path: 'civicnet.app@gmail.com',
       queryParameters: {'subject': 'Feedback / Support Request'},
     );
-    if (await canLaunchUrl(emailLaunchUri)) {
-      await launchUrl(emailLaunchUri);
-    } else {
-      if (mounted) {
-         ToastService.showError(context, 'Could not open email client.');
-      }
+    try {
+      final launched = await launchUrl(
+        emailLaunchUri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && mounted) _showEmailFallback();
+    } catch (_) {
+      if (mounted) _showEmailFallback();
     }
+  }
+
+  void _showEmailFallback() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Contact Support'),
+        content: const SelectableText(
+          'civicnet.app@gmail.com\n\nTap and hold to copy this address, then send us an email.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Delete Account', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('Delete Account', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -96,7 +116,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               const SizedBox(height: 16),
               Text(
                 'We hate to see you go',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,
@@ -105,7 +125,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               const SizedBox(height: 16),
               Text(
                 'If you delete your account, your profile, active requests, and all associated data will be permanently deleted. This action cannot be undone.',
-                style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
+                style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
               const SizedBox(height: 24),
               
@@ -121,12 +141,12 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                   children: [
                     Text(
                       'Are you experiencing issues?',
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Before you leave, please consider reaching out. We are here to help and would love your feedback to improve CivicNet.',
-                      style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                     ),
                     const SizedBox(height: 12),
                     OutlinedButton.icon(
@@ -147,13 +167,13 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
               
               Text(
                 'To verify your request, please type "DELETE" below:',
-                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
                 controller: _confirmController,
                 decoration: InputDecoration(
-                  hintText: 'DELETE',
+                  hintText: AppLocalizations.of(context)!.deleteAccountConfirm,
                   filled: true,
                   fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade100,
                   border: OutlineInputBorder(
@@ -188,7 +208,7 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                         )
                       : Text(
                           'Permanently Delete Account',
-                          style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                 ),
               ),

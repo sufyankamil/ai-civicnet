@@ -29,4 +29,24 @@ class ChatConversationEntity extends Equatable {
         lastMessageTime,
         unreadCount,
       ];
+
+  ChatConversationEntity copyWith({
+    String? id,
+    String? otherUserId,
+    String? otherUserName,
+    String? otherUserAvatar,
+    String? lastMessage,
+    DateTime? lastMessageTime,
+    int? unreadCount,
+  }) {
+    return ChatConversationEntity(
+      id: id ?? this.id,
+      otherUserId: otherUserId ?? this.otherUserId,
+      otherUserName: otherUserName ?? this.otherUserName,
+      otherUserAvatar: otherUserAvatar ?? this.otherUserAvatar,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastMessageTime: lastMessageTime ?? this.lastMessageTime,
+      unreadCount: unreadCount ?? this.unreadCount,
+    );
+  }
 }

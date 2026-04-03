@@ -13,12 +13,14 @@ class RequestBinding extends Bindings {
     Get.lazyPut(() => GetHelpRequestUseCase(Get.find()));
     Get.lazyPut(() => GetMyHelpRequestsUseCase(Get.find()));
     Get.lazyPut(() => UpdateRequestStatusUseCase(Get.find()));
+    Get.lazyPut(() => DeleteHelpRequestUseCase(Get.find()));
 
     Get.lazyPut(() => RequestViewModel(
           createHelpRequestUseCase: Get.find(),
           getHelpRequestUseCase: Get.find(),
           getMyHelpRequestsUseCase: Get.find(),
           updateRequestStatusUseCase: Get.find(),
+          deleteHelpRequestUseCase: Get.find(),
         ));
   }
 }

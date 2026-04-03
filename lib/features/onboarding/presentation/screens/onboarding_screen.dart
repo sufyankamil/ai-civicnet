@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../services/pending_toast_service.dart';
 import '../../../../services/toast_service.dart';
@@ -11,30 +11,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 // ─── Flow step data (self-contained so no import needed) ────────────────────
 
 class _Step {
-  final String emoji;
+  final IconData icon;
   final String title;
   final String desc;
   final Color color;
-  const _Step(this.emoji, this.title, this.desc, this.color);
+  const _Step(this.icon, this.title, this.desc, this.color);
 }
 
 const _flowSteps = [
-  _Step('📝', 'Post a Task',
+  _Step(Icons.edit_note_rounded, 'Post a Task',
       'Describe what you need — skill, location & urgency.',
       Color(0xFF4A90E2)),
-  _Step('🔍', 'Smart Matching',
+  _Step(Icons.search_rounded, 'Smart Matching',
       'CivicNet ranks nearby helpers by skill, rating & availability.',
       Color(0xFF7B61FF)),
-  _Step('🔔', 'Helpers Notified',
+  _Step(Icons.notifications_active_rounded, 'Helpers Notified',
       'Push notifications ping eligible helpers in real time.',
       Color(0xFFFF9500)),
-  _Step('🤝', 'Offer & Accept',
+  _Step(Icons.handshake_rounded, 'Offer & Accept',
       'A helper taps "I can help". Requester reviews & accepts.',
       Color(0xFF50E3C2)),
-  _Step('✅', 'Task Fulfilled',
+  _Step(Icons.check_circle_rounded, 'Task Fulfilled',
       'Task marked done. Both parties rate each other.',
       Color(0xFF34C759)),
-  _Step('⭐', 'Points & Trust',
+  _Step(Icons.stars_rounded, 'Points & Trust',
       'Helper earns points & boosts their community trust score.',
       Color(0xFFFF6B6B)),
 ];
@@ -114,7 +114,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     Future.microtask(() async {
       for (var i = 0; i < _nodeControllers.length; i++) {
         await Future.delayed(Duration(milliseconds: 100 * i));
-        if (mounted) _nodeControllers[i].forward();
+        if (mounted) {
+          _nodeControllers[i].forward();
+          HapticFeedback.lightImpact();
+        }
       }
     });
   }
@@ -198,8 +201,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   const SizedBox(height: 24),
                   PrimaryButton(
                     text: _currentPage == _totalPages - 1
-                        ? 'Get Started 🚀'
+                        ? 'Get Started'
                         : 'Next',
+                    icon: _currentPage == _totalPages - 1
+                        ? Icons.rocket_launch_rounded
+                        : null,
                     onPressed: () async {
                       if (_currentPage < _totalPages - 1) {
                         _pageController.nextPage(
@@ -255,7 +261,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Text(
             page.title,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : AppColors.textPrimaryLight,
@@ -265,7 +271,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           Text(
             page.desc,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 15,
               height: 1.6,
               color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
@@ -311,7 +317,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     children: [
                       Text(
                         'How CivicNet Works',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -320,7 +326,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       const SizedBox(height: 4),
                       Text(
                         "A task's journey from post\nto fulfilment - step by step.",
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.85),
                           height: 1.5,
@@ -329,7 +335,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ],
                   ),
                 ),
-                const Text('🚀', style: TextStyle(fontSize: 36)),
+                Icon(Icons.rocket_launch_rounded, size: 42, color: Colors.white.withValues(alpha: 0.8)),
               ],
             ),
           ),
@@ -395,7 +401,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ],
             ),
             child: Center(
-              child: Text(step.emoji, style: const TextStyle(fontSize: 20)),
+              child: Icon(step.icon, color: Colors.white, size: 24),
             ),
           ),
           const SizedBox(width: 12),
@@ -405,7 +411,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               children: [
                 Text(
                   'Step ${index + 1}',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                     color: step.color,
@@ -414,14 +420,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
                 Text(
                   step.title,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   step.desc,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 11.5,
                     height: 1.4,
                     color: isDark
@@ -445,7 +451,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           const SizedBox(width: 39),
           AnimatedBuilder(
             animation: _flowController,
-            builder: (_, __) => CustomPaint(
+            builder: (_, _) => CustomPaint(
               size: const Size(8, 32),
               painter: _PacketPainter(
                 from: from,

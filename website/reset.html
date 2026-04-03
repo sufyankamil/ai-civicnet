@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reset Password – CivicNet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B61FF;
+            --primary-dark: #5A42E0;
+            --bg: #F8F7FF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Aura Effect */
+        body::before {
+            content: '';
+            position: absolute;
+            top: -25%;
+            left: -25%;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+            animation: rotate 30s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 48px 32px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(123, 97, 255, 0.1);
+            border-radius: 22px;
+            padding: 12px;
+            margin: 0 auto 28px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(123, 97, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin: 0 auto 24px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+            font-weight: 500;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 20px rgba(123, 97, 255, 0.2);
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(123, 97, 255, 0.35);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card" id="card">
+        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <div class="spinner"></div>
+        <h1>Opening CivicNet…</h1>
+        <p>Please wait while we verify your link.</p>
+    </div>
+
+    <script>
+        const PROXY = 'https://civicnet-supabase-proxy.bxw6wssnct.workers.dev';
+
+        function showError(msg) {
+            document.getElementById('card').innerHTML = `
+        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <div class="icon">❌</div>
+        <h1>Link Expired</h1>
+        <p>${msg}</p>`;
+        }
+
+        function showOpen(deepLink) {
+            document.getElementById('card').innerHTML = `
+        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <div class="icon">✅</div>
+        <h1>Almost there!</h1>
+        <p>Tap the button below to open CivicNet and set your new password.</p>
+        <a class="btn" href="${deepLink}">Open CivicNet App</a>`;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        const type = params.get('type') || 'recovery';
+
+        if (!token) {
+            showError('This link is invalid. Please request a new password reset from the app.');
+        } else {
+            const proxyVerifyUrl =
+                `${PROXY}/auth/v1/verify?token=${encodeURIComponent(token)}&type=${type}&redirect_to=civicnet%3A%2F%2Freset-password`;
+
+            const deepLink = `civicnet://reset-password?token=${encodeURIComponent(token)}&type=${type}`;
+
+            showOpen(deepLink);
+
+            setTimeout(() => {
+                window.location.href = proxyVerifyUrl;
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>

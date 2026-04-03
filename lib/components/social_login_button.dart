@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'app_loader.dart';
 
 class SocialLoginButton extends StatelessWidget {
   final Widget icon;
@@ -48,14 +48,10 @@ class SocialLoginButton extends StatelessWidget {
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 child: isLoading
-                    ? SizedBox(
-                        key: const ValueKey('spinner'),
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.grey.shade400,
-                        ),
+                    ? const AppLoader(
+                        key: ValueKey('spinner'),
+                        size: 20,
+                        centered: false,
                       )
                     : SizedBox(
                         key: const ValueKey('icon'),
@@ -67,7 +63,7 @@ class SocialLoginButton extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isDark ? Colors.white : Colors.black87,

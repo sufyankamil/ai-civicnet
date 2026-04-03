@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Light Mode
@@ -13,17 +12,41 @@ class AppColors {
   static const Color textSecondaryLight = Color(0xFF636E72);
 
   // Dark Mode
-  static const Color primaryDark = Color(0xFF9D85FF); // Lighter violet for dark bg
-  static const Color secondaryDark = Color(0xFFCDB4FF); // Pale lavender
-  static const Color accentDark = Color(0xFFFF8787); // Soft Red
-  static const Color backgroundDark = Color(0xFF1A1825); // Deep purple-black
-  static const Color surfaceDark = Color(0xFF2A2640);
-  static const Color textPrimaryDark = Color(0xFFF5F4FF);
-  static const Color textSecondaryDark = Color(0xFFB2BEC3);
+  static const Color primaryDark = Color(0xFFC2B4FF); // Softer, more readable violet
+  static const Color secondaryDark = Color(0xFFE0D4FF); // Very pale lavender
+  static const Color accentDark = Color(0xFFFF9E9E); // Softer Red
+  static const Color backgroundDark = Color(0xFF0F0E17); // Deeper purple-black
+  static const Color surfaceDark = Color(0xFF161622); // Card surface
+  static const Color surfaceVariantDark = Color(0xFF232232); // For inputs/chips
+  static const Color textPrimaryDark = Color(0xFFF9F9FB); // Off-white for less eye strain
+  static const Color textSecondaryDark = Color(0xFFA7A9BE); 
+  
+  // Aura & Glass Effects
+  static const Color glassSurfaceLight = Color(0x99FFFFFF); // 60% White
+  static const Color glassSurfaceDark = Color(0x33161622); // 20% surfaceDark
+  static const Color auraPrimary = Color(0xFF7B61FF);
+  static const Color auraSecondary = Color(0xFF6248FF);
+  static const Color auraAccent = Color(0xFFFF6B6B);
 
   // Gradients
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF9D85FF), Color(0xFF7B61FF)],
+  static const LinearGradient primaryGradientLight = LinearGradient(
+    colors: [Color(0xFF7B61FF), Color(0xFF6248FF)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient primaryGradientDark = LinearGradient(
+    colors: [Color(0xFF7B61FF), Color(0xFFB388FF)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static LinearGradient primaryGradient(Brightness brightness) {
+    return brightness == Brightness.dark ? primaryGradientDark : primaryGradientLight;
+  }
+
+  static const LinearGradient auraGradient = LinearGradient(
+    colors: [auraPrimary, auraSecondary],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -36,13 +59,14 @@ class AppTheme {
       brightness: Brightness.light,
       primaryColor: AppColors.primaryLight,
       scaffoldBackgroundColor: AppColors.backgroundLight,
+      fontFamily: 'Poppins',
       colorScheme: const ColorScheme.light(
         primary: AppColors.primaryLight,
         secondary: AppColors.secondaryLight,
         surface: AppColors.surfaceLight,
         error: AppColors.accentLight,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme().apply(
+      textTheme: const TextTheme().apply(
         bodyColor: AppColors.textPrimaryLight,
         displayColor: AppColors.textPrimaryLight,
       ),
@@ -82,13 +106,18 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: AppColors.primaryDark,
       scaffoldBackgroundColor: AppColors.backgroundDark,
+      cardColor: AppColors.surfaceDark,
+      fontFamily: 'Poppins',
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primaryDark,
         secondary: AppColors.secondaryDark,
         surface: AppColors.surfaceDark,
+        surfaceContainer: AppColors.surfaceVariantDark,
         error: AppColors.accentDark,
+        onSurface: AppColors.textPrimaryDark,
+        onSurfaceVariant: AppColors.textSecondaryDark,
       ),
-      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme).apply(
+      textTheme: const TextTheme().apply(
         bodyColor: AppColors.textPrimaryDark,
         displayColor: AppColors.textPrimaryDark,
       ),
@@ -104,7 +133,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceDark,
+        fillColor: AppColors.surfaceVariantDark,
         contentPadding: const EdgeInsets.all(16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),

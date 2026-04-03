@@ -134,6 +134,25 @@ class RequestRepositoryImpl implements RequestRepository {
   }
 
   @override
+  Future<Either<Failure, void>> deleteHelpRequest(String requestId) async {
+    try {
+      await remoteDataSource.deleteHelpRequest(requestId);
+      
+      // Invalidate caches to ensure the UI shows updated data
+      await CacheService().delete('help_requests');
+      await CacheService().delete('help_request_$requestId');
+      
+      return const Right(null);
+    } on ServerException catch (e) {
+      logger.e('Server exception in deleteHelpRequest: ${e.message}');
+      return const Left(ServerFailure('Failed to delete request. Please try again.'));
+    } catch (e) {
+      logger.e('Error in deleteHelpRequest: $e');
+      return const Left(ServerFailure('An unexpected error occurred while deleting the request.'));
+    }
+  }
+
+  @override
   void subscribeToHelpRequests(Function() callback) {
     remoteDataSource.subscribeToHelpRequests(callback);
   }

@@ -6,10 +6,14 @@ import '../../../../core/errors/failures.dart';
 abstract class ChatRepository {
   Future<Either<Failure, List<ChatConversationEntity>>> getConversations();
   Stream<List<MessageEntity>> getMessagesStream(String conversationId);
-  Future<Either<Failure, void>> sendMessage(String conversationId, String content, {String type = 'text'});
+  Future<Either<Failure, void>> sendMessage(String conversationId, String content, {String type = 'text', String? replyToId});
+  Future<Either<Failure, void>> deleteMessage(String messageId);
+  Future<Either<Failure, void>> markConversationAsRead(String conversationId);
+  Future<Either<Failure, void>> markAllConversationsAsRead();
   Future<Either<Failure, void>> blockUser(String userId);
   Future<Either<Failure, void>> unblockUser(String userId);
   Future<Either<Failure, List<String>>> getBlockedUserIds();
   Future<Either<Failure, bool>> isUserBlocked(String userId);
   Future<Either<Failure, void>> reportUser(String userId, String reason);
+  Future<Either<Failure, void>> deleteConversation(String conversationId);
 }

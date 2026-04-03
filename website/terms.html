@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terms and Conditions – CivicNet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B61FF;
+            --primary-dark: #5A42E0;
+            --bg: #F8F7FF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --card-bg: #FFFFFF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background-attachment: fixed;
+            color: white;
+            padding: 60px 24px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle Aura Effect */
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 22px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .app-logo:hover {
+            transform: translateY(-5px);
+        }
+
+        header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            position: relative;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 800px;
+            margin: -40px auto 60px;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 40px 20px 60px; }
+            main { margin: -30px 16px 40px; padding: 24px; border-radius: 24px; }
+            header h1 { font-size: 2.2rem; }
+        }
+
+        .updated {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 40px 0 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            margin-right: 12px;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        p, li {
+            font-size: 1rem;
+            color: #4B5563;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            padding-left: 16px;
+            list-style: none;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            background: white;
+            border-top: 1px solid #E5E7EB;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        </div>
+        <h1>CivicNet</h1>
+        <p>Terms and Conditions</p>
+    </header>
+
+    <main>
+        <p class="updated">Last updated: March 9, 2026</p>
+
+        <p>
+            Welcome to CivicNet. By using our application, you agree to comply with and be bound by the following terms
+            and conditions. Please review them carefully.
+        </p>
+
+        <h2>1. Acceptance of Agreement</h2>
+        <p>
+            By creating an account or using the CivicNet platform, you agree to the terms and conditions outlined in
+            this Agreement. This Agreement constitutes the entire and only agreement between us and you, and supersedes
+            all prior or contemporaneous agreements with respect to the app.
+        </p>
+
+        <h2>2. Use of the Platform</h2>
+        <p>
+            CivicNet is a community platform for neighbors to help each other. You agree to use the platform only for
+            lawful purposes and in a way that does not infringe the rights of, restrict or inhibit anyone else's use and
+            enjoyment of the platform.
+        </p>
+
+        <h2>3. User Conduct</h2>
+        <ul>
+            <li>You must be at least 13 years old to use this service.</li>
+            <li>You are responsible for maintaining the confidentiality of your account and password.</li>
+            <li>You agree not to post any content that is illegal, offensive, or violates our Child Safety Standards.
+            </li>
+            <li>You agree not to harass, abuse, or harm another person.</li>
+        </ul>
+
+        <h2>4. Community Help and Safety</h2>
+        <p>
+            CivicNet facilitates connections but does not guarantee the quality or safety of the help provided. Users
+            are encouraged to exercise caution and common sense when meeting or helping others.
+        </p>
+
+        <h2>5. Termination</h2>
+        <p>
+            We may terminate or suspend your account immediately, without prior notice or liability, for any reason
+            whatsoever, including without limitation if you breach the Terms.
+        </p>
+
+        <h2>6. Changes to Terms</h2>
+        <p>
+            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide
+            notice of any significant changes.
+        </p>
+
+        <h2>7. Contact Us</h2>
+        <p>
+            If you have any questions about these Terms, please contact us at: <a
+                href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a>
+        </p>
+    </main>
+
+    <footer>
+        &copy; 2026 CivicNet. All rights reserved.
+    </footer>
+
+</body>
+
+</html>

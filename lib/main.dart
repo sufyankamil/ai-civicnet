@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
-
+import 'package:app_links/app_links.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -9,6 +10,7 @@ import 'theme/app_theme.dart';
 import 'services/theme_service.dart';
 import 'services/startup_service.dart';
 import 'widgets/connectivity_wrapper.dart';
+import 'widgets/auto_logout_wrapper.dart';
 
 import 'package:toastification/toastification.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -20,11 +22,23 @@ import 'features/home/di/home_binding.dart';
 import 'features/request/di/request_binding.dart';
 import 'features/map/di/map_binding.dart';
 import 'features/chat/di/chat_binding.dart';
+import 'features/events/di/events_binding.dart';
+import 'features/profile/di/profile_binding.dart';
+import 'features/assets/di/assets_binding.dart';
 import 'features/onboarding/presentation/screens/splash_screen.dart';
+import 'l10n/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:timeago/timeago.dart' as timeago;
+
 SharedPreferences? prefsGlobal;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Set up time ago localization
+  timeago.setLocaleMessages('hi', timeago.HiMessages());
+  timeago.setLocaleMessages('en', timeago.EnMessages());
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
     _,
   ) {
@@ -41,6 +55,8 @@ class RootApp extends StatefulWidget {
 
 class _RootAppState extends State<RootApp> {
   bool _isInitialized = false;
+  String? _initError;
+  String _initialLocation = '/';
 
   @override
   void initState() {
@@ -56,28 +72,96 @@ class _RootAppState extends State<RootApp> {
     await dotenv.load(fileName: ".env");
     prefsGlobal = await SharedPreferences.getInstance();
 
+    // Increment App Launch Count for feedback prompt logic
+    final currentCount = prefsGlobal?.getInt('app_launch_count') ?? 0;
+    await prefsGlobal?.setInt('app_launch_count', currentCount + 1);
+
     // Initialize Dependencies
     await initAuthDI();
     HomeBinding().dependencies();
     await initRequestDI();
     await initMapDI();
     await initChatDI();
+    await initEventsDI();
+    await initAssetsDI();
+    ProfileBinding().dependencies();
 
-    await Future.wait([
-      StartupService().initialize(),
-      ThemeService().init(),
-      minSplash,
-    ]);
+    try {
+      final initialUri = await AppLinks().getInitialLink();
+      if (initialUri != null) {
+        final uriStr = initialUri.toString();
+        if (uriStr.contains('type=recovery') ||
+            uriStr.startsWith('civicnet://reset-password')) {
+          _initialLocation = '/reset-password';
+        }
+      }
+    } catch (_) {}
 
-    if (mounted) {
-      setState(() {
-        _isInitialized = true;
-      });
+    try {
+      await Future.wait([
+        StartupService().initialize(),
+        ThemeService().init(),
+        minSplash,
+      ]);
+
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+          _initError = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _initError = e.toString();
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_initError != null) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        home: Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 64),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Failed to initialize app',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _initError!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _initError = null;
+                      });
+                      _initApp();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (!_isInitialized) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -88,20 +172,44 @@ class _RootAppState extends State<RootApp> {
 
     return ChangeNotifierProvider(
       create: (_) => ThemeService(),
-      child: const CommunityHelpApp(),
+      child: CommunityHelpApp(initialLocation: _initialLocation),
     );
   }
 }
 
 class CommunityHelpApp extends StatefulWidget {
-  const CommunityHelpApp({super.key});
+  final String initialLocation;
+  const CommunityHelpApp({super.key, this.initialLocation = '/'});
 
   @override
   State<CommunityHelpApp> createState() => _CommunityHelpAppState();
 }
 
 class _CommunityHelpAppState extends State<CommunityHelpApp> {
-  late final GoRouter _router = createRouter();
+  late final GoRouter _router = createRouter(
+    initialLocation: widget.initialLocation,
+  );
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for PASSWORD_RECOVERY event — fired when the user taps the reset
+    // link in their email and Android deep-links them back into the app.
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
+      if (data.event == AuthChangeEvent.passwordRecovery) {
+        _router.go('/reset-password');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,12 +222,22 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
         themeMode: themeService.themeMode,
+        locale: themeService.locale,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en'), Locale('hi')],
         routerConfig: _router,
         builder: (context, child) {
-          return ConnectivityWrapper(child: child!);
+          return AutoLogoutWrapper(
+            inactivityDuration: const Duration(hours: 1),
+            child: ConnectivityWrapper(child: child!),
+          );
         },
       ),
     );
   }
 }
-

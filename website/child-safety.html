@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Child Safety Standards – CivicNet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7B61FF;
+            --primary-dark: #5A42E0;
+            --bg: #F8F7FF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --card-bg: #FFFFFF;
+            --info-bg: #EFF6FF;
+            --info-border: #DBEAFE;
+            --info-text: #1E40AF;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background-attachment: fixed;
+            color: white;
+            padding: 60px 24px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle Aura Effect */
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-container {
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        .app-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 22px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .app-logo:hover {
+            transform: translateY(-5px);
+        }
+
+        header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            position: relative;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 800px;
+            margin: -40px auto 60px;
+            padding: 40px;
+            background: var(--card-bg);
+            border-radius: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        @media (max-width: 640px) {
+            header { padding: 40px 20px 60px; }
+            main { margin: -30px 16px 40px; padding: 24px; border-radius: 24px; }
+            header h1 { font-size: 2.2rem; }
+        }
+
+        .updated {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 40px 0 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: var(--primary);
+            margin-right: 12px;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        p, li {
+            font-size: 1rem;
+            color: #4B5563;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            padding-left: 16px;
+            list-style: none;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .info-box {
+            background-color: var(--info-bg);
+            border: 1px solid var(--info-border);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin: 24px 0;
+            color: var(--info-text);
+            font-weight: 500;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-color: var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            padding: 40px 20px;
+            background: white;
+            border-top: 1px solid #E5E7EB;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo-container">
+            <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        </div>
+        <h1>CivicNet</h1>
+        <p>Child Safety Standards</p>
+    </header>
+
+    <main>
+        <p class="updated">Last updated: March 3, 2026</p>
+
+        <p>
+            CivicNet is a community help platform that connects neighbours to assist one another with everyday tasks.
+            We are deeply committed to maintaining a safe environment for all users and to preventing child sexual
+            abuse and exploitation (CSAE) on our platform.
+        </p>
+
+        <h2>1. Zero-Tolerance Policy</h2>
+        <p>
+            CivicNet has a strict <strong>zero-tolerance policy</strong> toward any form of child sexual abuse material
+            (CSAM) or child sexual exploitation and abuse (CSAE). Any content, behaviour, or account found to involve
+            the exploitation or abuse of minors will result in immediate account termination and will be reported to
+            the relevant authorities, including the National Center for Missing &amp; Exploited Children (NCMEC) where
+            applicable.
+        </p>
+
+        <h2>2. Age Requirement</h2>
+        <p>
+            CivicNet is intended for users <strong>aged 13 and older</strong>. Users must be at least 13 years of age
+            to create an account. We do not knowingly allow children under 13 to register or use the platform. If we
+            become aware that a user is under 13, their account will be promptly removed.
+        </p>
+
+        <h2>3. Content Moderation &amp; Prohibited Content</h2>
+        <p>The following content is strictly prohibited on CivicNet:</p>
+        <ul>
+            <li>Any imagery, text, video, or link that sexually exploits or abuses minors.</li>
+            <li>Grooming, solicitation, or any communication intended to exploit children.</li>
+            <li>Content that normalises or glorifies violence, abuse, or exploitation of minors.</li>
+            <li>Sharing personal information of minors without parental consent.</li>
+        </ul>
+
+        <h2>4. Reporting Mechanisms</h2>
+        <p>
+            Users can report any content or behaviour they believe violates our child safety standards directly within
+            the app. All reports are reviewed promptly. You can also contact us directly at:
+        </p>
+        <div class="info-box">
+            📧 <a href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a><br />
+            Please include as much detail as possible so we can investigate effectively.
+        </div>
+
+        <h2>5. Cooperation with Authorities</h2>
+        <p>
+            CivicNet will fully cooperate with law enforcement agencies and regulatory authorities investigating
+            cases of child exploitation or abuse. We will preserve and provide evidence as required by applicable law.
+        </p>
+
+        <h2>6. Prevention Practices</h2>
+        <ul>
+            <li><strong>Account verification:</strong> Email verification is required to create an account.</li>
+            <li><strong>User reporting:</strong> In-app reporting tools allow any user to flag inappropriate content
+                or behaviour.</li>
+            <li><strong>Data security:</strong> All user data is encrypted in transit (HTTPS/TLS) and stored
+                securely using industry-standard practices.</li>
+            <li><strong>Regular reviews:</strong> We periodically review our safety practices to ensure they meet
+                current standards.</li>
+        </ul>
+
+        <h2>7. Contact &amp; Designated Point of Contact</h2>
+        <p>
+            For any concerns, questions, or reports related to child safety on CivicNet, please reach out to our
+            designated safety contact:
+        </p>
+        <div class="info-box">
+            📧 <a href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a>
+        </div>
+
+        <h2>8. External Resources</h2>
+        <ul>
+            <li><a href="https://www.missingkids.org/gethelpnow/cybertipline" target="_blank">NCMEC CyberTipline</a>
+                – Report child exploitation online.</li>
+            <li><a href="https://www.iwf.org.uk" target="_blank">Internet Watch Foundation (IWF)</a> – Report CSAM
+                content.</li>
+        </ul>
+    </main>
+
+    <footer>
+        &copy; 2026 CivicNet. All rights reserved.
+    </footer>
+
+</body>
+
+</html>

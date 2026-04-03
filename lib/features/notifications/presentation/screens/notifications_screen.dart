@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../models/models.dart';
@@ -11,7 +10,7 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 1,
       ),
@@ -31,7 +30,7 @@ class NotificationsScreen extends StatelessWidget {
                 children: [
                    Icon(Icons.notifications_off_outlined, size: 64, color: Colors.grey[400]),
                    const SizedBox(height: 16),
-                   Text('No notifications yet', style: GoogleFonts.poppins(color: Colors.grey[600], fontSize: 16)),
+                   Text('No notifications yet', style: TextStyle(color: Colors.grey[600], fontSize: 16)),
                 ],
               ),
             );
@@ -116,7 +115,7 @@ class _NotificationItem extends StatelessWidget {
                       Expanded(
                         child: Text(
                           notification.title,
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
                             fontSize: 16,
                             color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
@@ -137,7 +136,7 @@ class _NotificationItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     notification.body,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[700],
                     ),
@@ -145,7 +144,7 @@ class _NotificationItem extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     _formatTimeAgo(notification.createdAt),
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[500],
                     ),

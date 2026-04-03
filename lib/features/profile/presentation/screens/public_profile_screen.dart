@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../components/app_loader.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../components/report_dialog.dart';
 
 class PublicProfileScreen extends StatefulWidget {
   final String userId;
@@ -92,7 +93,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator.adaptive());
+            return const AppLoader();
           }
 
           if (snapshot.data == null) {
@@ -115,7 +116,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                       size: 56, color: Colors.grey),
                   const SizedBox(height: 16),
                   Text('User not found',
-                      style: GoogleFonts.poppins(color: Colors.grey)),
+                      style: TextStyle(color: Colors.grey)),
                 ],
               ),
             );
@@ -150,7 +151,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           child: ElevatedButton.icon(
                             onPressed: _isStartingChat ? null : () => _startChat(user),
                             icon: _isStartingChat 
-                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(strokeWidth: 2, backgroundColor: Colors.white))
+                                ? const AppLoader(size: 20, centered: false)
                                 : const Icon(Icons.chat_bubble_outline),
                             label: const Text('Send Message'),
                             style: ElevatedButton.styleFrom(
@@ -196,6 +197,40 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           onPressed: () => context.pop(),
         ),
       ),
+      actions: [
+        if (SupabaseService().currentUserId != null &&
+            SupabaseService().currentUserId != user.id)
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.white),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.flag_outlined, color: Colors.red),
+                          title: const Text('Report & Block User'),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _showReportUserDialog(user);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
       title: AnimatedOpacity(
         opacity: _isCollapsed ? 1.0 : 0.0,
         duration: const Duration(milliseconds: 200),
@@ -232,7 +267,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
               Expanded(
                 child: Text(
                   displayName,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : Colors.black87,
@@ -350,7 +385,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           children: [
                             Text(
                               displayName,
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -376,7 +411,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                                   const SizedBox(width: 4),
                                   Text(
                                     _trustLevel(user),
-                                    style: GoogleFonts.poppins(
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
@@ -401,27 +436,27 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
 
   Widget _buildStatsRow(User user, bool isDark) {
     final stats = [
-      ('🤝', 'Helps', user.helpCount.toString()),
-      ('⭐', 'Rating', user.rating.toStringAsFixed(1)),
-      ('🏆', 'Points', user.points.toString()),
+      (Icons.handshake_rounded, 'Helps', user.helpCount.toString(), Colors.blue),
+      (Icons.star_rounded, 'Rating', user.rating.toStringAsFixed(1), Colors.amber),
+      (Icons.emoji_events_rounded, 'Points', user.points.toString(), Colors.orange),
     ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, stats[0].$4, isDark)),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, stats[1].$4, isDark)),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, isDark)),
+          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, stats[2].$4, isDark)),
         ],
       ),
     );
   }
 
   Widget _buildStatCard(
-      String emoji, String label, String value, bool isDark) {
+      IconData icon, String label, String value, Color iconColor, bool isDark) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -437,11 +472,11 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 22)),
+          Icon(icon, color: iconColor, size: 24),
           const SizedBox(height: 6),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: AppColors.primaryLight,
@@ -449,7 +484,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           ),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 11,
               color: Colors.grey,
             ),
@@ -469,7 +504,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         children: [
           Text(
             'Skills',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.bold,
             ),
@@ -499,7 +534,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                 ),
                 child: Text(
                   skill,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
@@ -518,5 +553,36 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
     if (user.points >= 150 && user.helpCount >= 10) return 'Trusted Helper';
     if (user.points >= 50 && user.helpCount >= 2) return 'Active Member';
     return 'Community Member';
+  }
+
+  void _showReportUserDialog(User user) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => ReportDialog(
+        title: 'Report ${user.name}',
+        onReport: (reason) async {
+          try {
+            await SupabaseService().reportUser(user.id, reason);
+            if (!mounted) return;
+            
+            // ignore: use_build_context_synchronously
+            ToastService.showSuccess(context, 'User reported and blocked. Thank you for helping keep the community safe.');
+            
+            // Wait a brief moment for toast to start showing, then close
+            await Future.delayed(const Duration(milliseconds: 300));
+            if (!mounted) return;
+            
+            // ignore: use_build_context_synchronously
+            Navigator.of(dialogContext).pop(); // Close dialog
+            // ignore: use_build_context_synchronously
+            context.pop(); // Go back from profile
+          } catch (e) {
+            if (!mounted) return;
+            // ignore: use_build_context_synchronously
+            ToastService.showError(context, 'Failed to submit report. Please try again.');
+          }
+        },
+      ),
+    );
   }
 }

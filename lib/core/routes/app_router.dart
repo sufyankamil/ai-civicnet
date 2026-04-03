@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../main.dart'; // for prefsGlobal
+import '../../services/logger_service.dart';
+
 
 // Screens
 import '../../features/profile/presentation/screens/privacy_policy_screen.dart';
@@ -15,9 +17,8 @@ import '../../features/auth/presentation/screens/auth_check_screen.dart';
 import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
-
-
-
+import '../../features/home/presentation/screens/feedback_screen.dart';
+import '../../features/home/presentation/screens/poll_creation_screen.dart';
 
 import '../../core/presentation/layouts/main_scaffold.dart';
 import '../../features/map/presentation/screens/map_screen.dart';
@@ -35,10 +36,24 @@ import '../../features/profile/presentation/screens/faq_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/profile/presentation/screens/how_tasknet_works_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/commitment_screen.dart';
 import '../../features/profile/presentation/screens/public_profile_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
+import '../../features/events/presentation/screens/events_list_screen.dart';
+import '../../features/events/presentation/screens/create_event_screen.dart';
+import '../../features/events/presentation/screens/event_detail_screen.dart';
+import '../../features/events/presentation/screens/location_picker_screen.dart';
+import '../../features/profile/presentation/screens/admin_panel_screen.dart';
+import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
+import '../../features/assets/presentation/screens/my_assets_screen.dart';
+import '../../features/assets/presentation/screens/asset_discovery_screen.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+String lastAppLocation = '/';
 
 
-GoRouter createRouter() {
+
+GoRouter createRouter({String initialLocation = '/'}) {
   final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
     debugLabel: 'root',
   );
@@ -46,9 +61,9 @@ GoRouter createRouter() {
     debugLabel: 'shell',
   );
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: initialLocation,
     refreshListenable: GoRouterRefreshStream(
       Supabase.instance.client.auth.onAuthStateChange,
     ),
@@ -68,7 +83,7 @@ GoRouter createRouter() {
             return '/login';
           }
           return '/onboarding';
-        } else if (currentPath.startsWith('/profile') || currentPath == '/chat' || currentPath == '/activity' || currentPath == '/discover' || currentPath == '/map') {
+        } else if (currentPath.startsWith('/profile') || currentPath == '/chat' || currentPath == '/activity' || currentPath == '/discover' || currentPath == '/map' || currentPath == '/events') {
             return '/login';
         }
       } else {
@@ -129,6 +144,10 @@ GoRouter createRouter() {
           GoRoute(
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/events',
+            builder: (context, state) => const EventsListScreen(),
           ),
         ],
       ),
@@ -193,10 +212,14 @@ GoRouter createRouter() {
           final conversationId = state.uri.queryParameters['id']!;
           final otherUserName = state.uri.queryParameters['name'] ?? 'Chat';
           final otherUserId = state.uri.queryParameters['uid'] ?? '';
+          final otherUserAvatar = state.uri.queryParameters['avatar'];
+          final initialMessage = state.uri.queryParameters['msg'];
           return ChatDetailScreen(
             conversationId: conversationId,
             otherUserName: otherUserName,
             otherUserId: otherUserId,
+            otherUserAvatar: otherUserAvatar,
+            initialMessage: initialMessage,
           );
         },
       ),
@@ -212,6 +235,11 @@ GoRouter createRouter() {
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,
+        path: '/commitment',
+        builder: (context, state) => const CommitmentScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
       ),
@@ -220,8 +248,96 @@ GoRouter createRouter() {
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/feedback',
+        builder: (context, state) => const FeedbackScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/create-event',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const CreateEventScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/event/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return EventDetailScreen(eventId: id);
+        },
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/location-picker',
+        builder: (context, state) {
+          final initialLocation = state.extra as LatLng?;
+          return LocationPickerScreen(initialLocation: initialLocation);
+        },
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/admin-panel',
+        builder: (context, state) => const AdminPanelScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/create-poll',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const PollCreationScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            );
+          },
+        ),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/ai-assistant',
+        builder: (context, state) => const AiAssistantScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/my-assets',
+        builder: (context, state) => const MyAssetsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/asset-library',
+        builder: (context, state) => const AssetDiscoveryScreen(),
+      ),
     ],
   );
+
+  router.routerDelegate.addListener(() {
+    final String location = router.routerDelegate.currentConfiguration.uri.toString();
+    lastAppLocation = location;
+    logger.d('Navigation update: $location');
+  });
+
+  return router;
 }
 
 // Helper for GoRouter to listen to streams

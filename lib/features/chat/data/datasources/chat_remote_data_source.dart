@@ -14,8 +14,20 @@ class ChatRemoteDataSource {
     return supabaseService.getMessagesStream(conversationId);
   }
 
-  Future<void> sendMessage(String conversationId, String content, {String type = 'text'}) {
-    return supabaseService.sendMessage(conversationId, content, type: type);
+  Future<void> sendMessage(String conversationId, String content, {String type = 'text', String? replyToId}) {
+    return supabaseService.sendMessage(conversationId, content, type: type, replyToId: replyToId);
+  }
+
+  Future<void> deleteMessage(String messageId) {
+    return supabaseService.deleteMessage(messageId);
+  }
+
+  Future<void> markConversationAsRead(String conversationId) {
+    return supabaseService.markConversationAsRead(conversationId);
+  }
+
+  Future<void> markAllConversationsAsRead() {
+    return supabaseService.markAllConversationsAsRead();
   }
 
   Future<void> blockUser(String userId) {
@@ -36,5 +48,9 @@ class ChatRemoteDataSource {
 
   Future<void> reportUser(String userId, String reason) {
     return supabaseService.reportUser(userId, reason);
+  }
+
+  Future<void> deleteConversation(String conversationId) {
+    return supabaseService.deleteConversation(conversationId);
   }
 }
