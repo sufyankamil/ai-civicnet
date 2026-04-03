@@ -127,29 +127,34 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
          barrierDismissible: false,
          builder: (context) {
            final l10n = AppLocalizations.of(context)!;
-           return AlertDialog(
-            title: Row(
-              children: [
-                const Icon(Icons.location_on, color: AppColors.primaryLight, size: 28),
-                const SizedBox(width: 8),
-                Text(l10n.locationPermissionTitle),
-              ],
-            ),
-            content: Text(l10n.locationPermissionDesc),
-            actions: [
-              AppElevatedButton(
-                onPressed: () async {
-                  Navigator.of(context).pop();
-                  final permission = await Geolocator.checkPermission();
-                  if (permission == LocationPermission.deniedForever) {
-                    await Geolocator.openAppSettings();
-                  } else {
-                    _requestLocationUpdates();
-                  }
-                },
-                child: Center(child: Text(l10n.allowAccess)),
-              ),
-             ],
+           return Center(
+             child: ConstrainedBox(
+               constraints: const BoxConstraints(maxWidth: 450),
+               child: AlertDialog(
+                title: Row(
+                  children: [
+                    const Icon(Icons.location_on, color: AppColors.primaryLight, size: 28),
+                    const SizedBox(width: 8),
+                    Text(l10n.locationPermissionTitle),
+                  ],
+                ),
+                content: Text(l10n.locationPermissionDesc),
+                actions: [
+                  AppElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      final permission = await Geolocator.checkPermission();
+                      if (permission == LocationPermission.deniedForever) {
+                        await Geolocator.openAppSettings();
+                      } else {
+                        _requestLocationUpdates();
+                      }
+                    },
+                    child: Center(child: Text(l10n.allowAccess)),
+                  ),
+                 ],
+               ),
+             ),
            );
          },
        );
@@ -201,95 +206,100 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       context: context,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.favorite_rounded, color: AppColors.accentLight, size: 48),
-            const SizedBox(height: 16),
-            Text(AppLocalizations.of(context)!.enjoyingApp, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context)!.feedbackDescription,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 32),
-              Column(
-                children: [
-                  AppHaptic(
-                    onTap: () async {
-                      Navigator.pop(context);
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
-                      await prefs.setString('last_feedback_prompt_type', 'submit'); // Consider 'rate' but shared logic
-                      await RatingService.requestReview();
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient(Theme.of(context).brightness),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primaryLight.withValues(alpha: 0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
+      builder: (context) => Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 550),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.favorite_rounded, color: AppColors.accentLight, size: 48),
+                const SizedBox(height: 16),
+                Text(AppLocalizations.of(context)!.enjoyingApp, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 12),
+                  Text(
+                    AppLocalizations.of(context)!.feedbackDescription,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 32),
+                  Column(
+                    children: [
+                      AppHaptic(
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+                          await prefs.setString('last_feedback_prompt_type', 'submit'); // Consider 'rate' but shared logic
+                          await RatingService.requestReview();
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient(Theme.of(context).brightness),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primaryLight.withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'I love it! ⭐⭐⭐⭐⭐',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+                                await prefs.setString('last_feedback_prompt_type', 'ignore');
+                              },
+                              child: Text(AppLocalizations.of(context)!.maybeLater),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                context.push('/feedback');
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: AppColors.primaryLight.withValues(alpha: 0.5)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              child: const Text('Need Help / Feedback'),
+                            ),
                           ),
                         ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'I love it! ⭐⭐⭐⭐⭐',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () async {
-                            Navigator.pop(context);
-                            final prefs = await SharedPreferences.getInstance();
-                            await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
-                            await prefs.setString('last_feedback_prompt_type', 'ignore');
-                          },
-                          child: Text(AppLocalizations.of(context)!.maybeLater),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            context.push('/feedback');
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: AppColors.primaryLight.withValues(alpha: 0.5)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Text('Need Help / Feedback'),
-                        ),
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       );

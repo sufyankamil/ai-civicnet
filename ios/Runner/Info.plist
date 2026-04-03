@@ -80,6 +80,12 @@
 		<array>
 			<string>UIInterfaceOrientationPortrait</string>
 		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+		</array>
+		<key>UIRequiresFullScreen</key>
+		<true/>
 		<key>io.flutter.embedded_views_preview</key>
 		<true/>
 		<key>UIStatusBarHidden</key>

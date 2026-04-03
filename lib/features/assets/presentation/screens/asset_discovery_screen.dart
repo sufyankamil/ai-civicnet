@@ -75,11 +75,11 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
                 onRefresh: () => controller.loadPublicAssets(category: _selectedCategory),
                 child: GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 240,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 0.68,
+                    childAspectRatio: 0.72,
                   ),
                   itemCount: controller.publicAssets.length,
                   itemBuilder: (context, index) {
