@@ -117,5 +117,8 @@ CivicNet maintains a strict **zero-warning policy**.
 - **Code Quality:** Verified via `flutter analyze`. The codebase is 100% free of warnings, deprecation notices, and hints.
 - **Crash Free:** Handled globally by Firebase Crashlytics to ensure high uptime.
 
+## App Store
+https://apps.apple.com/app/id6761416586
+
 ---
 *Built with ❤️ for a better community.*
