@@ -18,13 +18,23 @@ class NewsSection extends StatefulWidget {
 
 class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClientMixin {
   late Future<User?> _userProfileFuture;
-  late Stream<List<Announcement>> _announcementsStream;
+  late Future<List<Announcement>> _announcementsFuture;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
     _userProfileFuture = SupabaseService().getCurrentUserProfile();
-    _announcementsStream = SupabaseService().getAnnouncementsStream();
+    _announcementsFuture = SupabaseService().getAnnouncements();
+  }
+
+  void _handleRetry() {
+    setState(() {
+      _loadData();
+    });
   }
 
   @override
@@ -41,8 +51,8 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
         final user = userSnapshot.data;
         final isAdmin = user?.role == 'admin' || user?.role == 'super_admin';
 
-        return StreamBuilder<List<Announcement>>(
-          stream: _announcementsStream,
+        return FutureBuilder<List<Announcement>>(
+          future: _announcementsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Column(
@@ -51,12 +61,7 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
             }
             
             if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.red)),
-                ),
-              );
+              return _buildErrorState(isDark, snapshot.error.toString());
             }
             
             List<Announcement> announcements = snapshot.data ?? [];
@@ -70,70 +75,147 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
               }).toList();
             }
             
-            return Column(
-              children: [
-                if (announcements.isEmpty)
-                  _buildEmptyState(isDark)
-                else
-                  ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: announcements.length,
-                    itemBuilder: (context, index) {
-                      return AnnouncementCard(
-                        announcement: announcements[index],
-                        onTap: () {},
-                      );
-                    },
-                  ),
-                if (isAdmin)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                    child: AppHaptic(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
-                        );
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.auraGradient,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryLight.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+            return RefreshIndicator(
+              onRefresh: () async {
+                _handleRetry();
+                await _announcementsFuture;
+              },
+              color: AppColors.primaryLight,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    if (announcements.isEmpty)
+                      _buildEmptyState(isDark)
+                    else
+                      ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: announcements.length,
+                        itemBuilder: (context, index) {
+                          return AnnouncementCard(
+                            announcement: announcements[index],
+                            onTap: () {},
+                          );
+                        },
+                      ),
+                    if (isAdmin)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                        child: AppHaptic(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.auraGradient,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primaryLight.withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_comment_rounded, color: Colors.white, size: 20),
-                            SizedBox(width: 12),
-                            Text(
-                              'Post News',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.add_comment_rounded, color: Colors.white, size: 20),
+                                SizedBox(width: 12),
+                                Text(
+                                  'Post News',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-              ],
+                  ],
+                ),
+              ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget _buildErrorState(bool isDark, String error) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.cloud_off_rounded, 
+              size: 64, 
+              color: Colors.redAccent,
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Connection Timed Out',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'We couldn\'t load the news feed. Please check your internet connection and try again.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 32),
+          AppHaptic(
+            onTap: _handleRetry,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: AppColors.auraGradient,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primaryLight.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Text(
+                'Retry Now',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

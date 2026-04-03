@@ -47,6 +47,7 @@ import '../../features/profile/presentation/screens/admin_panel_screen.dart';
 import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
 import '../../features/assets/presentation/screens/my_assets_screen.dart';
 import '../../features/assets/presentation/screens/asset_discovery_screen.dart';
+import '../presentation/screens/not_found_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 String lastAppLocation = '/';
@@ -64,6 +65,7 @@ GoRouter createRouter({String initialLocation = '/'}) {
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
+    errorBuilder: (context, state) => NotFoundScreen(location: state.uri.toString()),
     refreshListenable: GoRouterRefreshStream(
       Supabase.instance.client.auth.onAuthStateChange,
     ),

@@ -11,6 +11,7 @@ import '../../../../theme/app_theme.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../services/rating_service.dart';
 import '../../../../components/request_card.dart';
 import '../../../../components/request_card_skeleton.dart';
 import '../viewmodels/home_viewmodel.dart';
@@ -213,33 +214,86 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             const SizedBox(height: 16),
             Text(AppLocalizations.of(context)!.enjoyingApp, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
-            Text(AppLocalizations.of(context)!.feedbackDescription, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[600])),
-            const SizedBox(height: 32),
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(AppLocalizations.of(context)!.maybeLater),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: AppElevatedButton(
-                    onPressed: () {
+              Text(
+                AppLocalizations.of(context)!.feedbackDescription,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 32),
+              Column(
+                children: [
+                  AppHaptic(
+                    onTap: () async {
                       Navigator.pop(context);
-                      context.push('/feedback');
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+                      await prefs.setString('last_feedback_prompt_type', 'submit'); // Consider 'rate' but shared logic
+                      await RatingService.requestReview();
                     },
-                    child: Text(AppLocalizations.of(context)!.giveFeedback),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient(Theme.of(context).brightness),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryLight.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'I love it! ⭐⭐⭐⭐⭐',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+                            await prefs.setString('last_feedback_prompt_type', 'ignore');
+                          },
+                          child: Text(AppLocalizations.of(context)!.maybeLater),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.push('/feedback');
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AppColors.primaryLight.withValues(alpha: 0.5)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: const Text('Need Help / Feedback'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   // --- Build Methods ---
 

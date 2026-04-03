@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../../../services/supabase_service.dart';
@@ -57,7 +58,10 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
       if (mounted) {
         ToastService.showSuccess(context, 'Thank you for your valuable feedback!');
-        context.pop();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_feedback_prompt_time', DateTime.now().toIso8601String());
+        await prefs.setString('last_feedback_prompt_type', 'submit');
+        if (mounted) context.pop();
       }
     } catch (e) {
       if (mounted) {

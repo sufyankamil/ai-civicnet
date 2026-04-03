@@ -21,7 +21,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   @override
   void initState() {
     super.initState();
-    _setInitialLocation();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setInitialLocation();
+    });
   }
 
   Future<void> _setInitialLocation() async {
