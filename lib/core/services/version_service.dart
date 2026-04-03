@@ -86,24 +86,19 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'AI Neighborhood Connection',
-      description: "Experience 'AI RECOMMENDED' matches that highlight the best ways to help your neighbors with a glowing personalized touch.",
-      icon: Icons.auto_awesome_rounded,
+      title: 'A Stunning New Look',
+      description: "We've completely redesigned the 'My Activity' and 'Event Details' screens with a premium, glass-like beautiful aesthetic.",
+      icon: Icons.diamond_rounded,
     ),
     UpdateNote(
-      title: 'Enhanced Home Screen',
-      description: "A refined header and subtitle system that shows you exactly what's happening 'near you' at a single glance.",
-      icon: Icons.home_rounded,
+      title: 'Smarter Directions',
+      description: "Getting to events is easier than ever! Tapping an event's location now intelligently opens Apple Maps on iOS or Google Maps on Android.",
+      icon: Icons.map_rounded,
     ),
     UpdateNote(
-      title: 'Dark Mode Perfection',
-      description: 'Reimagined category filters with higher contrast and better visibility, specifically tuned for a premium dark mode experience.',
-      icon: Icons.dark_mode_rounded,
-    ),
-    UpdateNote(
-      title: 'Privacy & Transparency',
-      description: 'Updated location permission flows and clearer descriptions to ensure you always know how your data is being used.',
-      icon: Icons.privacy_tip_rounded,
+      title: 'Track Your Volunteering',
+      description: "Your 'My Activity' dashboard now features beautiful, glowing status badges so you can easily track your accepted and pending requests.",
+      icon: Icons.volunteer_activism_rounded,
     ),
   ];
 }

@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import '../../../../services/biometric_service.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
+import '../../../../services/rating_service.dart';
 import '../viewmodels/settings_controller.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -232,12 +233,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => context.push('/faq'),
           ),
           ListTile(
-            title: Text(l10n.privacyPolicy),
-            leading: const Icon(Icons.privacy_tip_outlined, color: Colors.grey),
+            title: const Text('Rate CivicNet'),
+            subtitle: const Text('Support the community on App Store'),
+            leading: const Icon(Icons.star_rate_rounded, color: Colors.amber),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              context.push('/privacy-policy');
-            },
+            onTap: () => RatingService.openStore(),
           ),
           const Divider(height: 32),
 

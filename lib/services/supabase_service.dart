@@ -478,33 +478,53 @@ class SupabaseService {
     }
   }
 
-  /// Real-time stream for the current user's profile
-  Stream<User?> getCurrentUserProfileStream() {
+  /// Real-time stream for the current user's profile with robust Future fallback.
+  Stream<User?> getCurrentUserProfileStream() async* {
     final user = _client.auth.currentUser;
-    if (user == null) return Stream.value(null);
+    if (user == null) {
+      yield null;
+      return;
+    }
 
-    return _client
-        .from('profiles')
-        .stream(primaryKey: ['id'])
-        .eq('id', user.id)
-        .map((data) {
-          try {
-            if (data.isEmpty) {
-              logger.w('Stream emitted empty data for user ${user.id}');
+    // 1. Initial Fetch (Robust Future)
+    // We immediately fetch and yield the profile via a standard request to ensure the UI
+    // has data even if the real-time subscription is slow or times out.
+    try {
+      final initialProfile = await getCurrentUserProfile();
+      yield initialProfile;
+    } catch (e) {
+      logger.e('Initial profile fetch failed: $e');
+    }
+
+    // 2. Real-time Subscription (Background Upgrade)
+    // We attempt to subscribe to changes. If it times out, we log a warning but DO NOT
+    // emit an error, allowing the app to stay on the initial fetch result.
+    try {
+      yield* _client
+          .from('profiles')
+          .stream(primaryKey: ['id'])
+          .eq('id', user.id)
+          .map((data) {
+            try {
+              if (data.isEmpty) return null;
+              final row = data.first;
+              return User.fromMap(row, email: user.email);
+            } catch (e) {
+              logger.e('Error mapping profile stream: $e');
               return null;
             }
-            final row = data.first;
-            // Use User.fromMap for consistency
-            return User.fromMap(row, email: user.email);
-          } catch (e) {
-            logger.e('Error mapping profile stream: $e');
+          })
+          .handleError((error) {
+            if (error.toString().contains('RealtimeSubscribeException')) {
+              logger.w('Profile real-time subscription timed out. Staying on fetched data.');
+            } else {
+              logger.e('Profile stream encountered error: $error');
+            }
             return null;
-          }
-        })
-        .handleError((error) {
-          logger.e('Profile stream error: $error');
-          return null;
-        });
+          });
+    } catch (e) {
+      logger.w('Failed to initialize profile real-time stream: $e');
+    }
   }
 
   Future<void> updatePrivacySettings(Map<String, bool> settings) async {
@@ -1209,7 +1229,7 @@ class SupabaseService {
       }).toList();
     } catch (e) {
       logger.e('Error fetching announcements: $e');
-      return [];
+      rethrow;
     }
   }
 

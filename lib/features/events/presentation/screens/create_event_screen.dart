@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -9,6 +11,8 @@ import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/logger_service.dart';
+import '../../../../theme/app_theme.dart';
+import '../../../../widgets/haptic_buttons.dart';
 import '../../models/event.dart';
 import '../viewmodels/events_viewmodel.dart';
 
@@ -126,99 +130,190 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context)!.postAnEventTitle,
-          style: TextStyle(fontWeight: FontWeight.bold),
+      extendBodyBehindAppBar: true,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: AppBar(
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.7),
+              elevation: 0,
+              centerTitle: true,
+              systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+              title: Text(
+                l10n.postAnEventTitle,
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 22,
+                  letterSpacing: -0.5,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              leading: Center(
+                child: AppHaptic(
+                  onTap: () => context.pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close_rounded, size: 20),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle(AppLocalizations.of(context)!.eventDetails),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: AppLocalizations.of(context)!.eventTitleHint,
-                controller: _titleController,
-                validator: (v) => (v == null || v.isEmpty) ? AppLocalizations.of(context)!.required : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.eventDescriptionHint,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: Theme.of(context).inputDecorationTheme.fillColor,
-                ),
-                validator: (v) => (v == null || v.isEmpty) ? AppLocalizations.of(context)!.required : null,
-              ),
-              const SizedBox(height: 24),
-              _buildSectionTitle(AppLocalizations.of(context)!.whenAndWhere),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildPickerTile(
-                      label: AppLocalizations.of(context)!.dateLabel,
-                      value: _getLocalizedDate(context, _selectedDate),
-                      icon: Icons.calendar_today,
-                      onTap: _pickDate,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildPickerTile(
-                      label: AppLocalizations.of(context)!.timeLabel,
-                      value: _selectedTime.format(context),
-                      icon: Icons.access_time,
-                      onTap: _pickTime,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              CustomTextField(
-                hintText: AppLocalizations.of(context)!.locationNameHint,
-                controller: _locationController,
-                validator: (v) => (v == null || v.isEmpty) ? AppLocalizations.of(context)!.required : null,
-              ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: _pickLocationOnMap,
-                icon: const Icon(Icons.map),
-                label: Text(_selectedLatLng == null 
-                    ? AppLocalizations.of(context)!.selectLocationOnMap 
-                    : AppLocalizations.of(context)!.changeLocationOnMap),
-              ),
-              if (_selectedLatLng != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 12.0),
-                  child: Text(
-                    AppLocalizations.of(context)!.selectedLocation(
-                      _selectedLatLng!.latitude.toStringAsFixed(4),
-                      _selectedLatLng!.longitude.toStringAsFixed(4),
-                    ),
-                    style: TextStyle(fontSize: 12, color: Colors.green[700], fontWeight: FontWeight.bold),
-                  ),
-                ),
-              const SizedBox(height: 48),
-              Obx(() => PrimaryButton(
-                text: AppLocalizations.of(context)!.postAnEvent,
-                isLoading: _viewModel.isLoading,
-                onPressed: _submitEvent,
-              )),
-              const SizedBox(height: 32),
+      body: Container(
+        height: double.infinity,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          gradient: RadialGradient(
+            center: const Alignment(-0.8, -0.6),
+            radius: 1.5,
+            colors: [
+              AppColors.primaryLight.withValues(alpha: isDark ? 0.08 : 0.05),
+              Theme.of(context).scaffoldBackgroundColor,
             ],
+            stops: const [0.0, 0.8],
+          ),
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 120, 16, 32),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle(l10n.eventDetails),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor.withValues(alpha: isDark ? 0.5 : 0.8),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.grey.withValues(alpha: isDark ? 0.1 : 0.2)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      CustomTextField(
+                        hintText: l10n.eventTitleHint,
+                        controller: _titleController,
+                        validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
+                      ),
+                      Divider(height: 1, color: Colors.grey.withValues(alpha: 0.1), indent: 16, endIndent: 16),
+                      TextFormField(
+                        controller: _descController,
+                        maxLines: 5,
+                        style: const TextStyle(fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: l10n.eventDescriptionHint,
+                          contentPadding: const EdgeInsets.all(20),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                        ),
+                        validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                _buildSectionTitle(l10n.whenAndWhere),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildPremiumPickerTile(
+                        label: l10n.dateLabel.toUpperCase(),
+                        value: _getLocalizedDate(context, _selectedDate),
+                        icon: Icons.calendar_today_rounded,
+                        onTap: _pickDate,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildPremiumPickerTile(
+                        label: l10n.timeLabel.toUpperCase(),
+                        value: _selectedTime.format(context),
+                        icon: Icons.access_time_filled_rounded,
+                        onTap: _pickTime,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor.withValues(alpha: isDark ? 0.5 : 0.8),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.grey.withValues(alpha: isDark ? 0.1 : 0.2)),
+                  ),
+                  child: CustomTextField(
+                    hintText: l10n.locationNameHint,
+                    controller: _locationController,
+                    validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
+                  ),
+                ),
+                
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppHaptic(
+                    onTap: _pickLocationOnMap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.map_rounded, size: 16, color: AppColors.primaryLight),
+                          const SizedBox(width: 8),
+                          Text(
+                            (_selectedLatLng == null ? l10n.selectLocationOnMap : l10n.changeLocationOnMap).toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.primaryLight,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                
+
+                const SizedBox(height: 48),
+                Obx(() => PrimaryButton(
+                  text: l10n.postAnEvent,
+                  isLoading: _viewModel.isLoading,
+                  onPressed: _submitEvent,
+                )),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
@@ -226,46 +321,63 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
+    return Padding(
+      padding: const EdgeInsets.only(left: 4),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.2,
+          color: Colors.grey[500],
+        ),
       ),
     );
   }
 
-  Widget _buildPickerTile({
+  Widget _buildPremiumPickerTile({
     required String label,
     required String value,
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return InkWell(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AppHaptic(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).inputDecorationTheme.fillColor,
-          borderRadius: BorderRadius.circular(12),
+          color: Theme.of(context).cardColor.withValues(alpha: isDark ? 0.4 : 0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.withValues(alpha: isDark ? 0.05 : 0.1)),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: Theme.of(context).primaryColor),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, size: 18, color: AppColors.primaryLight),
+            ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey[400], letterSpacing: 0.5),
+                  ),
+                  Text(
+                    value,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
