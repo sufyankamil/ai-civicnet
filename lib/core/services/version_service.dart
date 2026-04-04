@@ -86,19 +86,19 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'A Stunning New Look',
-      description: "We've completely redesigned the 'My Activity' and 'Event Details' screens with a premium, glass-like beautiful aesthetic.",
-      icon: Icons.diamond_rounded,
+      title: 'Designed for iPad',
+      description: "Experience CivicNet like never before! We've fully optimized the app for iPad with native layouts that take advantage of your larger screen.",
+      icon: Icons.tablet_mac_rounded,
     ),
     UpdateNote(
-      title: 'Smarter Directions',
-      description: "Getting to events is easier than ever! Tapping an event's location now intelligently opens Apple Maps on iOS or Google Maps on Android.",
-      icon: Icons.map_rounded,
+      title: 'Fluid Responsive UI',
+      description: "From asset grids to popups, everything now scales beautifully across all your devices with a premium, responsive touch.",
+      icon: Icons.aspect_ratio_rounded,
     ),
     UpdateNote(
-      title: 'Track Your Volunteering',
-      description: "Your 'My Activity' dashboard now features beautiful, glowing status badges so you can easily track your accepted and pending requests.",
-      icon: Icons.volunteer_activism_rounded,
+      title: 'Multitasking Mastery',
+      description: "Stay productive with full iPad multitasking support, allowing you to use CivicNet alongside your other favorite apps seamlessly.",
+      icon: Icons.grid_view_rounded,
     ),
   ];
 }
