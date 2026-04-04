@@ -9,6 +9,7 @@ import '../../services/logger_service.dart';
 
 // Screens
 import '../../features/profile/presentation/screens/privacy_policy_screen.dart';
+import '../../features/profile/presentation/screens/terms_of_service_screen.dart';
 import '../../features/onboarding/presentation/screens/splash_screen.dart';
 import '../../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -229,6 +230,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/privacy-policy',
         builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/terms-of-service',
+        builder: (context, state) => const TermsOfServiceScreen(),
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,

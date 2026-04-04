@@ -28,7 +28,8 @@ class UpdateNoticeModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Align(
+      alignment: Alignment.bottomCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 550),
         child: Container(

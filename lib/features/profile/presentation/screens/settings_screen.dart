@@ -13,6 +13,7 @@ import '../../../../services/supabase_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/rating_service.dart';
 import '../viewmodels/settings_controller.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -277,14 +278,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
           )),
           const Divider(height: 32),
+          
+          _buildSectionHeader('Privacy & Legal'),
+          const SizedBox(height: 8),
+          ListTile(
+            title: Text(l10n.privacyPolicy),
+            leading: const Icon(Icons.privacy_tip_outlined, color: Colors.blueAccent),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/privacy-policy'),
+          ),
+          ListTile(
+            title: Text(l10n.termsAndConditions),
+            leading: const Icon(Icons.gavel_rounded, color: Colors.indigoAccent),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/terms-of-service'),
+          ),
+          ListTile(
+            title: Text(l10n.communityCommitment),
+            leading: const Icon(Icons.volunteer_activism_rounded, color: Colors.pinkAccent),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/commitment'),
+          ),
+          const Divider(height: 32),
 
           _buildSectionHeader(l10n.account),
-          ListTile(
-            title: Text(l10n.helpHistory),
-            leading: const Icon(Icons.history, color: AppColors.primaryLight),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.go('/activity'),
-          ),
           ListTile(
             title: Text(l10n.deleteAccount, style: const TextStyle(color: Colors.red)),
             leading: const Icon(Icons.person_remove, color: Colors.red),
@@ -293,12 +310,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const Divider(height: 32),
 
-          _buildSectionHeader(l10n.about),
-          const SizedBox(height: 8),
-          ListTile(
-            title: Text(l10n.version),
-            leading: const Icon(Icons.info_outline, color: Colors.grey),
-            trailing: const Text('1.1.0', style: TextStyle(color: Colors.grey)),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              final version = snapshot.data?.version ?? '1.1.3';
+              final build = snapshot.data?.buildNumber ?? '43';
+              return Center(
+                child: Column(
+                  children: [
+                    Text(
+                      '"Empowering communities, one connection at a time."',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'CivicNet © ${DateTime.now().year} • v$version ($build)',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.3),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),
