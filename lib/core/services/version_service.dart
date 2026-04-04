@@ -86,19 +86,19 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Designed for iPad',
-      description: "Experience CivicNet like never before! We've fully optimized the app for iPad with native layouts that take advantage of your larger screen.",
-      icon: Icons.tablet_mac_rounded,
+      title: 'Premium AI Aura UI',
+      description: "Experience our new glassmorphic design with smoother transitions and a modern 'Aura' aesthetic throughout the app.",
+      icon: Icons.auto_awesome_rounded,
     ),
     UpdateNote(
-      title: 'Fluid Responsive UI',
-      description: "From asset grids to popups, everything now scales beautifully across all your devices with a premium, responsive touch.",
-      icon: Icons.aspect_ratio_rounded,
-    ),
-    UpdateNote(
-      title: 'Multitasking Mastery',
-      description: "Stay productive with full iPad multitasking support, allowing you to use CivicNet alongside your other favorite apps seamlessly.",
+      title: 'Polished Community Feed',
+      description: "We've refined our card layouts and added subtle micro-animations for a more professional and engaging experience.",
       icon: Icons.grid_view_rounded,
+    ),
+    UpdateNote(
+      title: 'Enhanced Profiles',
+      description: "Your profile now features a sleek new footer with a personalized touch and improved mission-driven aesthetics.",
+      icon: Icons.person_pin_rounded,
     ),
   ];
 }

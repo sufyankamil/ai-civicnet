@@ -183,18 +183,43 @@ class _ProfileScreenState extends State<ProfileScreen>
                           child: _buildBadgeGallery(user, isDark),
                         ),
                         const SizedBox(height: 28),
-                        /*
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 850),
-                          child: PrivacySettingsSection(isDark: isDark, user: user),
-                        ),
-                        const SizedBox(height: 28),
-                        */
+                      
+                        // SlideFadeTransition(
+                        //   delay: const Duration(milliseconds: 850),
+                        //   child: PrivacySettingsSection(isDark: isDark, user: user),
+                        // ),
+                        // const SizedBox(height: 28),
+                      
                         SlideFadeTransition(
                           delay: const Duration(milliseconds: 1000),
                           child: _buildActionsSection(context, isDark, user),
                         ),
-                        const SizedBox(height: 160),
+                        const SizedBox(height: 40),
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                '"Empowering communities, one connection at a time."',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'CivicNet © ${DateTime.now().year} • v1.1.3',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.3),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 60),
                       ],
                     ),
                   ),
