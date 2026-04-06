@@ -86,19 +86,9 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Premium AI Aura UI',
-      description: "Experience our new glassmorphic design with smoother transitions and a modern 'Aura' aesthetic throughout the app.",
-      icon: Icons.auto_awesome_rounded,
-    ),
-    UpdateNote(
-      title: 'Polished Community Feed',
-      description: "We've refined our card layouts and added subtle micro-animations for a more professional and engaging experience.",
-      icon: Icons.grid_view_rounded,
-    ),
-    UpdateNote(
-      title: 'Enhanced Profiles',
-      description: "Your profile now features a sleek new footer with a personalized touch and improved mission-driven aesthetics.",
-      icon: Icons.person_pin_rounded,
+      title: 'VPN Awareness',
+      description: "CivicNet now detects active VPNs to ensure we accurately find help requests near your real location.",
+      icon: Icons.vpn_lock_rounded,
     ),
   ];
 }

@@ -4,13 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../l10n/app_localizations.dart';
-
-import '../../../../theme/app_theme.dart';
-import '../../../../services/supabase_service.dart';
+import '../../../../widgets/haptic_buttons.dart';
 import '../../../../services/logger_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/rating_service.dart';
 import '../../../../components/request_card.dart';
+
+import '../../../../theme/app_theme.dart';
+import '../../../../services/supabase_service.dart';
 import '../viewmodels/home_viewmodel.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/home_search_bar.dart';
@@ -22,9 +23,11 @@ import '../widgets/guild_card.dart';
 import '../widgets/community_briefing_card.dart';
 import '../widgets/update_notice_modal.dart';
 import '../../../news/presentation/components/news_section.dart';
-import '../../../../widgets/haptic_buttons.dart';
 import '../../../../core/services/version_service.dart';
 import '../widgets/update_popup.dart';
+import '../../../../core/services/vpn_service.dart';
+import '../widgets/vpn_warning_banner.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   final String? initialFilter;
@@ -42,6 +45,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   bool _showSafetyBanner = false;
+  bool _isVpnActive = false;
+  bool _vpnWarningDismissed = false;
+  StreamSubscription<bool>? _vpnSubscription;
   String _newsSearchQuery = '';
 
   @override
@@ -59,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkVpnStatus();
       _checkLocationPermission();
       _checkFeedbackPrompt();
       _checkSafetyBanner();
@@ -71,10 +78,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     _searchController.dispose();
     _tabController.dispose();
     _filterScrollController.dispose();
+    _vpnSubscription?.cancel();
     super.dispose();
   }
 
   // --- Logic Helpers ---
+
+  Future<void> _checkVpnStatus() async {
+    final vpnService = VpnService();
+    final isActive = await vpnService.isVpnActive();
+    if (mounted) setState(() => _isVpnActive = isActive);
+
+    _vpnSubscription = vpnService.vpnStatusStream.listen((isActive) {
+      if (mounted) setState(() => _isVpnActive = isActive);
+    });
+  }
 
   Future<void> _checkSafetyBanner() async {
     final prefs = await SharedPreferences.getInstance();
@@ -345,6 +363,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               SliverToBoxAdapter(
                 child: Column(
                   children: [
+                    if (_isVpnActive && !_vpnWarningDismissed) 
+                      VpnWarningBanner(onDismiss: () => setState(() => _vpnWarningDismissed = true)),
                     if (_showSafetyBanner) HomeSafetyBanner(onDismiss: _dismissSafetyBanner),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),

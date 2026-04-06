@@ -446,6 +446,8 @@
   "confirmAllCaps": "CONFIRM",
   "tapOnMapToSelectLocation": "Tap on the map to select a precise location for your event.",
   "confirmLocation": "Confirm Location",
-  "beta": "BETA"
+  "beta": "BETA",
+  "vpnWarningTitle": "VPN Detected",
+  "vpnWarningDesc": "An active VPN may prevent us from accurately finding help requests near you. For the best experience, consider disabling it while using CivicNet."
 }
 

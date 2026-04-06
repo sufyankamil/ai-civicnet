@@ -1921,6 +1921,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'BETA'**
   String get beta;
+
+  /// No description provided for @vpnWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'VPN Detected'**
+  String get vpnWarningTitle;
+
+  /// No description provided for @vpnWarningDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'An active VPN may prevent us from accurately finding help requests near you. For the best experience, consider disabling it while using CivicNet.'**
+  String get vpnWarningDesc;
 }
 
 class _AppLocalizationsDelegate
