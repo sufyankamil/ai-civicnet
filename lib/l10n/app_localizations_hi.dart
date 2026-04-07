@@ -993,4 +993,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get beta => 'बीटा';
+
+  @override
+  String get vpnWarningTitle => 'VPN का पता चला';
+
+  @override
+  String get vpnWarningDesc =>
+      'एक सक्रिय VPN हमें आपके आस-पास के सहायता अनुरोधों को सटीक रूप से खोजने से रोक सकता है। बेहतर अनुभव के लिए, CivicNet का उपयोग करते समय इसे बंद करें।';
 }

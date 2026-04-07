@@ -1922,6 +1922,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.2"
+  vpn_connection_detector:
+    dependency: "direct main"
+    description:
+      name: vpn_connection_detector
+      sha256: "91d78d896632f24c616b02e6368fa50876f6d20031a780c3bc9090da91eae097"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   web:
     dependency: transitive
     description:
