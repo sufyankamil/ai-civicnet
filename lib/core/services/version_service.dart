@@ -86,8 +86,18 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
+      title: 'Smoother Community Feed',
+      description: "Enjoy a more fluid experience when browsing requests and community activities, even on slower connections.",
+      icon: Icons.auto_awesome_rounded,
+    ),
+    UpdateNote(
+      title: 'Visual Polish',
+      description: "We've refined the request details and overall app interface for a more premium and stable look.",
+      icon: Icons.brush_rounded,
+    ),
+    UpdateNote(
       title: 'VPN Awareness',
-      description: "CivicNet now detects active VPNs to ensure we accurately find help requests near your real location.",
+      description: "CivicNet now detects active VPNs to help you find the most relevant help requests near your real location.",
       icon: Icons.vpn_lock_rounded,
     ),
   ];

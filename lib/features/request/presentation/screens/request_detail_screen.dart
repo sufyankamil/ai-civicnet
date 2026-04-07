@@ -9,10 +9,10 @@ import '../../domain/entities/help_request_entity.dart';
 import '../../domain/entities/request_enums.dart';
 import '../viewmodels/request_viewmodel.dart';
 import 'package:get/get.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../models/models.dart' as legacy;
 import '../../../../theme/app_theme.dart';
-import '../../../../components/app_loader.dart';
 import '../../../../services/logger_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../../../features/assets/presentation/viewmodels/assets_viewmodel.dart';
@@ -26,6 +26,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../components/report_dialog.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../components/success_animation.dart';
+import '../widgets/request_detail_skeleton.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final String requestId;
@@ -169,7 +170,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     return Scaffold(
       body: Obx(() {
         if (_viewModel.isLoading && _viewModel.currentRequest == null) {
-          return const AppLoader();
+          return const RequestDetailSkeleton();
         }
 
         final request = _viewModel.currentRequest;
@@ -398,7 +399,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       ),
                       const SizedBox(height: 16),
                       if (_isLoadingApplications)
-                        const AppLoader()
+                        Column(
+                          children: List.generate(2, (index) => _buildApplicationShimmer()),
+                        )
                       else if (_applications.isEmpty)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 24),
@@ -1110,7 +1113,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         ),
         const SizedBox(height: 16),
         if (_viewModel.isLoadingHelpers)
-          const AppLoader()
+          _buildHelpersShimmer()
         else if (_viewModel.potentialHelpers.isEmpty)
           _buildEmptyHelpers()
         else
@@ -1151,7 +1154,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   }
 
   Widget _buildSuggestedTools() {
-    if (_isLoadingAssets) return const AppLoader();
+    if (_isLoadingAssets) return _buildToolsShimmer();
     if (_matchedAssets.isEmpty) return const SizedBox.shrink();
 
     return Column(
@@ -1292,6 +1295,88 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     }
 
     return _buildStatusChipContent(status, color, false);
+  }
+
+  Widget _buildHelpersShimmer() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.white;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Center(
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolsShimmer() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.white;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.construction_rounded, color: Colors.blueAccent, size: 20),
+            const SizedBox(width: 8),
+            Container(width: 150, height: 16, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 250,
+          child: Shimmer.fromColors(
+            baseColor: baseColor,
+            highlightColor: highlightColor,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 3,
+              itemBuilder: (context, index) => Container(
+                width: 200,
+                margin: const EdgeInsets.only(right: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildApplicationShimmer() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[200]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.white;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Shimmer.fromColors(
+        baseColor: baseColor,
+        highlightColor: highlightColor,
+        child: Container(
+          height: 100,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildStatusChipContent(RequestStatusEnum status, Color color, bool isInteractive) {
@@ -1470,23 +1555,50 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             Row(
               children: [
                 Expanded(
-                  child: TextButton(
-                    onPressed: () => _updateStatus(app.id, legacy.ApplicationStatus.rejected),
-                    style: TextButton.styleFrom(foregroundColor: Colors.grey),
-                    child: const Text('Decline'),
+                  child: AppHaptic(
+                    onTap: () => _updateStatus(app.id, legacy.ApplicationStatus.rejected),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.15)),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Decline',
+                          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _updateStatus(app.id, legacy.ApplicationStatus.accepted),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.greenAccent.withValues(alpha: 0.1),
-                      foregroundColor: Colors.greenAccent,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: AppHaptic(
+                    onTap: () => _updateStatus(app.id, legacy.ApplicationStatus.accepted),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.greenAccent.shade400, Colors.greenAccent.shade700],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.greenAccent.withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Accept',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                        ),
+                      ),
                     ),
-                    child: const Text('Accept', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

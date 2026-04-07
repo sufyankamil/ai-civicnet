@@ -20,20 +20,62 @@ class HomeRequestsList extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Obx(() {
       if (viewModel.isLoading && viewModel.filteredRequests.isEmpty) {
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: 5,
-          itemBuilder: (context, index) => const RequestCardSkeleton(),
+        return Column(
+          children: [
+            if (viewModel.isTakingTooLong)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primaryLight.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Connecting... this is taking a moment',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.primaryLight.withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 5,
+              itemBuilder: (context, index) => const RequestCardSkeleton(),
+            ),
+          ],
         );
       }
       
       if (viewModel.filteredRequests.isEmpty) {
         final filter = viewModel.selectedFilter;
-        final icon = _getFilterIcon(filter);
-        final color = _getFilterColor(filter);
+        final icon = viewModel.fetchError ? Icons.wifi_off_rounded : _getFilterIcon(filter);
+        final color = viewModel.fetchError ? Colors.orange : _getFilterColor(filter);
         
+        String title = filter == 'All' ? l10n.noRequests : 'No $filter Requests';
+        String description = l10n.noRequestsDescription;
+
+        if (viewModel.fetchError) {
+          title = 'Connection Issue';
+          description = 'We\'re having trouble reaching the server. Please check your internet and try again.';
+        } else if (!viewModel.hasFetchedOnce) {
+          title = 'Searching for neighbors...';
+          description = 'Connecting to your community. This might take a moment if the connection is slow.';
+        }
         return Center(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(40, 60, 40, 80),
@@ -50,7 +92,7 @@ class HomeRequestsList extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  filter == 'All' ? l10n.noRequests : 'No $filter Requests',
+                  title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20, 
@@ -60,7 +102,7 @@ class HomeRequestsList extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  l10n.noRequestsDescription,
+                  description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14, 
@@ -68,10 +110,16 @@ class HomeRequestsList extends StatelessWidget {
                     height: 1.5,
                   ),
                 ),
-                if (filter != 'All') ...[
+                if (filter != 'All' || viewModel.fetchError || !viewModel.hasFetchedOnce) ...[
                   const SizedBox(height: 32),
                   AppHaptic(
-                    onTap: () => viewModel.onFilterSelected('All'),
+                    onTap: () {
+                      if (viewModel.fetchError || !viewModel.hasFetchedOnce) {
+                        viewModel.fetchRequests();
+                      } else {
+                        viewModel.onFilterSelected('All');
+                      }
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
@@ -79,14 +127,18 @@ class HomeRequestsList extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.refresh_rounded, size: 18, color: AppColors.primaryLight),
-                          SizedBox(width: 8),
+                          Icon(
+                            (viewModel.fetchError || !viewModel.hasFetchedOnce) ? Icons.refresh_rounded : Icons.grid_view_rounded, 
+                            size: 18, 
+                            color: AppColors.primaryLight
+                          ),
+                          const SizedBox(width: 8),
                           Text(
-                            'Show All Requests',
-                            style: TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.bold),
+                            (viewModel.fetchError || !viewModel.hasFetchedOnce) ? 'Try Again' : 'Show All Requests',
+                            style: const TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),

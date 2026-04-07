@@ -391,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             selectedFilter: _viewModel.selectedFilter,
             onFilterSelected: _viewModel.onFilterSelected,
           )),
-          Obx(() => (_viewModel.communityBriefing.isNotEmpty || _viewModel.isBriefingLoading || _viewModel.topRecommendation != null)
+          Obx(() => ((_viewModel.communityBriefing.isNotEmpty || (_viewModel.isBriefingLoading && !_viewModel.briefingTimedOut)) || _viewModel.topRecommendation != null)
               ? _buildAiInsightSection(l10n) : const SizedBox.shrink()),
           Obx(() => _viewModel.guilds.isEmpty ? const SizedBox.shrink() : _buildGuildsSection(l10n)),
           HomeRequestsList(viewModel: _viewModel),
