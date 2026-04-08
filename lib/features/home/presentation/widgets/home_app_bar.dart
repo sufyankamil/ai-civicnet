@@ -13,6 +13,7 @@ class HomeAppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return SliverAppBar(
+      automaticallyImplyLeading: false,
       expandedHeight: 108,
       floating: false,
       pinned: false,
@@ -99,7 +100,7 @@ class HomeAppBar extends StatelessWidget {
         final user = snapshot.data;
         final hasAvatar = user?.avatarUrl != null && user!.avatarUrl.isNotEmpty;
         return AppHaptic(
-          onTap: () => context.push('/profile'),
+          onTap: () => context.go('/profile'),
           child: Hero(
             tag: 'profile-avatar',
             child: Container(

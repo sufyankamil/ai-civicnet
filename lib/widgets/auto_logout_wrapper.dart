@@ -24,6 +24,7 @@ class _AutoLogoutWrapperState extends State<AutoLogoutWrapper> with WidgetsBindi
 
   late final StreamSubscription<AuthState> _authSubscription;
   bool _isLoggedIn = false;
+  DateTime _lastInputTime = DateTime.now();
 
   @override
   void initState() {
@@ -65,16 +66,23 @@ class _AutoLogoutWrapperState extends State<AutoLogoutWrapper> with WidgetsBindi
     }
 
     _authTimer?.cancel();
-    _authTimer = Timer(widget.inactivityDuration, _logOutUser);
+    _authTimer = Timer(widget.inactivityDuration, () => _logOutUser(isRemoteRevocation: false));
   }
 
   void _handleUserInteraction(PointerEvent event) {
     if (_isLoggedIn) {
       _resetTimer();
+      
+      // Perform a lightweight background check if they interact after 30+ seconds of reading
+      final now = DateTime.now();
+      if (now.difference(_lastInputTime).inSeconds > 30) {
+        _lastInputTime = now;
+        _checkSessionValidity();
+      }
     }
   }
 
-  Future<void> _logOutUser() async {
+  Future<void> _logOutUser({bool isRemoteRevocation = false}) async {
     if (_isLoggedIn) {
       await Supabase.instance.client.auth.signOut();
       
@@ -83,8 +91,8 @@ class _AutoLogoutWrapperState extends State<AutoLogoutWrapper> with WidgetsBindi
       // We will use toastification if available, but wrap in a try-catch to avoid unmounted errors.
       try {
         toastification.show(
-          title: const Text('Session Expired'),
-          description: const Text('You have been logged out due to inactivity.'),
+          title: Text(isRemoteRevocation ? 'Session Revoked' : 'Session Expired'),
+          description: Text(isRemoteRevocation ? 'You have been signed out from another device.' : 'You have been logged out due to inactivity.'),
           type: ToastificationType.info,
           style: ToastificationStyle.flatColored,
           autoCloseDuration: const Duration(seconds: 4),
@@ -92,6 +100,19 @@ class _AutoLogoutWrapperState extends State<AutoLogoutWrapper> with WidgetsBindi
         );
       } catch (e) {
         debugPrint('AutoLogout: Failed to show toast - $e');
+      }
+    }
+  }
+
+  Future<void> _checkSessionValidity() async {
+    if (!_isLoggedIn) return;
+    try {
+      // Ping the Supabase backend to ensure our exact session hasn't been revoked externally
+      await Supabase.instance.client.auth.getUser();
+    } catch (e) {
+      if (e is AuthException || e.toString().contains('401') || e.toString().contains('403')) {
+        debugPrint('AutoLogout: Session revoked remotely. Logging out.');
+        await _logOutUser(isRemoteRevocation: true);
       }
     }
   }
@@ -115,6 +136,8 @@ class _AutoLogoutWrapperState extends State<AutoLogoutWrapper> with WidgetsBindi
           _logOutUser();
         } else {
           _resetTimer();
+          // Secretly verify session is still valid on the server (handles remote logouts like "Log out all other devices")
+          _checkSessionValidity();
         }
       }
       _pausedTime = null;

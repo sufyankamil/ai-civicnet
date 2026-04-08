@@ -419,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             isLoading: _viewModel.isBriefingLoading,
             onRefresh: () => _viewModel.fetchCommunityBriefing(force: true),
           ),
-        if (_viewModel.topRecommendation != null && _viewModel.topRecommendation!.aiRelevanceScore > 0.6)
+        if (_viewModel.topRecommendation != null && _viewModel.topRecommendation!.aiRelevanceScore > 0.4)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: RequestCard(request: _viewModel.topRecommendation!),

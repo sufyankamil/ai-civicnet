@@ -1,6 +1,7 @@
 
 import 'dart:math' show cos, sin, sqrt, asin;
 import 'dart:io';
+import 'dart:convert';
 
 
 import 'package:geolocator/geolocator.dart';
@@ -132,6 +133,63 @@ class SupabaseService {
     // Requires secure Postgres function "delete_user_account()" to exist
     await _client.rpc('delete_user_account').withServerTimeout();
     await signOut();
+  }
+
+  // --- Session Management ---
+
+  /// Extracts the exact session_id from the local JWT token for precise 'This Device' identification
+  String? get currentSessionId {
+    final token = _client.auth.currentSession?.accessToken;
+    if (token == null) return null;
+    
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return null;
+      
+      String payloadStr = parts[1];
+      // Pad base64 string if necessary
+      while (payloadStr.length % 4 != 0) {
+        payloadStr += '=';
+      }
+      
+      final payloadStrDecoded = utf8.decode(base64Url.decode(payloadStr));
+      final payload = jsonDecode(payloadStrDecoded);
+      return payload['session_id'] as String?;
+    } catch (e) {
+      logger.e('Failed to parse JWT for session_id: $e');
+      return null;
+    }
+  }
+
+  Future<List<UserSession>> getUserSessions() async {
+    try {
+      final response = await _client.rpc('get_user_sessions').withServerTimeout();
+      final data = response as List<dynamic>;
+      return data.map((json) => UserSession.fromJson(json)).toList();
+    } catch (e) {
+      logger.e('Error fetching user sessions: $e');
+      rethrow; // Rethrow so the UI can catch and display the error
+    }
+  }
+
+  Future<void> revokeSession(String sessionId) async {
+    try {
+      await _client.rpc('revoke_session', params: {'session_id': sessionId}).withServerTimeout();
+      logger.d('Session $sessionId revoked.');
+    } catch (e) {
+      logger.e('Error revoking session: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> revokeAllOtherSessions() async {
+    try {
+      await _client.rpc('revoke_all_other_sessions').withServerTimeout();
+      logger.d('All other sessions revoked.');
+    } catch (e) {
+      logger.e('Error revoking all other sessions: $e');
+      rethrow;
+    }
   }
 
   // --- Social Auth ---

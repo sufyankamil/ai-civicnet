@@ -126,7 +126,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
   Widget _buildCategoryChip(BuildContext context, {required String title, required IconData icon, required Color color}) {
     return InkWell(
-      onTap: () => context.push('/home?filter=$title'),
+      onTap: () => context.go('/home?filter=$title'),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         width: 85,
