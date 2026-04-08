@@ -350,7 +350,19 @@ class _VolunteeringCard extends StatelessWidget {
               // Title
               Text(
                 request.title,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: -0.3),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              // Description
+              Text(
+                request.description,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: isDark ? Colors.grey[400] : Colors.grey[700],
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -358,29 +370,49 @@ class _VolunteeringCard extends StatelessWidget {
               // Location & category
               Row(
                 children: [
-                  Icon(Icons.location_on_rounded, size: 16, color: Colors.grey[400]),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      request.locationName,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[500], fontWeight: FontWeight.w500),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  if (!request.locationName.toLowerCase().contains('current location')) ...[
+                    Icon(Icons.location_on_rounded, size: 14, color: AppColors.primaryLight.withValues(alpha: 0.6)),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        request.locationName,
+                        style: TextStyle(
+                          fontSize: 12, 
+                          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5), 
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                  ] else ...[
+                    Icon(Icons.near_me_rounded, size: 14, color: AppColors.primaryLight.withValues(alpha: 0.6)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Nearby',
+                      style: TextStyle(
+                        fontSize: 12, 
+                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5), 
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                  ],
+
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryLight.withValues(alpha: 0.1),
+                      color: AppColors.primaryLight.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.1)),
                     ),
                     child: Text(
                       request.category.toString().split('.').last.toUpperCase(),
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 9,
                         color: AppColors.primaryLight,
                         fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),

@@ -144,7 +144,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           const SizedBox(height: 48),
 
-          // VERSION FOOTER MATCHING IMAGE 1
           FutureBuilder<String>(
             future: VersionService.getFullVersionString(),
             builder: (context, snapshot) {
