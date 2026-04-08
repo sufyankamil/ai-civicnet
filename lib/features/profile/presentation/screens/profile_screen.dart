@@ -12,7 +12,6 @@ import '../components/milestone_gallery.dart';
 import '../components/impact_heatmap.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../../../../l10n/app_localizations.dart';
-import 'package:civic_net/features/chat/presentation/screens/support_chat_screen.dart';
 import 'package:civic_net/features/profile/presentation/components/slide_fade_transition.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -194,29 +193,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                           delay: const Duration(milliseconds: 1000),
                           child: _buildActionsSection(context, isDark, user),
                         ),
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 20),
                         Center(
-                          child: Column(
-                            children: [
-                              Text(
-                                '"Empowering communities, one connection at a time."',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.4),
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'CivicNet © ${DateTime.now().year} • v1.1.3',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.3),
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            '"Empowering communities, one connection at a time."',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 60),
@@ -378,18 +363,6 @@ class _ProfileScreenState extends State<ProfileScreen>
                     size: 22,
                   ),
                   onPressed: () => context.push('/ai-assistant'),
-                ),
-                IconButton(
-                  tooltip: AppLocalizations.of(context)!.editProfile,
-                  icon: Icon(
-                    Icons.edit_rounded,
-                    color: AppColors.primaryLight,
-                    size: 22,
-                  ),
-                  onPressed: () async {
-                    await context.push('/edit-profile');
-                    if (context.mounted) _refreshProfile();
-                  },
                 ),
               ],
             ),
@@ -729,17 +702,6 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Column(
               children: [
                 _buildActionTile(
-                  icon: Icons.edit_rounded,
-                  iconColor: AppColors.primaryLight,
-                  label: AppLocalizations.of(context)!.editProfile,
-                  onTap: () async {
-                    await context.push('/edit-profile');
-                    if (mounted) _refreshProfile();
-                  },
-                  isDark: isDark,
-                ),
-                _buildDivider(isDark),
-                _buildActionTile(
                   icon: Icons.inventory_2_outlined,
                   iconColor: Colors.teal,
                   label: 'My Assets',
@@ -869,30 +831,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                       );
                     },
                   ),
-                _buildDivider(isDark),
-                _buildActionTile(
-                  icon: Icons.shield_rounded,
-                  iconColor: AppColors.accentLight,
-                  label: AppLocalizations.of(context)!.commitmentSafety,
-                  onTap: () => context.push('/commitment'),
-                  isDark: isDark,
-                ),
-                _buildDivider(isDark),
                 _buildActionTile(
                   icon: Icons.settings_rounded,
                   iconColor: Colors.grey,
                   label: AppLocalizations.of(context)!.appSettings,
                   onTap: () => context.push('/settings'),
-                  isDark: isDark,
-                ),
-                _buildDivider(isDark),
-                _buildActionTile(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  iconColor: Colors.blueAccent,
-                  label: AppLocalizations.of(context)!.supportChat,
-                  onTap: () => Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(builder: (_) => const SupportChatScreen()),
-                  ),
                   isDark: isDark,
                 ),
                 _buildDivider(isDark),

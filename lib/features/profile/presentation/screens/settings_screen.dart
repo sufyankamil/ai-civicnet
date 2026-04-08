@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../components/custom_textfield.dart';
 import '../../../../services/theme_service.dart';
 import '../../../../theme/app_theme.dart';
 
 import 'package:get/get.dart';
-import '../../../../services/biometric_service.dart';
-import '../../../../services/supabase_service.dart';
-import '../../../../services/toast_service.dart';
 import '../../../../services/rating_service.dart';
 import '../viewmodels/settings_controller.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import '../../../../core/services/version_service.dart';
+import '../../../chat/presentation/screens/support_chat_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -32,135 +28,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _controller.loadBiometricSettings();
   }
 
-  Future<void> _showPasswordPromptDialog(BuildContext context) async {
-    final passwordController = TextEditingController();
-    bool isLoading = false;
-    final isIOS = Theme.of(context).platform == TargetPlatform.iOS || Theme.of(context).platform == TargetPlatform.macOS;
-    
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            void handleEnable() async {
-              final password = passwordController.text;
-              if (password.isEmpty) return;
-
-              setDialogState(() => isLoading = true);
-
-              // Re-authenticate to confirm password
-              final currentUser = SupabaseService().currentUser;
-              if (currentUser?.email == null) {
-                 setDialogState(() => isLoading = false);
-                 if (ctx.mounted) Navigator.pop(ctx);
-                 return;
-              }
-              
-              try {
-                // Attempt sign in to verify password
-                final response = await SupabaseService().signIn(currentUser!.email!, password);
-                
-                if (response.session != null) {
-                   // Verified! Encrypt and save
-                    await BiometricService().enableBiometrics(currentUser.email!, password);
-                    _controller.loadBiometricSettings();
-                   if (ctx.mounted) {
-                     Navigator.pop(ctx);
-                     ToastService.showSuccess(context, 'Biometric Login Enabled!'); // TODO: Localize Toast
-                   }
-                }
-              } catch (e) {
-                setDialogState(() => isLoading = false);
-                if (ctx.mounted) {
-                  ToastService.showError(ctx, 'Invalid password. Try again.'); // TODO: Localize Toast
-                }
-              }
-            }
-
-            final contentWidget = Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.verifyPassword,
-                  style: isIOS 
-                      ? const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel) 
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                isIOS
-                  ? Material( // Need material for styling
-                      color: Colors.transparent,
-                      child: CupertinoTextField(
-                        controller: passwordController,
-                        obscureText: true,
-                        placeholder: AppLocalizations.of(context)!.password,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        prefix: const Padding(
-                          padding: EdgeInsets.only(left: 12.0),
-                          child: Icon(CupertinoIcons.lock, color: Colors.grey, size: 20),
-                        ),
-                      ),
-                    )
-                  : CustomTextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      hintText: AppLocalizations.of(context)!.password,
-                      prefixIcon: Icons.lock_outline,
-                    ),
-              ],
-            );
-
-            if (isIOS) {
-              return CupertinoAlertDialog(
-                title: Text(AppLocalizations.of(context)!.confirmPassword),
-                content: Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: contentWidget,
-                ),
-                actions: [
-                  CupertinoDialogAction(
-                    onPressed: isLoading ? null : () => Navigator.pop(ctx),
-                    child: Text(AppLocalizations.of(context)!.cancel),
-                  ),
-                  CupertinoDialogAction(
-                    isDefaultAction: true,
-                    onPressed: isLoading ? null : handleEnable,
-                    child: isLoading 
-                      ? const CupertinoActivityIndicator() 
-                      : Text(AppLocalizations.of(context)!.enable),
-                  ),
-                ],
-              );
-            }
-
-            return AlertDialog(
-              title: Text(AppLocalizations.of(context)!.confirmPassword, style: TextStyle(fontWeight: FontWeight.bold)),
-              content: contentWidget,
-              actions: [
-                TextButton(
-                  onPressed: isLoading ? null : () => Navigator.pop(ctx),
-                  child: Text(AppLocalizations.of(context)!.cancel),
-                ),
-                ElevatedButton(
-                  onPressed: isLoading ? null : handleEnable,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryLight,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: isLoading 
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text(AppLocalizations.of(context)!.enable),
-                ),
-              ],
-            );
-          }
-        );
-      }
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -169,7 +36,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settingsTitle, style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(l10n.settingsTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -178,18 +45,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 100),
+        padding: EdgeInsets.fromLTRB(0, 16, 0, MediaQuery.of(context).padding.bottom + 100),
         children: [
+          // Theme settings - kept for convenience but cleaner
           _buildSectionHeader(l10n.appearance),
-          const SizedBox(height: 8),
           ListTile(
             title: Text(l10n.theme),
-            subtitle: Text(themeService.themeMode == ThemeMode.system 
-                ? l10n.system 
-                : themeService.themeMode == ThemeMode.light 
-                    ? l10n.light 
-                    : l10n.dark),
-            leading: const Icon(Icons.brightness_6, color: AppColors.primaryLight),
+            leading: const Icon(Icons.brightness_6_outlined, color: AppColors.primaryLight),
             trailing: DropdownButton<ThemeMode>(
               value: themeService.themeMode,
               underline: const SizedBox(),
@@ -205,139 +67,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-          const Divider(height: 32),
+          const Divider(),
 
-
+          // Support section - kept for utility
           _buildSectionHeader(l10n.support),
-          const SizedBox(height: 8),
           ListTile(
             title: Text(l10n.howItWorks),
-            subtitle: Text(
-              'Interactive data-flow canvas', // TODO: Localize if needed
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            leading: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient(Theme.of(context).brightness),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.route_rounded, color: Colors.white, size: 18),
-            ),
+            leading: const Icon(Icons.route_outlined, color: Colors.blueGrey),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/how-it-works'),
           ),
           ListTile(
             title: Text(l10n.faq),
-            leading: const Icon(Icons.help_outline, color: AppColors.primaryLight),
+            leading: const Icon(Icons.help_outline_rounded, color: Colors.blueGrey),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/faq'),
           ),
           ListTile(
             title: const Text('Rate CivicNet'),
-            subtitle: const Text('Support the community on App Store'),
-            leading: const Icon(Icons.star_rate_rounded, color: Colors.amber),
+            leading: const Icon(Icons.star_outline_rounded, color: Colors.amber),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => RatingService.openStore(),
           ),
-          const Divider(height: 32),
+          ListTile(
+            title: Text(l10n.supportChat),
+            leading: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.blueAccent),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(builder: (_) => const SupportChatScreen()),
+            ),
+          ),
+          const Divider(),
 
-          _buildSectionHeader(l10n.security),
-          Obx(() => _controller.isLoadingBiometrics && !_controller.isBiometricEnabled
-            ? const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: SizedBox(
-                   height: 24, width: 24, 
-                   child: CircularProgressIndicator(strokeWidth: 2)
-                ),
-              )
-            : SwitchListTile(
-            title: Text(l10n.biometricLogin),
-            subtitle: Text(l10n.biometricDescription),
-            value: _controller.isBiometricEnabled,
-            secondary: const Icon(Icons.fingerprint, color: AppColors.primaryLight),
-            onChanged: (bool value) async {
-              if (value) {
-                // Determine if device supports biometrics
-                final isAvailable = await BiometricService().isBiometricAvailable();
-                if (!isAvailable) {
-                  if (context.mounted) {
-                    ToastService.showError(context, 'Biometrics not available on this device.');
-                  }
-                  return;
-                }
-                
-                // Prompt user for their password since we can't get it from the session
-                if (context.mounted) {
-                  _showPasswordPromptDialog(context);
-                }
-              } else {
-                // Disable it
-                await _controller.toggleBiometrics(false);
-              }
-            },
-          )),
-          const Divider(height: 32),
-          
-          _buildSectionHeader('Privacy & Legal'),
+          const SizedBox(height: 16),
+
+          // NEW MODULES FROM IMAGE 1
+          ListTile(
+            leading: const Icon(Icons.people_alt_outlined, size: 28, color: Colors.blueGrey),
+            title: const Text(
+              'Refer friends',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/referral'),
+          ),
           const SizedBox(height: 8),
           ListTile(
-            title: Text(l10n.privacyPolicy),
-            leading: const Icon(Icons.privacy_tip_outlined, color: Colors.blueAccent),
+            leading: const Icon(Icons.person_outline, size: 28, color: Colors.blueGrey),
+            title: const Text(
+              'Manage CivicNet account',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/privacy-policy'),
+            onTap: () => context.push('/account-management'),
           ),
+          const SizedBox(height: 8),
           ListTile(
-            title: Text(l10n.termsAndConditions),
-            leading: const Icon(Icons.gavel_rounded, color: Colors.indigoAccent),
+            leading: const Icon(Icons.info_outline, size: 28, color: Colors.blueGrey),
+            title: const Text(
+              'Legal',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push('/terms-of-service'),
+            onTap: () => context.push('/legal'),
           ),
+          const SizedBox(height: 8),
           ListTile(
-            title: Text(l10n.communityCommitment),
-            leading: const Icon(Icons.volunteer_activism_rounded, color: Colors.pinkAccent),
+            leading: const Icon(Icons.shield_outlined, size: 28, color: AppColors.accentLight),
+            title: Text(
+              l10n.commitmentSafety,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/commitment'),
           ),
-          const Divider(height: 32),
 
-          _buildSectionHeader(l10n.account),
-          ListTile(
-            title: Text(l10n.deleteAccount, style: const TextStyle(color: Colors.red)),
-            leading: const Icon(Icons.person_remove, color: Colors.red),
-            trailing: const Icon(Icons.chevron_right, color: Colors.red),
-            onTap: () => context.push('/delete-account'),
-          ),
-          const Divider(height: 32),
+          const SizedBox(height: 48),
 
-          FutureBuilder<PackageInfo>(
-            future: PackageInfo.fromPlatform(),
+          // VERSION FOOTER MATCHING IMAGE 1
+          FutureBuilder<String>(
+            future: VersionService.getFullVersionString(),
             builder: (context, snapshot) {
-              final version = snapshot.data?.version ?? '1.1.3';
-              final build = snapshot.data?.buildNumber ?? '43';
-              return Center(
-                child: Column(
-                  children: [
-                    Text(
-                      '"Empowering communities, one connection at a time."',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                        color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.4),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'CivicNet © ${DateTime.now().year} • v$version ($build)',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.3),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
+              final version = snapshot.data ?? '1.1.5+46';
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'v$version',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.withValues(alpha: 0.6),
+                    letterSpacing: 0.5,
+                  ),
                 ),
               );
             },

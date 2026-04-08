@@ -69,6 +69,16 @@ class VersionService {
       logger.e('Error marking version as notified', error: e);
     }
   }
+
+  /// Returns the full version string (e.g. "1.1.5+46") for display.
+  static Future<String> getFullVersionString() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      return '${packageInfo.version}+${packageInfo.buildNumber}';
+    } catch (e) {
+      return '1.0.0';
+    }
+  }
 }
 
 class UpdateNote {
@@ -86,9 +96,14 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'VPN Awareness',
-      description: "CivicNet now detects active VPNs to ensure we accurately find help requests near your real location.",
-      icon: Icons.vpn_lock_rounded,
+      title: 'Advanced Device Security',
+      description: "Take absolute control over your account. Our new Active Sessions dashboard lets you see exactly where you are logged in.",
+      icon: Icons.security_rounded,
+    ),
+    UpdateNote(
+      title: 'Remote Revocation',
+      description: "Instantly secure your account by logging out unrecognized devices individually, or wipe out all other sessions with a single tap.",
+      icon: Icons.phonelink_erase_rounded,
     ),
   ];
 }

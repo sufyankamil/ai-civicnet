@@ -48,6 +48,10 @@ import '../../features/profile/presentation/screens/admin_panel_screen.dart';
 import '../../features/ai_assistant/presentation/screens/ai_assistant_screen.dart';
 import '../../features/assets/presentation/screens/my_assets_screen.dart';
 import '../../features/assets/presentation/screens/asset_discovery_screen.dart';
+import '../../features/profile/presentation/screens/account_management_screen.dart';
+import '../../features/profile/presentation/screens/referral_screen.dart';
+import '../../features/profile/presentation/screens/legal_screen.dart';
+import '../../features/profile/presentation/screens/active_sessions_screen.dart';
 import '../presentation/screens/not_found_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -335,6 +339,26 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/asset-library',
         builder: (context, state) => const AssetDiscoveryScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/account-management',
+        builder: (context, state) => const AccountManagementScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/referral',
+        builder: (context, state) => const ReferralScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/legal',
+        builder: (context, state) => const LegalScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/active-sessions',
+        builder: (context, state) => const ActiveSessionsScreen(),
       ),
     ],
   );

@@ -11,6 +11,9 @@ import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:civic_net/services/encryption_service.dart';
 import 'package:civic_net/services/ai_service.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'dart:io';
 
 class StartupService {
   static final StartupService _instance = StartupService._internal();
@@ -49,12 +52,16 @@ class StartupService {
       return true;
     };
 
-    // 3. Supabase
+    // 3. Supabase with Custom Device Info
+    final deviceInfo = await _getDeviceInfoString();
     await Supabase.initialize(
       url: dotenv.env['SUPABASE_URL']!,
       anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+      headers: {
+        'User-Agent': deviceInfo,
+      },
     );
-    logger.i('Supabase initialized (${stopwatch.elapsedMilliseconds}ms)');
+    logger.i('Supabase initialized with Device Info: $deviceInfo (${stopwatch.elapsedMilliseconds}ms)');
 
     // 4. Parallel Services (FirebaseService also calls NotificationService().initialize())
     await Future.wait([
@@ -67,5 +74,34 @@ class StartupService {
 
     logger.i('All Services initialized in ${stopwatch.elapsedMilliseconds}ms');
     _isInitialized = true;
+  }
+
+  /// Constructs a custom User-Agent string for device tracking:
+  /// "CivicNet/1.1.5 (iPhone 16 Pro; iOS 17.5)"
+  Future<String> _getDeviceInfoString() async {
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      final devicePlugin = DeviceInfoPlugin();
+      String deviceModel = 'Unknown Device';
+      String osSystem = 'Unknown OS';
+
+      if (Platform.isIOS) {
+        final iosInfo = await devicePlugin.iosInfo;
+        deviceModel = iosInfo.utsname.machine; // e.g., "iPhone15,3"
+        // Try to map machine name to commercial name if possible, or just use model
+        if (iosInfo.model.contains('iPhone')) {
+           deviceModel = iosInfo.name; // e.g. "iPhone 15 Pro"
+        }
+        osSystem = 'iOS ${iosInfo.systemVersion}';
+      } else if (Platform.isAndroid) {
+        final androidInfo = await devicePlugin.androidInfo;
+        deviceModel = '${androidInfo.manufacturer} ${androidInfo.model}';
+        osSystem = 'Android ${androidInfo.version.release}';
+      }
+
+      return 'CivicNet/${packageInfo.version} ($deviceModel; $osSystem)';
+    } catch (e) {
+      return 'CivicNet/1.0.0 (Unknown Device; Mobile)';
+    }
   }
 }

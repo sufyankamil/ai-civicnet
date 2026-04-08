@@ -391,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             selectedFilter: _viewModel.selectedFilter,
             onFilterSelected: _viewModel.onFilterSelected,
           )),
-          Obx(() => (_viewModel.communityBriefing.isNotEmpty || _viewModel.isBriefingLoading || _viewModel.topRecommendation != null)
+          Obx(() => ((_viewModel.communityBriefing.isNotEmpty || (_viewModel.isBriefingLoading && !_viewModel.briefingTimedOut)) || _viewModel.topRecommendation != null)
               ? _buildAiInsightSection(l10n) : const SizedBox.shrink()),
           Obx(() => _viewModel.guilds.isEmpty ? const SizedBox.shrink() : _buildGuildsSection(l10n)),
           HomeRequestsList(viewModel: _viewModel),
@@ -419,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             isLoading: _viewModel.isBriefingLoading,
             onRefresh: () => _viewModel.fetchCommunityBriefing(force: true),
           ),
-        if (_viewModel.topRecommendation != null && _viewModel.topRecommendation!.aiRelevanceScore > 0.6)
+        if (_viewModel.topRecommendation != null && _viewModel.topRecommendation!.aiRelevanceScore > 0.4)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: RequestCard(request: _viewModel.topRecommendation!),

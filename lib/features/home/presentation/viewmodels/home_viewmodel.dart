@@ -20,13 +20,19 @@ class HomeViewModel extends GetxController {
   final RxList<Poll> _polls = <Poll>[].obs;
   final RxList<Guild> _guilds = <Guild>[].obs;
   final RxBool _isLoading = false.obs;
+  final RxBool _hasFetchedOnce = false.obs;
+  final RxBool _fetchError = false.obs;
+  final RxBool _isTakingTooLong = false.obs;
   final Rxn<HelpRequestEntity> _topRecommendation = Rxn<HelpRequestEntity>();
   final RxString _searchQuery = ''.obs;
   final RxString _selectedFilter = 'All'.obs;
   final RxString _communityBriefing = ''.obs;
   final RxBool _isBriefingLoading = false.obs;
+  final RxBool _briefingTimedOut = false.obs;
   
   Timer? _debounce;
+  Timer? _longLoadTimer;
+  Timer? _briefingTimer;
   bool _isDisposed = false;
 
   List<HelpRequestEntity> get filteredRequests => _filteredRequests;
@@ -34,10 +40,14 @@ class HomeViewModel extends GetxController {
   List<Poll> get polls => _polls;
   List<Guild> get guilds => _guilds;
   bool get isLoading => _isLoading.value;
+  bool get hasFetchedOnce => _hasFetchedOnce.value;
+  bool get fetchError => _fetchError.value;
+  bool get isTakingTooLong => _isTakingTooLong.value;
   String get selectedFilter => _selectedFilter.value;
   String get searchQuery => _searchQuery.value;
   String get communityBriefing => _communityBriefing.value;
   bool get isBriefingLoading => _isBriefingLoading.value;
+  bool get briefingTimedOut => _briefingTimedOut.value;
 
   @override
   void onInit() {
@@ -99,6 +109,8 @@ class HomeViewModel extends GetxController {
   @override
   void onClose() {
     _debounce?.cancel();
+    _longLoadTimer?.cancel();
+    _briefingTimer?.cancel();
     _isDisposed = true;
     getHelpRequestsUseCase.repository.unsubscribeFromHelpRequests();
     super.onClose();
@@ -143,6 +155,19 @@ class HomeViewModel extends GetxController {
     }
 
     _isBriefingLoading.value = true;
+    _briefingTimedOut.value = false;
+    
+    // Set 10s timeout for briefing
+    _briefingTimer?.cancel();
+    _briefingTimer = Timer(const Duration(seconds: 10), () {
+      if (_isBriefingLoading.value && !_isDisposed) {
+        logger.w('AI Scribe: Briefing timed out after 10s');
+        _briefingTimedOut.value = true;
+        // We don't necessarily set isLoading to false, as it might still complete, 
+        // but the UI will hide it based on this flag.
+      }
+    });
+
     try {
       final user = await SupabaseService().getCurrentUserProfile();
       if (user == null) return;
@@ -170,24 +195,42 @@ class HomeViewModel extends GetxController {
     } catch (e) {
       logger.e('Error fetching community briefing: $e');
     } finally {
-      _isBriefingLoading.value = false;
+      if (!_isDisposed) {
+        _isBriefingLoading.value = false;
+        _briefingTimer?.cancel();
+      }
     }
   }
 
   Future<void> fetchRequests() async {
     _isLoading.value = true;
+    _fetchError.value = false;
+    _isTakingTooLong.value = false;
+
+    // Start timer for "taking too long" message
+    _longLoadTimer?.cancel();
+    _longLoadTimer = Timer(const Duration(seconds: 5), () {
+      if (_isLoading.value && !_isDisposed) {
+        _isTakingTooLong.value = true;
+      }
+    });
+
     final result = await getHelpRequestsUseCase(const NoParams());
     
     result.fold(
       (failure) {
+        _fetchError.value = true;
         // Handle failure silently or with toast (silently to not spam on refresh)
       },
       (requests) {
         _allRequests.value = requests;
+        _hasFetchedOnce.value = true;
         _applyFilters();
       },
     );
     _isLoading.value = false;
+    _longLoadTimer?.cancel();
+    _isTakingTooLong.value = false;
   }
 
   Future<void> fetchPolls() async {
