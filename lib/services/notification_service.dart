@@ -85,12 +85,14 @@ class NotificationService {
       },
     );
 
-    // Create the channel on the device (if a channel with an id already exists, it will be updated)
+    // Create the channel on the device
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel', // id
       'High Importance Notifications', // title
       description: 'This channel is used for important notifications.', // description
       importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
     );
 
     await flutterLocalNotificationsPlugin
@@ -121,6 +123,8 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     // iOS configuration
@@ -141,7 +145,7 @@ class NotificationService {
       title: title,
       body: body,
       notificationDetails: notificationDetails,
-      payload: data.toString(),
+      payload: jsonEncode(data),
     );
   }
 
@@ -159,6 +163,8 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     const NotificationDetails notificationDetails =
@@ -188,6 +194,8 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     const NotificationDetails notificationDetails =
@@ -217,6 +225,8 @@ class NotificationService {
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     const NotificationDetails notificationDetails =
