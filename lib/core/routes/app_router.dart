@@ -59,10 +59,11 @@ String lastAppLocation = '/';
 
 
 
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'root',
+);
+
 GoRouter createRouter({String initialLocation = '/'}) {
-  final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
-    debugLabel: 'root',
-  );
   final GlobalKey<NavigatorState> shellNavigatorKey = GlobalKey<NavigatorState>(
     debugLabel: 'shell',
   );

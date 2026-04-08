@@ -48,9 +48,15 @@ class NotificationsScreen extends StatelessWidget {
                   if (!notif.isRead) {
                      await SupabaseService().markNotificationAsRead(notif.id);
                   }
-                  if (notif.relatedId != null && notif.type == 'new_request') {
+                  if (notif.relatedId != null) {
                      if (context.mounted) {
-                        context.push('/request/${notif.relatedId}');
+                        if (notif.type == 'new_request') {
+                           context.push('/request/${notif.relatedId}');
+                        } else if (notif.type == 'chat_message' || notif.type == 'message' || notif.type == 'chat') {
+                           context.push('/chat-detail?id=${notif.relatedId}');
+                        } else if (notif.type == 'event') {
+                           context.push('/event/${notif.relatedId}');
+                        }
                      }
                   }
                 },

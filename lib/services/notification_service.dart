@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_init;
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:go_router/go_router.dart';
+import '../core/routes/app_router.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -57,7 +60,28 @@ class NotificationService {
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         logger.i('Notification tapped: ${response.payload}');
-        // Handle notification tap logic here (e.g., routing)
+        if (response.payload != null && response.payload!.isNotEmpty) {
+          try {
+            final payloadData = jsonDecode(response.payload!);
+            final type = payloadData['type'];
+            final relatedId = payloadData['related_id'];
+            
+            if (relatedId != null) {
+              final context = rootNavigatorKey.currentContext;
+              if (context != null && context.mounted) {
+                if (type == 'new_request') {
+                  context.push('/request/$relatedId');
+                } else if (type == 'chat_message' || type == 'message' || type == 'chat') {
+                  context.push('/chat-detail?id=$relatedId');
+                } else if (type == 'event') {
+                  context.push('/event/$relatedId');
+                }
+              }
+            }
+          } catch (e) {
+            logger.e('Failed to parse notification payload: $e');
+          }
+        }
       },
     );
 
