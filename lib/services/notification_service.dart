@@ -15,6 +15,10 @@ class NotificationService {
 
   bool _isInitialized = false;
 
+  /// Tracks the ID of the conversation currently being viewed by the user.
+  /// Used to suppress notifications for the active chat.
+  String? activeConversationId;
+
   Future<void> initialize() async {
     if (_isInitialized) return;
 
@@ -75,32 +79,46 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
+    final data = message.data;
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
+    
+    // Extract title and body from notification OR data fallback
+    final String? title = notification?.title ?? data['senderName'] ?? data['title'];
+    final String? body = notification?.body ?? data['content'] ?? data['body'];
 
-    if (notification != null && android != null) {
-      // Create a specific channel for this notification
-      const AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails(
-        'high_importance_channel', // id
-        'High Importance Notifications', // title
-        channelDescription: 'This channel is used for important notifications.',
-        importance: Importance.max,
-        priority: Priority.high,
-        icon: '@mipmap/launcher_icon',
-      );
+    if (title == null && body == null) return;
 
-      const NotificationDetails notificationDetails =
-          NotificationDetails(android: androidNotificationDetails);
+    // Android configuration
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'high_importance_channel', 
+      'High Importance Notifications',
+      channelDescription: 'This channel is used for important notifications.',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/launcher_icon',
+    );
 
-      await flutterLocalNotificationsPlugin.show(
-        id: notification.hashCode,
-        title: notification.title,
-        body: notification.body,
-        notificationDetails: notificationDetails,
-        payload: message.data.toString(),
-      );
-    }
+    // iOS configuration
+    const DarwinNotificationDetails darwinNotificationDetails =
+        DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: darwinNotificationDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      id: notification.hashCode != 0 ? notification.hashCode : DateTime.now().millisecond,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
+      payload: data.toString(),
+    );
   }
 
   Future<void> showLocalNotification({

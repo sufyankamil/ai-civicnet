@@ -96,14 +96,14 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Advanced Device Security',
-      description: "Take absolute control over your account. Our new Active Sessions dashboard lets you see exactly where you are logged in.",
-      icon: Icons.security_rounded,
+      title: 'Turbo Chat Sync',
+      description: "Experience lag-free conversations. We've upgraded the chat engine to deliver messages instantly, even on cellular networks.",
+      icon: Icons.bolt_rounded,
     ),
     UpdateNote(
-      title: 'Remote Revocation',
-      description: "Instantly secure your account by logging out unrecognized devices individually, or wipe out all other sessions with a single tap.",
-      icon: Icons.phonelink_erase_rounded,
+      title: 'Pro Notifications',
+      description: "Stay in the loop with readable notification previews and smarter badge updates that keep your inbox clean.",
+      icon: Icons.notifications_active_rounded,
     ),
   ];
 }

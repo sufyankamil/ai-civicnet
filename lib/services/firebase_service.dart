@@ -36,10 +36,12 @@ class FirebaseService {
     );
 
     // Set foreground notification presentation options for iOS
+    // We set these to false to prevent the OS from showing a banner automatically.
+    // This allows our custom logic in onMessage to decide whether to show a banner (manual control).
     await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
+      alert: false,
+      badge: false,
+      sound: false,
     );
 
     // Subscribe to global requests topic to receive new request notifications
@@ -150,10 +152,21 @@ class FirebaseService {
         logger.i('Got a message whilst in the foreground!');
         logger.d('Message data: ${message.data}');
 
-        if (message.notification != null) {
-          logger.i('Message also contained a notification: ${message.notification}');
-          // Show local notification for foreground messages
-          NotificationService().showNotification(message);
+        // Check if this is a chat message and if we are already viewing this conversation
+        final data = message.data;
+        final incomingConversationId = data['conversationId'] ?? data['conversation_id'];
+        final activeConversationId = NotificationService().activeConversationId;
+
+        if (incomingConversationId != null && 
+            activeConversationId != null && 
+            incomingConversationId == activeConversationId) {
+          logger.i('Suppressing notification for active conversation: $activeConversationId');
+          return;
+        }
+
+        // Show notification if it's there, or if it's a chat message with data only
+        if (message.notification != null || data['type'] == 'chat') {
+           NotificationService().showNotification(message);
         }
       });
 
