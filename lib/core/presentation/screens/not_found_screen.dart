@@ -97,28 +97,6 @@ class NotFoundScreen extends StatelessWidget {
                   ),
                 ),
                 
-                if (location != null && location!.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Text(
-                      'Path: $location',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontFamily: 'monospace',
-                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-                ],
-                
                 const SizedBox(height: 48),
                 
                 // Return Button

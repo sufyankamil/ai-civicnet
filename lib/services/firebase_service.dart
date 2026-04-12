@@ -6,6 +6,9 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:civic_net/features/home/presentation/viewmodels/home_viewmodel.dart';
+import 'package:civic_net/features/chat/presentation/viewmodels/chat_viewmodel.dart';
+import 'package:go_router/go_router.dart';
+import '../core/routes/app_router.dart';
 import 'dart:io';
 
 @pragma('vm:entry-point')
@@ -36,10 +39,11 @@ class FirebaseService {
     );
 
     // Set foreground notification presentation options for iOS
+    // Set these to false to prevent the OS from showing a banner automatically.
     await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
+      alert: false,
+      badge: false,
+      sound: false,
     );
 
     // Subscribe to global requests topic to receive new request notifications
@@ -150,10 +154,21 @@ class FirebaseService {
         logger.i('Got a message whilst in the foreground!');
         logger.d('Message data: ${message.data}');
 
-        if (message.notification != null) {
-          logger.i('Message also contained a notification: ${message.notification}');
-          // Show local notification for foreground messages
-          NotificationService().showNotification(message);
+        // Check if this is a chat message and if we are already viewing this conversation
+        final data = message.data;
+        final incomingConversationId = data['conversationId'] ?? data['conversation_id'];
+        final activeConversationId = NotificationService().activeConversationId;
+
+        if (incomingConversationId != null && 
+            activeConversationId != null && 
+            incomingConversationId == activeConversationId) {
+          logger.i('Suppressing notification for active conversation: $activeConversationId');
+          return;
+        }
+
+        // Show notification if it's there, or if it's a chat message with data only
+        if (message.notification != null || data['type'] == 'chat') {
+           NotificationService().showNotification(message);
         }
       });
 
@@ -161,7 +176,7 @@ class FirebaseService {
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         logger.i('A new onMessageOpenedApp event was published!');
         logger.d('Message background data: ${message.data}');
-        _refreshHomeFeed();
+        _handleFCMMessageRouting(message, isTerminated: false);
       });
 
       try {
@@ -169,13 +184,48 @@ class FirebaseService {
         if (initialMessage != null) {
           logger.i('App opened from terminated state by a notification');
           logger.d('Initial Message data: ${initialMessage.data}');
-          _refreshHomeFeed();
+          _handleFCMMessageRouting(initialMessage, isTerminated: true);
         }
       } catch (e) {
         logger.w('Timeout or error getting initial message: $e');
       }
     } else {
       logger.w('User declined or has not accepted permission');
+    }
+  }
+
+  void _handleFCMMessageRouting(RemoteMessage message, {required bool isTerminated}) {
+    _refreshHomeFeed();
+    
+    try {
+      if (Get.isRegistered<ChatViewModel>()) {
+         Get.find<ChatViewModel>().fetchConversations();
+      }
+    } catch (e) {
+      logger.e('Error refreshing conversations: $e');
+    }
+
+    final data = message.data;
+    final type = data['type']?.toString().toLowerCase() ?? '';
+    final relatedId = data['related_id'] ?? data['conversationId'] ?? data['conversation_id'] ?? data['id'] ?? data['requestId'] ?? data['eventId'];
+
+    if (relatedId != null) {
+      // Delay slightly to ensure Router is ready if booting from terminated state
+      final delay = isTerminated ? const Duration(seconds: 3) : const Duration(milliseconds: 300);
+      Future.delayed(delay, () {
+        final context = rootNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          if (type == 'new_request') {
+            context.push('/request/$relatedId');
+          } else if (type.contains('chat') || type.contains('message') || data.containsKey('conversationId') || data.containsKey('conversation_id')) {
+            context.push('/chat-detail?id=$relatedId');
+          } else if (type == 'event') {
+            context.push('/event/$relatedId');
+          }
+        } else {
+          logger.w('rootNavigatorKey context is null or not mounted when trying to route FCM.');
+        }
+      });
     }
   }
 

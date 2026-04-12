@@ -29,6 +29,7 @@ import 'features/onboarding/presentation/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'core/utils/custom_timeago.dart';
 
 SharedPreferences? prefsGlobal;
 
@@ -38,6 +39,7 @@ void main() {
   // Set up time ago localization
   timeago.setLocaleMessages('hi', timeago.HiMessages());
   timeago.setLocaleMessages('en', timeago.EnMessages());
+  timeago.setLocaleMessages('en_short', CustomEnShortMessages());
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
     _,

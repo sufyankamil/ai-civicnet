@@ -11,6 +11,7 @@ import '../viewmodels/chat_viewmodel.dart';
 import '../../../../services/supabase_service.dart';
 
 import '../../../../services/toast_service.dart';
+import '../../../../services/notification_service.dart';
 import '../../../../l10n/app_localizations.dart';
 
 import '../../../../theme/app_theme.dart';
@@ -59,6 +60,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _initSpeech();
     _checkBlockStatus();
     _viewModel.markConversationAsRead(widget.conversationId);
+    
+    // Set active conversation for notification suppression
+    NotificationService().activeConversationId = widget.conversationId;
     
     // Pre-fill initial message if provided
     if (widget.initialMessage != null && widget.initialMessage!.isNotEmpty) {
@@ -123,6 +127,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       setState(() => _isListening = false);
       _speech.stop();
     }
+  }
+
+  @override
+  void dispose() {
+    // Clear active conversation
+    NotificationService().activeConversationId = null;
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Widget _buildReplyPreview() {

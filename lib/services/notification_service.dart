@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_init;
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:go_router/go_router.dart';
+import '../core/routes/app_router.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -14,6 +17,10 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
+
+  /// Tracks the ID of the conversation currently being viewed by the user.
+  /// Used to suppress notifications for the active chat.
+  String? activeConversationId;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -53,16 +60,39 @@ class NotificationService {
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         logger.i('Notification tapped: ${response.payload}');
-        // Handle notification tap logic here (e.g., routing)
+        if (response.payload != null && response.payload!.isNotEmpty) {
+          try {
+            final payloadData = jsonDecode(response.payload!);
+            final type = payloadData['type'];
+            final relatedId = payloadData['related_id'];
+            
+            if (relatedId != null) {
+              final context = rootNavigatorKey.currentContext;
+              if (context != null && context.mounted) {
+                if (type == 'new_request') {
+                  context.push('/request/$relatedId');
+                } else if (type == 'chat_message' || type == 'message' || type == 'chat') {
+                  context.push('/chat-detail?id=$relatedId');
+                } else if (type == 'event') {
+                  context.push('/event/$relatedId');
+                }
+              }
+            }
+          } catch (e) {
+            logger.e('Failed to parse notification payload: $e');
+          }
+        }
       },
     );
 
-    // Create the channel on the device (if a channel with an id already exists, it will be updated)
+    // Create the channel on the device
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel', // id
       'High Importance Notifications', // title
       description: 'This channel is used for important notifications.', // description
       importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
     );
 
     await flutterLocalNotificationsPlugin
@@ -75,32 +105,48 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
+    final data = message.data;
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
+    
+    // Extract title and body from notification OR data fallback
+    final String? title = notification?.title ?? data['senderName'] ?? data['title'];
+    final String? body = notification?.body ?? data['content'] ?? data['body'];
 
-    if (notification != null && android != null) {
-      // Create a specific channel for this notification
-      const AndroidNotificationDetails androidNotificationDetails =
-          AndroidNotificationDetails(
-        'high_importance_channel', // id
-        'High Importance Notifications', // title
-        channelDescription: 'This channel is used for important notifications.',
-        importance: Importance.max,
-        priority: Priority.high,
-        icon: '@mipmap/launcher_icon',
-      );
+    if (title == null && body == null) return;
 
-      const NotificationDetails notificationDetails =
-          NotificationDetails(android: androidNotificationDetails);
+    // Android configuration
+    const AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'high_importance_channel', 
+      'High Importance Notifications',
+      channelDescription: 'This channel is used for important notifications.',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
+    );
 
-      await flutterLocalNotificationsPlugin.show(
-        id: notification.hashCode,
-        title: notification.title,
-        body: notification.body,
-        notificationDetails: notificationDetails,
-        payload: message.data.toString(),
-      );
-    }
+    // iOS configuration
+    const DarwinNotificationDetails darwinNotificationDetails =
+        DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: darwinNotificationDetails,
+    );
+
+    await flutterLocalNotificationsPlugin.show(
+      id: notification.hashCode != 0 ? notification.hashCode : DateTime.now().millisecond,
+      title: title,
+      body: body,
+      notificationDetails: notificationDetails,
+      payload: jsonEncode(data),
+    );
   }
 
   Future<void> showLocalNotification({
@@ -117,6 +163,8 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     const NotificationDetails notificationDetails =
@@ -146,6 +194,8 @@ class NotificationService {
       importance: Importance.max,
       priority: Priority.high,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     const NotificationDetails notificationDetails =
@@ -175,6 +225,8 @@ class NotificationService {
       importance: Importance.defaultImportance,
       priority: Priority.defaultPriority,
       icon: '@mipmap/launcher_icon',
+      playSound: true,
+      enableVibration: true,
     );
 
     const NotificationDetails notificationDetails =

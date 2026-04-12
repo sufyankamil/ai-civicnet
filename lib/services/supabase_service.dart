@@ -93,6 +93,7 @@ class SupabaseService {
             id: notification.id.hashCode,
             title: notification.title,
             body: notification.body,
+            payload: jsonEncode({'type': notification.type, 'related_id': notification.relatedId}),
           );
         }
     )
@@ -1034,27 +1035,34 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return const Stream.empty();
 
-    // We fetch the conversation to get its deletion timestamp, then fetch messages
+    DateTime? lastDeletedAt;
+    bool hasFetchedDeletion = false;
+
     return _client
-        .from('conversations')
+        .from('messages')
         .stream(primaryKey: ['id'])
-        .eq('id', conversationId)
-        .asyncMap((convList) async {
-          if (convList.isEmpty) return <Message>[];
-          final conv = convList.first;
-          final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
-          final String? lastDeletedAtStr = deletionTimestamps[user.id];
-          final DateTime? lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
-          
-          // Now fetch the actual messages
-          final messagesRes = await _client
-              .from('messages')
-              .select()
-              .eq('conversation_id', conversationId)
-              .order('created_at', ascending: true).withServerTimeout();
-          
-          final List<dynamic> data = messagesRes as List<dynamic>;
-          return data.map((json) {
+        .eq('conversation_id', conversationId)
+        .order('created_at', ascending: true)
+        .asyncMap((messagesList) async {
+          if (!hasFetchedDeletion) {
+            try {
+              final conv = await _client
+                  .from('conversations')
+                  .select('user_deletion_timestamps')
+                  .eq('id', conversationId)
+                  .maybeSingle();
+              if (conv != null) {
+                final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
+                final String? lastDeletedAtStr = deletionTimestamps[user.id];
+                lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
+              }
+            } catch (e) {
+              logger.e('Error fetching conversation deletion timestamp: $e');
+            }
+            hasFetchedDeletion = true;
+          }
+
+          return messagesList.map((json) {
             final mutableJson = Map<String, dynamic>.from(json);
             if (mutableJson['content'] != null) {
               mutableJson['content'] =
@@ -1063,7 +1071,7 @@ class SupabaseService {
             return Message.fromJson(mutableJson);
           }).where((m) {
             if (lastDeletedAt == null) return true;
-            return m.createdAt.isAfter(lastDeletedAt);
+            return m.createdAt.isAfter(lastDeletedAt!);
           }).toList();
         });
   }

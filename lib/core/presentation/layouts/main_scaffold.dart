@@ -228,7 +228,7 @@ class _MainScaffoldState extends State<MainScaffold> {
 
     Widget iconWidget = Icon(item.icon, color: color, size: 24);
 
-    if (item.index == 5 && Get.isRegistered<ChatViewModel>()) {
+    if (item.index == 3 && Get.isRegistered<ChatViewModel>()) {
       final chatVM = Get.find<ChatViewModel>();
       iconWidget = Stack(
         clipBehavior: Clip.none,

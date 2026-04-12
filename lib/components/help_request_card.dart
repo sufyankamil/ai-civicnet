@@ -92,18 +92,18 @@ class HelpRequestCard extends StatelessWidget {
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 16),
-              if (request.requesterId == SupabaseService().currentUserId)
+              if (request.requesterId == SupabaseService().currentUserId) ...[
                 Row(
                   children: [
-                    Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    Icon(Icons.near_me_rounded, size: 14, color: Theme.of(context).primaryColor.withValues(alpha: 0.6)),
                     const SizedBox(width: 4),
                     Text(
-                      request.locationName,
-                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      'Nearby',
+                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                     ),
                   ],
                 )
-              else
+              ] else
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -121,9 +121,9 @@ class HelpRequestCard extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (request.locationName != 'Current Location') const SizedBox(height: 4),
+                          if (!request.locationName.toLowerCase().contains('current location')) const SizedBox(height: 4),
                         ],
-                        if (request.locationName != 'Current Location')
+                        if (!request.locationName.toLowerCase().contains('current location'))
                           Row(
                             children: [
                               Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
@@ -131,6 +131,17 @@ class HelpRequestCard extends StatelessWidget {
                               Text(
                                 request.locationName,
                                 style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              ),
+                            ],
+                          )
+                        else
+                          Row(
+                            children: [
+                              Icon(Icons.near_me_rounded, size: 14, color: Theme.of(context).primaryColor.withValues(alpha: 0.6)),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Nearby',
+                                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
                               ),
                             ],
                           ),
