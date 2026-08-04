@@ -53,3 +53,7 @@ GoogleService-Info.plist
 .env*
 android/local.properties
 ios/Flutter/Secrets.xcconfig
+
+# Local TestFlight secret encoding inbox (never commit)
+secrets_inbox/
+scripts/
