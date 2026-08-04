@@ -59,10 +59,6 @@ jobs:
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
 
-      - name: Create iOS Secrets.xcconfig
-        run: |
-          echo "MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" > ios/Flutter/Secrets.xcconfig
-
       - name: Restore GoogleService-Info.plist
         run: |
           echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}" | base64 --decode > ios/GoogleService-Info.plist
@@ -99,6 +95,16 @@ jobs:
           echo "PROVISIONING_PROFILE_NAME=$PP_NAME" >> "$GITHUB_ENV"
           echo "Installed profile: $PP_NAME ($PP_UUID)"
 
+      - name: Create iOS Secrets.xcconfig
+        run: |
+          {
+            echo "MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}"
+            echo "CODE_SIGN_STYLE=Manual"
+            echo "CODE_SIGN_IDENTITY=Apple Distribution"
+            echo "DEVELOPMENT_TEAM=5S8C3WYSVK"
+            echo "PROVISIONING_PROFILE_SPECIFIER=${PROVISIONING_PROFILE_NAME}"
+          } > ios/Flutter/Secrets.xcconfig
+
       - name: Write ExportOptions.plist
         run: |
           /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:com.sufyankamil.communityNet ${PROVISIONING_PROFILE_NAME}" ios/ExportOptions.plist
@@ -121,12 +127,7 @@ jobs:
           flutter build ipa \
             --release \
             --build-number="${{ github.run_number }}" \
-            --export-options-plist=ios/ExportOptions.plist \
-            -- \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
-            DEVELOPMENT_TEAM=5S8C3WYSVK \
-            PROVISIONING_PROFILE_SPECIFIER="${PROVISIONING_PROFILE_NAME}"
+            --export-options-plist=ios/ExportOptions.plist
 
       - name: Prepare App Store Connect API key
         run: |
