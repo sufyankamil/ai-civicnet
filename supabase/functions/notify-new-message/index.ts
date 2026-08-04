@@ -1,6 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { JWT } from 'npm:google-auth-library@9'
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { createClient } from '@supabase/supabase-js'
 
 interface WebhookPayload {
   type: 'INSERT' | 'UPDATE' | 'DELETE'

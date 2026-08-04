@@ -32,10 +32,10 @@ You can remove the `ENCRYPTION_KEY` secret from the Edge Function environment af
 | Secret | Client? | Notes |
 |--------|---------|--------|
 | `SUPABASE_ANON_KEY` | Yes | Expected; protected by RLS |
-| `ENCRYPTION_KEY` | Temporary | Legacy dual-read only; remove from `.env` / assets after migration |
+| `ENCRYPTION_KEY` | **No** | Removed — chat uses per-conversation keys only |
 | Service role key | **Never** | Server/Edge only |
 
-After all users have opened the new app and new messages use per-conversation keys, delete `ENCRYPTION_KEY` from `.env` and from any Edge secrets. The app will still decrypt new messages without it.
+Do not put `ENCRYPTION_KEY` back in `.env` or app assets. Old messages encrypted with the former global key will not decrypt; new messages use per-conversation keys.
 
 ## 4. Smoke checks
 
