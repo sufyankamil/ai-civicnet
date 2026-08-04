@@ -3,7 +3,6 @@ import 'dart:math' show cos, sin, sqrt, asin;
 import 'dart:io';
 import 'dart:convert';
 
-
 import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
@@ -18,6 +17,10 @@ import '../features/request/domain/entities/help_request_entity.dart';
 
 import '../features/events/models/event_comment.dart';
 import '../core/utils/timeout_extension.dart';
+
+/// Safe profile columns for other users (no lat/lng/role/report_count).
+const String _kSafeProfileColumns =
+    'id, name, avatar_url, skills, karma_level, rating, help_count, points, rating_count, is_public_profile, show_neighborhood, show_impact_stats, show_achievements, updated_at';
 
 // Top-level function for isolate
 List<HelpRequest> parseHelpRequests(List<dynamic> data) {
@@ -39,9 +42,12 @@ class SupabaseService {
       if (data.session != null) {
         _setupNotificationListener();
         initVoteCache(); // Initialize the vote cache on login
+        ensureChatIdentityKeys();
       } else {
         _notificationChannel?.unsubscribe();
         _notificationChannel = null;
+        _conversationKeyCache.clear();
+        _conversationWrapCache.clear();
       }
     });
   }
@@ -49,6 +55,10 @@ class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
   RealtimeChannel? _notificationChannel;
   final Set<String> _userVotedIds = {};
+  /// In-memory cache of unwrapped conversation AES keys.
+  final Map<String, Uint8List> _conversationKeyCache = {};
+  /// Latest wrapped_key string successfully unwrapped (detect peer rekeys).
+  final Map<String, String> _conversationWrapCache = {};
 
   Future<void> initVoteCache() async {
     final user = _client.auth.currentUser;
@@ -111,19 +121,40 @@ class SupabaseService {
       password: password,
       data: {'name': name},
     ).withServerTimeout();
+    if (response.session != null) {
+      await ensureChatIdentityKeys();
+    }
     return response;
   }
 
   Future<AuthResponse> signIn(String email, String password) async {
-    return await _client.auth.signInWithPassword(
+    final response = await _client.auth.signInWithPassword(
       email: email,
       password: password,
     ).withServerTimeout();
+    await ensureChatIdentityKeys();
+    return response;
   }
 
   Future<void> signOut() async {
     await _client.auth.signOut().withServerTimeout();
+    _conversationKeyCache.clear();
+    _conversationWrapCache.clear();
     await CacheService().clear();
+  }
+
+  /// Provisions RSA identity keys and uploads public wrap key to the profile.
+  Future<void> ensureChatIdentityKeys() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+    try {
+      final pubPem = await EncryptionService().ensureIdentityKeys();
+      await _client.from('profiles').update({
+        'public_wrap_key': pubPem,
+      }).eq('id', user.id).withServerTimeout();
+    } catch (e) {
+      logger.e('Failed to ensure chat identity keys: $e');
+    }
   }
 
   Future<void> sendPasswordResetEmail(String email) async {
@@ -276,7 +307,7 @@ class SupabaseService {
     try {
       final query = _client
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url, lat, lng)')
+          .select('*, profiles:requester_id(name, avatar_url)')
           .order('created_at', ascending: false);
 
       final response = await query.withServerTimeout();
@@ -408,11 +439,23 @@ class SupabaseService {
 
   Future<User?> getUserProfile(String userId) async {
     try {
-      final data = await _client
-          .from('profiles')
-          .select()
-          .eq('id', userId)
-          .single().withServerTimeout();
+      final currentId = _client.auth.currentUser?.id;
+      final Map<String, dynamic> data;
+      if (currentId != null && currentId == userId) {
+        data = await _client
+            .from('profiles')
+            .select()
+            .eq('id', userId)
+            .single()
+            .withServerTimeout();
+      } else {
+        data = await _client
+            .from('profiles_safe')
+            .select(_kSafeProfileColumns)
+            .eq('id', userId)
+            .single()
+            .withServerTimeout();
+      }
 
       // Cache profile
       await CacheService().put('user_profile_$userId', data);
@@ -507,30 +550,14 @@ class SupabaseService {
 
   Future<List<User>> getActiveNeighbors({double? centerLat, double? centerLng, double? radiusKm}) async {
     try {
-      final response = await _client
-          .from('profiles')
-          .select()
-          .eq('show_neighborhood', true)
-          .not('lat', 'is', null)
-          .not('lng', 'is', null)
-          .withServerTimeout();
+      final response = await _client.rpc('get_active_neighbors', params: {
+        'center_lat': centerLat,
+        'center_lng': centerLng,
+        'radius_km': radiusKm,
+      }).withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
-      List<User> neighbors = data.map((json) => User.fromMap(json)).toList();
-
-      final currentUserProfile = await getCurrentUserProfile();
-      final lat = centerLat ?? currentUserProfile?.lat;
-      final lng = centerLng ?? currentUserProfile?.lng;
-
-      if (lat != null && lng != null && lat != 0 && lng != 0 && radiusKm != null) {
-        neighbors = neighbors.where((n) {
-          if (n.lat == null || n.lng == null) return false;
-          double dist = _calculateDistance(n.lat!, n.lng!, lat, lng);
-          return dist <= radiusKm;
-        }).toList();
-      }
-
-      return neighbors;
+      return data.map((json) => User.fromMap(Map<String, dynamic>.from(json))).toList();
     } catch (e) {
       logger.e('Error fetching active neighbors: $e');
       return [];
@@ -811,7 +838,7 @@ class SupabaseService {
 
   Future<List<CommunityAsset>> getCommunityAssets({double? centerLat, double? centerLng, double? radiusKm, String? category}) async {
     try {
-      var query = _client.from('community_assets').select('*, profiles:owner_id(name, avatar_url, lat, lng)');
+      var query = _client.from('community_assets').select('*, profiles:owner_id(name, avatar_url)');
       
       if (category != null && category != 'All') {
         query = query.eq('category', category);
@@ -854,12 +881,204 @@ class SupabaseService {
 
   // --- Chat ---
 
+  Future<String?> _fetchWrapKey(String userId) async {
+    try {
+      final result = await _client.rpc('get_public_wrap_key', params: {
+        'target_id': userId,
+      }).withServerTimeout();
+      if (result is String && result.isNotEmpty) return result;
+      return null;
+    } catch (e) {
+      logger.e('Error fetching wrap key for $userId: $e');
+      return null;
+    }
+  }
+
+  Future<List<String>> _conversationParticipants(String conversationId) async {
+    final conv = await _client
+        .from('conversations')
+        .select('participant_ids')
+        .eq('id', conversationId)
+        .maybeSingle()
+        .withServerTimeout();
+    return List<String>.from(conv?['participant_ids'] ?? []);
+  }
+
+  /// Syncs the latest wrap from DB. Set [allowRekey] only when sending.
+  Future<Uint8List?> _ensureConversationKeys(String conversationId,
+      {List<String>? participantIds, bool allowRekey = false}) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    await ensureChatIdentityKeys();
+
+    try {
+      final existing = await _client
+          .from('conversation_keys')
+          .select('wrapped_key')
+          .eq('conversation_id', conversationId)
+          .eq('user_id', user.id)
+          .maybeSingle()
+          .withServerTimeout();
+
+      final wrapped = existing?['wrapped_key'] as String?;
+      if (wrapped != null && wrapped.isNotEmpty) {
+        if (_conversationWrapCache[conversationId] == wrapped &&
+            _conversationKeyCache.containsKey(conversationId)) {
+          if (allowRekey) {
+            await _rewrapMissingParticipants(conversationId, participantIds);
+          }
+          return _conversationKeyCache[conversationId];
+        }
+
+        try {
+          final key = EncryptionService().unwrapConversationKey(wrapped);
+          _conversationWrapCache[conversationId] = wrapped;
+          _conversationKeyCache[conversationId] = key;
+          if (allowRekey) {
+            await _rewrapMissingParticipants(conversationId, participantIds);
+          }
+          return key;
+        } catch (e) {
+          logger.w(
+              'Unwrap failed for $conversationId (device key mismatch?). $e');
+          _conversationKeyCache.remove(conversationId);
+          _conversationWrapCache.remove(conversationId);
+          if (!allowRekey) return null;
+        }
+      } else if (!allowRekey) {
+        return null;
+      }
+
+      if (!allowRekey) return null;
+
+      final participants =
+          participantIds ?? await _conversationParticipants(conversationId);
+      return await _distributeConversationKey(conversationId, participants);
+    } catch (e) {
+      logger.e('Error ensuring conversation keys: $e');
+      return null;
+    }
+  }
+
+  Future<Uint8List?> _distributeConversationKey(
+      String conversationId, List<String> participants) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return null;
+
+    await ensureChatIdentityKeys();
+    final crypto = EncryptionService();
+    final myPub = crypto.publicWrapKeyPem;
+    if (myPub == null || myPub.isEmpty) {
+      logger.e('Missing local public wrap key after ensureChatIdentityKeys');
+      return null;
+    }
+
+    final convKey = crypto.generateConversationKey();
+    final pairs = <Map<String, String>>[
+      {
+        'user_id': user.id,
+        'wrapped_key': crypto.wrapConversationKey(convKey, myPub),
+      },
+    ];
+
+    for (final pid in participants) {
+      if (pid == user.id) continue;
+      final pubPem = await _fetchWrapKey(pid);
+      if (pubPem == null || pubPem.isEmpty) continue;
+      pairs.add({
+        'user_id': pid,
+        'wrapped_key': crypto.wrapConversationKey(convKey, pubPem),
+      });
+    }
+
+    try {
+      await _client.from('conversation_key_claims').insert({
+        'conversation_id': conversationId,
+        'claimer_id': user.id,
+      }).withServerTimeout();
+    } catch (_) {}
+
+    for (final pair in pairs) {
+      await _client.rpc('upsert_conversation_key', params: {
+        'p_conversation_id': conversationId,
+        'p_user_id': pair['user_id'],
+        'p_wrapped_key': pair['wrapped_key'],
+      }).withServerTimeout();
+    }
+
+    final myWrap = pairs.firstWhere((p) => p['user_id'] == user.id);
+    _conversationWrapCache[conversationId] = myWrap['wrapped_key']!;
+    _conversationKeyCache[conversationId] = convKey;
+    return convKey;
+  }
+
+  Future<void> _rewrapMissingParticipants(
+      String conversationId, List<String>? participantIds) async {
+    final user = _client.auth.currentUser;
+    final convKey = _conversationKeyCache[conversationId];
+    if (user == null || convKey == null) return;
+
+    try {
+      final participants =
+          participantIds ?? await _conversationParticipants(conversationId);
+
+      final existingIds = await _client.rpc('conversation_key_user_ids', params: {
+        'cid': conversationId,
+      }).withServerTimeout();
+      final haveKeys = <String>{
+        if (existingIds is List)
+          ...existingIds.map((e) => e.toString())
+        else if (existingIds is String)
+          ...existingIds
+              .replaceAll('{', '')
+              .replaceAll('}', '')
+              .split(',')
+              .where((s) => s.isNotEmpty)
+              .map((s) => s.trim()),
+      };
+
+      final crypto = EncryptionService();
+      for (final pid in participants) {
+        if (haveKeys.contains(pid)) continue;
+        final pubPem = await _fetchWrapKey(pid);
+        if (pubPem == null || pubPem.isEmpty) continue;
+        await _client.rpc('upsert_conversation_key', params: {
+          'p_conversation_id': conversationId,
+          'p_user_id': pid,
+          'p_wrapped_key': crypto.wrapConversationKey(convKey, pubPem),
+        }).withServerTimeout();
+      }
+    } catch (e) {
+      logger.e('Error rewrapping conversation keys: $e');
+    }
+  }
+
+  bool _looksLikeCiphertext(String value) {
+    final compact = value.replaceAll(RegExp(r'\s'), '');
+    if (compact.length < 24) return false;
+    return RegExp(r'^[A-Za-z0-9+/]+=*$').hasMatch(compact);
+  }
+
+  String _decryptMessageContent(String? content, Uint8List? convKey) {
+    if (content == null || content.isEmpty) return '';
+    final decrypted =
+        EncryptionService().decryptPayload(content, conversationKey: convKey);
+    if (_looksLikeCiphertext(content) &&
+        (decrypted == content || _looksLikeCiphertext(decrypted))) {
+      return '[Encrypted message]';
+    }
+    return decrypted;
+  }
+
   /// Creates a conversation if one doesn't exist, or returns the existing one.
   Future<String> createConversation(String otherUserId) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not logged in');
 
     try {
+      await ensureChatIdentityKeys();
+
       final myConversations = await _client
           .from('conversations')
           .select()
@@ -868,7 +1087,10 @@ class SupabaseService {
       for (final conv in myConversations) {
         final participants = List<String>.from(conv['participant_ids']);
         if (participants.contains(otherUserId)) {
-          return conv['id'];
+          final id = conv['id'] as String;
+          await _ensureConversationKeys(id,
+              participantIds: participants, allowRekey: true);
+          return id;
         }
       }
 
@@ -876,7 +1098,10 @@ class SupabaseService {
         'participant_ids': [user.id, otherUserId]
       }).select().single().withServerTimeout();
 
-      return response['id'];
+      final conversationId = response['id'] as String;
+      await _ensureConversationKeys(conversationId,
+          participantIds: [user.id, otherUserId], allowRekey: true);
+      return conversationId;
     } catch (e) {
       logger.e('Error creating conversation: $e');
       rethrow;
@@ -888,6 +1113,8 @@ class SupabaseService {
     if (user == null) return [];
 
     try {
+      await ensureChatIdentityKeys();
+
       final response = await _client
           .from('conversations')
           .select()
@@ -911,10 +1138,17 @@ class SupabaseService {
         final String? lastDeletedAtStr = deletionTimestamps[user.id];
         final DateTime? lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
 
-        final profile = await _client.from('profiles').select().eq(
-            'id', otherId).maybeSingle().withServerTimeout();
+        final profile = await _client
+            .from('profiles_safe')
+            .select('name, avatar_url')
+            .eq('id', otherId)
+            .maybeSingle()
+            .withServerTimeout();
         final name = profile?['name'] ?? 'Unknown User';
         final avatar = profile?['avatar_url'] ?? '';
+
+        final convKey = await _ensureConversationKeys(conv['id'],
+            participantIds: participants);
 
         // Only fetch messages sent AFTER the last deletion timestamp
         var lastMsgQuery = _client
@@ -950,14 +1184,22 @@ class SupabaseService {
         final DateTime messageTime = DateTime.tryParse(dateString ?? '') ??
             DateTime.now();
 
+        String lastMessagePreview = 'No messages yet';
+        if (lastMsgRes != null) {
+          if (lastMsgRes['is_deleted'] == true) {
+            lastMessagePreview = 'This message was deleted';
+          } else if (lastMsgRes['content'] != null) {
+            lastMessagePreview =
+                _decryptMessageContent(lastMsgRes['content'], convKey);
+          }
+        }
+
         conversations.add(ChatConversation(
           id: conv['id'].toString(),
           otherUserId: otherId,
           otherUserName: name,
           otherUserAvatar: sanitizeAvatarUrl(avatar),
-          lastMessage: lastMsgRes != null && lastMsgRes['content'] != null
-              ? EncryptionService().decryptPayload(lastMsgRes['content'])
-              : 'No messages yet',
+          lastMessage: lastMessagePreview,
           lastMessageTime: messageTime,
           unreadCount: unreadCount,
         ));
@@ -1037,6 +1279,7 @@ class SupabaseService {
 
     DateTime? lastDeletedAt;
     bool hasFetchedDeletion = false;
+    Uint8List? convKey;
 
     return _client
         .from('messages')
@@ -1062,14 +1305,37 @@ class SupabaseService {
             hasFetchedDeletion = true;
           }
 
-          return messagesList.map((json) {
+          // Always sync wrap from DB so peer rekeys are picked up.
+          convKey = await _ensureConversationKeys(conversationId, allowRekey: false);
+
+          var decrypted = messagesList.map((json) {
             final mutableJson = Map<String, dynamic>.from(json);
             if (mutableJson['content'] != null) {
               mutableJson['content'] =
-                  EncryptionService().decryptPayload(mutableJson['content']);
+                  _decryptMessageContent(mutableJson['content'], convKey);
             }
             return Message.fromJson(mutableJson);
-          }).where((m) {
+          }).toList();
+
+          // If anything still looks encrypted, force-refresh wrap once more.
+          final stillEncrypted = decrypted.any((m) =>
+              !m.isDeleted && m.content == '[Encrypted message]');
+          if (stillEncrypted) {
+            _conversationWrapCache.remove(conversationId);
+            _conversationKeyCache.remove(conversationId);
+            convKey =
+                await _ensureConversationKeys(conversationId, allowRekey: false);
+            decrypted = messagesList.map((json) {
+              final mutableJson = Map<String, dynamic>.from(json);
+              if (mutableJson['content'] != null) {
+                mutableJson['content'] =
+                    _decryptMessageContent(mutableJson['content'], convKey);
+              }
+              return Message.fromJson(mutableJson);
+            }).toList();
+          }
+
+          return decrypted.where((m) {
             if (lastDeletedAt == null) return true;
             return m.createdAt.isAfter(lastDeletedAt!);
           }).toList();
@@ -1081,7 +1347,15 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
-    final encryptedContent = EncryptionService().encryptPayload(content);
+    final convKey =
+        await _ensureConversationKeys(conversationId, allowRekey: true);
+    if (convKey == null) {
+      throw Exception(
+          'Could not set up secure chat keys. Pull to refresh or reopen the chat, then try again.');
+    }
+
+    final encryptedContent =
+        EncryptionService().encryptWithKey(content, convKey);
 
     await _client.from('messages').insert({
       'conversation_id': conversationId,
@@ -1100,10 +1374,59 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
-    await _client.from('messages').update({
+    final msg = await _client
+        .from('messages')
+        .select('conversation_id')
+        .eq('id', messageId)
+        .eq('sender_id', user.id)
+        .maybeSingle()
+        .withServerTimeout();
+
+    final conversationId = msg?['conversation_id'] as String?;
+    final convKey = conversationId != null
+        ? await _ensureConversationKeys(conversationId, allowRekey: true)
+        : null;
+
+    final deletedContent = convKey != null
+        ? EncryptionService().encryptWithKey('This message was deleted', convKey)
+        : 'This message was deleted';
+
+    final updated = await _client.from('messages').update({
       'is_deleted': true,
-      'content': EncryptionService().encryptPayload('This message was deleted'),
-    }).eq('id', messageId).eq('sender_id', user.id).withServerTimeout();
+      'content': deletedContent,
+    }).eq('id', messageId).eq('sender_id', user.id).select('id').withServerTimeout();
+
+    if ((updated as List).isEmpty) {
+      throw Exception(
+          'Failed to delete message. Check messages UPDATE RLS policy.');
+    }
+
+    if (conversationId != null) {
+      await _client.from('conversations').update({
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', conversationId).withServerTimeout();
+    }
+  }
+
+  /// Upload a chat attachment under `{conversationId}/{filename}` and return a signed URL.
+  Future<String> uploadChatAttachment(
+      String conversationId, File file, String fileName) async {
+    final path = '$conversationId/$fileName';
+    await _client.storage.from('chat-attachments').upload(
+          path,
+          file,
+          fileOptions: const FileOptions(upsert: true),
+        );
+    return getChatAttachmentSignedUrl(path);
+  }
+
+  /// Creates a time-limited signed URL for a private chat attachment path.
+  Future<String> getChatAttachmentSignedUrl(String path,
+      {int expiresInSeconds = 3600}) async {
+    final result = await _client.storage
+        .from('chat-attachments')
+        .createSignedUrl(path, expiresInSeconds);
+    return result;
   }
 
   // --- Interest / Applications ---

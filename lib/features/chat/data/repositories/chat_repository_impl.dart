@@ -46,7 +46,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return Right(entities);
     } catch (e) {
       logger.e('Failed to get conversations', error: e);
-      return Left(ServerFailure('Failed to load conversations: \$e'));
+      return Left(ServerFailure('Failed to load conversations: $e'));
     }
   }
 
@@ -64,7 +64,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return const Right(null);
     } catch (e) {
       logger.e('Failed to send message', error: e);
-      return Left(ServerFailure('Failed to send message: \$e'));
+      return Left(ServerFailure('Failed to send message: $e'));
     }
   }
 
@@ -75,7 +75,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return const Right(null);
     } catch (e) {
       logger.e('Failed to delete message', error: e);
-      return Left(ServerFailure('Failed to delete message: \$e'));
+      return Left(ServerFailure('Failed to delete message: $e'));
     }
   }
 
@@ -86,7 +86,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return const Right(null);
     } catch (e) {
       logger.e('Failed to mark conversation as read', error: e);
-      return Left(ServerFailure('Failed to mark conversation as read: \$e'));
+      return Left(ServerFailure('Failed to mark conversation as read: $e'));
     }
   }
 
@@ -96,7 +96,7 @@ class ChatRepositoryImpl implements ChatRepository {
       await remoteDataSource.blockUser(userId);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure('Failed to block user: \$e'));
+      return Left(ServerFailure('Failed to block user: $e'));
     }
   }
 
@@ -106,7 +106,7 @@ class ChatRepositoryImpl implements ChatRepository {
       await remoteDataSource.unblockUser(userId);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure('Failed to unblock user: \$e'));
+      return Left(ServerFailure('Failed to unblock user: $e'));
     }
   }
 
@@ -116,7 +116,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final ids = await remoteDataSource.getBlockedUserIds();
       return Right(ids);
     } catch (e) {
-      return Left(ServerFailure('Failed to get blocked user ids: \$e'));
+      return Left(ServerFailure('Failed to get blocked user ids: $e'));
     }
   }
 
@@ -126,7 +126,7 @@ class ChatRepositoryImpl implements ChatRepository {
       final blocked = await remoteDataSource.isUserBlocked(userId);
       return Right(blocked);
     } catch (e) {
-      return Left(ServerFailure('Failed to check if user is blocked: \$e'));
+      return Left(ServerFailure('Failed to check if user is blocked: $e'));
     }
   }
 
@@ -136,7 +136,7 @@ class ChatRepositoryImpl implements ChatRepository {
       await remoteDataSource.reportUser(userId, reason);
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure('Failed to report user: \$e'));
+      return Left(ServerFailure('Failed to report user: $e'));
     }
   }
 

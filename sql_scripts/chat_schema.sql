@@ -55,11 +55,19 @@ create policy "Users can insert messages in their conversations"
     )
   );
 
--- Storage for Chat Attachments
-insert into storage.buckets (id, name, public) 
-values ('chat-attachments', 'chat-attachments', true)
-on conflict (id) do nothing;
+-- Senders can soft-delete / edit their own messages
+drop policy if exists "Users can update their own messages" on messages;
+create policy "Users can update their own messages"
+  on messages for update
+  using (auth.uid() = sender_id)
+  with check (auth.uid() = sender_id);
 
+-- Storage for Chat Attachments (private — participants use signed URLs)
+insert into storage.buckets (id, name, public) 
+values ('chat-attachments', 'chat-attachments', false)
+on conflict (id) do update set public = false;
+
+drop policy if exists "Authenticated users can upload chat attachments" on storage.objects;
 create policy "Authenticated users can upload chat attachments"
   on storage.objects for insert
   with check (
@@ -67,6 +75,12 @@ create policy "Authenticated users can upload chat attachments"
     and auth.role() = 'authenticated'
   );
 
-create policy "Public can view chat attachments"
+drop policy if exists "Public can view chat attachments" on storage.objects;
+drop policy if exists "Participants can view chat attachments" on storage.objects;
+-- Prefer security_hardening.sql policies (path scoped by conversation_id).
+create policy "Participants can view chat attachments"
   on storage.objects for select
-  using (bucket_id = 'chat-attachments');
+  using (
+    bucket_id = 'chat-attachments'
+    and auth.role() = 'authenticated'
+  );
