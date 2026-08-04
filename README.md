@@ -120,5 +120,38 @@ CivicNet maintains a strict **zero-warning policy**.
 ## App Store
 https://apps.apple.com/app/id6761416586
 
+## TestFlight CI
+
+Pushes to `main` run `flutter analyze`, then (only if analyze succeeds) build a signed IPA on macOS and upload it to TestFlight. Pull requests run analyze only.
+
+### One-time Apple setup
+
+1. In [App Store Connect](https://appstoreconnect.apple.com/access/integrations/api), create an API key (App Manager or Admin), download the `.p8`, and note the **Key ID** and **Issuer ID**.
+2. In Keychain Access, export your **Apple Distribution** certificate as a `.p12` (set a password).
+3. In [Apple Developer Profiles](https://developer.apple.com/account/resources/profiles/list), download the **App Store** provisioning profile for `com.sufyankamil.communityNet` (must include that Distribution cert).
+4. Drop the `.p8`, `.p12`, and `.mobileprovision` into `secrets_inbox/`, then run:
+
+```bash
+bash scripts/encode_testflight_secrets.sh
+```
+
+Paste each file under `secrets_inbox/encoded/*.txt` into the matching GitHub secret (folder is gitignored).
+
+5. Add these GitHub Actions secrets ([repo secrets](https://github.com/sufyankamil/ai-civicnet/settings/secrets/actions)):
+
+| Secret | Value |
+|--------|--------|
+| `BUILD_CERTIFICATE_BASE64` | Base64 of Distribution `.p12` |
+| `P12_PASSWORD` | Password used when exporting the `.p12` |
+| `BUILD_PROVISION_PROFILE_BASE64` | Base64 of App Store `.mobileprovision` |
+| `KEYCHAIN_PASSWORD` | Any strong password for the temporary CI keychain |
+| `APP_STORE_CONNECT_API_KEY_ID` | App Store Connect Key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | App Store Connect Issuer ID |
+| `APP_STORE_CONNECT_API_KEY_BASE64` | Base64 of the `.p8` key |
+| `GOOGLE_SERVICE_INFO_PLIST_BASE64` | Base64 of `ios/GoogleService-Info.plist` |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `GOOGLE_MAPS_API_KEY` | Already used by analyze |
+
+Build number is set to `github.run_number`. Bump the marketing version (`1.1.8`) in `pubspec.yaml` when you want a new App Store version string. Uploads skip waiting for Apple processing; check TestFlight in App Store Connect after the workflow succeeds.
+
 ---
 *Built with ❤️ for a better community.*

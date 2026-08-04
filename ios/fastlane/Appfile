@@ -1,0 +1,3 @@
+app_identifier("com.sufyankamil.communityNet")
+apple_id(ENV["APPLE_ID"]) # optional; ASC API key is used for upload
+team_id("5S8C3WYSVK")
