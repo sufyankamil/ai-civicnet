@@ -10,44 +10,6 @@ interface WebhookPayload {
   old_record: null | any
 }
 
-async function decryptContent(encryptedBase64: string, keyString: string): Promise<string> {
-  try {
-    const binaryDerivation = new TextEncoder().encode(keyString);
-    // Ensure key is exactly 32 bytes for AES-256
-    let keyBytes = new Uint8Array(32).fill(48); // Pad with '0' (ASCII 48)
-    if (binaryDerivation.length >= 32) {
-      keyBytes.set(binaryDerivation.slice(0, 32));
-    } else {
-      keyBytes.set(binaryDerivation);
-    }
-
-    const cryptoKey = await crypto.subtle.importKey(
-      "raw",
-      keyBytes,
-      { name: "AES-CBC" },
-      false,
-      ["decrypt"]
-    );
-
-    const decoded = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
-    if (decoded.length < 16) return encryptedBase64;
-
-    const iv = decoded.slice(0, 16);
-    const ciphertext = decoded.slice(16);
-
-    const decryptedBuffer = await crypto.subtle.decrypt(
-      { name: "AES-CBC", iv: iv },
-      cryptoKey,
-      ciphertext
-    );
-
-    return new TextDecoder().decode(decryptedBuffer);
-  } catch (e) {
-    console.error('Decryption failed:', e);
-    return "[Encrypted Message]";
-  }
-}
-
 Deno.serve(async (req) => {
   try {
     const payload: WebhookPayload = await req.json()
@@ -56,7 +18,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Only INSERT is supported" }), { status: 400 })
     }
 
-    const { conversation_id, sender_id, content, message_type } = payload.record
+    const { conversation_id, sender_id, message_type } = payload.record
 
     // Initialize Supabase Client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -80,7 +42,7 @@ Deno.serve(async (req) => {
     }
 
     // 2. Fetch sender's name
-    const { data: senderData, error: senderError } = await supabase
+    const { data: senderData } = await supabase
       .from('profiles')
       .select('name')
       .eq('id', sender_id)
@@ -88,17 +50,12 @@ Deno.serve(async (req) => {
 
     const senderName = senderData?.name || 'Someone'
 
-    // 3. Decrypt content if it's text
-    let displayContent = "Sent a message";
-    if (message_type === 'text' || !message_type) {
-      const encryptionKey = Deno.env.get('ENCRYPTION_KEY');
-      if (encryptionKey) {
-        displayContent = await decryptContent(content, encryptionKey);
-      } else {
-        displayContent = "New message received";
-      }
-    } else if (message_type === 'image') {
-      displayContent = "📷 Sent an image";
+    // 3. Generic body only — message content is E2E encrypted; never decrypt server-side.
+    let displayContent = 'New message'
+    if (message_type === 'image') {
+      displayContent = 'Sent an image'
+    } else if (message_type === 'audio') {
+      displayContent = 'Sent an audio message'
     }
 
     // 4. FCM setup
@@ -120,7 +77,7 @@ Deno.serve(async (req) => {
         topic: topic,
         notification: {
           title: senderName,
-          body: displayContent.length > 100 ? displayContent.substring(0, 97) + '...' : displayContent,
+          body: displayContent,
         },
         data: {
           conversationId: String(conversation_id || ''),
@@ -144,13 +101,17 @@ Deno.serve(async (req) => {
       }
     )
 
-    const fcmData = await fcmRes.json()
-    return new Response(JSON.stringify({ success: true, fcmResponse: fcmData }), {
-      headers: { "Content-Type": "application/json" },
-    })
+    const fcmJson = await fcmRes.json()
+    if (!fcmRes.ok) {
+      console.error('FCM error:', fcmJson)
+      throw new Error(`FCM send failed: ${JSON.stringify(fcmJson)}`)
+    }
 
-  } catch (error: any) {
-    console.error('Function error:', error)
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+    return new Response(JSON.stringify({ success: true, fcm: fcmJson }), {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  } catch (err) {
+    console.error(err)
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500 })
   }
 })

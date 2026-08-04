@@ -102,6 +102,14 @@ class ChatViewModel extends GetxController {
              }
           },
         )
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'messages',
+          callback: (_) {
+            fetchConversations();
+          },
+        )
         .subscribe();
   }
 
@@ -167,14 +175,19 @@ class ChatViewModel extends GetxController {
   Future<bool> deleteMessage(String messageId) async {
     final params = DeleteMessageParams(messageId: messageId);
     final result = await deleteMessageUseCase(params);
-    
-    return result.fold(
+
+    final failed = result.fold(
       (failure) {
         logger.e('Failed to delete message: ${failure.message}');
-        return false;
+        return true;
       },
-      (_) => true,
+      (_) => false,
     );
+    if (failed) return false;
+
+    // Keep inbox preview in sync (don't wait for pop-to-list refresh).
+    await fetchConversations();
+    return true;
   }
 
   Future<bool> deleteConversation(String conversationId) async {
