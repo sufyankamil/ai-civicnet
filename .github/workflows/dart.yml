@@ -124,19 +124,34 @@ jobs:
 
       - name: Build IPA
         run: |
-          # Marketing version = major.minor from pubspec + unique CI run number as patch.
-          # Avoids manual bumps after an App Store version train is closed (error 90062/90186).
+          # Marketing version must stay above any App Store-approved train (90062/90186).
+          # Using major + YYMMDD + run_number so we never collide with e.g. closed 1.1.8
+          # when github.run_number happens to be 8 (which would produce 1.1.8).
           VERSION_NAME=$(grep '^version:' pubspec.yaml | sed 's/^version:[[:space:]]*//' | cut -d'+' -f1)
           MAJOR=$(echo "$VERSION_NAME" | cut -d. -f1)
-          MINOR=$(echo "$VERSION_NAME" | cut -d. -f2)
-          BUILD_NAME="${MAJOR}.${MINOR}.${{ github.run_number }}"
+          DATE_PART=$(date -u +%y%m%d)
+          BUILD_NAME="${MAJOR}.${DATE_PART}.${{ github.run_number }}"
           BUILD_NUMBER="${{ github.run_number }}"
-          echo "Building $BUILD_NAME ($BUILD_NUMBER)"
+          echo "Building marketing=$BUILD_NAME build=$BUILD_NUMBER"
           flutter build ipa \
             --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
             --export-options-plist=ios/ExportOptions.plist
+
+      - name: Verify IPA version
+        run: |
+          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -n 1)
+          TMP=$(mktemp -d)
+          unzip -q "$IPA_PATH" -d "$TMP"
+          APP_PLIST=$(find "$TMP/Payload" -name Info.plist | head -n 1)
+          SHORT=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP_PLIST")
+          BUILD=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP_PLIST")
+          echo "IPA CFBundleShortVersionString=$SHORT CFBundleVersion=$BUILD"
+          if [[ "$SHORT" == "1.1.8" ]]; then
+            echo "Refusing to upload closed App Store train 1.1.8"
+            exit 1
+          fi
 
       - name: Prepare App Store Connect API key
         run: |
