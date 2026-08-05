@@ -151,7 +151,7 @@ Paste each file under `secrets_inbox/encoded/*.txt` into the matching GitHub sec
 | `GOOGLE_SERVICE_INFO_PLIST_BASE64` | Base64 of `ios/GoogleService-Info.plist` |
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `GOOGLE_MAPS_API_KEY` | Already used by analyze |
 
-Build number is set to `github.run_number`. Bump the marketing version (`1.1.8`) in `pubspec.yaml` when you want a new App Store version string. Uploads skip waiting for Apple processing; check TestFlight in App Store Connect after the workflow succeeds.
+Build name is set automatically to `major.minor.<github.run_number>` (major/minor from `pubspec.yaml`), and build number to `github.run_number`. You do not need to bump the version for each TestFlight upload. Only change major/minor in `pubspec.yaml` when you want a new product line (e.g. `1.2.x`). Uploads skip waiting for Apple processing; check TestFlight in App Store Connect after the workflow succeeds.
 
 ---
 *Built with ❤️ for a better community.*

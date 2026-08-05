@@ -124,9 +124,18 @@ jobs:
 
       - name: Build IPA
         run: |
+          # Marketing version = major.minor from pubspec + unique CI run number as patch.
+          # Avoids manual bumps after an App Store version train is closed (error 90062/90186).
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | sed 's/^version:[[:space:]]*//' | cut -d'+' -f1)
+          MAJOR=$(echo "$VERSION_NAME" | cut -d. -f1)
+          MINOR=$(echo "$VERSION_NAME" | cut -d. -f2)
+          BUILD_NAME="${MAJOR}.${MINOR}.${{ github.run_number }}"
+          BUILD_NUMBER="${{ github.run_number }}"
+          echo "Building $BUILD_NAME ($BUILD_NUMBER)"
           flutter build ipa \
             --release \
-            --build-number="${{ github.run_number }}" \
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUMBER" \
             --export-options-plist=ios/ExportOptions.plist
 
       - name: Prepare App Store Connect API key
