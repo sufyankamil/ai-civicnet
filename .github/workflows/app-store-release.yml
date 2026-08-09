@@ -1,0 +1,55 @@
+# Promote an already-tested TestFlight build to App Store review.
+# What’s New is auto-generated from recent commit messages (rewritten to product language).
+#
+# Required secrets (same ASC key as TestFlight CI):
+#   APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID,
+#   APP_STORE_CONNECT_API_KEY_BASE64
+name: App Store Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_number:
+        description: "TestFlight build number (CFBundleVersion / github.run_number from the CI log)"
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate What’s New from commits
+        run: |
+          python3 ios/fastlane/generate_release_notes.py \
+            --changelog CHANGELOG.md \
+            --out ios/fastlane/metadata/en-US/release_notes.txt
+
+      - name: Install Ruby gems (Fastlane)
+        working-directory: ios
+        run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle install
+
+      - name: Prepare App Store Connect API key
+        run: |
+          mkdir -p "$RUNNER_TEMP/private_keys"
+          echo -n "${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/private_keys/AuthKey.p8"
+          echo "APP_STORE_CONNECT_API_KEY_PATH=$RUNNER_TEMP/private_keys/AuthKey.p8" >> "$GITHUB_ENV"
+
+      - name: Submit build for App Store review
+        working-directory: ios
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          bundle exec fastlane release build_number:"${{ inputs.build_number }}"
+
+      - name: Clean up API key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/private_keys"

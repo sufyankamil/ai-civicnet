@@ -153,5 +153,21 @@ Paste each file under `secrets_inbox/encoded/*.txt` into the matching GitHub sec
 
 Build name is set automatically to `major.<YYMMDD>.<github.run_number>` (e.g. `1.260805.12`) and build number to `github.run_number`, so each main push gets a unique version above closed App Store trains without editing `pubspec.yaml`. Only change the major in `pubspec.yaml` when you want a new product generation. Uploads skip waiting for Apple processing; check TestFlight in App Store Connect after the workflow succeeds.
 
+## App Store release
+
+Promotes an **already-tested TestFlight build** to App Store review (no rebuild).
+
+**What’s New** is generated automatically from recent git commit messages: CI strips technical wording (file names, CI/chore commits, jargon) and rewrites the rest into short shopper-facing bullets. It also refreshes `CHANGELOG.md` → `## Unreleased`. You do **not** need to edit the changelog by hand before releasing.
+
+### Steps
+
+1. Test the build on TestFlight.
+2. In GitHub: **Actions** → **App Store Release** → **Run workflow**.
+3. Enter the TestFlight **build number** (from the CI log line `Building marketing=… build=<N>`, or App Store Connect → TestFlight).
+4. Review the generated notes in the workflow log, then wait for App Store Connect (**Waiting for Review**).
+5. After Apple approves, release manually in App Store Connect (`automatic_release` is off).
+
+Uses the same App Store Connect API key secrets as TestFlight CI.
+
 ---
 *Built with ❤️ for a better community.*
