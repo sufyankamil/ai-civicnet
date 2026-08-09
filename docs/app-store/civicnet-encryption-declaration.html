@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>CivicNet — App Encryption Declaration</title>
+  <style>
+    @page { margin: 1.2cm; }
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      color: #111;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    h1 { font-size: 18pt; margin-bottom: 0.25em; }
+    h2 { font-size: 13pt; margin-top: 1.4em; border-bottom: 1px solid #ccc; padding-bottom: 0.2em; }
+    .meta { color: #333; margin-bottom: 1.5em; }
+    .meta dt { font-weight: 600; float: left; clear: left; width: 9em; }
+    .meta dd { margin-left: 9.5em; margin-bottom: 0.25em; }
+    table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 10pt; }
+    th, td { border: 1px solid #999; padding: 6px 8px; text-align: left; vertical-align: top; }
+    th { background: #f0f0f0; }
+    ul { margin: 0.4em 0; padding-left: 1.3em; }
+    .footer { margin-top: 2em; font-size: 9pt; color: #555; }
+    @media print {
+      body { padding: 0; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>CivicNet — App Encryption Declaration</h1>
+  <p><strong>For:</strong> Apple App Store Connect — App Encryption Documentation</p>
+
+  <dl class="meta">
+    <dt>App name</dt><dd>CivicNet</dd>
+    <dt>Bundle ID</dt><dd>com.sufyankamil.communityNet</dd>
+    <dt>App Store ID</dt><dd>6761416586</dd>
+    <dt>Developer</dt><dd>Sufyan Kamil</dd>
+    <dt>Repository</dt><dd>https://github.com/sufyankamil/ai-civicnet</dd>
+    <dt>Date</dt><dd>9 August 2026</dd>
+  </dl>
+
+  <h2>1. Purpose of encryption</h2>
+  <p>CivicNet uses cryptography solely to protect <strong>private chat message content</strong> between users who have been matched for community help requests.</p>
+  <p>Encryption is used for confidentiality of chat message payloads and wrapping per-conversation symmetric keys for conversation participants.</p>
+  <p>Encryption is <strong>not</strong> used for DRM, proprietary protocols, or concealing malware.</p>
+
+  <h2>2. Cryptographic algorithms</h2>
+  <p>All algorithms are industry-standard. CivicNet does <strong>not</strong> implement proprietary or non-standard cryptography.</p>
+  <table>
+    <thead>
+      <tr><th>Use</th><th>Algorithm</th><th>Key size / params</th><th>Standard</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Chat message encryption</td>
+        <td>AES in CBC mode</td>
+        <td>256-bit key, 128-bit IV</td>
+        <td>NIST FIPS 197 / ISO/IEC 18033-3</td>
+      </tr>
+      <tr>
+        <td>Conversation key wrap</td>
+        <td>RSA-OAEP</td>
+        <td>2048-bit RSA, OAEP with SHA-256</td>
+        <td>PKCS #1 v2.2 / IETF RFC 8017</td>
+      </tr>
+      <tr>
+        <td>Transport to backend</td>
+        <td>TLS (HTTPS)</td>
+        <td>As negotiated by iOS</td>
+        <td>IETF TLS — Apple OS networking</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Legacy dual-read (migration only): older messages may still be decrypted with a former app-wide AES-256-CBC key during a limited migration window. New messages use per-conversation keys only.</p>
+
+  <h2>3. Where cryptography is implemented</h2>
+  <table>
+    <thead>
+      <tr><th>Layer</th><th>Implementation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Message &amp; key-wrap crypto</td>
+        <td>Client app (Flutter / Dart) via open-source libraries <code>encrypt</code> and <code>pointycastle</code></td>
+      </tr>
+      <tr>
+        <td>Private key storage</td>
+        <td>iOS Keychain via <code>flutter_secure_storage</code></td>
+      </tr>
+      <tr>
+        <td>Network transport</td>
+        <td>Apple OS TLS / HTTPS to Supabase and Firebase</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Chat cryptography is implemented <strong>in the application</strong>, in addition to Apple OS HTTPS. Source: <code>lib/services/encryption_service.dart</code>.</p>
+
+  <h2>4. What is encrypted</h2>
+  <ul>
+    <li><strong>Encrypted:</strong> chat message body ciphertext; per-conversation AES keys wrapped under each participant’s RSA public key</li>
+    <li><strong>Not encrypted by custom app crypto:</strong> public discovery profile fields; push notification bodies (generic text only)</li>
+  </ul>
+  <p>Key lifecycle:</p>
+  <ol>
+    <li>Each device generates an RSA-2048 identity key pair; public wrap key is stored on the user profile.</li>
+    <li>When a conversation starts, a random 256-bit conversation key is generated.</li>
+    <li>That key is RSA-OAEP wrapped for each participant and stored server-side as opaque ciphertext.</li>
+    <li>Messages are AES-256-CBC encrypted with the conversation key; ciphertext is Base64(IV ‖ ciphertext).</li>
+  </ol>
+
+  <h2>5. Distribution</h2>
+  <p>CivicNet is distributed via the Apple App Store, including availability in <strong>France</strong> unless territories are later restricted by the Account Holder.</p>
+
+  <h2>6. Classification statement</h2>
+  <ul>
+    <li>Algorithms used are <strong>standard</strong> (AES, RSA-OAEP, SHA-256, TLS).</li>
+    <li>No proprietary, unpublished, or non-standard cryptographic algorithms are used.</li>
+    <li>This declaration supports App Store Connect export compliance review for industry-standard algorithms not limited to Apple OS encryption (French encryption declaration path when distributing in France).</li>
+    <li>A US CCATS filing is not claimed as required for this standard-algorithm use case unless Apple’s questionnaire explicitly requests one.</li>
+  </ul>
+
+  <h2>7. Contact</h2>
+  <p>For questions from Apple App Review / export compliance, contact the App Store Connect Account Holder for CivicNet (<code>com.sufyankamil.communityNet</code>).</p>
+
+  <p class="footer">Technical encryption declaration for App Store Connect upload. Generated from docs/app-store/civicnet-encryption-declaration.md.</p>
+</body>
+</html>

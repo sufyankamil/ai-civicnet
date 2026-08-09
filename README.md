@@ -120,6 +120,18 @@ CivicNet maintains a strict **zero-warning policy**.
 ## App Store
 https://apps.apple.com/app/id6761416586
 
+### App encryption documentation
+
+Public summary of chat crypto: [`docs/app-store/civicnet-encryption-declaration.md`](docs/app-store/civicnet-encryption-declaration.md).
+
+For App Store Connect: upload [`docs/app-store/civicnet-encryption-declaration.pdf`](docs/app-store/civicnet-encryption-declaration.pdf) (steps: [`docs/app-store/APP_STORE_ENCRYPTION.md`](docs/app-store/APP_STORE_ENCRYPTION.md)). After Apple approves:
+
+```bash
+bash scripts/set_encryption_compliance_code.sh YOUR_APPLE_CODE
+```
+
+`ITSAppUsesNonExemptEncryption` is already `true` in `ios/Runner/Info.plist`.
+
 ## TestFlight CI
 
 Merges to `main` only run **`flutter analyze`** (workflow: **Flutter CI**). They do **not** upload to TestFlight automatically.

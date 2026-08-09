@@ -90,7 +90,10 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<!-- true: in-app AES-256-CBC + RSA-OAEP chat crypto (see docs/app-store/). -->
+		<!-- After Apple approves App Encryption Documentation, add: -->
+		<!-- <key>ITSEncryptionExportComplianceCode</key><string>APPLE_CODE</string> -->
 		<key>ITSAppUsesNonExemptEncryption</key>
-		<false/>
+		<true/>
 	</dict>
 </plist>
