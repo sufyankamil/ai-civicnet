@@ -63,4 +63,4 @@ Flow in short:
 
 ## App Store export compliance
 
-For Apple App Store Connect uploads (questionnaire answers, PDF upload, compliance code), see [`APP_STORE_ENCRYPTION.md`](APP_STORE_ENCRYPTION.md). The uploadable PDF is [`civicnet-encryption-declaration.pdf`](civicnet-encryption-declaration.pdf).
+For Apple App Store Connect uploads (questionnaire answers, PDF upload, compliance code), see [`APP_STORE_ENCRYPTION.md`](APP_STORE_ENCRYPTION.md). Print [`civicnet-encryption-declaration.html`](civicnet-encryption-declaration.html) to PDF locally — the PDF is gitignored and not published on GitHub.

@@ -57,3 +57,6 @@ ios/Flutter/Secrets.xcconfig
 # Local TestFlight secret encoding inbox (never commit)
 secrets_inbox/
 scripts/
+
+# App Store Connect upload PDF (generate locally; keep public .md only)
+docs/app-store/*.pdf

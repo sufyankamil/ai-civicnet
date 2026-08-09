@@ -10,7 +10,7 @@ Because chat crypto is **standard algorithms implemented outside Apple OS crypto
 |------|-----|
 | [`civicnet-encryption-declaration.md`](civicnet-encryption-declaration.md) | **Public** GitHub summary of chat encryption |
 | [`civicnet-encryption-declaration.html`](civicnet-encryption-declaration.html) | Print → Save as PDF for App Store Connect |
-| [`civicnet-encryption-declaration.pdf`](civicnet-encryption-declaration.pdf) | File to upload in App Store Connect |
+| `civicnet-encryption-declaration.pdf` | Local only (gitignored) — upload this in App Store Connect |
 | This guide | Questionnaire answers + post-approval plist steps (maintainers) |
 
 ## Before you upload
@@ -40,7 +40,7 @@ Apple’s required upload for this case: **French encryption declaration** (not 
 ## What to upload
 
 1. Open [`civicnet-encryption-declaration.html`](civicnet-encryption-declaration.html) in a browser.
-2. **File → Print → Save as PDF** (or use the committed PDF if present).
+2. **File → Print → Save as PDF** (save as `civicnet-encryption-declaration.pdf` locally; PDFs in this folder are gitignored).
 3. In App Store Connect, when prompted, **Choose File** and upload that PDF.
 4. Click **Save**.
 
