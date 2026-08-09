@@ -12,6 +12,51 @@ def connect_api_key
   )
 end
 
+# Resolve marketing version (CFBundleShortVersionString) for a CFBundleVersion via ASC.
+def marketing_version_for_build(build_number, explicit_version = nil)
+  version = explicit_version.to_s.strip
+  if version.include?(".")
+    return version
+  end
+
+  UI.message("Looking up App Store Connect marketing version for build #{build_number}...")
+  app = Spaceship::ConnectAPI::App.find("com.sufyankamil.communityNet")
+  UI.user_error!("App com.sufyankamil.communityNet not found in App Store Connect") if app.nil?
+
+  build = nil
+  30.times do |attempt|
+    builds = Spaceship::ConnectAPI::Build.all(
+      app_id: app.id,
+      version: build_number.to_s,
+      sort: "-uploadedDate",
+      includes: "preReleaseVersion"
+    )
+    build = builds&.first
+    break if build
+
+    UI.message("Build #{build_number} not visible yet (attempt #{attempt + 1}/30). Waiting 30s — is TestFlight still processing?")
+    sleep(30)
+  end
+
+  UI.user_error!(
+    "Build number #{build_number} was not found in App Store Connect. " \
+    "Confirm it finished processing in TestFlight, then retry."
+  ) if build.nil?
+
+  marketing =
+    if build.respond_to?(:app_version) && build.app_version.to_s != ""
+      build.app_version
+    elsif build.respond_to?(:pre_release_version) && build.pre_release_version
+      build.pre_release_version.version
+    else
+      nil
+    end
+
+  UI.user_error!("Could not determine marketing version for build #{build_number}") if marketing.to_s.empty?
+  UI.success("Found build #{build_number} → marketing version #{marketing}")
+  marketing.to_s
+end
+
 platform :ios do
   desc "Upload an existing IPA to TestFlight"
   lane :beta do |options|
@@ -34,11 +79,16 @@ platform :ios do
     notes = File.read(notes_path).strip
     UI.user_error!("Release notes are empty") if notes.empty?
 
-    UI.message("Submitting build #{build_number} with notes:\n#{notes}")
+    api_key = connect_api_key
+    app_version = marketing_version_for_build(build_number, options[:app_version])
 
-    deliver_opts = {
-      api_key: connect_api_key,
+    UI.message("Submitting build #{build_number} (version #{app_version}) with notes:\n#{notes}")
+
+    upload_to_app_store(
+      api_key: api_key,
       app_identifier: "com.sufyankamil.communityNet",
+      app_version: app_version,
+      build_number: build_number,
       skip_binary_upload: true,
       skip_screenshots: true,
       skip_metadata: false,
@@ -46,7 +96,6 @@ platform :ios do
       submit_for_review: true,
       automatic_release: false,
       run_precheck_before_submit: false,
-      build_number: build_number,
       submission_information: {
         add_id_info_uses_idfa: false,
         export_compliance_uses_encryption: false,
@@ -54,12 +103,6 @@ platform :ios do
         content_rights_contains_third_party_content: false,
         content_rights_has_rights: true
       }
-    }
-    # Marketing version from TestFlight log, e.g. 1.260805.73
-    if options[:app_version].to_s != ""
-      deliver_opts[:app_version] = options[:app_version].to_s
-    end
-
-    upload_to_app_store(deliver_opts)
+    )
   end
 end

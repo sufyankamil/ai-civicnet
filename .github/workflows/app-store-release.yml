@@ -10,18 +10,19 @@ on:
   workflow_dispatch:
     inputs:
       build_number:
-        description: "TestFlight build number (after build= in CI log, e.g. 73)"
+        description: "ONLY the build number from CI (after build=). Example: 73 — NOT 1.260805.73"
         required: true
         type: string
       app_version:
-        description: "Marketing version from CI log (after marketing=, e.g. 1.260805.73)"
-        required: true
+        description: "Optional. Marketing version after marketing= (e.g. 1.260805.73). Leave blank to auto-detect."
+        required: false
+        default: ""
         type: string
 
 jobs:
   release:
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
@@ -52,9 +53,13 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
+          EXTRA=()
+          if [ -n "${{ inputs.app_version }}" ]; then
+            EXTRA+=(app_version:"${{ inputs.app_version }}")
+          fi
           bundle exec fastlane release \
             build_number:"${{ inputs.build_number }}" \
-            app_version:"${{ inputs.app_version }}"
+            "${EXTRA[@]}"
 
       - name: Clean up API key
         if: always()

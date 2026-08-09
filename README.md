@@ -169,9 +169,8 @@ Promotes an **already-tested TestFlight build** to App Store review (no rebuild)
 
 1. Test the build on TestFlight.
 2. In GitHub: **Actions** → **App Store Release** → **Run workflow**.
-3. Enter:
-   - **build number:** `73` (from `build=73`)
-   - **app version:** `1.260805.73` (from `marketing=1.260805.73`)
+3. Enter **build number only** — e.g. `73` from `build=73` (not `1.260805.73`).
+   Leave **app version** blank unless auto-detect fails; then use `1.260805.73` from `marketing=…`.
 4. Review the generated notes in the workflow log, then wait for App Store Connect (**Waiting for Review**).
 5. After Apple approves, release manually in App Store Connect (`automatic_release` is off).
 
