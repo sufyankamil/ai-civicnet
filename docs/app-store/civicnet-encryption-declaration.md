@@ -43,8 +43,6 @@ During a limited migration window, older messages encrypted with a former app-wi
 
 Chat payload crypto runs **in the app**, on top of normal HTTPS.
 
-Implementation: [`lib/services/encryption_service.dart`](../../lib/services/encryption_service.dart)
-
 ---
 
 ## What is encrypted
@@ -58,9 +56,3 @@ Flow in short:
 2. A conversation gets a random 256-bit AES key.
 3. That key is RSA-OAEP-wrapped for each participant.
 4. Messages are AES-256-CBC encrypted; stored/sent as Base64(IV ‖ ciphertext).
-
----
-
-## App Store export compliance
-
-For Apple App Store Connect uploads (questionnaire answers, PDF upload, compliance code), see [`APP_STORE_ENCRYPTION.md`](APP_STORE_ENCRYPTION.md). Print [`civicnet-encryption-declaration.html`](civicnet-encryption-declaration.html) to PDF locally — the PDF is gitignored and not published on GitHub.
