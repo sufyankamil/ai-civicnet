@@ -1,0 +1,175 @@
+# Manual TestFlight upload (does not run on every main merge).
+# Actions → TestFlight Upload → Run workflow
+#
+# Required secrets:
+#   BUILD_CERTIFICATE_BASE64, P12_PASSWORD, BUILD_PROVISION_PROFILE_BASE64,
+#   KEYCHAIN_PASSWORD, APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID,
+#   APP_STORE_CONNECT_API_KEY_BASE64, GOOGLE_SERVICE_INFO_PLIST_BASE64
+# Existing: SUPABASE_URL, SUPABASE_ANON_KEY, GOOGLE_MAPS_API_KEY
+name: TestFlight Upload
+
+on:
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze project source
+        run: flutter analyze
+
+  testflight:
+    needs: analyze
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+
+      - name: Restore GoogleService-Info.plist
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}" | base64 --decode > ios/GoogleService-Info.plist
+
+      - name: Install Apple certificate and provisioning profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          PP_PATH="$RUNNER_TEMP/build_pp.mobileprovision"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o "$PP_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          PP_PLIST="$RUNNER_TEMP/build_pp.plist"
+          security cms -D -i "$PP_PATH" > "$PP_PLIST"
+          PP_UUID=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$PP_PLIST")
+          PP_NAME=$(/usr/libexec/PlistBuddy -c 'Print Name' "$PP_PLIST")
+          cp "$PP_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$PP_UUID.mobileprovision"
+
+          echo "PROVISIONING_PROFILE_UUID=$PP_UUID" >> "$GITHUB_ENV"
+          echo "PROVISIONING_PROFILE_NAME=$PP_NAME" >> "$GITHUB_ENV"
+          echo "Installed profile: $PP_NAME ($PP_UUID)"
+
+      - name: Create iOS Secrets.xcconfig
+        run: |
+          {
+            echo "MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}"
+            echo "CODE_SIGN_STYLE=Manual"
+            echo "CODE_SIGN_IDENTITY=Apple Distribution"
+            echo "DEVELOPMENT_TEAM=5S8C3WYSVK"
+            echo "PROVISIONING_PROFILE_SPECIFIER=${PROVISIONING_PROFILE_NAME}"
+          } > ios/Flutter/Secrets.xcconfig
+
+      - name: Write ExportOptions.plist
+        run: |
+          /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:com.sufyankamil.communityNet ${PROVISIONING_PROFILE_NAME}" ios/ExportOptions.plist
+
+      - name: Install Ruby gems (Fastlane)
+        working-directory: ios
+        run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle install
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+
+      - name: Build IPA
+        run: |
+          # Marketing version must stay above any App Store-approved train (90062/90186).
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | sed 's/^version:[[:space:]]*//' | cut -d'+' -f1)
+          MAJOR=$(echo "$VERSION_NAME" | cut -d. -f1)
+          DATE_PART=$(date -u +%y%m%d)
+          BUILD_NAME="${MAJOR}.${DATE_PART}.${{ github.run_number }}"
+          BUILD_NUMBER="${{ github.run_number }}"
+          echo "Building marketing=$BUILD_NAME build=$BUILD_NUMBER"
+          flutter build ipa \
+            --release \
+            --build-name="$BUILD_NAME" \
+            --build-number="$BUILD_NUMBER" \
+            --export-options-plist=ios/ExportOptions.plist
+
+      - name: Verify IPA version
+        run: |
+          IPA_PATH=$(ls build/ios/ipa/*.ipa | head -n 1)
+          TMP=$(mktemp -d)
+          unzip -q "$IPA_PATH" -d "$TMP"
+          APP_PLIST=$(find "$TMP/Payload" -name Info.plist | head -n 1)
+          SHORT=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$APP_PLIST")
+          BUILD=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$APP_PLIST")
+          echo "IPA CFBundleShortVersionString=$SHORT CFBundleVersion=$BUILD"
+          if [[ "$SHORT" == "1.1.8" ]]; then
+            echo "Refusing to upload closed App Store train 1.1.8"
+            exit 1
+          fi
+
+      - name: Prepare App Store Connect API key
+        run: |
+          mkdir -p "$RUNNER_TEMP/private_keys"
+          echo -n "${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/private_keys/AuthKey.p8"
+          echo "APP_STORE_CONNECT_API_KEY_PATH=$RUNNER_TEMP/private_keys/AuthKey.p8" >> "$GITHUB_ENV"
+
+      - name: Upload to TestFlight
+        working-directory: ios
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          IPA_PATH=$(ls ../build/ios/ipa/*.ipa | head -n 1)
+          echo "Uploading $IPA_PATH"
+          bundle exec fastlane beta ipa:"$IPA_PATH"
+
+      - name: Clean up keychain
+        if: always()
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          security delete-keychain "$KEYCHAIN_PATH" || true
+          rm -f "$RUNNER_TEMP/build_certificate.p12" "$RUNNER_TEMP/build_pp.mobileprovision"
+          rm -rf "$RUNNER_TEMP/private_keys"
