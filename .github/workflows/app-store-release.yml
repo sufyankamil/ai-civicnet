@@ -10,7 +10,11 @@ on:
   workflow_dispatch:
     inputs:
       build_number:
-        description: "TestFlight build number (CFBundleVersion / github.run_number from the CI log)"
+        description: "TestFlight build number (after build= in CI log, e.g. 73)"
+        required: true
+        type: string
+      app_version:
+        description: "Marketing version from CI log (after marketing=, e.g. 1.260805.73)"
         required: true
         type: string
 
@@ -48,7 +52,9 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
-          bundle exec fastlane release build_number:"${{ inputs.build_number }}"
+          bundle exec fastlane release \
+            build_number:"${{ inputs.build_number }}" \
+            app_version:"${{ inputs.app_version }}"
 
       - name: Clean up API key
         if: always()
