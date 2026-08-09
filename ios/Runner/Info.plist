@@ -90,10 +90,9 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
-		<!-- true: in-app AES-256-CBC + RSA-OAEP chat crypto (see docs/app-store/). -->
-		<!-- After Apple approves App Encryption Documentation, add: -->
-		<!-- <key>ITSEncryptionExportComplianceCode</key><string>APPLE_CODE</string> -->
+		<!-- false: App Store Connect said no export docs required (France not available). -->
+		<!-- If you add France later, redo the questionnaire and upload the ANSSI approval form. -->
 		<key>ITSAppUsesNonExemptEncryption</key>
-		<true/>
+		<false/>
 	</dict>
 </plist>

@@ -124,13 +124,7 @@ https://apps.apple.com/app/id6761416586
 
 Public summary of chat crypto: [`docs/app-store/civicnet-encryption-declaration.md`](docs/app-store/civicnet-encryption-declaration.md).
 
-For App Store Connect: print [`docs/app-store/civicnet-encryption-declaration.html`](docs/app-store/civicnet-encryption-declaration.html) to PDF locally and upload it (steps: [`docs/app-store/APP_STORE_ENCRYPTION.md`](docs/app-store/APP_STORE_ENCRYPTION.md)). The PDF is gitignored. After Apple approves:
-
-```bash
-bash scripts/set_encryption_compliance_code.sh YOUR_APPLE_CODE
-```
-
-`ITSAppUsesNonExemptEncryption` is already `true` in `ios/Runner/Info.plist`.
+App Store Connect currently requires **no encryption document upload** (France not available). `ITSAppUsesNonExemptEncryption` is `false` in `ios/Runner/Info.plist` so builds skip the encryption questionnaire. Details: [`docs/app-store/APP_STORE_ENCRYPTION.md`](docs/app-store/APP_STORE_ENCRYPTION.md).
 
 ## TestFlight CI
 
