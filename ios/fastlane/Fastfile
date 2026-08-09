@@ -27,15 +27,18 @@ def marketing_version_for_build(build_number, explicit_version = nil)
   30.times do |attempt|
     builds = Spaceship::ConnectAPI::Build.all(
       app_id: app.id,
-      version: build_number.to_s,
+      build_number: build_number.to_s,
       sort: "-uploadedDate",
-      includes: "preReleaseVersion"
+      includes: "preReleaseVersion",
+      processing_states: "PROCESSING,VALID,INVALID,FAILED"
     )
     build = builds&.first
-    break if build
+    break if build && build.processing_state.to_s.upcase == "VALID"
 
-    UI.message("Build #{build_number} not visible yet (attempt #{attempt + 1}/30). Waiting 30s — is TestFlight still processing?")
+    state = build&.processing_state || "not found"
+    UI.message("Build #{build_number} state=#{state} (attempt #{attempt + 1}/30). Waiting 30s...")
     sleep(30)
+    build = nil if build && build.processing_state.to_s.upcase != "VALID"
   end
 
   UI.user_error!(
