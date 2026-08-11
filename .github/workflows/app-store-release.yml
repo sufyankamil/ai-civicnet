@@ -1,5 +1,5 @@
 # Promote an already-tested TestFlight build to App Store review.
-# What’s New is auto-generated from recent commit messages (rewritten to product language).
+# What’s New is provided manually when starting the workflow.
 #
 # Required secrets (same ASC key as TestFlight CI):
 #   APP_STORE_CONNECT_API_KEY_ID, APP_STORE_CONNECT_ISSUER_ID,
@@ -18,6 +18,10 @@ on:
         required: false
         default: ""
         type: string
+      whats_new:
+        description: "App Store What’s New (shopper-facing). One bullet per line, e.g. - Stronger privacy for your chats"
+        required: true
+        type: string
 
 jobs:
   release:
@@ -26,14 +30,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Generate What’s New from commits
+      - name: Write What’s New
+        env:
+          WHATS_NEW: ${{ inputs.whats_new }}
         run: |
-          python3 ios/fastlane/generate_release_notes.py \
-            --changelog CHANGELOG.md \
-            --out ios/fastlane/metadata/en-US/release_notes.txt
+          if [ -z "${WHATS_NEW//[[:space:]]/}" ]; then
+            echo "whats_new input is empty" >&2
+            exit 1
+          fi
+          mkdir -p ios/fastlane/metadata/en-US
+          printf '%s\n' "$WHATS_NEW" > ios/fastlane/metadata/en-US/release_notes.txt
+          echo "What’s New to submit:"
+          echo "-----"
+          cat ios/fastlane/metadata/en-US/release_notes.txt
+          echo "-----"
 
       - name: Install Ruby gems (Fastlane)
         working-directory: ios

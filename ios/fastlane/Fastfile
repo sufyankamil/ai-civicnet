@@ -70,7 +70,7 @@ platform :ios do
     )
   end
 
-  desc "Submit an existing TestFlight build for App Store review with auto-generated notes"
+  desc "Submit an existing TestFlight build for App Store review with manual What’s New notes"
   lane :release do |options|
     build_number = options.fetch(:build_number).to_s
     notes_path = options.fetch(
