@@ -10,6 +10,7 @@ class MessageEntity extends Equatable {
   final bool isDeleted;
   final bool isRead;
   final String? replyToId;
+  final bool isPending;
 
   const MessageEntity({
     required this.id,
@@ -21,6 +22,7 @@ class MessageEntity extends Equatable {
     required this.isRead,
     this.isDeleted = false,
     this.replyToId,
+    this.isPending = false,
   });
 
   @override
@@ -34,5 +36,6 @@ class MessageEntity extends Equatable {
         isRead,
         isDeleted,
         replyToId,
+        isPending,
       ];
 }

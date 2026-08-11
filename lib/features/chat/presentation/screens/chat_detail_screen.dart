@@ -445,15 +445,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               initialData: const [],
               stream: _viewModel.getMessagesStream(widget.conversationId),
               builder: (context, snapshot) {
+                return Obx(() {
+                final serverMessages = snapshot.data ?? const <MessageEntity>[];
                 if (snapshot.connectionState == ConnectionState.waiting &&
-                    (snapshot.data == null || snapshot.data!.isEmpty)) {
+                    serverMessages.isEmpty &&
+                    _viewModel.pendingMessages
+                        .where((m) => m.conversationId == widget.conversationId)
+                        .isEmpty) {
                   return const Center(child: CircularProgressIndicator.adaptive());
                 }
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No messages yet', style: TextStyle(color: Colors.grey)));
-                }
 
-                 final messages = snapshot.data!.where((m) => !_blockedUserIds.contains(m.senderId)).toList();
+                 final messages = _viewModel
+                     .messagesWithPending(widget.conversationId, serverMessages)
+                     .where((m) => !_blockedUserIds.contains(m.senderId))
+                     .toList();
+
+                 WidgetsBinding.instance.addPostFrameCallback((_) {
+                   _viewModel.pruneConfirmedPending(
+                       widget.conversationId, serverMessages);
+                 });
                  
                  if (messages.isEmpty) {
                     return Center(child: Text(AppLocalizations.of(context)!.noMessagesYet, style: TextStyle(color: Colors.grey)));
@@ -540,7 +550,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                             trailingIcon: CupertinoIcons.reply,
                                             child: const Text('Reply'),
                                           ),
-                                          if (isMe && DateTime.now().difference(message.createdAt).inMinutes < 10)
+                                          if (isMe && !message.isPending && DateTime.now().difference(message.createdAt).inMinutes < 10)
                                             CupertinoContextMenuAction(
                                               isDestructiveAction: true,
                                               onPressed: () {
@@ -557,7 +567,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                                         ),
                                       )
                                     : GestureDetector(
-                                        onLongPress: () => setState(() => _selectedMessage = message),
+                                        onLongPress: message.isPending
+                                            ? null
+                                            : () => setState(() => _selectedMessage = message),
                                         child: Container(
                                           color: _selectedMessage?.id == message.id 
                                               ? AppColors.primaryLight.withValues(alpha: 0.2)
@@ -571,6 +583,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   );
                   },
                 );
+                });
               },
             ),
           ),
@@ -615,11 +628,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       setState(() => _isListening = false);
     }
 
+    // Clear immediately so the composer feels instant; optimistic bubble shows in list.
+    _messageController.clear();
+
     final success = await _viewModel.sendMessage(widget.conversationId, content);
-    if (success) {
-      _messageController.clear();
-    } else {
-      if (mounted) ToastService.showError(context, 'Failed to send message.');
+    if (!success && mounted) {
+      ToastService.showError(context, 'Failed to send message.');
     }
   }
 
@@ -901,7 +915,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Widget _buildBubbleContent(MessageEntity message, bool isMe, List<MessageEntity> displayMessages) {
-    return Container(
+    return Opacity(
+      opacity: message.isPending ? 0.7 : 1,
+      child: Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
@@ -948,7 +964,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           const SizedBox(height: 4),
           Text(
-            timeago.format(message.createdAt, locale: 'en_short'),
+            message.isPending
+                ? 'Sending…'
+                : timeago.format(message.createdAt, locale: 'en_short'),
             style: TextStyle(
               color: message.isDeleted 
                   ? Colors.grey[400]
@@ -958,6 +976,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

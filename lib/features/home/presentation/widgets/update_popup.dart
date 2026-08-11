@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:glassmorphism/glassmorphism.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
 
@@ -25,6 +23,7 @@ class UpdatePopup extends StatelessWidget {
     return showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.45),
       builder: (context) => UpdatePopup(
         newVersion: newVersion,
         onUpdate: onUpdate,
@@ -35,69 +34,94 @@ class UpdatePopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: GlassmorphicContainer(
-              width: double.infinity,
-              height: 420,
-              borderRadius: 32,
-              blur: 20,
-              alignment: Alignment.bottomCenter,
-              border: 2,
-              linearGradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.1),
-                  Colors.white.withValues(alpha: 0.05),
-                ],
-                stops: const [0.1, 1],
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surface = isDark ? AppColors.surfaceDark : Colors.white;
+    final titleColor =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final bodyColor =
+        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Material(
+          color: surface,
+          borderRadius: BorderRadius.circular(28),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            children: [
+              // Soft brand wash — top only, not full-card glass
+              Positioned(
+                top: -40,
+                right: -20,
+                child: IgnorePointer(
+                  child: Container(
+                    width: 160,
+                    height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          AppColors.primaryLight.withValues(alpha: isDark ? 0.28 : 0.16),
+                          AppColors.primaryLight.withValues(alpha: 0.0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              borderGradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.5),
-                  Colors.white.withValues(alpha: 0.2),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(24),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Animated Icon/Illustration
-                    _buildAnimatedHeader(),
-                    const SizedBox(height: 24),
-                    
-                    // Text Content
-                    const Text(
-                      'Time to Upgrade!',
+                    _buildIcon(isDark),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'v$newVersion',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primaryLight,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      'Update available',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: titleColor,
+                        letterSpacing: -0.3,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Text(
-                      'A new version of CivicNet ($newVersion) is available with better performance and new community features.',
+                      'CivicNet $newVersion is ready — faster performance and new community features.',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.7),
-                        height: 1.5,
+                        height: 1.45,
+                        color: bodyColor,
+                        fontWeight: FontWeight.w500,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 32),
-                    
-                    // Action Buttons
+                    const SizedBox(height: 28),
                     AppElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -106,81 +130,71 @@ class UpdatePopup extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryLight,
                         foregroundColor: Colors.white,
-                        minimumSize: const Size(double.infinity, 56),
+                        minimumSize: const Size(double.infinity, 52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 0,
+                        shadowColor: AppColors.primaryLight.withValues(alpha: 0.35),
                       ),
                       child: const Text(
                         'Update Now',
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 4),
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context);
                         onLater();
                       },
-                      child: Text(
+                      style: TextButton.styleFrom(
+                        foregroundColor: bodyColor,
+                        minimumSize: const Size(double.infinity, 44),
+                      ),
+                      child: const Text(
                         'Maybe Later',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.6),
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAnimatedHeader() {
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        // Glow effect
-        Container(
-          width: 80,
-          height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryLight.withValues(alpha: 0.3),
-                blurRadius: 40,
-                spreadRadius: 10,
-              ),
-            ],
-          ),
+  Widget _buildIcon(bool isDark) {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: AppColors.primaryGradient(
+          isDark ? Brightness.dark : Brightness.light,
         ),
-        // Icon Container
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 2,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryLight.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
-          child: const Icon(
-            Icons.system_update_rounded,
-            color: Colors.white,
-            size: 40,
-          ),
-        ),
-      ],
+        ],
+      ),
+      child: const Icon(
+        Icons.system_update_rounded,
+        color: Colors.white,
+        size: 34,
+      ),
     );
   }
 }

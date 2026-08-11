@@ -7,6 +7,9 @@ class HomeSearchBar extends StatelessWidget {
   final TabController tabController;
   final Function(String) onSearchChanged;
 
+  /// Must match [_PinnedHeaderDelegate] extents.
+  static const double headerExtent = 120;
+
   const HomeSearchBar({
     super.key,
     required this.searchController,
@@ -20,15 +23,18 @@ class HomeSearchBar extends StatelessWidget {
     return SliverPersistentHeader(
       pinned: true,
       delegate: _PinnedHeaderDelegate(
-        child: Container(
-          decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85)),
-          child: ClipRRect(
+        child: ColoredBox(
+          color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.92),
+          child: ClipRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Column(
                 children: [
-                  Padding(padding: const EdgeInsets.fromLTRB(16, 8, 16, 8), child: _buildAuraSearch(context, l10n)),
-                  _buildFloatingTabs(context, l10n),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
+                    child: _buildAuraSearch(context, l10n),
+                  ),
+                  Expanded(child: _buildFloatingTabs(context, l10n)),
                 ],
               ),
             ),
@@ -40,21 +46,48 @@ class HomeSearchBar extends StatelessWidget {
 
   Widget _buildAuraSearch(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1), width: 1),
-      ),
+    final borderColor =
+        (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1);
+    final fillColor =
+        (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05);
+
+    return SizedBox(
+      height: 42,
       child: TextField(
         controller: searchController,
         onChanged: onSearchChanged,
+        style: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).textTheme.bodyLarge?.color,
+        ),
+        textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
           hintText: tabController.index == 0 ? l10n.searchHelp : l10n.searchNews,
           hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[400], size: 22),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[400], size: 20),
+          prefixIconConstraints: const BoxConstraints(
+            minWidth: 42,
+            minHeight: 42,
+          ),
+          filled: true,
+          fillColor: fillColor,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: borderColor, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: borderColor, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.45),
+              width: 1.2,
+            ),
+          ),
         ),
       ),
     );
@@ -62,27 +95,39 @@ class HomeSearchBar extends StatelessWidget {
 
   Widget _buildFloatingTabs(BuildContext context, AppLocalizations l10n) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Container(
-        height: 44,
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
-          color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(22),
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black)
+              .withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: TabBar(
           controller: tabController,
           indicator: BoxDecoration(
             color: Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [BoxShadow(color: Theme.of(context).primaryColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 2))],
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           indicatorSize: TabBarIndicatorSize.tab,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.grey[600],
           labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          labelPadding: EdgeInsets.zero,
           dividerColor: Colors.transparent,
-          tabs: [Tab(text: l10n.homeTitle), Tab(text: l10n.communityTitle)],
+          tabs: [
+            Tab(text: l10n.homeTitle, height: 36),
+            Tab(text: l10n.communityTitle, height: 36),
+          ],
         ),
       ),
     );
@@ -91,13 +136,30 @@ class HomeSearchBar extends StatelessWidget {
 
 class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
+
   _PinnedHeaderDelegate({required this.child});
+
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    // Child must be exactly this tall or SliverGeometry asserts.
+    return SizedBox(
+      height: maxExtent,
+      width: double.infinity,
+      child: child,
+    );
+  }
+
   @override
-  double get maxExtent => 125;
+  double get maxExtent => HomeSearchBar.headerExtent;
+
   @override
-  double get minExtent => 125;
+  double get minExtent => HomeSearchBar.headerExtent;
+
   @override
-  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) => true;
+  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) =>
+      oldDelegate.child != child;
 }

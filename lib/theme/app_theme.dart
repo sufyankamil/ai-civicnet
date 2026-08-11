@@ -6,7 +6,7 @@ class AppColors {
   static const Color primaryLight = Color(0xFF7B61FF); // Vivid Violet (profile gradient)
   static const Color secondaryLight = Color(0xFFB388FF); // Soft Lavender
   static const Color accentLight = Color(0xFFFF6B6B); // Warm Alert/Action
-  static const Color backgroundLight = Color(0xFFF5F4FF); // Tinted white
+  static const Color backgroundLight = Color(0xFFF7F7F9); // Subtle off-white (not bright, not purple)
   static const Color surfaceLight = Colors.white;
   static const Color textPrimaryLight = Color(0xFF2D2436);
   static const Color textSecondaryLight = Color(0xFF636E72);

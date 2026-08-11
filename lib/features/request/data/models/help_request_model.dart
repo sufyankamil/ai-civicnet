@@ -27,13 +27,14 @@ class HelpRequestModel extends HelpRequestEntity {
         ? profileData.first 
         : (profileData is Map<String, dynamic> ? profileData : {});
 
-    String rawAvatar = profile['avatar_url'] ?? '';
+    String rawAvatar =
+        json['requester_avatar_url'] ?? profile['avatar_url'] ?? '';
     String avatarUrl = rawAvatar.contains('?t=') ? rawAvatar.split('?t=').first : rawAvatar;
 
     return HelpRequestModel(
       id: json['id'].toString(),
       requesterId: json['requester_id'] ?? '',
-      requesterName: profile['name'] ?? 'Unknown',
+      requesterName: json['requester_name'] ?? profile['name'] ?? 'Unknown',
       requesterAvatarUrl: avatarUrl,
       title: json['title'] ?? '',
       description: json['description'] ?? '',
