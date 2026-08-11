@@ -33,11 +33,13 @@ class ChatViewModel extends GetxController {
   RealtimeChannel? _messageSubscription;
   StreamSubscription? _authSubscription;
   final RxList<MessageEntity> _messages = <MessageEntity>[].obs;
+  final RxList<MessageEntity> _pendingMessages = <MessageEntity>[].obs;
   final Rx<MessageEntity?> _replyingTo = Rx<MessageEntity?>(null);
   String? _currentUserId;
 
   List<ChatConversationEntity> get conversations => _conversations;
   List<MessageEntity> get messages => _messages;
+  List<MessageEntity> get pendingMessages => _pendingMessages;
   MessageEntity? get replyingTo => _replyingTo.value;
   bool get isLoading => _isLoading.value;
   bool get isSending => _isSending.value;
@@ -64,12 +66,14 @@ class ChatViewModel extends GetxController {
         if (newUserId == null) {
           // Logged out
           _conversations.clear();
+          _pendingMessages.clear();
           _updateUnreadCount();
           _messageSubscription?.unsubscribe();
           _messageSubscription = null;
         } else {
           // New user logged in
           _conversations.clear();
+          _pendingMessages.clear();
           _updateUnreadCount();
           fetchConversations();
           _setupRealtime();
@@ -145,26 +149,84 @@ class ChatViewModel extends GetxController {
     return getConversationsUseCase.repository.getMessagesStream(conversationId);
   }
 
+  /// Merge server messages with optimistic pending sends for instant UI.
+  List<MessageEntity> messagesWithPending(
+    String conversationId,
+    List<MessageEntity> serverMessages,
+  ) {
+    final pending = _pendingMessages.where((pending) {
+      if (pending.conversationId != conversationId) return false;
+      final confirmed = serverMessages.any((server) =>
+          server.senderId == pending.senderId &&
+          server.content == pending.content &&
+          !server.isPending &&
+          server.createdAt.difference(pending.createdAt).abs().inMinutes < 5);
+      return !confirmed;
+    }).toList();
+    if (pending.isEmpty) return serverMessages;
+    return [...serverMessages, ...pending];
+  }
+
+  /// Drop pending bubbles once the realtime stream confirms them.
+  void pruneConfirmedPending(
+    String conversationId,
+    List<MessageEntity> serverMessages,
+  ) {
+    _reconcilePending(conversationId, serverMessages);
+  }
+
+  void _reconcilePending(
+    String conversationId,
+    List<MessageEntity> serverMessages,
+  ) {
+    if (_pendingMessages.isEmpty) return;
+    _pendingMessages.removeWhere((pending) {
+      if (pending.conversationId != conversationId) return false;
+      return serverMessages.any((server) =>
+          server.senderId == pending.senderId &&
+          server.content == pending.content &&
+          !server.isPending &&
+          server.createdAt.difference(pending.createdAt).abs().inMinutes < 5);
+    });
+  }
+
   Future<bool> sendMessage(String conversationId, String content, {String type = 'text'}) async {
     if (content.isEmpty || _isSending.value) return false;
-    
-    _isSending.value = true;
-    
+
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    if (userId == null) return false;
+
     // Capture reply ID and clear it immediately for UI responsiveness
     final replyToId = _replyingTo.value?.id;
-    _replyingTo.value = null; 
-    
+    _replyingTo.value = null;
+
+    final tempId = 'pending_${DateTime.now().microsecondsSinceEpoch}';
+    final pending = MessageEntity(
+      id: tempId,
+      conversationId: conversationId,
+      senderId: userId,
+      content: content,
+      type: type,
+      createdAt: DateTime.now(),
+      isRead: true,
+      replyToId: replyToId,
+      isPending: true,
+    );
+    _pendingMessages.add(pending);
+    _isSending.value = true;
+
     final params = SendMessageParams(
-      conversationId: conversationId, 
-      content: content, 
+      conversationId: conversationId,
+      content: content,
       type: type,
       replyToId: replyToId,
     );
     final result = await sendMessageUseCase(params);
-    
+
     _isSending.value = false;
     return result.fold(
       (failure) {
+        _pendingMessages.removeWhere((m) => m.id == tempId);
         logger.e('Failed to send message: ${failure.message}');
         return false;
       },

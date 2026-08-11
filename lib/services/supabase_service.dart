@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:math' show cos, sin, sqrt, asin;
 import 'dart:io';
 import 'dart:convert';
@@ -17,6 +18,7 @@ import '../features/request/domain/entities/help_request_entity.dart';
 
 import '../features/events/models/event_comment.dart';
 import '../core/utils/timeout_extension.dart';
+import '../core/utils/safe_profile_embed.dart';
 
 /// Safe profile columns for other users (no lat/lng/role/report_count).
 const String _kSafeProfileColumns =
@@ -48,6 +50,7 @@ class SupabaseService {
         _notificationChannel = null;
         _conversationKeyCache.clear();
         _conversationWrapCache.clear();
+        _uploadedWrapKeyPem = null;
       }
     });
   }
@@ -59,6 +62,8 @@ class SupabaseService {
   final Map<String, Uint8List> _conversationKeyCache = {};
   /// Latest wrapped_key string successfully unwrapped (detect peer rekeys).
   final Map<String, String> _conversationWrapCache = {};
+  /// Avoid re-uploading the same public wrap key every ensure call.
+  String? _uploadedWrapKeyPem;
 
   Future<void> initVoteCache() async {
     final user = _client.auth.currentUser;
@@ -140,6 +145,7 @@ class SupabaseService {
     await _client.auth.signOut().withServerTimeout();
     _conversationKeyCache.clear();
     _conversationWrapCache.clear();
+    _uploadedWrapKeyPem = null;
     await CacheService().clear();
   }
 
@@ -149,9 +155,11 @@ class SupabaseService {
     if (user == null) return;
     try {
       final pubPem = await EncryptionService().ensureIdentityKeys();
+      if (_uploadedWrapKeyPem == pubPem) return;
       await _client.from('profiles').update({
         'public_wrap_key': pubPem,
       }).eq('id', user.id).withServerTimeout();
+      _uploadedWrapKeyPem = pubPem;
     } catch (e) {
       logger.e('Failed to ensure chat identity keys: $e');
     }
@@ -307,16 +315,20 @@ class SupabaseService {
     try {
       final query = _client
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
+          .select('*')
           .order('created_at', ascending: false);
 
       final response = await query.withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'requester_id',
+      );
 
       // Cache the data with a 15-minute TTL
       await CacheService().put(
-          'help_requests', data, ttl: const Duration(minutes: 15));
+          'help_requests_v2', data, ttl: const Duration(minutes: 15));
 
       // Parse in background isolate
       List<HelpRequest> requests = await compute(parseHelpRequests, data);
@@ -361,7 +373,8 @@ class SupabaseService {
     } catch (e) {
       logger.e('Error fetching help requests from network', error: e);
       // Fallback to cache
-      final cachedData = await CacheService().get('help_requests');
+      final cachedData = await CacheService().get('help_requests_v2') ??
+          await CacheService().get('help_requests');
       if (cachedData != null) {
         logger.i('Returning cached help requests');
         final List<dynamic> data = cachedData as List<dynamic>;
@@ -378,11 +391,15 @@ class SupabaseService {
     try {
       final response = await _client
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
+          .select('*')
           .eq('requester_id', user.id)
           .order('created_at', ascending: false).withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'requester_id',
+      );
       return await compute(parseHelpRequests, data);
     } catch (e) {
       logger.e('Error fetching my help requests', error: e);
@@ -399,12 +416,42 @@ class SupabaseService {
       // Get the user's applications, joined with the help_request details
       final response = await _client
           .from('request_applications')
-          .select(
-          'id, status, created_at, help_requests(*, profiles:requester_id(name, avatar_url))')
+          .select('id, status, created_at, help_requests(*)')
           .eq('applicant_id', user.id)
           .order('created_at', ascending: false).withServerTimeout();
 
-      return List<Map<String, dynamic>>.from(response);
+      final rows = List<Map<String, dynamic>>.from(
+        (response as List).map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+
+      final nested = <Map<String, dynamic>>[];
+      for (final row in rows) {
+        final hr = row['help_requests'];
+        if (hr is Map) {
+          nested.add(Map<String, dynamic>.from(hr));
+        }
+      }
+
+      final enrichedNested = await attachSafeProfiles(
+        _client,
+        nested,
+        userIdKey: 'requester_id',
+      );
+      final byId = {
+        for (final hr in enrichedNested) hr['id'].toString(): hr,
+      };
+
+      for (final row in rows) {
+        final hr = row['help_requests'];
+        if (hr is Map) {
+          final id = hr['id']?.toString();
+          if (id != null && byId.containsKey(id)) {
+            row['help_requests'] = byId[id];
+          }
+        }
+      }
+
+      return rows;
     } catch (e) {
       logger.e('Error fetching my applications: $e');
       return [];
@@ -415,14 +462,20 @@ class SupabaseService {
     try {
       final response = await _client
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
+          .select('*')
           .eq('id', id)
           .single().withServerTimeout();
 
-      // Cache individual request
-      await CacheService().put('help_request_$id', response);
+      final enriched = await attachSafeProfile(
+        _client,
+        Map<String, dynamic>.from(response as Map),
+        userIdKey: 'requester_id',
+      );
 
-      return HelpRequest.fromJson(response);
+      // Cache individual request
+      await CacheService().put('help_request_$id', enriched);
+
+      return HelpRequest.fromJson(enriched);
     } catch (e) {
       logger.e('Error fetching help request $id from network', error: e);
       // Fallback to cache
@@ -822,7 +875,12 @@ class SupabaseService {
       }).withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
-      return data.map((json) {
+      final enriched = await attachSafeProfiles(
+        _client,
+        data,
+        userIdKey: 'requester_id',
+      );
+      return enriched.map((json) {
         final req = HelpRequest.fromJson(json);
         return req.copyWith(
             aiRelevanceScore: (json['similarity'] ?? 0.0).toDouble());
@@ -838,14 +896,18 @@ class SupabaseService {
 
   Future<List<CommunityAsset>> getCommunityAssets({double? centerLat, double? centerLng, double? radiusKm, String? category}) async {
     try {
-      var query = _client.from('community_assets').select('*, profiles:owner_id(name, avatar_url)');
+      var query = _client.from('community_assets').select('*');
       
       if (category != null && category != 'All') {
         query = query.eq('category', category);
       }
 
       final response = await query.neq('status', 'private').order('created_at', ascending: false).withServerTimeout();
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'owner_id',
+      );
       List<CommunityAsset> assets = await compute(parseCommunityAssets, data);
 
       final currentUserProfile = await getCurrentUserProfile();
@@ -910,6 +972,15 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return null;
 
+    // Fast path: reuse unwrapped key (avoids a DB round-trip on every stream tick / send).
+    final cached = _conversationKeyCache[conversationId];
+    if (cached != null) {
+      if (allowRekey) {
+        unawaited(_rewrapMissingParticipants(conversationId, participantIds));
+      }
+      return cached;
+    }
+
     await ensureChatIdentityKeys();
 
     try {
@@ -926,7 +997,7 @@ class SupabaseService {
         if (_conversationWrapCache[conversationId] == wrapped &&
             _conversationKeyCache.containsKey(conversationId)) {
           if (allowRekey) {
-            await _rewrapMissingParticipants(conversationId, participantIds);
+            unawaited(_rewrapMissingParticipants(conversationId, participantIds));
           }
           return _conversationKeyCache[conversationId];
         }
@@ -936,7 +1007,7 @@ class SupabaseService {
           _conversationWrapCache[conversationId] = wrapped;
           _conversationKeyCache[conversationId] = key;
           if (allowRekey) {
-            await _rewrapMissingParticipants(conversationId, participantIds);
+            unawaited(_rewrapMissingParticipants(conversationId, participantIds));
           }
           return key;
         } catch (e) {
@@ -1054,18 +1125,20 @@ class SupabaseService {
     }
   }
 
+  /// AES ciphertext is contiguous base64 (IV||cipher); plaintext may look
+  /// similar only after stripping spaces, which caused false positives.
   bool _looksLikeCiphertext(String value) {
-    final compact = value.replaceAll(RegExp(r'\s'), '');
-    if (compact.length < 24) return false;
-    return RegExp(r'^[A-Za-z0-9+/]+=*$').hasMatch(compact);
+    if (value.contains(RegExp(r'\s'))) return false;
+    if (value.length < 32) return false;
+    return RegExp(r'^[A-Za-z0-9+/]+=*$').hasMatch(value);
   }
 
   String _decryptMessageContent(String? content, Uint8List? convKey) {
     if (content == null || content.isEmpty) return '';
     final decrypted =
         EncryptionService().decryptPayload(content, conversationKey: convKey);
-    if (_looksLikeCiphertext(content) &&
-        (decrypted == content || _looksLikeCiphertext(decrypted))) {
+    // Only hide when decrypt failed and the stored payload is still ciphertext.
+    if (decrypted == content && _looksLikeCiphertext(content)) {
       return '[Encrypted message]';
     }
     return decrypted;
@@ -1121,93 +1194,120 @@ class SupabaseService {
           .contains('participant_ids', [user.id])
           .order('updated_at', ascending: false).withServerTimeout();
 
-      final List<ChatConversation> conversations = [];
+      final mapped = await Future.wait(
+        (response as List).map((conv) => _buildConversationPreview(conv, user.id)),
+      );
 
-      for (final conv in response) {
-        final rawParticipants = conv['participant_ids'];
-        if (rawParticipants == null) continue;
-
-        final participants = List<String>.from(rawParticipants);
-        final otherId = participants.firstWhere((id) => id != user.id,
-            orElse: () => '');
-
-        if (otherId.isEmpty) continue;
-
-        // Check for point-in-time deletion
-        final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
-        final String? lastDeletedAtStr = deletionTimestamps[user.id];
-        final DateTime? lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
-
-        final profile = await _client
-            .from('profiles_safe')
-            .select('name, avatar_url')
-            .eq('id', otherId)
-            .maybeSingle()
-            .withServerTimeout();
-        final name = profile?['name'] ?? 'Unknown User';
-        final avatar = profile?['avatar_url'] ?? '';
-
-        final convKey = await _ensureConversationKeys(conv['id'],
-            participantIds: participants);
-
-        // Only fetch messages sent AFTER the last deletion timestamp
-        var lastMsgQuery = _client
-            .from('messages')
-            .select()
-            .eq('conversation_id', conv['id']);
-        
-        if (lastDeletedAt != null) {
-          lastMsgQuery = lastMsgQuery.gt('created_at', lastDeletedAt.toUtc().toIso8601String());
-        }
-
-        final lastMsgRes = await lastMsgQuery
-            .order('created_at', ascending: false)
-            .limit(1)
-            .maybeSingle().withServerTimeout();
-
-        // If no message appears after deletion, the conversation is effectively hidden
-        if (lastMsgRes == null && lastDeletedAt != null) {
-          continue;
-        }
-
-        final unreadMessagesRes = await _client
-            .from('messages')
-            .select('id')
-            .eq('conversation_id', conv['id'])
-            .eq('is_read', false)
-            .neq('sender_id', user.id).withServerTimeout();
-
-        final int unreadCount = (unreadMessagesRes as List).length;
-
-        final String? dateString = lastMsgRes?['created_at'] ??
-            conv['updated_at'] ?? conv['created_at'];
-        final DateTime messageTime = DateTime.tryParse(dateString ?? '') ??
-            DateTime.now();
-
-        String lastMessagePreview = 'No messages yet';
-        if (lastMsgRes != null) {
-          if (lastMsgRes['is_deleted'] == true) {
-            lastMessagePreview = 'This message was deleted';
-          } else if (lastMsgRes['content'] != null) {
-            lastMessagePreview =
-                _decryptMessageContent(lastMsgRes['content'], convKey);
-          }
-        }
-
-        conversations.add(ChatConversation(
-          id: conv['id'].toString(),
-          otherUserId: otherId,
-          otherUserName: name,
-          otherUserAvatar: sanitizeAvatarUrl(avatar),
-          lastMessage: lastMessagePreview,
-          lastMessageTime: messageTime,
-          unreadCount: unreadCount,
-        ));
-      }
+      final conversations =
+          mapped.whereType<ChatConversation>().toList();
+      conversations.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
       return conversations;
     } catch (e, stack) {
       logger.e('Error fetching conversations: $e\n$stack');
       return [];
+    }
+  }
+
+  Future<ChatConversation?> _buildConversationPreview(
+      dynamic conv, String userId) async {
+    try {
+      final rawParticipants = conv['participant_ids'];
+      if (rawParticipants == null) return null;
+
+      final participants = List<String>.from(rawParticipants);
+      final otherId = participants.firstWhere((id) => id != userId,
+          orElse: () => '');
+
+      if (otherId.isEmpty) return null;
+
+      final Map<String, dynamic> deletionTimestamps =
+          Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
+      final String? lastDeletedAtStr = deletionTimestamps[userId];
+      final DateTime? lastDeletedAt =
+          lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
+
+      final profileFuture = _client
+          .from('profiles_safe')
+          .select('name, avatar_url')
+          .eq('id', otherId)
+          .maybeSingle()
+          .withServerTimeout();
+
+      final convKeyFuture = _ensureConversationKeys(conv['id'],
+          participantIds: participants);
+
+      var lastMsgQuery = _client
+          .from('messages')
+          .select()
+          .eq('conversation_id', conv['id']);
+
+      if (lastDeletedAt != null) {
+        lastMsgQuery = lastMsgQuery.gt(
+            'created_at', lastDeletedAt.toUtc().toIso8601String());
+      }
+
+      final lastMsgFuture = lastMsgQuery
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle()
+          .withServerTimeout();
+
+      final unreadFuture = _client
+          .from('messages')
+          .select('id')
+          .eq('conversation_id', conv['id'])
+          .eq('is_read', false)
+          .neq('sender_id', userId)
+          .withServerTimeout();
+
+      final results = await Future.wait<Object?>([
+        profileFuture,
+        convKeyFuture,
+        lastMsgFuture,
+        unreadFuture,
+      ]);
+
+      final profile = results[0] as Map<String, dynamic>?;
+      final convKey = results[1] as Uint8List?;
+      final lastMsgRes = results[2] as Map<String, dynamic>?;
+      final unreadMessagesRes = results[3] as List;
+
+      if (lastMsgRes == null && lastDeletedAt != null) {
+        return null;
+      }
+
+      final name = profile?['name'] ?? 'Unknown User';
+      final avatar = profile?['avatar_url'] ?? '';
+      final int unreadCount = unreadMessagesRes.length;
+
+      final String? dateString = lastMsgRes?['created_at'] ??
+          conv['updated_at'] ??
+          conv['created_at'];
+      final DateTime messageTime =
+          DateTime.tryParse(dateString ?? '') ?? DateTime.now();
+
+      String lastMessagePreview = 'No messages yet';
+      if (lastMsgRes != null) {
+        if (lastMsgRes['is_deleted'] == true) {
+          lastMessagePreview = 'This message was deleted';
+        } else if (lastMsgRes['content'] != null) {
+          lastMessagePreview =
+              _decryptMessageContent(lastMsgRes['content'], convKey);
+        }
+      }
+
+      return ChatConversation(
+        id: conv['id'].toString(),
+        otherUserId: otherId,
+        otherUserName: name,
+        otherUserAvatar: sanitizeAvatarUrl(avatar),
+        lastMessage: lastMessagePreview,
+        lastMessageTime: messageTime,
+        unreadCount: unreadCount,
+      );
+    } catch (e) {
+      logger.e('Error building conversation preview: $e');
+      return null;
     }
   }
 
@@ -1305,8 +1405,10 @@ class SupabaseService {
             hasFetchedDeletion = true;
           }
 
-          // Always sync wrap from DB so peer rekeys are picked up.
-          convKey = await _ensureConversationKeys(conversationId, allowRekey: false);
+          // Prefer cached key; only hit the network on miss / decrypt failure.
+          convKey ??= _conversationKeyCache[conversationId];
+          convKey ??=
+              await _ensureConversationKeys(conversationId, allowRekey: false);
 
           var decrypted = messagesList.map((json) {
             final mutableJson = Map<String, dynamic>.from(json);
@@ -1323,6 +1425,7 @@ class SupabaseService {
           if (stillEncrypted) {
             _conversationWrapCache.remove(conversationId);
             _conversationKeyCache.remove(conversationId);
+            convKey = null;
             convKey =
                 await _ensureConversationKeys(conversationId, allowRekey: false);
             decrypted = messagesList.map((json) {
@@ -1475,11 +1578,15 @@ class SupabaseService {
     try {
       final response = await _client
           .from('request_applications')
-          .select('*, profiles:applicant_id(name, avatar_url)')
+          .select('*')
           .eq('request_id', requestId)
           .order('created_at', ascending: false).withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'applicant_id',
+      );
       logger.d('DEBUG: Fetched ${data
           .length} applications for request $requestId'); // DEBUG LOG
       return data.map((json) {
@@ -1605,11 +1712,15 @@ class SupabaseService {
     try {
       final response = await _client
           .from('announcements')
-          .select('*, profiles:author_id(name, avatar_url)')
+          .select('*')
           .order('created_at', ascending: false)
           .withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'author_id',
+      );
       return data.map((json) {
         final annId = json['id'] as String;
         return Announcement.fromJson(json).copyWith(
@@ -1961,10 +2072,14 @@ class SupabaseService {
       // Step 1: Fetch all events
       final response = await _client
           .from('local_events')
-          .select('*, profiles:creator_id(name, avatar_url)')
+          .select('*')
           .order('event_date', ascending: true).withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'creator_id',
+      );
 
       // Step 2: Fetch all attendees for these events in one go
       final eventIds = data.map((e) => e['id']).toList();
@@ -2121,12 +2236,16 @@ class SupabaseService {
     try {
       final response = await _client
           .from('event_comments')
-          .select('*, profiles:user_id(name, avatar_url)')
+          .select('*')
           .eq('event_id', eventId)
           .order('created_at', ascending: true)
           .withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'user_id',
+      );
       final List<EventComment> allComments = data.map((json) =>
           EventComment.fromJson(json)).toList();
 
@@ -2210,12 +2329,16 @@ class SupabaseService {
     try {
       final response = await _client
           .from('verification_requests')
-          .select('*, profiles:user_id(name, avatar_url)')
+          .select('*')
           .eq('status', 'pending')
           .order('created_at', ascending: true)
           .withServerTimeout();
 
-      final List<dynamic> data = response as List<dynamic>;
+      final List<dynamic> data = await attachSafeProfiles(
+        _client,
+        response as List<dynamic>,
+        userIdKey: 'user_id',
+      );
       return data.map((json) => VerificationRequest.fromJson(json)).toList();
     } catch (e) {
       logger.e('Error fetching verification requests: $e');

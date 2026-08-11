@@ -3,6 +3,7 @@ import '../../../../core/errors/exceptions.dart';
 import '../models/help_request_model.dart';
 import '../../domain/entities/request_enums.dart';
 import '../../../../core/utils/timeout_extension.dart';
+import '../../../../core/utils/safe_profile_embed.dart';
 import '../../../../services/ai_service.dart';
 
 abstract class RequestRemoteDataSource {
@@ -28,11 +29,15 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
     try {
       final response = await supabaseClient
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
+          .select('*')
           .order('created_at', ascending: false)
           .withServerTimeout();
 
-      return response as List<dynamic>;
+      return attachSafeProfiles(
+        supabaseClient,
+        response as List<dynamic>,
+        userIdKey: 'requester_id',
+      );
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -43,12 +48,16 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
     try {
       final response = await supabaseClient
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
+          .select('*')
           .eq('requester_id', userId)
           .order('created_at', ascending: false)
           .withServerTimeout();
 
-      return response as List<dynamic>;
+      return attachSafeProfiles(
+        supabaseClient,
+        response as List<dynamic>,
+        userIdKey: 'requester_id',
+      );
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -59,12 +68,16 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
     try {
       final response = await supabaseClient
           .from('help_requests')
-          .select('*, profiles:requester_id(name, avatar_url)')
+          .select('*')
           .eq('id', id)
           .single()
           .withServerTimeout();
-          
-      return response;
+
+      return attachSafeProfile(
+        supabaseClient,
+        Map<String, dynamic>.from(response as Map),
+        userIdKey: 'requester_id',
+      );
     } catch (e) {
       throw ServerException(e.toString());
     }

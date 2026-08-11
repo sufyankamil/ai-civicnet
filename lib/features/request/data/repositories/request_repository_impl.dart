@@ -26,14 +26,15 @@ class RequestRepositoryImpl implements RequestRepository {
   Future<Either<Failure, List<HelpRequestEntity>>> getHelpRequests() async {
     try {
       final remoteData = await remoteDataSource.getRawHelpRequests();
-      await CacheService().put('help_requests', remoteData);
+      await CacheService().put('help_requests_v2', remoteData);
       
       List<HelpRequestEntity> requests = await compute(parseHelpRequestsList, remoteData);
       requests = await _calculateDistances(requests);
       return Right(requests);
     } on ServerException catch (e) {
       try {
-        final cachedData = await CacheService().get('help_requests');
+        final cachedData = await CacheService().get('help_requests_v2') ??
+            await CacheService().get('help_requests');
         if (cachedData != null) {
           List<HelpRequestEntity> requests = await compute(parseHelpRequestsList, cachedData as List<dynamic>);
           requests = await _calculateDistances(requests);

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -28,18 +27,23 @@ class RequestCard extends StatelessWidget {
 
     Widget cardBody = Container(
       decoration: BoxDecoration(
-        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
+        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-          child: InkWell(
+        child: InkWell(
             onTap: () => context.push('/request/${request.id}'),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -167,8 +171,7 @@ class RequestCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

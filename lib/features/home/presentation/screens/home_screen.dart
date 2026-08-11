@@ -337,47 +337,61 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          gradient: RadialGradient(
-            center: const Alignment(0.7, -0.6),
-            radius: 1.5,
-            colors: [
-              AppColors.primaryLight.withValues(alpha: isDark ? 0.08 : 0.05),
-              Theme.of(context).scaffoldBackgroundColor,
-            ],
-            stops: const [0.0, 0.8],
-          ),
-        ),
-        child: SafeArea(
-          bottom: false,
-          child: CustomScrollView(
-            slivers: [
-              const HomeAppBar(),
-              HomeSearchBar(
-                searchController: _searchController,
-                tabController: _tabController,
-                onSearchChanged: (v) => _tabController.index == 0 ? _viewModel.onSearchChanged(v) : setState(() => _newsSearchQuery = v),
-              ),
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    if (_isVpnActive && !_vpnWarningDismissed) 
-                      VpnWarningBanner(onDismiss: () => setState(() => _vpnWarningDismissed = true)),
-                    if (_showSafetyBanner) HomeSafetyBanner(onDismiss: _dismissSafetyBanner),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: _tabController.index == 0
-                          ? _buildRequestsTabContent(l10n)
-                          : _buildNewsTabContent(l10n),
-                    ),
-                  ],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: Stack(
+        children: [
+          // Soft purple wash under status bar + header (cards stay opaque)
+          Positioned(
+            top: 0,
+            right: 0,
+            left: 0,
+            height: 260,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0.9, -0.65),
+                    radius: 1.2,
+                    colors: [
+                      AppColors.primaryLight.withValues(alpha: isDark ? 0.22 : 0.18),
+                      AppColors.primaryLight.withValues(alpha: isDark ? 0.08 : 0.07),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.4, 1.0],
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+          SafeArea(
+            bottom: false,
+            child: CustomScrollView(
+              slivers: [
+                const HomeAppBar(),
+                HomeSearchBar(
+                  searchController: _searchController,
+                  tabController: _tabController,
+                  onSearchChanged: (v) => _tabController.index == 0 ? _viewModel.onSearchChanged(v) : setState(() => _newsSearchQuery = v),
+                ),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      if (_isVpnActive && !_vpnWarningDismissed)
+                        VpnWarningBanner(onDismiss: () => setState(() => _vpnWarningDismissed = true)),
+                      if (_showSafetyBanner) HomeSafetyBanner(onDismiss: _dismissSafetyBanner),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: _tabController.index == 0
+                            ? _buildRequestsTabContent(l10n)
+                            : _buildNewsTabContent(l10n),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

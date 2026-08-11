@@ -44,3 +44,4 @@ Do not put `ENCRYPTION_KEY` back in `.env` or app assets. Old messages encrypted
 - Push shows sender name + generic body.
 - Anon REST `GET /rest/v1/profiles` and `help_requests` should not return rows.
 - Other-user profile fetch via `profiles_safe` has no `lat`/`lng`.
+- Home feed shows requester **names** (via `profiles_safe` enrichment), not "Unknown".
