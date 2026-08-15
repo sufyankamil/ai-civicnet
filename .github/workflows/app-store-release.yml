@@ -32,11 +32,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Write What’s New
+        env:
+          INPUT_WHATS_NEW: ${{ inputs.whats_new }}
         run: |
           mkdir -p ios/fastlane/metadata/en-US
-          cat << 'EOF' > ios/fastlane/metadata/en-US/release_notes.txt
-          ${{ inputs.whats_new }}
-          EOF
+          python3 -c "import os; print(os.environ['INPUT_WHATS_NEW'].replace('\\\\n', '\n').replace('<br>', '\n'))" > ios/fastlane/metadata/en-US/release_notes.txt
           if [ ! -s ios/fastlane/metadata/en-US/release_notes.txt ] || [ -z "$(cat ios/fastlane/metadata/en-US/release_notes.txt | tr -d '[:space:]')" ]; then
             echo "whats_new input is empty" >&2
             exit 1
