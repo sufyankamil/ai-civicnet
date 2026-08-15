@@ -17,6 +17,7 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/home_search_bar.dart';
 import '../widgets/home_filter_bar.dart';
 import '../widgets/home_safety_banner.dart';
+import '../widgets/seasonal_greeting_banner.dart';
 import '../widgets/home_requests_list.dart';
 import '../widgets/home_polls_section.dart';
 import '../widgets/guild_card.dart';
@@ -45,6 +46,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   bool _showSafetyBanner = false;
+  bool _showSeasonalGreeting = false;
+  bool _showRegionalUpdateReminder = false;
+  bool _showStoreUpdateReminder = false;
+  String? _storeUpdateVersion;
   bool _isVpnActive = false;
   bool _vpnWarningDismissed = false;
   StreamSubscription<bool>? _vpnSubscription;
@@ -69,6 +74,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       _checkLocationPermission();
       _checkFeedbackPrompt();
       _checkSafetyBanner();
+      _checkSeasonalGreeting();
+      _checkRegionalUpdatePrompt();
       _checkVersionUpdate();
     });
   }
@@ -110,6 +117,84 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
+  Future<void> _checkSeasonalGreeting() async {
+    final today = DateTime.now();
+    if (today.month != 8 || today.day != 15) return;
+    final profile = await SupabaseService().getCurrentUserProfile();
+    if (profile?.countryCode != 'IN') return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'seasonal_greeting_independence_day_${today.year}_dismissed';
+    if (!(prefs.getBool(key) ?? false) && mounted) {
+      setState(() => _showSeasonalGreeting = true);
+    }
+  }
+
+  Future<void> _dismissSeasonalGreeting() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seasonal_greeting_independence_day_${DateTime.now().year}_dismissed', true);
+    if (mounted) setState(() => _showSeasonalGreeting = false);
+  }
+
+  Future<void> _checkRegionalUpdatePrompt() async {
+    // Let any higher-priority permission prompt appear first.
+    await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+
+    final profile = await SupabaseService().getCurrentUserProfile();
+    if (!mounted) return;
+    if (profile?.countryCode?.isNotEmpty == true) {
+      setState(() => _showRegionalUpdateReminder = false);
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final hasSeenPrompt = prefs.getBool('regional_updates_profile_prompt_seen') ?? false;
+    if (hasSeenPrompt) {
+      if (mounted) setState(() => _showRegionalUpdateReminder = true);
+      return;
+    }
+
+    await _showRegionalUpdatePrompt();
+  }
+
+  Future<void> _showRegionalUpdatePrompt() async {
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: const Icon(Icons.public_rounded, color: AppColors.primaryLight),
+        title: const Text('Personalize regional updates'),
+        content: const Text(
+          'Add your country in your profile to receive relevant community and holiday updates. We never infer this from your location.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('regional_updates_profile_prompt_seen', true);
+              if (!dialogContext.mounted) return;
+              Navigator.of(dialogContext).pop();
+              if (mounted) setState(() => _showRegionalUpdateReminder = true);
+            },
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('regional_updates_profile_prompt_seen', true);
+              if (!dialogContext.mounted) return;
+              Navigator.of(dialogContext).pop();
+              if (!mounted) return;
+              await context.push('/edit-profile');
+              if (mounted) _checkRegionalUpdatePrompt();
+            },
+            child: const Text('Update profile'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _checkVersionUpdate() async {
     final newVersion = await VersionService.checkUpdateNeeded();
     if (newVersion != null && mounted) {
@@ -124,14 +209,37 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
     final storeVersion = await VersionService.checkStoreUpdateAvailable();
-    if (storeVersion != null && mounted) {
-      UpdatePopup.show(
-        context,
-        newVersion: storeVersion,
-        onUpdate: () => VersionService.upgrader.sendUserToAppStore(),
-        onLater: () => logger.d('User chose to update later'),
-      );
+    if (storeVersion == null || !mounted) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    final deferredVersion = prefs.getString('deferred_store_update_version');
+    if (deferredVersion == storeVersion) {
+      setState(() {
+        _storeUpdateVersion = storeVersion;
+        _showStoreUpdateReminder = true;
+      });
+      return;
     }
+    await _showStoreUpdatePopup(storeVersion);
+  }
+
+  Future<void> _showStoreUpdatePopup(String storeVersion) async {
+    if (!mounted) return;
+    await UpdatePopup.show(
+      context,
+      newVersion: storeVersion,
+      onUpdate: () => VersionService.upgrader.sendUserToAppStore(),
+      onLater: () async {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('deferred_store_update_version', storeVersion);
+        if (mounted) {
+          setState(() {
+            _storeUpdateVersion = storeVersion;
+            _showStoreUpdateReminder = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkLocationPermission() async {
@@ -367,7 +475,14 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             bottom: false,
             child: CustomScrollView(
               slivers: [
-                const HomeAppBar(),
+                HomeAppBar(
+                  showRegionalUpdateReminder: _showRegionalUpdateReminder,
+                  onRegionalUpdateReminderTap: _showRegionalUpdatePrompt,
+                  showStoreUpdateReminder: _showStoreUpdateReminder,
+                  onStoreUpdateReminderTap: _storeUpdateVersion == null
+                      ? null
+                      : () => _showStoreUpdatePopup(_storeUpdateVersion!),
+                ),
                 HomeSearchBar(
                   searchController: _searchController,
                   tabController: _tabController,
@@ -379,6 +494,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       if (_isVpnActive && !_vpnWarningDismissed)
                         VpnWarningBanner(onDismiss: () => setState(() => _vpnWarningDismissed = true)),
                       if (_showSafetyBanner) HomeSafetyBanner(onDismiss: _dismissSafetyBanner),
+                      if (_showSeasonalGreeting) SeasonalGreetingBanner(onDismiss: _dismissSeasonalGreeting),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 300),
                         child: _tabController.index == 0

@@ -446,48 +446,69 @@ class _ProfileScreenState extends State<ProfileScreen>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Avatar with glowing AI ring
-                      Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
-                            begin: Alignment.topLeft, end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF7B61FF).withValues(alpha: 0.5),
-                              blurRadius: 18,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF1E1B4B), // Deep slate to separate ring
-                            shape: BoxShape.circle,
-                          ),
-                          child: user.avatarUrl.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: user.avatarUrl,
-                                  imageBuilder: (context, imageProvider) => CircleAvatar(
-                                    radius: 46,
-                                    backgroundImage: imageProvider,
-                                  ),
-                                  errorWidget: (context, url, error) => const CircleAvatar(
-                                    radius: 46,
-                                    backgroundColor: Colors.grey,
-                                    child: Icon(Icons.person, size: 48, color: Colors.white),
-                                  ),
-                                )
-                              : const CircleAvatar(
-                                  radius: 46,
-                                  backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, size: 48, color: Colors.white),
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
+                                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF7B61FF).withValues(alpha: 0.5),
+                                  blurRadius: 18,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 4),
                                 ),
-                        ),
+                              ],
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF1E1B4B),
+                                shape: BoxShape.circle,
+                              ),
+                              child: user.avatarUrl.isNotEmpty
+                                  ? CachedNetworkImage(
+                                      imageUrl: user.avatarUrl,
+                                      imageBuilder: (context, imageProvider) => CircleAvatar(
+                                        radius: 46,
+                                        backgroundImage: imageProvider,
+                                      ),
+                                      errorWidget: (context, url, error) => const CircleAvatar(
+                                        radius: 46,
+                                        backgroundColor: Colors.grey,
+                                        child: Icon(Icons.person, size: 48, color: Colors.white),
+                                      ),
+                                    )
+                                  : const CircleAvatar(
+                                      radius: 46,
+                                      backgroundColor: Colors.grey,
+                                      child: Icon(Icons.person, size: 48, color: Colors.white),
+                                    ),
+                            ),
+                          ),
+                          Positioned(
+                            right: -6,
+                            bottom: -6,
+                            child: Material(
+                              color: AppColors.primaryLight,
+                              shape: const CircleBorder(),
+                              child: IconButton(
+                                tooltip: 'Edit profile',
+                                icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+                                onPressed: () async {
+                                  await context.push('/edit-profile');
+                                  if (mounted) _refreshProfile();
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       // Text center

@@ -32,15 +32,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Write What’s New
-        env:
-          WHATS_NEW: ${{ inputs.whats_new }}
         run: |
-          if [ -z "${WHATS_NEW//[[:space:]]/}" ]; then
+          mkdir -p ios/fastlane/metadata/en-US
+          cat << 'EOF' > ios/fastlane/metadata/en-US/release_notes.txt
+          ${{ inputs.whats_new }}
+          EOF
+          if [ ! -s ios/fastlane/metadata/en-US/release_notes.txt ] || [ -z "$(cat ios/fastlane/metadata/en-US/release_notes.txt | tr -d '[:space:]')" ]; then
             echo "whats_new input is empty" >&2
             exit 1
           fi
-          mkdir -p ios/fastlane/metadata/en-US
-          printf '%s\n' "$WHATS_NEW" > ios/fastlane/metadata/en-US/release_notes.txt
           echo "What’s New to submit:"
           echo "-----"
           cat ios/fastlane/metadata/en-US/release_notes.txt

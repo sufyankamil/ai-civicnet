@@ -25,6 +25,7 @@ class User {
   final bool showNeighborhood;
   final bool showImpactStats;
   final bool showAchievements;
+  final String? countryCode;
 
   User({
     required this.id,
@@ -46,6 +47,7 @@ class User {
     this.showNeighborhood = true,
     this.showImpactStats = true,
     this.showAchievements = true,
+    this.countryCode,
   });
 
   // Calculated impact properties
@@ -79,6 +81,7 @@ class User {
       showNeighborhood: data['show_neighborhood'] ?? true,
       showImpactStats: data['show_impact_stats'] ?? true,
       showAchievements: data['show_achievements'] ?? true,
+      countryCode: data['country_code']?.toString().toUpperCase(),
     );
   }
 }

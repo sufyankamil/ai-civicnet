@@ -6,6 +6,7 @@ import '../../../../services/storage_service.dart';
 import '../../../../services/toast_service.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
+import '../../../../services/firebase_service.dart';
 import '../../../../theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -25,6 +26,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _selectedImage;
   bool _isLoading = true;
   bool _isSaving = false;
+  String? _countryCode;
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _nameController.text = user.name;
           _currentAvatarUrl = user.avatarUrl;
           _skills = List.from(user.skills);
+          _countryCode = user.countryCode;
           _isLoading = false;
         });
       }
@@ -71,7 +74,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _nameController.text.trim(),
         avatarToSave,
         _skills,
+        countryCode: _countryCode,
       );
+      await FirebaseService().syncCountryTopic(_countryCode);
       if (mounted) {
         ToastService.showSuccess(context, 'Profile updated successfully!');
         context.pop(); // Go back to profile screen
@@ -245,6 +250,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       'Tap to change photo',
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text('Regional updates', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Used only for relevant community and holiday updates. You can change this anytime.',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: _countryCode,
+                    decoration: InputDecoration(
+                      labelText: 'Country / region',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      prefixIcon: const Icon(Icons.public_rounded),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'IN', child: Text('India')),
+                      DropdownMenuItem(value: 'US', child: Text('United States')),
+                      DropdownMenuItem(value: 'GB', child: Text('United Kingdom')),
+                      DropdownMenuItem(value: 'CA', child: Text('Canada')),
+                      DropdownMenuItem(value: 'AU', child: Text('Australia')),
+                    ],
+                    onChanged: (value) => setState(() => _countryCode = value),
                   ),
                   const SizedBox(height: 32),
                   Text(

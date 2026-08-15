@@ -383,3 +383,10 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/notify-new-message/deno.json"
 entrypoint = "./functions/notify-new-message/index.ts"
+
+[functions.send-holiday-notification]
+enabled = true
+# The function verifies HOLIDAY_NOTIFICATION_SECRET itself so pg_cron can call it.
+verify_jwt = false
+import_map = "./functions/send-holiday-notification/deno.json"
+entrypoint = "./functions/send-holiday-notification/index.ts"
