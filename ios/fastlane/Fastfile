@@ -63,9 +63,16 @@ end
 platform :ios do
   desc "Upload an existing IPA to TestFlight"
   lane :beta do |options|
+    changelog = options[:changelog]
+    if changelog.to_s.empty?
+      notes_path = File.expand_path("metadata/en-US/release_notes.txt", __dir__)
+      changelog = File.read(notes_path).strip if File.exist?(notes_path)
+    end
+
     upload_to_testflight(
       api_key: connect_api_key,
       ipa: options.fetch(:ipa),
+      changelog: changelog,
       skip_waiting_for_build_processing: true
     )
   end

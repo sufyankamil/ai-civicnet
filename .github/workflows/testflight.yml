@@ -10,6 +10,12 @@ name: TestFlight Upload
 
 on:
   workflow_dispatch:
+    inputs:
+      whats_new:
+        description: "TestFlight What to Test / Release Notes (shopper-facing). One bullet per line."
+        required: false
+        default: "Bug fixes and performance improvements"
+        type: string
 
 jobs:
   analyze:
@@ -105,6 +111,17 @@ jobs:
       - name: Write ExportOptions.plist
         run: |
           /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:com.sufyankamil.communityNet ${PROVISIONING_PROFILE_NAME}" ios/ExportOptions.plist
+
+      - name: Write What’s New
+        run: |
+          mkdir -p ios/fastlane/metadata/en-US
+          cat << 'EOF' > ios/fastlane/metadata/en-US/release_notes.txt
+          ${{ inputs.whats_new }}
+          EOF
+          echo "What’s New to submit:"
+          echo "-----"
+          cat ios/fastlane/metadata/en-US/release_notes.txt
+          echo "-----"
 
       - name: Install Ruby gems (Fastlane)
         working-directory: ios
