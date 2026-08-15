@@ -33,7 +33,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .order('created_at', ascending: false)
           .withServerTimeout();
 
-      return attachSafeProfiles(
+      return await attachSafeProfiles(
         supabaseClient,
         response as List<dynamic>,
         userIdKey: 'requester_id',
@@ -53,7 +53,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .order('created_at', ascending: false)
           .withServerTimeout();
 
-      return attachSafeProfiles(
+      return await attachSafeProfiles(
         supabaseClient,
         response as List<dynamic>,
         userIdKey: 'requester_id',
@@ -73,7 +73,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .single()
           .withServerTimeout();
 
-      return attachSafeProfile(
+      return await attachSafeProfile(
         supabaseClient,
         Map<String, dynamic>.from(response as Map),
         userIdKey: 'requester_id',
