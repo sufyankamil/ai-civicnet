@@ -23,6 +23,23 @@ class FirebaseService {
   FirebaseService._internal();
 
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  String? _countryTopic;
+
+  /// Enrols this device in the user's explicitly selected regional topic.
+  Future<void> syncCountryTopic(String? countryCode) async {
+    final nextTopic = countryCode == null || countryCode.isEmpty
+        ? null
+        : 'country_${countryCode.toUpperCase()}';
+    if (_countryTopic == nextTopic) return;
+    try {
+      if (_countryTopic != null) await _messaging.unsubscribeFromTopic(_countryTopic!);
+      if (nextTopic != null) await _messaging.subscribeToTopic(nextTopic);
+      _countryTopic = nextTopic;
+      logger.i('Updated regional FCM topic: ${nextTopic ?? 'none'}');
+    } catch (e) {
+      logger.e('Could not update regional FCM topic: $e');
+    }
+  }
 
   Future<void> initialize() async {
     // Setup background handler
@@ -86,6 +103,16 @@ class FirebaseService {
           await _messaging.subscribeToTopic(safeTopic);
           currentUserTopic = safeTopic;
           logger.i('Subscribed to personal FCM topic synchronously on init: $safeTopic');
+        }
+        try {
+          final profile = await Supabase.instance.client
+              .from('profiles')
+              .select('country_code')
+              .eq('id', initialUser.id)
+              .maybeSingle();
+          await syncCountryTopic(profile?['country_code']?.toString());
+        } catch (e) {
+          logger.w('Could not load regional notification preference: $e');
         }
       }
 

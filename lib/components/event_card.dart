@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../models/models.dart';
 import '../theme/app_theme.dart';
@@ -25,13 +26,19 @@ class EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final isPast = event.eventDate.isBefore(now);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.5 : 0.8),
+        color: Theme.of(context).cardColor.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.5 : 0.8,
+        ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.withValues(alpha: Theme.of(context).brightness == Brightness.dark ? 0.1 : 0.2)),
+        border: Border.all(
+          color: Colors.grey.withValues(
+            alpha: Theme.of(context).brightness == Brightness.dark ? 0.1 : 0.2,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -59,21 +66,41 @@ class EventCard extends StatelessWidget {
                             height: 40,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
-                              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2), width: 2),
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                              border: Border.all(
+                                color: AppColors.primaryLight.withValues(
+                                  alpha: 0.2,
+                                ),
+                                width: 2,
+                              ),
                             ),
                           ),
-                          placeholder: (context, url) => const CircleAvatar(radius: 20, backgroundColor: Colors.grey),
-                          errorWidget: (context, url, error) => const CircleAvatar(
+                          placeholder: (context, url) => const CircleAvatar(
                             radius: 20,
                             backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white, size: 22),
                           ),
+                          errorWidget: (context, url, error) =>
+                              const CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Colors.grey,
+                                child: Icon(
+                                  Icons.person,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                              ),
                         )
                       : const CircleAvatar(
                           radius: 20,
                           backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, color: Colors.white, size: 22),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -92,7 +119,9 @@ class EventCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          AppLocalizations.of(context)!.postedBy(event.creatorName),
+                          AppLocalizations.of(
+                            context,
+                          )!.postedBy(event.creatorName),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
@@ -103,7 +132,10 @@ class EventCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
@@ -121,7 +153,7 @@ class EventCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              
+
               // Event Details Grid-like layout
               Row(
                 children: [
@@ -131,10 +163,16 @@ class EventCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight.withValues(alpha: 0.1),
+                            color: AppColors.primaryLight.withValues(
+                              alpha: 0.1,
+                            ),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.primaryLight),
+                          child: const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 16,
+                            color: AppColors.primaryLight,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -143,11 +181,19 @@ class EventCard extends StatelessWidget {
                             children: [
                               Text(
                                 'DATE & TIME',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey[500], letterSpacing: 0.5),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.grey[500],
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                               Text(
                                 _getLocalizedDate(context, event.eventDate),
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -171,7 +217,11 @@ class EventCard extends StatelessWidget {
                             color: Colors.grey.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.location_on_rounded, size: 16, color: Colors.grey),
+                          child: const Icon(
+                            Icons.location_on_rounded,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -180,11 +230,20 @@ class EventCard extends StatelessWidget {
                             children: [
                               Text(
                                 'LOCATION',
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey[500], letterSpacing: 0.5),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.grey[500],
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                               Text(
                                 event.locationName,
-                                style: TextStyle(fontSize: 13, color: Colors.grey[700], fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w600,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -196,20 +255,32 @@ class EventCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.people_alt_rounded, size: 18, color: Colors.grey),
+                      const Icon(
+                        Icons.people_alt_rounded,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         isPast
-                            ? AppLocalizations.of(context)!.attendedCount(event.attendeeCount)
-                            : AppLocalizations.of(context)!.attendingCount(event.attendeeCount),
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w600),
+                            ? AppLocalizations.of(
+                                context,
+                              )!.attendedCount(event.attendeeCount)
+                            : AppLocalizations.of(
+                                context,
+                              )!.attendingCount(event.attendeeCount),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -220,9 +291,9 @@ class EventCard extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isPast
                             ? Colors.grey.withValues(alpha: 0.1)
-                            : (event.isUserAttending 
-                                ? Colors.green 
-                                : AppColors.primaryLight),
+                            : (event.isUserAttending
+                                  ? Colors.green
+                                  : AppColors.primaryLight),
                         foregroundColor: Colors.white,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -231,10 +302,16 @@ class EventCard extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        isPast 
-                            ? AppLocalizations.of(context)!.ended 
-                            : (event.isUserAttending ? AppLocalizations.of(context)!.attending : AppLocalizations.of(context)!.rsvp),
-                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
+                        isPast
+                            ? AppLocalizations.of(context)!.ended
+                            : (event.isUserAttending
+                                  ? AppLocalizations.of(context)!.attending
+                                  : AppLocalizations.of(context)!.rsvp),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ),

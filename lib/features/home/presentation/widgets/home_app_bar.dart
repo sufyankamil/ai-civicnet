@@ -7,7 +7,18 @@ import '../../../../services/supabase_service.dart';
 import '../../../../widgets/haptic_buttons.dart';
 
 class HomeAppBar extends StatelessWidget {
-  const HomeAppBar({super.key});
+  final bool showRegionalUpdateReminder;
+  final VoidCallback? onRegionalUpdateReminderTap;
+  final bool showStoreUpdateReminder;
+  final VoidCallback? onStoreUpdateReminderTap;
+
+  const HomeAppBar({
+    super.key,
+    this.showRegionalUpdateReminder = false,
+    this.onRegionalUpdateReminderTap,
+    this.showStoreUpdateReminder = false,
+    this.onStoreUpdateReminderTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +109,22 @@ class HomeAppBar extends StatelessWidget {
         Row(
           children: [
             _buildHeaderIconButton(context, Icons.history_rounded, () => context.push('/activity')),
+            if (showRegionalUpdateReminder) ...[
+              const SizedBox(width: 8),
+              _HeaderReminder(
+                icon: Icons.public_rounded,
+                message: 'Add your country for regional updates',
+                onTap: onRegionalUpdateReminderTap,
+              ),
+            ],
+            if (showStoreUpdateReminder) ...[
+              const SizedBox(width: 8),
+              _HeaderReminder(
+                icon: Icons.system_update_rounded,
+                message: 'Update CivicNet',
+                onTap: onStoreUpdateReminderTap,
+              ),
+            ],
             const SizedBox(width: 12),
             _buildProfileAvatar(context),
           ],
@@ -149,6 +176,64 @@ class HomeAppBar extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _HeaderReminder extends StatefulWidget {
+  final VoidCallback? onTap;
+  final IconData icon;
+  final String message;
+
+  const _HeaderReminder({
+    required this.icon,
+    required this.message,
+    this.onTap,
+  });
+
+  @override
+  State<_HeaderReminder> createState() => _HeaderReminderState();
+}
+
+class _HeaderReminderState extends State<_HeaderReminder>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: Tween<double>(begin: 0.92, end: 1.08).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+      ),
+      child: AppHaptic(
+        onTap: widget.onTap ?? () {},
+        child: Tooltip(
+          message: widget.message,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: AppColors.primaryLight,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(widget.icon, size: 22, color: Colors.white),
+          ),
+        ),
+      ),
     );
   }
 }

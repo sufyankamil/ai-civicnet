@@ -737,7 +737,7 @@ class SupabaseService {
   }
 
   Future<void> updateUserProfile(String name, String avatarUrl,
-      List<String> skills) async {
+      List<String> skills, {String? countryCode}) async {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
@@ -752,6 +752,7 @@ class SupabaseService {
       'embedding': embedding, // Save the vector
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
+    if (countryCode != null) updates['country_code'] = countryCode.toUpperCase();
 
     await _client.from('profiles').upsert(updates).withServerTimeout();
   }
