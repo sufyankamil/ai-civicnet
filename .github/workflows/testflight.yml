@@ -35,6 +35,7 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
       - name: Install dependencies
         run: flutter pub get
@@ -61,6 +62,7 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
       - name: Restore GoogleService-Info.plist
         run: |
@@ -113,11 +115,11 @@ jobs:
           /usr/libexec/PlistBuddy -c "Set :provisioningProfiles:com.sufyankamil.communityNet ${PROVISIONING_PROFILE_NAME}" ios/ExportOptions.plist
 
       - name: Write What’s New
+        env:
+          INPUT_WHATS_NEW: ${{ inputs.whats_new }}
         run: |
           mkdir -p ios/fastlane/metadata/en-US
-          cat << 'EOF' > ios/fastlane/metadata/en-US/release_notes.txt
-          ${{ inputs.whats_new }}
-          EOF
+          python3 -c "import os; print(os.environ['INPUT_WHATS_NEW'].replace('\\\\n', '\n').replace('<br>', '\n'))" > ios/fastlane/metadata/en-US/release_notes.txt
           echo "What’s New to submit:"
           echo "-----"
           cat ios/fastlane/metadata/en-US/release_notes.txt
