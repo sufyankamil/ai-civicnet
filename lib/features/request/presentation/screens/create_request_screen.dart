@@ -18,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'widgets/voice_task_sheet.dart';
 
 class CreateRequestScreen extends StatefulWidget {
   const CreateRequestScreen({super.key});
@@ -35,6 +36,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   HelpCategory? _selectedCategory;
   UrgencyLevel _selectedUrgency = UrgencyLevel.medium;
   bool _isCategorizing = false;
+  bool _isLoadingLocation = false;
   LocationPermission? _permission;
   Position? _currentPosition;
 
@@ -44,32 +46,125 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
     _checkPermission(request: false);
   }
 
-  Future<void> _checkPermission({bool request = false}) async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied && request) {
-      permission = await Geolocator.requestPermission();
-    } else if (permission == LocationPermission.deniedForever && request) {
-      await Geolocator.openAppSettings();
-      return;
-    }
-
-    Position? pos;
-    if (permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse) {
-      try {
-        pos = await Geolocator.getCurrentPosition();
-      } catch (e) {
-        // Fallback
-      }
-    }
+  Future<void> _openVoiceAssistant() async {
+    final result = await VoiceTaskSheet.show(context);
+    if (result == null || !mounted) return;
 
     setState(() {
-      _permission = permission;
-      _currentPosition = pos;
+      if (result.title.isNotEmpty) {
+        _titleController.text = result.title;
+      }
+      if (result.description.isNotEmpty) {
+        _descController.text = result.description;
+      }
+
+      for (final cat in HelpCategory.values) {
+        if (cat.name.toUpperCase() == result.categoryString.toUpperCase()) {
+          _selectedCategory = cat;
+          break;
+        }
+      }
+
+      for (final u in UrgencyLevel.values) {
+        if (u.name.toUpperCase() == result.urgencyString.toUpperCase()) {
+          _selectedUrgency = u;
+          break;
+        }
+      }
     });
+
+    AppHaptic.mediumImpact();
+    if (mounted) {
+      ToastService.showSuccess(
+        context,
+        result.usedAi
+            ? 'AI auto-filled your request details!'
+            : 'Voice note applied to request details!',
+      );
+    }
+  }
+
+  Future<void> _checkPermission({bool request = false}) async {
+    if (_isLoadingLocation) return;
+    setState(() => _isLoadingLocation = true);
+
+    try {
+      // 1. Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (request && mounted) {
+          ToastService.showInfo(
+            context,
+            'Location services (GPS) are disabled. Please enable GPS in device settings.',
+          );
+          await Geolocator.openLocationSettings();
+        }
+        if (mounted) {
+          setState(() {
+            _isLoadingLocation = false;
+          });
+        }
+        return;
+      }
+
+      // 2. Check permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied && request) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.deniedForever && request) {
+        if (mounted) {
+          ToastService.showInfo(
+            context,
+            'Location access is restricted. Please enable it in Settings.',
+          );
+          await Geolocator.openAppSettings();
+        }
+      }
+
+      Position? pos;
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
+        // Fast attempt: last known position
+        try {
+          pos = await Geolocator.getLastKnownPosition();
+        } catch (_) {}
+
+        // Fresh fix attempt with 6-second timeout
+        try {
+          pos = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 6),
+            ),
+          );
+        } catch (_) {}
+      }
+
+      if (mounted) {
+        setState(() {
+          _permission = permission;
+          _currentPosition = pos;
+          _isLoadingLocation = false;
+        });
+
+        if (request && pos != null) {
+          ToastService.showSuccess(context, 'Location updated successfully!');
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingLocation = false);
+      }
+    }
   }
 
   void _detectCategory() async {
@@ -229,6 +324,52 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   ),
                 ),
               ),
+              actions: [
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                    child: AppHaptic(
+                      onTap: _openVoiceAssistant,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF7B61FF), Color(0xFF9D4EDD)],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(
+                                0xFF7B61FF,
+                              ).withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.mic, size: 16, color: Colors.white),
+                            SizedBox(width: 4),
+                            Text(
+                              'Voice AI',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -255,6 +396,8 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _buildVoiceAssistantBanner(isDark),
+                const SizedBox(height: 16),
                 _buildSectionTitle('What do you need help with?'),
                 const SizedBox(height: 12),
                 Container(
@@ -451,7 +594,35 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
                     children: [
-                      if ((_permission == LocationPermission.always ||
+                      if (_isLoadingLocation)
+                        Container(
+                          color: Colors.grey.withValues(alpha: 0.05),
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: AppColors.primaryLight,
+                                  ),
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Acquiring location...',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else if ((_permission == LocationPermission.always ||
                               _permission == LocationPermission.whileInUse) &&
                           _currentPosition != null)
                         AppHaptic(
@@ -461,6 +632,36 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
+                          ),
+                        )
+                      else if (_permission == LocationPermission.always ||
+                          _permission == LocationPermission.whileInUse)
+                        Container(
+                          color: Colors.grey.withValues(alpha: 0.05),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.location_searching_rounded,
+                                  color: Colors.grey[400],
+                                  size: 40,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Permission Granted • Waiting for GPS fix',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      _checkPermission(request: true),
+                                  child: const Text('Acquire Location Now'),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       else
@@ -623,6 +824,126 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   );
                 }),
                 const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVoiceAssistantBanner(bool isDark) {
+    const primaryAccent = Color(0xFF7B61FF);
+
+    return AppHaptic(
+      onTap: _openVoiceAssistant,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [
+                        primaryAccent.withValues(alpha: 0.16),
+                        const Color(0xFF9D4EDD).withValues(alpha: 0.08),
+                      ]
+                    : [
+                        primaryAccent.withValues(alpha: 0.10),
+                        Colors.white.withValues(alpha: 0.9),
+                      ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: primaryAccent.withValues(alpha: 0.35),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryAccent.withValues(alpha: 0.12),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [primaryAccent, Color(0xFF9D4EDD)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: primaryAccent.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.mic, color: Colors.white, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'AI Voice Assistant',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: primaryAccent.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'AUTO-FILL',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                                color: primaryAccent,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Tap to speak. AI will fill title, category & urgency.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: primaryAccent,
+                ),
               ],
             ),
           ),

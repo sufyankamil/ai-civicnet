@@ -15,6 +15,12 @@ class AppHaptic extends StatelessWidget {
     this.borderRadius,
   });
 
+  /// Trigger static haptic feedback programmatically
+  static Future<void> lightImpact() => HapticFeedback.lightImpact();
+  static Future<void> mediumImpact() => HapticFeedback.mediumImpact();
+  static Future<void> heavyImpact() => HapticFeedback.heavyImpact();
+  static Future<void> selectionClick() => HapticFeedback.selectionClick();
+
   @override
   Widget build(BuildContext context) {
     return InkWell(

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:civic_net/services/logger_service.dart';
@@ -215,6 +216,201 @@ class AiService {
     }
   }
 
+  /// Parses a spoken voice note into a structured help request (Title, Description, Category, Urgency).
+  /// Uses Gemini Flash when available, with a resilient local heuristic fallback.
+  Future<ParsedVoiceTask> parseVoiceTask(String transcript) async {
+    final cleanTranscript = transcript.trim();
+    if (cleanTranscript.isEmpty) {
+      return const ParsedVoiceTask(
+        title: '',
+        description: '',
+        categoryString: 'OTHER',
+        urgencyString: 'MEDIUM',
+        usedAi: false,
+      );
+    }
+
+    if (!_isInitialized || _chatModel == null) {
+      initialize();
+    }
+
+    if (_isInitialized && _chatModel != null) {
+      try {
+        final prompt =
+            'You are the CivicNet AI Assistant for a community help platform.\n'
+            'A neighbor just spoke this help request:\n'
+            '"""$cleanTranscript"""\n\n'
+            'Analyze what they need and format your response as pure JSON matching this exact structure:\n'
+            '{\n'
+            '  "title": "Short title max 6 words summarizing the need",\n'
+            '  "description": "Clear and polite request description",\n'
+            '  "category": "ERRANDS" | "TECHSUPPORT" | "EMERGENCY" | "EDUCATION" | "TRANSPORT" | "HOUSEHOLD" | "HEALTH" | "OTHER",\n'
+            '  "urgency": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",\n'
+            '  "suggested_tools": ["tool1", "tool2"]\n'
+            '}\n'
+            'Important: Output ONLY the valid JSON string. Do not wrap in markdown or add explanations.';
+
+        final response = await _chatModel!.generateContent([
+          Content.text(prompt),
+        ]);
+        final text = response.text?.trim() ?? '';
+
+        String jsonString = text;
+        if (jsonString.startsWith('```')) {
+          final lines = jsonString.split('\n');
+          jsonString = lines
+              .where((line) => !line.trim().startsWith('```'))
+              .join('\n')
+              .trim();
+        }
+
+        final Map<String, dynamic> data = jsonDecode(jsonString);
+        final title = (data['title'] as String?)?.trim() ?? '';
+        final description =
+            (data['description'] as String?)?.trim() ?? cleanTranscript;
+        final category =
+            (data['category'] as String?)?.trim().toUpperCase() ?? 'OTHER';
+        final urgency =
+            (data['urgency'] as String?)?.trim().toUpperCase() ?? 'MEDIUM';
+        final tools =
+            (data['suggested_tools'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            [];
+
+        if (title.isNotEmpty) {
+          logger.i(
+            'AiService: Voice task parsed successfully with Gemini Flash',
+          );
+          return ParsedVoiceTask(
+            title: title,
+            description: description,
+            categoryString: category,
+            urgencyString: urgency,
+            suggestedTools: tools,
+            usedAi: true,
+          );
+        }
+      } catch (e) {
+        logger.w(
+          'AiService: Gemini voice parse failed, using local heuristic fallback',
+          error: e,
+        );
+      }
+    }
+
+    return _parseVoiceTaskHeuristics(cleanTranscript);
+  }
+
+  /// Rule-based keyword heuristic for voice tasks when Gemini is offline or unconfigured.
+  ParsedVoiceTask _parseVoiceTaskHeuristics(String transcript) {
+    final lower = transcript.toLowerCase();
+    String category = 'OTHER';
+    String urgency = 'MEDIUM';
+    final List<String> tools = [];
+
+    if (lower.contains('emergency') ||
+        lower.contains('fire') ||
+        lower.contains('hurt') ||
+        lower.contains('bleeding') ||
+        lower.contains('accident') ||
+        lower.contains('danger') ||
+        lower.contains('ambulance')) {
+      category = 'EMERGENCY';
+      urgency = 'CRITICAL';
+    } else if (lower.contains('leak') ||
+        lower.contains('burst') ||
+        lower.contains('pipe') ||
+        lower.contains('sink') ||
+        lower.contains('plumb') ||
+        lower.contains('toilet') ||
+        lower.contains('water')) {
+      category = 'HOUSEHOLD';
+      urgency = 'HIGH';
+      tools.addAll(['Wrench', 'Bucket', 'Plumber Tape']);
+    } else if (lower.contains('power') ||
+        lower.contains('fuse') ||
+        lower.contains('wire') ||
+        lower.contains('electric') ||
+        lower.contains('spark') ||
+        lower.contains('socket')) {
+      category = 'HOUSEHOLD';
+      urgency = 'HIGH';
+      tools.addAll(['Voltage Tester', 'Insulated Screwdriver']);
+    } else if (lower.contains('clean') ||
+        lower.contains('move') ||
+        lower.contains('heavy') ||
+        lower.contains('furniture') ||
+        lower.contains('couch') ||
+        lower.contains('table') ||
+        lower.contains('yard') ||
+        lower.contains('lawn')) {
+      category = 'HOUSEHOLD';
+      urgency = 'MEDIUM';
+    } else if (lower.contains('wifi') ||
+        lower.contains('internet') ||
+        lower.contains('computer') ||
+        lower.contains('laptop') ||
+        lower.contains('phone') ||
+        lower.contains('printer') ||
+        lower.contains('software')) {
+      category = 'TECHSUPPORT';
+      urgency = 'MEDIUM';
+    } else if (lower.contains('car') ||
+        lower.contains('ride') ||
+        lower.contains('drive') ||
+        lower.contains('battery') ||
+        lower.contains('jump start') ||
+        lower.contains('flat tire') ||
+        lower.contains('transport')) {
+      category = 'TRANSPORT';
+      urgency = 'HIGH';
+      if (lower.contains('battery') || lower.contains('jump')) {
+        tools.add('Jumper Cables');
+      }
+      if (lower.contains('tire')) {
+        tools.addAll(['Jack', 'Lug Wrench', 'Spare Tire']);
+      }
+    } else if (lower.contains('grocery') ||
+        lower.contains('groceries') ||
+        lower.contains('store') ||
+        lower.contains('pick up') ||
+        lower.contains('deliver') ||
+        lower.contains('errand')) {
+      category = 'ERRANDS';
+      urgency = 'LOW';
+    } else if (lower.contains('medicine') ||
+        lower.contains('pharmacy') ||
+        lower.contains('doctor') ||
+        lower.contains('fever') ||
+        lower.contains('prescription')) {
+      category = 'HEALTH';
+      urgency = 'HIGH';
+    } else if (lower.contains('tutor') ||
+        lower.contains('homework') ||
+        lower.contains('math') ||
+        lower.contains('exam') ||
+        lower.contains('teach')) {
+      category = 'EDUCATION';
+      urgency = 'LOW';
+    }
+
+    final words = transcript.split(RegExp(r'\s+'));
+    final titleWords = words.take(6).join(' ');
+    final title = titleWords.isNotEmpty
+        ? '${titleWords[0].toUpperCase()}${titleWords.substring(1)}'
+        : 'Community Help Request';
+
+    return ParsedVoiceTask(
+      title: title,
+      description: transcript,
+      categoryString: category,
+      urgencyString: urgency,
+      suggestedTools: tools,
+      usedAi: false,
+    );
+  }
+
   /// Generates a local fallback briefing if the AI is unavailable.
   String generateLocalBriefing({
     required List<dynamic> requests,
@@ -330,4 +526,23 @@ class AiService {
       );
     }
   }
+}
+
+/// Data container for voice recognition and AI task extraction.
+class ParsedVoiceTask {
+  final String title;
+  final String description;
+  final String categoryString;
+  final String urgencyString;
+  final List<String> suggestedTools;
+  final bool usedAi;
+
+  const ParsedVoiceTask({
+    required this.title,
+    required this.description,
+    required this.categoryString,
+    required this.urgencyString,
+    this.suggestedTools = const [],
+    this.usedAi = false,
+  });
 }
