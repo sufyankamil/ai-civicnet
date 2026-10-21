@@ -52,7 +52,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Community AI',
+              'Aura AI',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -67,7 +67,7 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
                 border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
               ),
               child: const Text(
-                'BETA',
+                'LIVE',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,

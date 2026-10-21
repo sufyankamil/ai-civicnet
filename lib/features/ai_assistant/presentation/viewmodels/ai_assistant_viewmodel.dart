@@ -33,7 +33,9 @@ class AiAssistantViewModel extends GetxController {
     messages.add(
       AiMessage(
         text:
-            "Hello! I'm your CivicNet AI Assistant. I can help you find help requests, upcoming events, or community news. How can I help you today?",
+            "Hello! I'm **Aura AI**, your CivicNet community intelligence companion.\n\n"
+            "I can help you search urgent requests, find borrowable tools, discover local events, or navigate neighborhood activities.\n\n"
+            "How can I help you today?",
         isUser: false,
         timestamp: DateTime.now(),
       ),
