@@ -36,6 +36,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   HelpCategory? _selectedCategory;
   UrgencyLevel _selectedUrgency = UrgencyLevel.medium;
   bool _isCategorizing = false;
+  bool _isLoadingLocation = false;
   LocationPermission? _permission;
   Position? _currentPosition;
 
@@ -91,31 +92,79 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
   }
 
   Future<void> _checkPermission({bool request = false}) async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+    if (_isLoadingLocation) return;
+    setState(() => _isLoadingLocation = true);
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied && request) {
-      permission = await Geolocator.requestPermission();
-    } else if (permission == LocationPermission.deniedForever && request) {
-      await Geolocator.openAppSettings();
-      return;
-    }
+    try {
+      // 1. Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (request && mounted) {
+          ToastService.showInfo(
+            context,
+            'Location services (GPS) are disabled. Please enable GPS in device settings.',
+          );
+          await Geolocator.openLocationSettings();
+        }
+        if (mounted) {
+          setState(() {
+            _isLoadingLocation = false;
+          });
+        }
+        return;
+      }
 
-    Position? pos;
-    if (permission == LocationPermission.always ||
-        permission == LocationPermission.whileInUse) {
-      try {
-        pos = await Geolocator.getCurrentPosition();
-      } catch (e) {
-        // Fallback
+      // 2. Check permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied && request) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.deniedForever && request) {
+        if (mounted) {
+          ToastService.showInfo(
+            context,
+            'Location access is restricted. Please enable it in Settings.',
+          );
+          await Geolocator.openAppSettings();
+        }
+      }
+
+      Position? pos;
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
+        // Fast attempt: last known position
+        try {
+          pos = await Geolocator.getLastKnownPosition();
+        } catch (_) {}
+
+        // Fresh fix attempt with 6-second timeout
+        try {
+          pos = await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.medium,
+              timeLimit: Duration(seconds: 6),
+            ),
+          );
+        } catch (_) {}
+      }
+
+      if (mounted) {
+        setState(() {
+          _permission = permission;
+          _currentPosition = pos;
+          _isLoadingLocation = false;
+        });
+
+        if (request && pos != null) {
+          ToastService.showSuccess(context, 'Location updated successfully!');
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _isLoadingLocation = false);
       }
     }
-
-    setState(() {
-      _permission = permission;
-      _currentPosition = pos;
-    });
   }
 
   void _detectCategory() async {
@@ -545,7 +594,35 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Stack(
                     children: [
-                      if ((_permission == LocationPermission.always ||
+                      if (_isLoadingLocation)
+                        Container(
+                          color: Colors.grey.withValues(alpha: 0.05),
+                          child: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: AppColors.primaryLight,
+                                  ),
+                                ),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Acquiring location...',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else if ((_permission == LocationPermission.always ||
                               _permission == LocationPermission.whileInUse) &&
                           _currentPosition != null)
                         AppHaptic(
@@ -555,6 +632,36 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                             fit: BoxFit.cover,
                             width: double.infinity,
                             height: double.infinity,
+                          ),
+                        )
+                      else if (_permission == LocationPermission.always ||
+                          _permission == LocationPermission.whileInUse)
+                        Container(
+                          color: Colors.grey.withValues(alpha: 0.05),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.location_searching_rounded,
+                                  color: Colors.grey[400],
+                                  size: 40,
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Permission Granted • Waiting for GPS fix',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      _checkPermission(request: true),
+                                  child: const Text('Acquire Location Now'),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       else

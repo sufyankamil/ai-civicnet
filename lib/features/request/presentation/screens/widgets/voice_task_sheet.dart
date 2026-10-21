@@ -136,7 +136,7 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
         setState(() => _isListening = false);
         ToastService.showInfo(
           context,
-          'Speech recognition is unavailable on this simulator/device. Tap "Insert sample voice prompt" below to test!',
+          'Speech recognition is unavailable on this device or simulator.',
         );
       }
       return;
@@ -414,37 +414,7 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
-
-                // Helper prompt button for simulator testing / quick demo
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: _isAnalyzing
-                        ? null
-                        : () {
-                            AppHaptic.selectionClick();
-                            setState(() {
-                              _recognizedWords =
-                                  'My kitchen sink pipe is leaking water all over the floor, need urgent plumbing help with a wrench!';
-                            });
-                          },
-                    icon: const Icon(
-                      Icons.auto_awesome,
-                      size: 14,
-                      color: primaryAccent,
-                    ),
-                    label: Text(
-                      'Insert demo prompt',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: primaryAccent.withValues(alpha: 0.9),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 22),
 
                 // Action Buttons
                 Row(
