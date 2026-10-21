@@ -110,23 +110,61 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
     }
   }
 
-  void _startListening() {
+  Future<void> _startListening() async {
+    // If not initialized yet, attempt initialization
+    if (!_speechEnabled || !_speech.isAvailable) {
+      try {
+        _speechEnabled = await _speech.initialize(
+          onError: (error) {
+            if (mounted) setState(() => _isListening = false);
+          },
+          onStatus: (status) {
+            if (status == 'done' || status == 'notListening') {
+              if (mounted && _isListening) {
+                setState(() => _isListening = false);
+              }
+            }
+          },
+        );
+      } catch (_) {
+        _speechEnabled = false;
+      }
+    }
+
+    if (!_speechEnabled || !_speech.isAvailable) {
+      if (mounted) {
+        setState(() => _isListening = false);
+        ToastService.showInfo(
+          context,
+          'Speech recognition is unavailable on this simulator/device. Tap "Insert sample voice prompt" below to test!',
+        );
+      }
+      return;
+    }
+
     AppHaptic.mediumImpact();
     setState(() {
       _isListening = true;
       _recognizedWords = '';
     });
 
-    _speech.listen(
-      onResult: (result) {
-        if (!mounted) return;
-        setState(() {
-          _recognizedWords = result.recognizedWords;
-        });
-      },
-      listenFor: const Duration(seconds: 45),
-      pauseFor: const Duration(seconds: 4),
-    );
+    try {
+      await _speech.listen(
+        onResult: (result) {
+          if (!mounted) return;
+          setState(() {
+            _recognizedWords = result.recognizedWords;
+          });
+        },
+        listenFor: const Duration(seconds: 45),
+        pauseFor: const Duration(seconds: 4),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isListening = false);
+        ToastService.showInfo(context, 'Unable to listen: $e');
+      }
+    }
   }
 
   void _stopListening() {
@@ -376,7 +414,37 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
                     ),
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 6),
+
+                // Helper prompt button for simulator testing / quick demo
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: _isAnalyzing
+                        ? null
+                        : () {
+                            AppHaptic.selectionClick();
+                            setState(() {
+                              _recognizedWords =
+                                  'My kitchen sink pipe is leaking water all over the floor, need urgent plumbing help with a wrench!';
+                            });
+                          },
+                    icon: const Icon(
+                      Icons.auto_awesome,
+                      size: 14,
+                      color: primaryAccent,
+                    ),
+                    label: Text(
+                      'Insert demo prompt',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: primaryAccent.withValues(alpha: 0.9),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
 
                 // Action Buttons
                 Row(
