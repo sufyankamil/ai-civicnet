@@ -4,7 +4,8 @@ import '../entities/chat_conversation_entity.dart';
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 
-class GetConversationsUseCase implements UseCase<List<ChatConversationEntity>, NoParams> {
+class GetConversationsUseCase
+    implements UseCase<List<ChatConversationEntity>, NoParams> {
   final ChatRepository repository;
   GetConversationsUseCase(this.repository);
 
@@ -21,8 +22,8 @@ class SendMessageParams {
   final String? replyToId;
 
   SendMessageParams({
-    required this.conversationId, 
-    required this.content, 
+    required this.conversationId,
+    required this.content,
     this.type = 'text',
     this.replyToId,
   });
@@ -35,9 +36,9 @@ class SendMessageUseCase implements UseCase<void, SendMessageParams> {
   @override
   Future<Either<Failure, void>> call(SendMessageParams params) {
     return repository.sendMessage(
-      params.conversationId, 
-      params.content, 
-      type: params.type, 
+      params.conversationId,
+      params.content,
+      type: params.type,
       replyToId: params.replyToId,
     );
   }
@@ -49,7 +50,8 @@ class MarkConversationAsReadParams {
   MarkConversationAsReadParams({required this.conversationId});
 }
 
-class MarkConversationAsReadUseCase implements UseCase<void, MarkConversationAsReadParams> {
+class MarkConversationAsReadUseCase
+    implements UseCase<void, MarkConversationAsReadParams> {
   final ChatRepository repository;
   MarkConversationAsReadUseCase(this.repository);
 

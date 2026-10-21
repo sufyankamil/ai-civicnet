@@ -7,29 +7,28 @@ import '../../models/event_comment.dart';
 
 class EventsViewModel extends GetxController {
   final SupabaseService _supabaseService = SupabaseService();
-  
+
   final RxList<Event> _events = <Event>[].obs;
   List<Event> get events => _events;
 
   // Filtered lists
-  List<Event> get upcomingEvents => _events
-      .where((e) => e.eventDate.isAfter(DateTime.now()))
-      .toList();
-      
-  List<Event> get pastEvents => _events
-      .where((e) => e.eventDate.isBefore(DateTime.now()))
-      .toList();
-  
+  List<Event> get upcomingEvents =>
+      _events.where((e) => e.eventDate.isAfter(DateTime.now())).toList();
+
+  List<Event> get pastEvents =>
+      _events.where((e) => e.eventDate.isBefore(DateTime.now())).toList();
+
   final RxBool _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
 
   @override
   void onInit() {
     super.onInit();
-    
+
     // Listen for auth state changes to refresh events for the new user (location, RSVPs, etc.)
     Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      if (data.event == AuthChangeEvent.signedIn || data.event == AuthChangeEvent.signedOut) {
+      if (data.event == AuthChangeEvent.signedIn ||
+          data.event == AuthChangeEvent.signedOut) {
         fetchEvents();
       }
     });
@@ -39,7 +38,8 @@ class EventsViewModel extends GetxController {
 
   Future<void> fetchEvents() async {
     _isLoading.value = true;
-    _events.clear(); // Clear old data to avoid showing User A's status to User B
+    _events
+        .clear(); // Clear old data to avoid showing User A's status to User B
     try {
       final fetchedEvents = await _supabaseService.getEvents();
       _events.assignAll(fetchedEvents);
@@ -75,8 +75,8 @@ class EventsViewModel extends GetxController {
       _events.removeWhere((e) => e.id == eventId);
       return null; // Success
     } catch (e) {
-      final errorMsg = e.toString().contains('Permission denied') 
-          ? 'Permission denied: You are not the creator.' 
+      final errorMsg = e.toString().contains('Permission denied')
+          ? 'Permission denied: You are not the creator.'
           : 'Failed to delete event: $e';
       logger.e('Error in EventsViewModel.deleteEvent: $e');
       return errorMsg;
@@ -88,14 +88,16 @@ class EventsViewModel extends GetxController {
   Future<void> toggleRSVP(String eventId, bool isJoining) async {
     try {
       await _supabaseService.rsvpToEvent(eventId, isJoining);
-      
+
       // Update local state for immediate feedback
       final index = _events.indexWhere((e) => e.id == eventId);
       if (index != -1) {
         final event = _events[index];
         _events[index] = event.copyWith(
           isUserAttending: isJoining,
-          attendeeCount: isJoining ? event.attendeeCount + 1 : event.attendeeCount - 1,
+          attendeeCount: isJoining
+              ? event.attendeeCount + 1
+              : event.attendeeCount - 1,
         );
       }
     } catch (e) {
@@ -104,10 +106,10 @@ class EventsViewModel extends GetxController {
   }
 
   // --- Comments ---
-  
+
   final RxList<EventComment> _comments = <EventComment>[].obs;
   List<EventComment> get comments => _comments;
-  
+
   final RxBool _isCommentsLoading = false.obs;
   bool get isCommentsLoading => _isCommentsLoading.value;
 
@@ -124,7 +126,11 @@ class EventsViewModel extends GetxController {
     }
   }
 
-  Future<void> postComment(String eventId, String content, {String? parentId}) async {
+  Future<void> postComment(
+    String eventId,
+    String content, {
+    String? parentId,
+  }) async {
     try {
       await _supabaseService.postEventComment(
         eventId: eventId,

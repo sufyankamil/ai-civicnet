@@ -49,7 +49,6 @@ class _PrivacySettingsSectionState extends State<PrivacySettingsSection> {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
@@ -69,14 +68,20 @@ class _PrivacySettingsSectionState extends State<PrivacySettingsSection> {
         children: [
           Row(
             children: [
-              const Icon(Icons.shield_rounded, color: AppColors.primaryLight, size: 20),
+              const Icon(
+                Icons.shield_rounded,
+                color: AppColors.primaryLight,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Privacy & Visibility',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: widget.isDark ? Colors.white : AppColors.textPrimaryLight,
+                  color: widget.isDark
+                      ? Colors.white
+                      : AppColors.textPrimaryLight,
                 ),
               ),
             ],
@@ -142,7 +147,9 @@ class _PrivacySettingsSectionState extends State<PrivacySettingsSection> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: widget.isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey[100],
+            color: widget.isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.grey[100],
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 18, color: AppColors.primaryLight),
@@ -157,7 +164,9 @@ class _PrivacySettingsSectionState extends State<PrivacySettingsSection> {
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
-                  color: widget.isDark ? Colors.white : AppColors.textPrimaryLight,
+                  color: widget.isDark
+                      ? Colors.white
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               Text(

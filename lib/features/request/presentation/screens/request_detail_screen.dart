@@ -50,11 +50,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   Future<void> _fetchData() async {
     await _viewModel.fetchHelpRequest(widget.requestId);
     _checkApplicationStatus();
-    
+
     if (_viewModel.currentRequest != null) {
       if (mounted) setState(() => _isLoadingAssets = true);
       try {
-        final assets = await Get.find<AssetsViewModel>().getMatchForRequest(_viewModel.currentRequest!);
+        final assets = await Get.find<AssetsViewModel>().getMatchForRequest(
+          _viewModel.currentRequest!,
+        );
         if (mounted) {
           setState(() {
             _matchedAssets = assets;
@@ -73,7 +75,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
     setState(() => _isLoadingApplications = true);
     try {
-      final apps = await SupabaseService().getApplicationsForRequest(widget.requestId);
+      final apps = await SupabaseService().getApplicationsForRequest(
+        widget.requestId,
+      );
       if (mounted) {
         setState(() {
           _applications = apps;
@@ -90,7 +94,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   Future<void> _checkApplicationStatus() async {
     if (SupabaseService().currentUserId == null) return;
     try {
-      final status = await SupabaseService().getApplicationStatus(widget.requestId);
+      final status = await SupabaseService().getApplicationStatus(
+        widget.requestId,
+      );
       final rating = await SupabaseService().hasUserRated(widget.requestId);
       if (mounted) {
         setState(() {
@@ -111,14 +117,19 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     }
   }
 
-  Future<void> _startChatWithUser(String userId, String userName, {String? initialMessage}) async {
+  Future<void> _startChatWithUser(
+    String userId,
+    String userName, {
+    String? initialMessage,
+  }) async {
     if (_isStartingChat) return;
     setState(() => _isStartingChat = true);
     try {
       final conversationId = await SupabaseService().createConversation(userId);
       if (!mounted) return;
       final encodedName = Uri.encodeComponent(userName);
-      String url = '/chat-detail?id=$conversationId&name=$encodedName&uid=$userId';
+      String url =
+          '/chat-detail?id=$conversationId&name=$encodedName&uid=$userId';
       if (initialMessage != null && initialMessage.isNotEmpty) {
         url += '&msg=${Uri.encodeComponent(initialMessage)}';
       }
@@ -151,9 +162,13 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
           return const RequestDetailSkeleton();
         }
         final request = _viewModel.currentRequest;
-        if (request == null) return const Center(child: Text('Request not found'));
+        if (request == null) {
+          return const Center(child: Text('Request not found'));
+        }
 
-        if (SupabaseService().currentUserId == request.requesterId && !_hasFetchedApplications && !_isLoadingApplications) {
+        if (SupabaseService().currentUserId == request.requesterId &&
+            !_hasFetchedApplications &&
+            !_isLoadingApplications) {
           Future.microtask(() => _loadApplications(request.requesterId));
         }
 
@@ -172,17 +187,26 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 12),
-                    RequestInfoSection(request: request, onStatusChange: _updateHelpRequestStatus),
+                    RequestInfoSection(
+                      request: request,
+                      onStatusChange: _updateHelpRequestStatus,
+                    ),
                     const SizedBox(height: 16),
                     StatusBannerSection(
                       applicationStatus: _applicationStatus,
-                      onChat: () => _startChatWithUser(request.requesterId, request.requesterName),
+                      onChat: () => _startChatWithUser(
+                        request.requesterId,
+                        request.requesterName,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     RequesterSection(
                       request: request,
                       isStartingChat: _isStartingChat,
-                      onChat: () => _startChatWithUser(request.requesterId, request.requesterName),
+                      onChat: () => _startChatWithUser(
+                        request.requesterId,
+                        request.requesterName,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     const Divider(height: 1),
@@ -200,8 +224,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       onAssetTap: _showAssetDetails,
                     ),
                     const SizedBox(height: 32),
-                    if (SupabaseService().currentUserId != request.requesterId) ...[
-                      if (_applicationStatus == null && request.status == RequestStatusEnum.open)
+                    if (SupabaseService().currentUserId !=
+                        request.requesterId) ...[
+                      if (_applicationStatus == null &&
+                          request.status == RequestStatusEnum.open)
                         PrimaryButton(
                           text: AppLocalizations.of(context)!.imInterested,
                           isLoading: _isApplying || _isCheckingStatus,
@@ -248,7 +274,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       await SupabaseService().applyToRequest(widget.requestId);
       if (mounted) {
         setState(() => _applicationStatus = legacy.ApplicationStatus.pending);
-        _showSuccessDialog('Interest Sent!', 'Waiting for requester to accept.');
+        _showSuccessDialog(
+          'Interest Sent!',
+          'Waiting for requester to accept.',
+        );
       }
     } catch (e) {
       if (mounted) ToastService.showError(context, 'Failed to apply.');
@@ -257,13 +286,18 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     }
   }
 
-  Future<void> _updateStatus(String appId, legacy.ApplicationStatus status) async {
+  Future<void> _updateStatus(
+    String appId,
+    legacy.ApplicationStatus status,
+  ) async {
     try {
       await SupabaseService().updateApplicationStatus(appId, status);
       await _viewModel.fetchHelpRequest(widget.requestId);
       final request = _viewModel.currentRequest;
       if (request != null) await _loadApplications(request.requesterId);
-      if (mounted) ToastService.showSuccess(context, 'Application ${status.name}!');
+      if (mounted) {
+        ToastService.showSuccess(context, 'Application ${status.name}!');
+      }
     } catch (e) {
       if (mounted) ToastService.showError(context, 'Failed to update status.');
     }
@@ -274,7 +308,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
       _showCompletionDialog();
       return;
     }
-    final error = await _viewModel.updateRequestStatus(widget.requestId, status);
+    final error = await _viewModel.updateRequestStatus(
+      widget.requestId,
+      status,
+    );
     if (mounted) {
       if (error == null) {
         ToastService.showSuccess(context, 'Status updated!');
@@ -300,14 +337,31 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             const SizedBox(height: 24),
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Theme.of(context).cardColor, borderRadius: BorderRadius.circular(24)),
+              decoration: BoxDecoration(
+                color: Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Column(
                 children: [
-                  Text(title, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
                   const SizedBox(height: 24),
-                  PrimaryButton(text: 'Got it', onPressed: () => Navigator.pop(context)),
+                  PrimaryButton(
+                    text: 'Got it',
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ],
               ),
             ),
@@ -318,7 +372,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   }
 
   void _showCompletionDialog() async {
-    final applications = await SupabaseService().getApplicationsForRequest(widget.requestId);
+    final applications = await SupabaseService().getApplicationsForRequest(
+      widget.requestId,
+    );
     if (!mounted) return;
     if (applications.isEmpty) {
       ToastService.showInfo(context, 'No applicants to mark as helper.');
@@ -351,23 +407,36 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
   Future<void> _confirmCompletion(legacy.RequestApplication app) async {
     Navigator.pop(context);
-    bool confirm = await showAdaptiveDialog(
-      context: context,
-      builder: (context) => AlertDialog.adaptive(
-        title: const Text('Confirm Completion'),
-        content: Text('Mark as completed by ${app.applicantName}?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirm')),
-        ],
-      ),
-    ) ?? false;
+    bool confirm =
+        await showAdaptiveDialog(
+          context: context,
+          builder: (context) => AlertDialog.adaptive(
+            title: const Text('Confirm Completion'),
+            content: Text('Mark as completed by ${app.applicantName}?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Confirm'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
     if (!confirm) return;
 
     try {
-      await SupabaseService().completeHelpRequest(widget.requestId.trim(), app.applicantId.trim());
+      await SupabaseService().completeHelpRequest(
+        widget.requestId.trim(),
+        app.applicantId.trim(),
+      );
       await _viewModel.fetchHelpRequest(widget.requestId);
-      if (mounted) _showSuccessDialog('Task Completed!', 'Points awarded to both!');
+      if (mounted) {
+        _showSuccessDialog('Task Completed!', 'Points awarded to both!');
+      }
     } catch (e) {
       if (mounted) ToastService.showError(context, 'Action failed.');
     }
@@ -389,8 +458,17 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         ratedUserName: profile?.name ?? 'User',
         ratedUserAvatar: profile?.avatarUrl ?? '',
         onRate: (rating) async {
-          await SupabaseService().rateUser(requestId: widget.requestId, ratedUserId: ratedUserId, rating: rating);
-          if (mounted) setState(() { _hasRated = true; _ratingGiven = rating; });
+          await SupabaseService().rateUser(
+            requestId: widget.requestId,
+            ratedUserId: ratedUserId,
+            rating: rating,
+          );
+          if (mounted) {
+            setState(() {
+              _hasRated = true;
+              _ratingGiven = rating;
+            });
+          }
         },
       ),
     );
@@ -403,8 +481,17 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
         title: const Text('Delete Request'),
         content: const Text('Are you sure?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          TextButton(onPressed: () { Navigator.pop(context); _deleteRequest(); }, child: const Text('Delete', style: TextStyle(color: Colors.red))),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteRequest();
+            },
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );

@@ -8,7 +8,7 @@ class AuthBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Stack(
       children: [
         // 1. Base Layer Gradient
@@ -41,7 +41,9 @@ class AuthBackground extends StatelessWidget {
           top: -100,
           right: -100,
           child: _AuraOrb(
-            color: const Color(0xFF6366F1).withValues(alpha: isDark ? 0.15 : 0.08),
+            color: const Color(
+              0xFF6366F1,
+            ).withValues(alpha: isDark ? 0.15 : 0.08),
             size: 400,
           ),
         ),
@@ -49,7 +51,9 @@ class AuthBackground extends StatelessWidget {
           bottom: -150,
           left: -150,
           child: _AuraOrb(
-            color: const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.15 : 0.08),
+            color: const Color(
+              0xFF8B5CF6,
+            ).withValues(alpha: isDark ? 0.15 : 0.08),
             size: 500,
           ),
         ),
@@ -83,12 +87,7 @@ class _AuraOrb extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: RadialGradient(
-          colors: [
-            color,
-            color.withValues(alpha: 0),
-          ],
-        ),
+        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
       ),
     );
   }

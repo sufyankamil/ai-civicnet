@@ -6,19 +6,9 @@ enum HelpCategory {
   transport,
   household,
   other,
-  health
+  health,
 }
 
-enum UrgencyLevel {
-  low,
-  medium,
-  high,
-  critical
-}
+enum UrgencyLevel { low, medium, high, critical }
 
-enum RequestStatusEnum {
-  open,
-  inProgress,
-  completed,
-  closed
-}
+enum RequestStatusEnum { open, inProgress, completed, closed }

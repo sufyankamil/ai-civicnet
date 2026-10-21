@@ -11,7 +11,7 @@ class OpportunityCard extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
 
   const OpportunityCard({
-    super.key, 
+    super.key,
     required this.request,
     this.width,
     this.margin,
@@ -21,7 +21,8 @@ class OpportunityCard extends StatefulWidget {
   State<OpportunityCard> createState() => _OpportunityCardState();
 }
 
-class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProviderStateMixin {
+class _OpportunityCardState extends State<OpportunityCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _rotationAnimation;
 
@@ -77,7 +78,9 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                       center: Alignment.center,
                       startAngle: 0.0,
                       endAngle: 3.14 * 2,
-                      transform: GradientRotation(_rotationAnimation.value * 3.14 * 2),
+                      transform: GradientRotation(
+                        _rotationAnimation.value * 3.14 * 2,
+                      ),
                       colors: const [
                         AppColors.primaryLight,
                         Color(0xFF6248FF),
@@ -97,8 +100,8 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: isDark 
-                                  ? Colors.black.withValues(alpha: 0.7) 
+                              color: isDark
+                                  ? Colors.black.withValues(alpha: 0.7)
                                   : Colors.black.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(22.5),
                               gradient: LinearGradient(
@@ -112,13 +115,19 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min, // For Discover carousel
+                              mainAxisSize:
+                                  MainAxisSize.min, // For Discover carousel
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     _buildMatchBadge(context, matchPercentage),
-                                    const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                                    const Icon(
+                                      Icons.auto_awesome,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 16),
@@ -140,7 +149,8 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                     color: Colors.white,
                                     letterSpacing: -0.5,
                                   ),
-                                  maxLines: 1, // Fixed line count for carousel consistency
+                                  maxLines:
+                                      1, // Fixed line count for carousel consistency
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 8),
@@ -151,7 +161,8 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                     height: 1.4,
                                     color: Colors.white.withValues(alpha: 0.7),
                                   ),
-                                  maxLines: 1, // Fixed line count for carousel consistency
+                                  maxLines:
+                                      1, // Fixed line count for carousel consistency
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 20),
@@ -162,36 +173,56 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                       decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
                                         gradient: LinearGradient(
-                                          colors: [AppColors.primaryLight, Color(0xFF6248FF)],
+                                          colors: [
+                                            AppColors.primaryLight,
+                                            Color(0xFF6248FF),
+                                          ],
                                         ),
                                       ),
                                       child: CircleAvatar(
                                         radius: 12,
-                                        backgroundImage: widget.request.requesterAvatarUrl.isNotEmpty 
-                                            ? NetworkImage(widget.request.requesterAvatarUrl) 
+                                        backgroundImage:
+                                            widget
+                                                .request
+                                                .requesterAvatarUrl
+                                                .isNotEmpty
+                                            ? NetworkImage(
+                                                widget
+                                                    .request
+                                                    .requesterAvatarUrl,
+                                              )
                                             : null,
-                                        child: widget.request.requesterAvatarUrl.isEmpty 
-                                            ? const Icon(Icons.person, size: 12) 
+                                        child:
+                                            widget
+                                                .request
+                                                .requesterAvatarUrl
+                                                .isEmpty
+                                            ? const Icon(Icons.person, size: 12)
                                             : null,
                                       ),
                                     ),
                                     const SizedBox(width: 8),
                                     Expanded(
-                                        child: Text(
-                                          widget.request.requesterName,
-                                          style: TextStyle(
-                                            fontSize: 13, 
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.white,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
+                                      child: Text(
+                                        widget.request.requesterName,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
                                         ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.2),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: const Row(
@@ -205,7 +236,11 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                                             ),
                                           ),
                                           SizedBox(width: 4),
-                                          Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 10),
+                                          Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            color: Colors.white,
+                                            size: 10,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -215,7 +250,7 @@ class _OpportunityCardState extends State<OpportunityCard> with SingleTickerProv
                             ),
                           ),
                         ),
-                        
+
                         // 4. Subtle Shimmer Effect Overlay
                         Positioned.fill(
                           child: FractionalTranslation(

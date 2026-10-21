@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:math' show cos, sin, sqrt, asin;
 import 'dart:io';
@@ -58,10 +57,13 @@ class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
   RealtimeChannel? _notificationChannel;
   final Set<String> _userVotedIds = {};
+
   /// In-memory cache of unwrapped conversation AES keys.
   final Map<String, Uint8List> _conversationKeyCache = {};
+
   /// Latest wrapped_key string successfully unwrapped (detect peer rekeys).
   final Map<String, String> _conversationWrapCache = {};
+
   /// Avoid re-uploading the same public wrap key every ensure call.
   String? _uploadedWrapKeyPem;
 
@@ -91,27 +93,31 @@ class SupabaseService {
 
     _notificationChannel?.unsubscribe();
 
-    _notificationChannel = _client.channel('public:notifications_$userId')
+    _notificationChannel = _client
+        .channel('public:notifications_$userId')
         .onPostgresChanges(
-        event: PostgresChangeEvent.insert,
-        schema: 'public',
-        table: 'notifications',
-        filter: PostgresChangeFilter(
-          type: PostgresChangeFilterType.eq,
-          column: 'user_id',
-          value: userId,
-        ),
-        callback: (payload) {
-          final newRecord = payload.newRecord;
-          final notification = AppNotification.fromJson(newRecord);
-          NotificationService().showLocalNotification(
-            id: notification.id.hashCode,
-            title: notification.title,
-            body: notification.body,
-            payload: jsonEncode({'type': notification.type, 'related_id': notification.relatedId}),
-          );
-        }
-    )
+          event: PostgresChangeEvent.insert,
+          schema: 'public',
+          table: 'notifications',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'user_id',
+            value: userId,
+          ),
+          callback: (payload) {
+            final newRecord = payload.newRecord;
+            final notification = AppNotification.fromJson(newRecord);
+            NotificationService().showLocalNotification(
+              id: notification.id.hashCode,
+              title: notification.title,
+              body: notification.body,
+              payload: jsonEncode({
+                'type': notification.type,
+                'related_id': notification.relatedId,
+              }),
+            );
+          },
+        )
         .subscribe();
   }
 
@@ -119,13 +125,14 @@ class SupabaseService {
 
   // --- Authentication ---
 
-  Future<AuthResponse> signUp(String email, String password,
-      String name) async {
-    final response = await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: {'name': name},
-    ).withServerTimeout();
+  Future<AuthResponse> signUp(
+    String email,
+    String password,
+    String name,
+  ) async {
+    final response = await _client.auth
+        .signUp(email: email, password: password, data: {'name': name})
+        .withServerTimeout();
     if (response.session != null) {
       await ensureChatIdentityKeys();
     }
@@ -133,10 +140,9 @@ class SupabaseService {
   }
 
   Future<AuthResponse> signIn(String email, String password) async {
-    final response = await _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    ).withServerTimeout();
+    final response = await _client.auth
+        .signInWithPassword(email: email, password: password)
+        .withServerTimeout();
     await ensureChatIdentityKeys();
     return response;
   }
@@ -156,9 +162,11 @@ class SupabaseService {
     try {
       final pubPem = await EncryptionService().ensureIdentityKeys();
       if (_uploadedWrapKeyPem == pubPem) return;
-      await _client.from('profiles').update({
-        'public_wrap_key': pubPem,
-      }).eq('id', user.id).withServerTimeout();
+      await _client
+          .from('profiles')
+          .update({'public_wrap_key': pubPem})
+          .eq('id', user.id)
+          .withServerTimeout();
       _uploadedWrapKeyPem = pubPem;
     } catch (e) {
       logger.e('Failed to ensure chat identity keys: $e');
@@ -181,17 +189,17 @@ class SupabaseService {
   String? get currentSessionId {
     final token = _client.auth.currentSession?.accessToken;
     if (token == null) return null;
-    
+
     try {
       final parts = token.split('.');
       if (parts.length != 3) return null;
-      
+
       String payloadStr = parts[1];
       // Pad base64 string if necessary
       while (payloadStr.length % 4 != 0) {
         payloadStr += '=';
       }
-      
+
       final payloadStrDecoded = utf8.decode(base64Url.decode(payloadStr));
       final payload = jsonDecode(payloadStrDecoded);
       return payload['session_id'] as String?;
@@ -203,7 +211,9 @@ class SupabaseService {
 
   Future<List<UserSession>> getUserSessions() async {
     try {
-      final response = await _client.rpc('get_user_sessions').withServerTimeout();
+      final response = await _client
+          .rpc('get_user_sessions')
+          .withServerTimeout();
       final data = response as List<dynamic>;
       return data.map((json) => UserSession.fromJson(json)).toList();
     } catch (e) {
@@ -214,7 +224,9 @@ class SupabaseService {
 
   Future<void> revokeSession(String sessionId) async {
     try {
-      await _client.rpc('revoke_session', params: {'session_id': sessionId}).withServerTimeout();
+      await _client
+          .rpc('revoke_session', params: {'session_id': sessionId})
+          .withServerTimeout();
       logger.d('Session $sessionId revoked.');
     } catch (e) {
       logger.e('Error revoking session: $e');
@@ -248,28 +260,29 @@ class SupabaseService {
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
         .order('created_at', ascending: false)
-        .map((data) =>
-        data.map((json) => AppNotification.fromJson(json)).toList());
+        .map(
+          (data) => data.map((json) => AppNotification.fromJson(json)).toList(),
+        );
   }
 
   Future<void> markNotificationAsRead(String notificationId) async {
-    await _client.from('notifications').update({'is_read': true}).eq(
-        'id', notificationId).withServerTimeout();
+    await _client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('id', notificationId)
+        .withServerTimeout();
   }
 
   // Create a new request
   Future<void> createHelpRequest(HelpRequest request) async {
     final userId = _client.auth.currentUser!.id;
-    final categoryStr = request.category
-        .toString()
-        .split('.')
-        .last;
+    final categoryStr = request.category.toString().split('.').last;
 
     // Generate AI embedding for "True AI" matching
     final embedding = await AiService().generateRequestEmbedding(
-        request.title,
-        request.description,
-        categoryStr
+      request.title,
+      request.description,
+      categoryStr,
     );
 
     await _client.from('help_requests').insert({
@@ -277,10 +290,7 @@ class SupabaseService {
       'title': request.title,
       'description': request.description,
       'category': categoryStr,
-      'urgency': request.urgency
-          .toString()
-          .split('.')
-          .last,
+      'urgency': request.urgency.toString().split('.').last,
       'lat': request.lat,
       'lng': request.lng,
       'location_name': request.locationName,
@@ -290,15 +300,15 @@ class SupabaseService {
     }).withServerTimeout();
   }
 
-
-  Future<void> updateHelpRequestStatus(String requestId,
-      RequestStatus status) async {
-    await _client.from('help_requests').update({
-      'status': status
-          .toString()
-          .split('.')
-          .last,
-    }).eq('id', requestId).withServerTimeout();
+  Future<void> updateHelpRequestStatus(
+    String requestId,
+    RequestStatus status,
+  ) async {
+    await _client
+        .from('help_requests')
+        .update({'status': status.toString().split('.').last})
+        .eq('id', requestId)
+        .withServerTimeout();
   }
 
   // Fetch requests (real-time stream or list)
@@ -311,7 +321,11 @@ class SupabaseService {
   }
 
   // Fetch requests (future) with optional radius and center
-  Future<List<HelpRequest>> getHelpRequests({double? centerLat, double? centerLng, double? radiusKm}) async {
+  Future<List<HelpRequest>> getHelpRequests({
+    double? centerLat,
+    double? centerLng,
+    double? radiusKm,
+  }) async {
     try {
       final query = _client
           .from('help_requests')
@@ -328,7 +342,10 @@ class SupabaseService {
 
       // Cache the data with a 15-minute TTL
       await CacheService().put(
-          'help_requests_v2', data, ttl: const Duration(minutes: 15));
+        'help_requests_v2',
+        data,
+        ttl: const Duration(minutes: 15),
+      );
 
       // Parse in background isolate
       List<HelpRequest> requests = await compute(parseHelpRequests, data);
@@ -338,10 +355,9 @@ class SupabaseService {
       final blockedUserIds = await getBlockedUserIds();
 
       if (blockedUserIds.isNotEmpty) {
-        requests =
-            requests
-                .where((r) => !blockedUserIds.contains(r.requesterId))
-                .toList();
+        requests = requests
+            .where((r) => !blockedUserIds.contains(r.requesterId))
+            .toList();
       }
 
       // Dynamic distance calculation and filtering
@@ -366,14 +382,17 @@ class SupabaseService {
           }).toList();
         }
       } else {
-        requests = requests.map((r) => r.copyWith(distance: 'Unknown')).toList();
+        requests = requests
+            .map((r) => r.copyWith(distance: 'Unknown'))
+            .toList();
       }
 
       return requests;
     } catch (e) {
       logger.e('Error fetching help requests from network', error: e);
       // Fallback to cache
-      final cachedData = await CacheService().get('help_requests_v2') ??
+      final cachedData =
+          await CacheService().get('help_requests_v2') ??
           await CacheService().get('help_requests');
       if (cachedData != null) {
         logger.i('Returning cached help requests');
@@ -393,7 +412,8 @@ class SupabaseService {
           .from('help_requests')
           .select('*')
           .eq('requester_id', user.id)
-          .order('created_at', ascending: false).withServerTimeout();
+          .order('created_at', ascending: false)
+          .withServerTimeout();
 
       final List<dynamic> data = await attachSafeProfiles(
         _client,
@@ -418,7 +438,8 @@ class SupabaseService {
           .from('request_applications')
           .select('id, status, created_at, help_requests(*)')
           .eq('applicant_id', user.id)
-          .order('created_at', ascending: false).withServerTimeout();
+          .order('created_at', ascending: false)
+          .withServerTimeout();
 
       final rows = List<Map<String, dynamic>>.from(
         (response as List).map((e) => Map<String, dynamic>.from(e as Map)),
@@ -437,9 +458,7 @@ class SupabaseService {
         nested,
         userIdKey: 'requester_id',
       );
-      final byId = {
-        for (final hr in enrichedNested) hr['id'].toString(): hr,
-      };
+      final byId = {for (final hr in enrichedNested) hr['id'].toString(): hr};
 
       for (final row in rows) {
         final hr = row['help_requests'];
@@ -464,7 +483,8 @@ class SupabaseService {
           .from('help_requests')
           .select('*')
           .eq('id', id)
-          .single().withServerTimeout();
+          .single()
+          .withServerTimeout();
 
       final enriched = await attachSafeProfile(
         _client,
@@ -513,9 +533,8 @@ class SupabaseService {
       // Cache profile
       await CacheService().put('user_profile_$userId', data);
 
-      final skillsList = (data['skills'] as List?)
-          ?.map((e) => e.toString())
-          .toList() ?? [];
+      final skillsList =
+          (data['skills'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
       return User(
         id: data['id'],
@@ -545,9 +564,8 @@ class SupabaseService {
       if (cachedData != null) {
         logger.i('Returning cached profile for $userId');
         final data = cachedData;
-        final skillsList = (data['skills'] as List?)
-            ?.map((e) => e.toString())
-            .toList() ?? [];
+        final skillsList =
+            (data['skills'] as List?)?.map((e) => e.toString()).toList() ?? [];
         return User(
           id: data['id'],
           name: data['name'] ?? 'Unknown',
@@ -581,7 +599,8 @@ class SupabaseService {
           .from('profiles')
           .select()
           .eq('id', user.id)
-          .maybeSingle().withServerTimeout();
+          .maybeSingle()
+          .withServerTimeout();
 
       if (data == null) throw Exception('Profile not found.');
 
@@ -601,16 +620,27 @@ class SupabaseService {
     }
   }
 
-  Future<List<User>> getActiveNeighbors({double? centerLat, double? centerLng, double? radiusKm}) async {
+  Future<List<User>> getActiveNeighbors({
+    double? centerLat,
+    double? centerLng,
+    double? radiusKm,
+  }) async {
     try {
-      final response = await _client.rpc('get_active_neighbors', params: {
-        'center_lat': centerLat,
-        'center_lng': centerLng,
-        'radius_km': radiusKm,
-      }).withServerTimeout();
+      final response = await _client
+          .rpc(
+            'get_active_neighbors',
+            params: {
+              'center_lat': centerLat,
+              'center_lng': centerLng,
+              'radius_km': radiusKm,
+            },
+          )
+          .withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
-      return data.map((json) => User.fromMap(Map<String, dynamic>.from(json))).toList();
+      return data
+          .map((json) => User.fromMap(Map<String, dynamic>.from(json)))
+          .toList();
     } catch (e) {
       logger.e('Error fetching active neighbors: $e');
       return [];
@@ -655,7 +685,9 @@ class SupabaseService {
           })
           .handleError((error) {
             if (error.toString().contains('RealtimeSubscribeException')) {
-              logger.w('Profile real-time subscription timed out. Staying on fetched data.');
+              logger.w(
+                'Profile real-time subscription timed out. Staying on fetched data.',
+              );
             } else {
               logger.e('Profile stream encountered error: $error');
             }
@@ -724,7 +756,8 @@ class SupabaseService {
           .select('rating')
           .eq('request_id', requestId)
           .eq('rater_id', user.id)
-          .maybeSingle().withServerTimeout();
+          .maybeSingle()
+          .withServerTimeout();
 
       if (response != null && response['rating'] != null) {
         return response['rating'] as int;
@@ -736,8 +769,12 @@ class SupabaseService {
     }
   }
 
-  Future<void> updateUserProfile(String name, String avatarUrl,
-      List<String> skills, {String? countryCode}) async {
+  Future<void> updateUserProfile(
+    String name,
+    String avatarUrl,
+    List<String> skills, {
+    String? countryCode,
+  }) async {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
@@ -752,23 +789,27 @@ class SupabaseService {
       'embedding': embedding, // Save the vector
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     };
-    if (countryCode != null) updates['country_code'] = countryCode.toUpperCase();
+    if (countryCode != null) {
+      updates['country_code'] = countryCode.toUpperCase();
+    }
 
     await _client.from('profiles').upsert(updates).withServerTimeout();
   }
-
 
   Future<void> updateUserLocation(double lat, double lng) async {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
-    await _client.from('profiles').update({
-      'lat': lat,
-      'lng': lng,
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }).eq('id', user.id).withServerTimeout();
+    await _client
+        .from('profiles')
+        .update({
+          'lat': lat,
+          'lng': lng,
+          'updated_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .eq('id', user.id)
+        .withServerTimeout();
   }
-
 
   Future<List<Helper>> getPotentialHelpers(HelpRequest request) async {
     try {
@@ -776,35 +817,36 @@ class SupabaseService {
       final queryEmbedding = await AiService().generateRequestEmbedding(
         request.title,
         request.description,
-        request.category
-            .toString()
-            .split('.')
-            .last,
+        request.category.toString().split('.').last,
         isQuery: true, // This is a search query
       );
 
-
       if (queryEmbedding == null) {
         logger.w(
-            'Semantic Match: Failed to generate embedding, falling back to basic fetching.');
+          'Semantic Match: Failed to generate embedding, falling back to basic fetching.',
+        );
         return []; // Or implement basic fallback here
       }
 
       // 2. Call semantic matching RPC "match_helpers_v3"
-      final response = await _client.rpc('match_helpers_v3', params: {
-        'query_embedding': queryEmbedding,
-        'match_threshold': 0.5,
-        'match_count': 5,
-        'excluded_id': request.requesterId,
-      }).withServerTimeout();
+      final response = await _client
+          .rpc(
+            'match_helpers_v3',
+            params: {
+              'query_embedding': queryEmbedding,
+              'match_threshold': 0.5,
+              'match_count': 5,
+              'excluded_id': request.requesterId,
+            },
+          )
+          .withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
       final List<Helper> helpers = [];
 
       for (var json in data) {
-        final skillsList = (json['skills'] as List?)
-            ?.map((e) => e.toString())
-            .toList() ?? [];
+        final skillsList =
+            (json['skills'] as List?)?.map((e) => e.toString()).toList() ?? [];
 
         final user = User(
           id: json['id'],
@@ -825,22 +867,32 @@ class SupabaseService {
 
         // Calculate distance for the UI
         String distanceStr = 'Unknown';
-        if (user.lat != null && user.lng != null && user.lat != 0 &&
-            user.lng != 0 && request.lat != 0 && request.lng != 0) {
+        if (user.lat != null &&
+            user.lng != null &&
+            user.lat != 0 &&
+            user.lng != 0 &&
+            request.lat != 0 &&
+            request.lng != 0) {
           double distKm = _calculateDistance(
-              request.lat, request.lng, user.lat!, user.lng!);
+            request.lat,
+            request.lng,
+            user.lat!,
+            user.lng!,
+          );
           distanceStr = '${distKm.toStringAsFixed(1)} km';
         }
 
-        helpers.add(Helper(
-          user: user,
-          matchScore: (json['similarity'] ?? 0.0).toDouble(),
-          distance: distanceStr,
-          matchReasons: [
-            'Semantic Match',
-            if ((json['similarity'] ?? 0.0) > 0.8) 'Highly Relevant'
-          ],
-        ));
+        helpers.add(
+          Helper(
+            user: user,
+            matchScore: (json['similarity'] ?? 0.0).toDouble(),
+            distance: distanceStr,
+            matchReasons: [
+              'Semantic Match',
+              if ((json['similarity'] ?? 0.0) > 0.8) 'Highly Relevant',
+            ],
+          ),
+        );
       }
 
       return helpers;
@@ -854,8 +906,10 @@ class SupabaseService {
   Future<List<HelpRequest>> getRecommendedHelpRequests() async {
     final user = await getCurrentUserProfile();
     if (user == null) return [];
-    
-    logger.d('AI MATCH DEBUG: Checking recommendations for User "${user.name}" with Skills: ${user.skills}');
+
+    logger.d(
+      'AI MATCH DEBUG: Checking recommendations for User "${user.name}" with Skills: ${user.skills}',
+    );
 
     try {
       final profileEmbedding = await AiService().generateProfileEmbedding(
@@ -866,14 +920,19 @@ class SupabaseService {
 
       if (profileEmbedding == null) return [];
 
-      final response = await _client.rpc('match_requests_v3', params: {
-        'query_embedding': profileEmbedding,
-        'match_threshold': 0.3,
-        // Restored to a more realistic similarity threshold
-        'match_count': 10,
-        'excluded_id': user.id,
-        // Exclude the current user's own requests
-      }).withServerTimeout();
+      final response = await _client
+          .rpc(
+            'match_requests_v3',
+            params: {
+              'query_embedding': profileEmbedding,
+              'match_threshold': 0.3,
+              // Restored to a more realistic similarity threshold
+              'match_count': 10,
+              'excluded_id': user.id,
+              // Exclude the current user's own requests
+            },
+          )
+          .withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
       final enriched = await attachSafeProfiles(
@@ -884,7 +943,8 @@ class SupabaseService {
       return enriched.map((json) {
         final req = HelpRequest.fromJson(json);
         return req.copyWith(
-            aiRelevanceScore: (json['similarity'] ?? 0.0).toDouble());
+          aiRelevanceScore: (json['similarity'] ?? 0.0).toDouble(),
+        );
       }).toList();
     } catch (e) {
       logger.e('Error fetching recommended requests: $e');
@@ -892,18 +952,25 @@ class SupabaseService {
     }
   }
 
-
   // --- Community Assets Discovery ---
 
-  Future<List<CommunityAsset>> getCommunityAssets({double? centerLat, double? centerLng, double? radiusKm, String? category}) async {
+  Future<List<CommunityAsset>> getCommunityAssets({
+    double? centerLat,
+    double? centerLng,
+    double? radiusKm,
+    String? category,
+  }) async {
     try {
       var query = _client.from('community_assets').select('*');
-      
+
       if (category != null && category != 'All') {
         query = query.eq('category', category);
       }
 
-      final response = await query.neq('status', 'private').order('created_at', ascending: false).withServerTimeout();
+      final response = await query
+          .neq('status', 'private')
+          .order('created_at', ascending: false)
+          .withServerTimeout();
       final List<dynamic> data = await attachSafeProfiles(
         _client,
         response as List<dynamic>,
@@ -915,7 +982,11 @@ class SupabaseService {
       final lat = centerLat ?? currentUserProfile?.lat;
       final lng = centerLng ?? currentUserProfile?.lng;
 
-      if (lat != null && lng != null && lat != 0 && lng != 0 && radiusKm != null) {
+      if (lat != null &&
+          lng != null &&
+          lat != 0 &&
+          lng != 0 &&
+          radiusKm != null) {
         assets = assets.where((a) {
           if (a.lat == null || a.lng == null) return false;
           double dist = _calculateDistance(a.lat!, a.lng!, lat, lng);
@@ -931,12 +1002,17 @@ class SupabaseService {
   }
 
   // Haversine formula — returns distance in km
-  double _calculateDistance(double lat1, double lng1, double lat2,
-      double lng2) {
+  double _calculateDistance(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const toRad = 0.017453292519943295; // pi / 180
     final dLat = (lat2 - lat1) * toRad;
     final dLng = (lng2 - lng1) * toRad;
-    final a = sin(dLat / 2) * sin(dLat / 2) +
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
         cos(lat1 * toRad) * cos(lat2 * toRad) * sin(dLng / 2) * sin(dLng / 2);
     final clampedA = a > 1.0 ? 1.0 : a;
     return 6371.0 * 2 * asin(sqrt(clampedA)); // Earth radius 6371 km
@@ -946,9 +1022,9 @@ class SupabaseService {
 
   Future<String?> _fetchWrapKey(String userId) async {
     try {
-      final result = await _client.rpc('get_public_wrap_key', params: {
-        'target_id': userId,
-      }).withServerTimeout();
+      final result = await _client
+          .rpc('get_public_wrap_key', params: {'target_id': userId})
+          .withServerTimeout();
       if (result is String && result.isNotEmpty) return result;
       return null;
     } catch (e) {
@@ -968,8 +1044,11 @@ class SupabaseService {
   }
 
   /// Syncs the latest wrap from DB. Set [allowRekey] only when sending.
-  Future<Uint8List?> _ensureConversationKeys(String conversationId,
-      {List<String>? participantIds, bool allowRekey = false}) async {
+  Future<Uint8List?> _ensureConversationKeys(
+    String conversationId, {
+    List<String>? participantIds,
+    bool allowRekey = false,
+  }) async {
     final user = _client.auth.currentUser;
     if (user == null) return null;
 
@@ -998,7 +1077,9 @@ class SupabaseService {
         if (_conversationWrapCache[conversationId] == wrapped &&
             _conversationKeyCache.containsKey(conversationId)) {
           if (allowRekey) {
-            unawaited(_rewrapMissingParticipants(conversationId, participantIds));
+            unawaited(
+              _rewrapMissingParticipants(conversationId, participantIds),
+            );
           }
           return _conversationKeyCache[conversationId];
         }
@@ -1008,12 +1089,15 @@ class SupabaseService {
           _conversationWrapCache[conversationId] = wrapped;
           _conversationKeyCache[conversationId] = key;
           if (allowRekey) {
-            unawaited(_rewrapMissingParticipants(conversationId, participantIds));
+            unawaited(
+              _rewrapMissingParticipants(conversationId, participantIds),
+            );
           }
           return key;
         } catch (e) {
           logger.w(
-              'Unwrap failed for $conversationId (device key mismatch?). $e');
+            'Unwrap failed for $conversationId (device key mismatch?). $e',
+          );
           _conversationKeyCache.remove(conversationId);
           _conversationWrapCache.remove(conversationId);
           if (!allowRekey) return null;
@@ -1034,7 +1118,9 @@ class SupabaseService {
   }
 
   Future<Uint8List?> _distributeConversationKey(
-      String conversationId, List<String> participants) async {
+    String conversationId,
+    List<String> participants,
+  ) async {
     final user = _client.auth.currentUser;
     if (user == null) return null;
 
@@ -1072,11 +1158,16 @@ class SupabaseService {
     } catch (_) {}
 
     for (final pair in pairs) {
-      await _client.rpc('upsert_conversation_key', params: {
-        'p_conversation_id': conversationId,
-        'p_user_id': pair['user_id'],
-        'p_wrapped_key': pair['wrapped_key'],
-      }).withServerTimeout();
+      await _client
+          .rpc(
+            'upsert_conversation_key',
+            params: {
+              'p_conversation_id': conversationId,
+              'p_user_id': pair['user_id'],
+              'p_wrapped_key': pair['wrapped_key'],
+            },
+          )
+          .withServerTimeout();
     }
 
     final myWrap = pairs.firstWhere((p) => p['user_id'] == user.id);
@@ -1086,7 +1177,9 @@ class SupabaseService {
   }
 
   Future<void> _rewrapMissingParticipants(
-      String conversationId, List<String>? participantIds) async {
+    String conversationId,
+    List<String>? participantIds,
+  ) async {
     final user = _client.auth.currentUser;
     final convKey = _conversationKeyCache[conversationId];
     if (user == null || convKey == null) return;
@@ -1095,9 +1188,9 @@ class SupabaseService {
       final participants =
           participantIds ?? await _conversationParticipants(conversationId);
 
-      final existingIds = await _client.rpc('conversation_key_user_ids', params: {
-        'cid': conversationId,
-      }).withServerTimeout();
+      final existingIds = await _client
+          .rpc('conversation_key_user_ids', params: {'cid': conversationId})
+          .withServerTimeout();
       final haveKeys = <String>{
         if (existingIds is List)
           ...existingIds.map((e) => e.toString())
@@ -1115,11 +1208,16 @@ class SupabaseService {
         if (haveKeys.contains(pid)) continue;
         final pubPem = await _fetchWrapKey(pid);
         if (pubPem == null || pubPem.isEmpty) continue;
-        await _client.rpc('upsert_conversation_key', params: {
-          'p_conversation_id': conversationId,
-          'p_user_id': pid,
-          'p_wrapped_key': crypto.wrapConversationKey(convKey, pubPem),
-        }).withServerTimeout();
+        await _client
+            .rpc(
+              'upsert_conversation_key',
+              params: {
+                'p_conversation_id': conversationId,
+                'p_user_id': pid,
+                'p_wrapped_key': crypto.wrapConversationKey(convKey, pubPem),
+              },
+            )
+            .withServerTimeout();
       }
     } catch (e) {
       logger.e('Error rewrapping conversation keys: $e');
@@ -1136,8 +1234,10 @@ class SupabaseService {
 
   String _decryptMessageContent(String? content, Uint8List? convKey) {
     if (content == null || content.isEmpty) return '';
-    final decrypted =
-        EncryptionService().decryptPayload(content, conversationKey: convKey);
+    final decrypted = EncryptionService().decryptPayload(
+      content,
+      conversationKey: convKey,
+    );
     // Only hide when decrypt failed and the stored payload is still ciphertext.
     if (decrypted == content && _looksLikeCiphertext(content)) {
       return '[Encrypted message]';
@@ -1162,19 +1262,30 @@ class SupabaseService {
         final participants = List<String>.from(conv['participant_ids']);
         if (participants.contains(otherUserId)) {
           final id = conv['id'] as String;
-          await _ensureConversationKeys(id,
-              participantIds: participants, allowRekey: true);
+          await _ensureConversationKeys(
+            id,
+            participantIds: participants,
+            allowRekey: true,
+          );
           return id;
         }
       }
 
-      final response = await _client.from('conversations').insert({
-        'participant_ids': [user.id, otherUserId]
-      }).select().single().withServerTimeout();
+      final response = await _client
+          .from('conversations')
+          .insert({
+            'participant_ids': [user.id, otherUserId],
+          })
+          .select()
+          .single()
+          .withServerTimeout();
 
       final conversationId = response['id'] as String;
-      await _ensureConversationKeys(conversationId,
-          participantIds: [user.id, otherUserId], allowRekey: true);
+      await _ensureConversationKeys(
+        conversationId,
+        participantIds: [user.id, otherUserId],
+        allowRekey: true,
+      );
       return conversationId;
     } catch (e) {
       logger.e('Error creating conversation: $e');
@@ -1193,15 +1304,19 @@ class SupabaseService {
           .from('conversations')
           .select()
           .contains('participant_ids', [user.id])
-          .order('updated_at', ascending: false).withServerTimeout();
+          .order('updated_at', ascending: false)
+          .withServerTimeout();
 
       final mapped = await Future.wait(
-        (response as List).map((conv) => _buildConversationPreview(conv, user.id)),
+        (response as List).map(
+          (conv) => _buildConversationPreview(conv, user.id),
+        ),
       );
 
-      final conversations =
-          mapped.whereType<ChatConversation>().toList();
-      conversations.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
+      final conversations = mapped.whereType<ChatConversation>().toList();
+      conversations.sort(
+        (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
+      );
       return conversations;
     } catch (e, stack) {
       logger.e('Error fetching conversations: $e\n$stack');
@@ -1210,22 +1325,28 @@ class SupabaseService {
   }
 
   Future<ChatConversation?> _buildConversationPreview(
-      dynamic conv, String userId) async {
+    dynamic conv,
+    String userId,
+  ) async {
     try {
       final rawParticipants = conv['participant_ids'];
       if (rawParticipants == null) return null;
 
       final participants = List<String>.from(rawParticipants);
-      final otherId = participants.firstWhere((id) => id != userId,
-          orElse: () => '');
+      final otherId = participants.firstWhere(
+        (id) => id != userId,
+        orElse: () => '',
+      );
 
       if (otherId.isEmpty) return null;
 
-      final Map<String, dynamic> deletionTimestamps =
-          Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
+      final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(
+        conv['user_deletion_timestamps'] ?? {},
+      );
       final String? lastDeletedAtStr = deletionTimestamps[userId];
-      final DateTime? lastDeletedAt =
-          lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
+      final DateTime? lastDeletedAt = lastDeletedAtStr != null
+          ? DateTime.tryParse(lastDeletedAtStr)
+          : null;
 
       final profileFuture = _client
           .from('profiles_safe')
@@ -1234,8 +1355,10 @@ class SupabaseService {
           .maybeSingle()
           .withServerTimeout();
 
-      final convKeyFuture = _ensureConversationKeys(conv['id'],
-          participantIds: participants);
+      final convKeyFuture = _ensureConversationKeys(
+        conv['id'],
+        participantIds: participants,
+      );
 
       var lastMsgQuery = _client
           .from('messages')
@@ -1244,7 +1367,9 @@ class SupabaseService {
 
       if (lastDeletedAt != null) {
         lastMsgQuery = lastMsgQuery.gt(
-            'created_at', lastDeletedAt.toUtc().toIso8601String());
+          'created_at',
+          lastDeletedAt.toUtc().toIso8601String(),
+        );
       }
 
       final lastMsgFuture = lastMsgQuery
@@ -1281,9 +1406,8 @@ class SupabaseService {
       final avatar = profile?['avatar_url'] ?? '';
       final int unreadCount = unreadMessagesRes.length;
 
-      final String? dateString = lastMsgRes?['created_at'] ??
-          conv['updated_at'] ??
-          conv['created_at'];
+      final String? dateString =
+          lastMsgRes?['created_at'] ?? conv['updated_at'] ?? conv['created_at'];
       final DateTime messageTime =
           DateTime.tryParse(dateString ?? '') ?? DateTime.now();
 
@@ -1292,8 +1416,10 @@ class SupabaseService {
         if (lastMsgRes['is_deleted'] == true) {
           lastMessagePreview = 'This message was deleted';
         } else if (lastMsgRes['content'] != null) {
-          lastMessagePreview =
-              _decryptMessageContent(lastMsgRes['content'], convKey);
+          lastMessagePreview = _decryptMessageContent(
+            lastMsgRes['content'],
+            convKey,
+          );
         }
       }
 
@@ -1322,15 +1448,22 @@ class SupabaseService {
           .from('conversations')
           .select('user_deletion_timestamps')
           .eq('id', conversationId)
-          .single().withServerTimeout();
-      
-      final Map<String, dynamic> timestamps = Map<String, dynamic>.from(response['user_deletion_timestamps'] ?? {});
+          .single()
+          .withServerTimeout();
+
+      final Map<String, dynamic> timestamps = Map<String, dynamic>.from(
+        response['user_deletion_timestamps'] ?? {},
+      );
       timestamps[user.id] = DateTime.now().toUtc().toIso8601String();
 
-      await _client.from('conversations').update({
-        'user_deletion_timestamps': timestamps,
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', conversationId).withServerTimeout();
+      await _client
+          .from('conversations')
+          .update({
+            'user_deletion_timestamps': timestamps,
+            'updated_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('id', conversationId)
+          .withServerTimeout();
     } catch (e) {
       logger.e('Error deleting conversation: $e');
       rethrow;
@@ -1344,17 +1477,23 @@ class SupabaseService {
     try {
       // Direct updates fail silently due to RLS (updates 0 rows instead of throwing).
       // Therefore, we must use the RPC directly.
-      await _client.rpc('mark_conversation_as_read', params: {
-        'p_conversation_id': conversationId,
-      }).withServerTimeout();
+      await _client
+          .rpc(
+            'mark_conversation_as_read',
+            params: {'p_conversation_id': conversationId},
+          )
+          .withServerTimeout();
 
       // Force UI update by touching the conversation table
-      await _client.from('conversations').update({
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', conversationId).withServerTimeout();
+      await _client
+          .from('conversations')
+          .update({'updated_at': DateTime.now().toUtc().toIso8601String()})
+          .eq('id', conversationId)
+          .withServerTimeout();
     } catch (e) {
       logger.e(
-          'Error marking conversation $conversationId as read via RPC: $e');
+        'Error marking conversation $conversationId as read via RPC: $e',
+      );
 
       // Fallback to direct update just in case the RPC doesn't exist on some environments
       try {
@@ -1363,11 +1502,14 @@ class SupabaseService {
             .update({'is_read': true})
             .eq('conversation_id', conversationId)
             .eq('is_read', false)
-            .neq('sender_id', user.id).withServerTimeout();
+            .neq('sender_id', user.id)
+            .withServerTimeout();
 
-        await _client.from('conversations').update({
-          'updated_at': DateTime.now().toUtc().toIso8601String(),
-        }).eq('id', conversationId).withServerTimeout();
+        await _client
+            .from('conversations')
+            .update({'updated_at': DateTime.now().toUtc().toIso8601String()})
+            .eq('id', conversationId)
+            .withServerTimeout();
       } catch (directError) {
         logger.e('Direct update fallback also failed: $directError');
       }
@@ -1396,9 +1538,14 @@ class SupabaseService {
                   .eq('id', conversationId)
                   .maybeSingle();
               if (conv != null) {
-                final Map<String, dynamic> deletionTimestamps = Map<String, dynamic>.from(conv['user_deletion_timestamps'] ?? {});
+                final Map<String, dynamic> deletionTimestamps =
+                    Map<String, dynamic>.from(
+                      conv['user_deletion_timestamps'] ?? {},
+                    );
                 final String? lastDeletedAtStr = deletionTimestamps[user.id];
-                lastDeletedAt = lastDeletedAtStr != null ? DateTime.tryParse(lastDeletedAtStr) : null;
+                lastDeletedAt = lastDeletedAtStr != null
+                    ? DateTime.tryParse(lastDeletedAtStr)
+                    : null;
               }
             } catch (e) {
               logger.e('Error fetching conversation deletion timestamp: $e');
@@ -1408,32 +1555,41 @@ class SupabaseService {
 
           // Prefer cached key; only hit the network on miss / decrypt failure.
           convKey ??= _conversationKeyCache[conversationId];
-          convKey ??=
-              await _ensureConversationKeys(conversationId, allowRekey: false);
+          convKey ??= await _ensureConversationKeys(
+            conversationId,
+            allowRekey: false,
+          );
 
           var decrypted = messagesList.map((json) {
             final mutableJson = Map<String, dynamic>.from(json);
             if (mutableJson['content'] != null) {
-              mutableJson['content'] =
-                  _decryptMessageContent(mutableJson['content'], convKey);
+              mutableJson['content'] = _decryptMessageContent(
+                mutableJson['content'],
+                convKey,
+              );
             }
             return Message.fromJson(mutableJson);
           }).toList();
 
           // If anything still looks encrypted, force-refresh wrap once more.
-          final stillEncrypted = decrypted.any((m) =>
-              !m.isDeleted && m.content == '[Encrypted message]');
+          final stillEncrypted = decrypted.any(
+            (m) => !m.isDeleted && m.content == '[Encrypted message]',
+          );
           if (stillEncrypted) {
             _conversationWrapCache.remove(conversationId);
             _conversationKeyCache.remove(conversationId);
             convKey = null;
-            convKey =
-                await _ensureConversationKeys(conversationId, allowRekey: false);
+            convKey = await _ensureConversationKeys(
+              conversationId,
+              allowRekey: false,
+            );
             decrypted = messagesList.map((json) {
               final mutableJson = Map<String, dynamic>.from(json);
               if (mutableJson['content'] != null) {
-                mutableJson['content'] =
-                    _decryptMessageContent(mutableJson['content'], convKey);
+                mutableJson['content'] = _decryptMessageContent(
+                  mutableJson['content'],
+                  convKey,
+                );
               }
               return Message.fromJson(mutableJson);
             }).toList();
@@ -1446,20 +1602,29 @@ class SupabaseService {
         });
   }
 
-  Future<void> sendMessage(String conversationId, String content,
-      {String type = 'text', String? replyToId}) async {
+  Future<void> sendMessage(
+    String conversationId,
+    String content, {
+    String type = 'text',
+    String? replyToId,
+  }) async {
     final user = _client.auth.currentUser;
     if (user == null) return;
 
-    final convKey =
-        await _ensureConversationKeys(conversationId, allowRekey: true);
+    final convKey = await _ensureConversationKeys(
+      conversationId,
+      allowRekey: true,
+    );
     if (convKey == null) {
       throw Exception(
-          'Could not set up secure chat keys. Pull to refresh or reopen the chat, then try again.');
+        'Could not set up secure chat keys. Pull to refresh or reopen the chat, then try again.',
+      );
     }
 
-    final encryptedContent =
-        EncryptionService().encryptWithKey(content, convKey);
+    final encryptedContent = EncryptionService().encryptWithKey(
+      content,
+      convKey,
+    );
 
     await _client.from('messages').insert({
       'conversation_id': conversationId,
@@ -1469,9 +1634,11 @@ class SupabaseService {
       'reply_to_id': replyToId,
     }).withServerTimeout();
 
-    await _client.from('conversations').update({
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }).eq('id', conversationId).withServerTimeout();
+    await _client
+        .from('conversations')
+        .update({'updated_at': DateTime.now().toUtc().toIso8601String()})
+        .eq('id', conversationId)
+        .withServerTimeout();
   }
 
   Future<void> deleteMessage(String messageId) async {
@@ -1492,41 +1659,53 @@ class SupabaseService {
         : null;
 
     final deletedContent = convKey != null
-        ? EncryptionService().encryptWithKey('This message was deleted', convKey)
+        ? EncryptionService().encryptWithKey(
+            'This message was deleted',
+            convKey,
+          )
         : 'This message was deleted';
 
-    final updated = await _client.from('messages').update({
-      'is_deleted': true,
-      'content': deletedContent,
-    }).eq('id', messageId).eq('sender_id', user.id).select('id').withServerTimeout();
+    final updated = await _client
+        .from('messages')
+        .update({'is_deleted': true, 'content': deletedContent})
+        .eq('id', messageId)
+        .eq('sender_id', user.id)
+        .select('id')
+        .withServerTimeout();
 
     if ((updated as List).isEmpty) {
       throw Exception(
-          'Failed to delete message. Check messages UPDATE RLS policy.');
+        'Failed to delete message. Check messages UPDATE RLS policy.',
+      );
     }
 
     if (conversationId != null) {
-      await _client.from('conversations').update({
-        'updated_at': DateTime.now().toUtc().toIso8601String(),
-      }).eq('id', conversationId).withServerTimeout();
+      await _client
+          .from('conversations')
+          .update({'updated_at': DateTime.now().toUtc().toIso8601String()})
+          .eq('id', conversationId)
+          .withServerTimeout();
     }
   }
 
   /// Upload a chat attachment under `{conversationId}/{filename}` and return a signed URL.
   Future<String> uploadChatAttachment(
-      String conversationId, File file, String fileName) async {
+    String conversationId,
+    File file,
+    String fileName,
+  ) async {
     final path = '$conversationId/$fileName';
-    await _client.storage.from('chat-attachments').upload(
-          path,
-          file,
-          fileOptions: const FileOptions(upsert: true),
-        );
+    await _client.storage
+        .from('chat-attachments')
+        .upload(path, file, fileOptions: const FileOptions(upsert: true));
     return getChatAttachmentSignedUrl(path);
   }
 
   /// Creates a time-limited signed URL for a private chat attachment path.
-  Future<String> getChatAttachmentSignedUrl(String path,
-      {int expiresInSeconds = 3600}) async {
+  Future<String> getChatAttachmentSignedUrl(
+    String path, {
+    int expiresInSeconds = 3600,
+  }) async {
     final result = await _client.storage
         .from('chat-attachments')
         .createSignedUrl(path, expiresInSeconds);
@@ -1556,16 +1735,13 @@ class SupabaseService {
           .select('status')
           .eq('request_id', requestId)
           .eq('applicant_id', user.id)
-          .maybeSingle().withServerTimeout();
+          .maybeSingle()
+          .withServerTimeout();
 
       if (response == null) return null;
 
       return ApplicationStatus.values.firstWhere(
-            (e) =>
-        e
-            .toString()
-            .split('.')
-            .last == response['status'],
+        (e) => e.toString().split('.').last == response['status'],
         orElse: () => ApplicationStatus.pending,
       );
     } catch (e) {
@@ -1575,21 +1751,24 @@ class SupabaseService {
   }
 
   Future<List<RequestApplication>> getApplicationsForRequest(
-      String requestId) async {
+    String requestId,
+  ) async {
     try {
       final response = await _client
           .from('request_applications')
           .select('*')
           .eq('request_id', requestId)
-          .order('created_at', ascending: false).withServerTimeout();
+          .order('created_at', ascending: false)
+          .withServerTimeout();
 
       final List<dynamic> data = await attachSafeProfiles(
         _client,
         response as List<dynamic>,
         userIdKey: 'applicant_id',
       );
-      logger.d('DEBUG: Fetched ${data
-          .length} applications for request $requestId'); // DEBUG LOG
+      logger.d(
+        'DEBUG: Fetched ${data.length} applications for request $requestId',
+      ); // DEBUG LOG
       return data.map((json) {
         logger.d('DEBUG: App JSON: $json'); // DEBUG LOG
         return RequestApplication.fromJson(json);
@@ -1600,14 +1779,15 @@ class SupabaseService {
     }
   }
 
-  Future<void> updateApplicationStatus(String applicationId,
-      ApplicationStatus status) async {
-    await _client.from('request_applications').update({
-      'status': status
-          .toString()
-          .split('.')
-          .last,
-    }).eq('id', applicationId).withServerTimeout();
+  Future<void> updateApplicationStatus(
+    String applicationId,
+    ApplicationStatus status,
+  ) async {
+    await _client
+        .from('request_applications')
+        .update({'status': status.toString().split('.').last})
+        .eq('id', applicationId)
+        .withServerTimeout();
   }
 
   // --- Feedback ---
@@ -1635,9 +1815,12 @@ class SupabaseService {
     if (user == null) throw Exception('Not logged in');
 
     try {
-      final response = await _client.from('support_conversations').insert({
-        'user_id': user.id,
-      }).select().single().withServerTimeout();
+      final response = await _client
+          .from('support_conversations')
+          .insert({'user_id': user.id})
+          .select()
+          .single()
+          .withServerTimeout();
 
       return response['id'];
     } catch (e) {
@@ -1652,8 +1835,9 @@ class SupabaseService {
         .stream(primaryKey: ['id'])
         .eq('conversation_id', conversationId)
         .order('created_at', ascending: true)
-        .map((data) =>
-        data.map((json) => SupportMessage.fromJson(json)).toList());
+        .map(
+          (data) => data.map((json) => SupportMessage.fromJson(json)).toList(),
+        );
   }
 
   Future<void> sendSupportMessage(SupportMessage message) async {
@@ -1670,9 +1854,11 @@ class SupabaseService {
 
   Future<void> closeSupportConversation(String id) async {
     try {
-      await _client.from('support_conversations').update({
-        'status': 'closed',
-      }).eq('id', id).withServerTimeout();
+      await _client
+          .from('support_conversations')
+          .update({'status': 'closed'})
+          .eq('id', id)
+          .withServerTimeout();
     } catch (e) {
       logger.e('Error closing support conversation: $e');
     }
@@ -1680,9 +1866,11 @@ class SupabaseService {
 
   Future<void> updateSupportFeedback(String id, String feedback) async {
     try {
-      await _client.from('support_conversations').update({
-        'feedback': feedback,
-      }).eq('id', id).withServerTimeout();
+      await _client
+          .from('support_conversations')
+          .update({'feedback': feedback})
+          .eq('id', id)
+          .withServerTimeout();
     } catch (e) {
       logger.e('Error updating support feedback: $e');
       rethrow;
@@ -1693,16 +1881,18 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return null;
 
-    final fileName = 'feedback_${user.id}_${DateTime
-        .now()
-        .millisecondsSinceEpoch}.png';
+    final fileName =
+        'feedback_${user.id}_${DateTime.now().millisecondsSinceEpoch}.png';
     final path = 'feedback/$fileName';
 
-    await _client.storage.from('app-feedback').uploadBinary(
-      path,
-      file.readAsBytesSync(),
-      fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-    ).withServerTimeout();
+    await _client.storage
+        .from('app-feedback')
+        .uploadBinary(
+          path,
+          file.readAsBytesSync(),
+          fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+        )
+        .withServerTimeout();
 
     return _client.storage.from('app-feedback').getPublicUrl(path);
   }
@@ -1724,9 +1914,9 @@ class SupabaseService {
       );
       return data.map((json) {
         final annId = json['id'] as String;
-        return Announcement.fromJson(json).copyWith(
-          isVotedByMe: _userVotedIds.contains(annId),
-        );
+        return Announcement.fromJson(
+          json,
+        ).copyWith(isVotedByMe: _userVotedIds.contains(annId));
       }).toList();
     } catch (e) {
       logger.e('Error fetching announcements: $e');
@@ -1739,13 +1929,14 @@ class SupabaseService {
         .from('announcements')
         .stream(primaryKey: ['id'])
         .order('created_at', ascending: false)
-        .map((data) =>
-        data.map((json) {
-          final annId = json['id'] as String;
-          return Announcement.fromJson(json).copyWith(
-            isVotedByMe: _userVotedIds.contains(annId),
-          );
-        }).toList());
+        .map(
+          (data) => data.map((json) {
+            final annId = json['id'] as String;
+            return Announcement.fromJson(
+              json,
+            ).copyWith(isVotedByMe: _userVotedIds.contains(annId));
+          }).toList(),
+        );
   }
 
   Future<void> createAnnouncement({
@@ -1773,16 +1964,18 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) return null;
 
-    final fileName = 'announcement_${user.id}_${DateTime
-        .now()
-        .millisecondsSinceEpoch}.png';
+    final fileName =
+        'announcement_${user.id}_${DateTime.now().millisecondsSinceEpoch}.png';
     final path = 'announcements/$fileName';
 
-    await _client.storage.from('announcements').uploadBinary(
-      path,
-      file.readAsBytesSync(),
-      fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-    ).withServerTimeout();
+    await _client.storage
+        .from('announcements')
+        .uploadBinary(
+          path,
+          file.readAsBytesSync(),
+          fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+        )
+        .withServerTimeout();
 
     return _client.storage.from('announcements').getPublicUrl(path);
   }
@@ -1820,23 +2013,29 @@ class SupabaseService {
     }
 
     throw Exception(
-        'Permission denied: You can only delete your own announcements.');
+      'Permission denied: You can only delete your own announcements.',
+    );
   }
 
   Future<void> verifyAnnouncement(String id, bool isVerified) async {
     final user = await getCurrentUserProfile();
     if (user?.role != 'super_admin') {
       throw Exception(
-          'Permission denied: Only super admins can verify announcements.');
+        'Permission denied: Only super admins can verify announcements.',
+      );
     }
 
-    await _client.from('announcements').update({
-      'is_verified': isVerified,
-    }).eq('id', id).withServerTimeout();
+    await _client
+        .from('announcements')
+        .update({'is_verified': isVerified})
+        .eq('id', id)
+        .withServerTimeout();
   }
 
-  Future<void> toggleAnnouncementVote(String announcementId,
-      bool shouldVote) async {
+  Future<void> toggleAnnouncementVote(
+    String announcementId,
+    bool shouldVote,
+  ) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
@@ -1856,7 +2055,8 @@ class SupabaseService {
   }
 
   Future<Map<String, dynamic>> getAnnouncementVotesInfo(
-      String announcementId) async {
+    String announcementId,
+  ) async {
     final user = _client.auth.currentUser;
 
     // Get total count
@@ -1873,19 +2073,13 @@ class SupabaseService {
       final userVoteRes = await _client
           .from('announcement_votes')
           .select('id')
-          .match({
-        'announcement_id': announcementId,
-        'user_id': user.id,
-      })
+          .match({'announcement_id': announcementId, 'user_id': user.id})
           .maybeSingle();
 
       userVoted = userVoteRes != null;
     }
 
-    return {
-      'count': count,
-      'user_voted': userVoted,
-    };
+    return {'count': count, 'user_voted': userVoted};
   }
 
   // --- Realtime ---
@@ -1894,14 +2088,14 @@ class SupabaseService {
     return _client
         .channel('public:help_requests')
         .onPostgresChanges(
-      event: PostgresChangeEvent.all,
-      schema: 'public',
-      table: 'help_requests',
-      callback: (payload) {
-        logger.i('Realtime update detected in help_requests');
-        callback();
-      },
-    )
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'help_requests',
+          callback: (payload) {
+            logger.i('Realtime update detected in help_requests');
+            callback();
+          },
+        )
         .subscribe();
   }
 
@@ -1948,7 +2142,8 @@ class SupabaseService {
         .select()
         .eq('blocker_id', user.id)
         .eq('blocked_id', userId)
-        .maybeSingle().withServerTimeout();
+        .maybeSingle()
+        .withServerTimeout();
 
     return response != null;
   }
@@ -1989,10 +2184,12 @@ class SupabaseService {
     if (user == null) throw Exception('Not authenticated');
 
     // 1. Mark the request as completed and award points to both parties
-    await _client.rpc('complete_help_request', params: {
-      'p_request_id': requestId,
-      'p_helper_id': helperId,
-    }).withServerTimeout();
+    await _client
+        .rpc(
+          'complete_help_request',
+          params: {'p_request_id': requestId, 'p_helper_id': helperId},
+        )
+        .withServerTimeout();
 
     // 2. Increment the helper's help_count and award bonus points
     //    Uses a Postgres RPC to safely do an atomic increment.
@@ -2008,33 +2205,41 @@ class SupabaseService {
     //    END;
     //    $$;
     try {
-      await _client.rpc('increment_helper_stats', params: {
-        'p_helper_id': helperId,
-        'p_points': 10, // Same bonus points awarded for helping
-      }).withServerTimeout();
+      await _client
+          .rpc(
+            'increment_helper_stats',
+            params: {
+              'p_helper_id': helperId,
+              'p_points': 10, // Same bonus points awarded for helping
+            },
+          )
+          .withServerTimeout();
     } catch (e) {
       // Fallback: direct update if the RPC doesn't exist yet
       logger.w(
-          'increment_helper_stats RPC not found, falling back to direct update: $e');
-      await _client.rpc('increment', params: {
-        'table': 'profiles',
-        'id': helperId,
-      }).catchError((_) async {
-        // Last resort: raw update
-        final current = await _client
-            .from('profiles')
-            .select(
-            'help_count, points')
-            .eq('id', helperId)
-            .maybeSingle()
-            .withServerTimeout();
-        if (current != null) {
-          await _client.from('profiles').update({
-            'help_count': (current['help_count'] ?? 0) + 1,
-            'points': (current['points'] ?? 0) + 10,
-          }).eq('id', helperId).withServerTimeout();
-        }
-      });
+        'increment_helper_stats RPC not found, falling back to direct update: $e',
+      );
+      await _client
+          .rpc('increment', params: {'table': 'profiles', 'id': helperId})
+          .catchError((_) async {
+            // Last resort: raw update
+            final current = await _client
+                .from('profiles')
+                .select('help_count, points')
+                .eq('id', helperId)
+                .maybeSingle()
+                .withServerTimeout();
+            if (current != null) {
+              await _client
+                  .from('profiles')
+                  .update({
+                    'help_count': (current['help_count'] ?? 0) + 1,
+                    'points': (current['points'] ?? 0) + 10,
+                  })
+                  .eq('id', helperId)
+                  .withServerTimeout();
+            }
+          });
     }
   }
 
@@ -2074,7 +2279,8 @@ class SupabaseService {
       final response = await _client
           .from('local_events')
           .select('*')
-          .order('event_date', ascending: true).withServerTimeout();
+          .order('event_date', ascending: true)
+          .withServerTimeout();
 
       final List<dynamic> data = await attachSafeProfiles(
         _client,
@@ -2087,7 +2293,8 @@ class SupabaseService {
       final attendeesResponse = await _client
           .from('event_attendees')
           .select('event_id, user_id')
-          .inFilter('event_id', eventIds).withServerTimeout();
+          .inFilter('event_id', eventIds)
+          .withServerTimeout();
 
       final List<dynamic> allAttendees = attendeesResponse as List<dynamic>;
 
@@ -2114,23 +2321,32 @@ class SupabaseService {
         final eventLng = (json['lng'] ?? 0).toDouble();
 
         // Filtering logic
-        if (creatorId != currentUserId && userLat != 0 && userLng != 0 &&
-            eventLat != 0 && eventLng != 0) {
+        if (creatorId != currentUserId &&
+            userLat != 0 &&
+            userLng != 0 &&
+            eventLat != 0 &&
+            eventLng != 0) {
           final distance = _calculateDistance(
-              userLat, userLng, eventLat, eventLng);
+            userLat,
+            userLng,
+            eventLat,
+            eventLng,
+          );
           if (distance > radiusKm) continue;
         }
 
         final attendees = eventAttendeesMap[eventId] ?? [];
         final attendeeCount = attendees.length;
-        final bool isUserAttending = currentUserId != null &&
-            attendees.contains(currentUserId);
+        final bool isUserAttending =
+            currentUserId != null && attendees.contains(currentUserId);
 
-        events.add(Event.fromJson({
-          ...json,
-          'attendee_count': attendeeCount,
-          'is_user_attending': isUserAttending,
-        }));
+        events.add(
+          Event.fromJson({
+            ...json,
+            'attendee_count': attendeeCount,
+            'is_user_attending': isUserAttending,
+          }),
+        );
       }
 
       return events;
@@ -2144,16 +2360,21 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    final response = await _client.from('local_events').insert({
-      'title': event.title,
-      'description': event.description,
-      'event_date': event.eventDate.toIso8601String(),
-      'lat': event.lat,
-      'lng': event.lng,
-      'location_name': event.locationName,
-      'creator_id': user.id,
-      'created_at': DateTime.now().toUtc().toIso8601String(),
-    }).select().single().withServerTimeout();
+    final response = await _client
+        .from('local_events')
+        .insert({
+          'title': event.title,
+          'description': event.description,
+          'event_date': event.eventDate.toIso8601String(),
+          'lat': event.lat,
+          'lng': event.lng,
+          'location_name': event.locationName,
+          'creator_id': user.id,
+          'created_at': DateTime.now().toUtc().toIso8601String(),
+        })
+        .select()
+        .single()
+        .withServerTimeout();
 
     final eventId = response['id'];
 
@@ -2203,7 +2424,8 @@ class SupabaseService {
 
       if (dbCreatorId != user.id) {
         throw Exception(
-            'Permission denied: You are not the creator of this event.');
+          'Permission denied: You are not the creator of this event.',
+        );
       }
 
       // 2. Delete associated attendees using the RAW ID
@@ -2223,7 +2445,8 @@ class SupabaseService {
 
       if ((response as List).isEmpty) {
         throw Exception(
-            'Access Denied: Your database "Delete" policy is blocking this action. Please check your Supabase RLS settings.');
+          'Access Denied: Your database "Delete" policy is blocking this action. Please check your Supabase RLS settings.',
+        );
       }
     } catch (e) {
       logger.e('Database error during deletion: $e');
@@ -2247,8 +2470,9 @@ class SupabaseService {
         response as List<dynamic>,
         userIdKey: 'user_id',
       );
-      final List<EventComment> allComments = data.map((json) =>
-          EventComment.fromJson(json)).toList();
+      final List<EventComment> allComments = data
+          .map((json) => EventComment.fromJson(json))
+          .toList();
 
       // Build threaded structure
       final List<EventComment> topLevelComments = [];
@@ -2357,7 +2581,8 @@ class SupabaseService {
 
     if ((response as List).isEmpty) {
       throw Exception(
-          'Failed to update user role. You might not have permission.');
+        'Failed to update user role. You might not have permission.',
+      );
     }
   }
 
@@ -2412,7 +2637,8 @@ class SupabaseService {
 
           if (rejectionData.length >= 3) {
             final lastRejection = DateTime.parse(
-                rejectionData[0]['updated_at']);
+              rejectionData[0]['updated_at'],
+            );
             final cooldownEnd = lastRejection.add(const Duration(days: 30));
 
             if (DateTime.now().isBefore(cooldownEnd)) {
@@ -2433,16 +2659,10 @@ class SupabaseService {
           final currentUserProfile = await getCurrentUserProfile();
           if (currentUserProfile?.role != 'admin' &&
               currentUserProfile?.role != 'super_admin') {
-            return {
-              'eligible': true,
-              'lastStatus': 'approved_pending_sync',
-            };
+            return {'eligible': true, 'lastStatus': 'approved_pending_sync'};
           }
 
-          return {
-            'eligible': false,
-            'lastStatus': 'approved',
-          };
+          return {'eligible': false, 'lastStatus': 'approved'};
         }
       }
       return {'eligible': true};
@@ -2508,27 +2728,34 @@ class SupabaseService {
     }).withServerTimeout();
   }
 
-  Future<void> createPoll(String question, List<String> options,
-      {String? description, DateTime? endDate}) async {
+  Future<void> createPoll(
+    String question,
+    List<String> options, {
+    String? description,
+    DateTime? endDate,
+  }) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
     try {
-      final pollRes = await _client.from('polls').insert({
-        'creator_id': user.id,
-        'question': question,
-        'description': description,
-        'end_date': (endDate ?? DateTime.now().add(const Duration(days: 7)))
-            .toIso8601String(),
-      }).select().single().withServerTimeout();
+      final pollRes = await _client
+          .from('polls')
+          .insert({
+            'creator_id': user.id,
+            'question': question,
+            'description': description,
+            'end_date': (endDate ?? DateTime.now().add(const Duration(days: 7)))
+                .toIso8601String(),
+          })
+          .select()
+          .single()
+          .withServerTimeout();
 
       final pollId = pollRes['id'];
 
-      final optionsToInsert = options.map((opt) =>
-      {
-        'poll_id': pollId,
-        'option_text': opt,
-      }).toList();
+      final optionsToInsert = options
+          .map((opt) => {'poll_id': pollId, 'option_text': opt})
+          .toList();
 
       await _client
           .from('poll_options')
@@ -2544,8 +2771,12 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    await _client.from('polls').delete().eq('id', pollId).eq(
-        'creator_id', user.id).withServerTimeout();
+    await _client
+        .from('polls')
+        .delete()
+        .eq('id', pollId)
+        .eq('creator_id', user.id)
+        .withServerTimeout();
   }
 
   // --- Interest-Based Guilds ---
@@ -2575,11 +2806,14 @@ class SupabaseService {
             .toSet();
       }
 
-      return guildsData.map((json) =>
-          Guild.fromJson(
-            json,
-            isUserMember: memberGuildIds.contains(json['id']),
-          )).toList();
+      return guildsData
+          .map(
+            (json) => Guild.fromJson(
+              json,
+              isUserMember: memberGuildIds.contains(json['id']),
+            ),
+          )
+          .toList();
     } catch (e) {
       logger.e('Error fetching guilds: $e');
       return [];
@@ -2619,10 +2853,7 @@ class SupabaseService {
       final List<dynamic> data = response as List<dynamic>;
       return data.map((json) {
         final badgeJson = json['badges'];
-        return Badge.fromJson({
-          ...badgeJson,
-          'awarded_at': json['awarded_at'],
-        });
+        return Badge.fromJson({...badgeJson, 'awarded_at': json['awarded_at']});
       }).toList();
     } catch (e) {
       logger.e('Error fetching user badges: $e');
@@ -2631,7 +2862,10 @@ class SupabaseService {
   }
   // --- Community Asset Library ---
 
-  Future<void> createCommunityAsset(CommunityAsset asset, File? imageFile) async {
+  Future<void> createCommunityAsset(
+    CommunityAsset asset,
+    File? imageFile,
+  ) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
@@ -2673,15 +2907,22 @@ class SupabaseService {
     }
   }
 
-  Future<List<CommunityAsset>> getPublicAssets({AssetCategory? category}) async {
+  Future<List<CommunityAsset>> getPublicAssets({
+    AssetCategory? category,
+  }) async {
     try {
-      var query = _client.from('community_assets').select().neq('status', 'private');
+      var query = _client
+          .from('community_assets')
+          .select()
+          .neq('status', 'private');
 
       if (category != null) {
         query = query.eq('category', category.name);
       }
 
-      final response = await query.order('created_at', ascending: false).withServerTimeout();
+      final response = await query
+          .order('created_at', ascending: false)
+          .withServerTimeout();
       final List<dynamic> data = response as List<dynamic>;
       return data.map((json) => CommunityAsset.fromJson(json)).toList();
     } catch (e) {
@@ -2690,7 +2931,10 @@ class SupabaseService {
     }
   }
 
-  Future<void> updateCommunityAsset(CommunityAsset asset, File? imageFile) async {
+  Future<void> updateCommunityAsset(
+    CommunityAsset asset,
+    File? imageFile,
+  ) async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
@@ -2736,10 +2980,13 @@ class SupabaseService {
 
   Future<String?> _uploadAssetImage(File imageFile, String assetId) async {
     try {
-      final fileName = 'asset_${assetId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          'asset_${assetId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final path = 'public/$fileName';
 
-      await _client.storage.from('asset-images').upload(
+      await _client.storage
+          .from('asset-images')
+          .upload(
             path,
             imageFile,
             fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
@@ -2753,7 +3000,9 @@ class SupabaseService {
   }
 
   /// AI Matching: Find community assets that could help with a specific help request
-  Future<List<CommunityAsset>> matchAssetsForRequest(HelpRequestEntity request) async {
+  Future<List<CommunityAsset>> matchAssetsForRequest(
+    HelpRequestEntity request,
+  ) async {
     if (_client.auth.currentSession == null) return [];
     try {
       // 1. Generate query embedding for the request description
@@ -2767,12 +3016,17 @@ class SupabaseService {
       if (queryEmbedding == null) return [];
 
       // 2. Call RPC match_assets_v1
-      final response = await _client.rpc('match_assets_v1', params: {
-        'query_embedding': queryEmbedding,
-        'match_threshold': 0.4,
-        'match_count': 5,
-        'excluded_id': request.requesterId,
-      }).withServerTimeout();
+      final response = await _client
+          .rpc(
+            'match_assets_v1',
+            params: {
+              'query_embedding': queryEmbedding,
+              'match_threshold': 0.4,
+              'match_count': 5,
+              'excluded_id': request.requesterId,
+            },
+          )
+          .withServerTimeout();
 
       final List<dynamic> data = response as List<dynamic>;
       return data.map((json) => CommunityAsset.fromJson(json)).toList();
@@ -2784,67 +3038,72 @@ class SupabaseService {
 
   // --- AI Assistant & RAG ---
 
-    Future<String> searchCommunityContent({
-      required List<double> queryEmbedding,
-      required String queryText,
-    }) async {
-      try {
-        final List<String> contextParts = [];
+  Future<String> searchCommunityContent({
+    required List<double> queryEmbedding,
+    required String queryText,
+  }) async {
+    try {
+      final List<String> contextParts = [];
 
-        // 1. Search Help Requests (Vector Match)
-        final requestsResponse = await _client.rpc(
-            'match_requests_v3', params: {
+      // 1. Search Help Requests (Vector Match)
+      final requestsResponse = await _client.rpc(
+        'match_requests_v3',
+        params: {
           'query_embedding': queryEmbedding,
           'match_threshold': 0.3,
           'match_count': 5,
-        });
+        },
+      );
 
-        if (requestsResponse != null && (requestsResponse as List).isNotEmpty) {
-          contextParts.add('--- RECENT HELP REQUESTS ---');
-          for (var req in requestsResponse) {
-            contextParts.add(
-                'ID: ${req['id']} | Title: ${req['title']} | Category: ${req['category']}\nDescription: ${req['description']}');
-          }
+      if (requestsResponse != null && (requestsResponse as List).isNotEmpty) {
+        contextParts.add('--- RECENT HELP REQUESTS ---');
+        for (var req in requestsResponse) {
+          contextParts.add(
+            'ID: ${req['id']} | Title: ${req['title']} | Category: ${req['category']}\nDescription: ${req['description']}',
+          );
         }
-
-        // 2. Search Events (Keyword Match)
-        final eventsResponse = await _client
-            .from('local_events')
-            .select('id, title, description, location_name, event_date')
-            .or('title.ilike.%$queryText%,description.ilike.%$queryText%')
-            .limit(3);
-
-        if ((eventsResponse as List).isNotEmpty) {
-          contextParts.add('\n--- UPCOMING EVENTS ---');
-          for (var ev in eventsResponse as List) {
-            contextParts.add(
-                'ID: ${ev['id']} | Title: ${ev['title']} | Date: ${ev['event_date']}\nLocation: ${ev['location_name']}\nDescription: ${ev['description']}');
-          }
-        }
-
-        // 3. Search Announcements (Keyword Match)
-        final newsResponse = await _client
-            .from('announcements')
-            .select('id, title, content, category')
-            .or('title.ilike.%$queryText%,content.ilike.%$queryText%')
-            .limit(3);
-
-        if ((newsResponse as List).isNotEmpty) {
-          contextParts.add('\n--- COMMUNITY NEWS ---');
-          for (var news in newsResponse as List) {
-            contextParts.add(
-                'Category: ${news['category']} | Title: ${news['title']}\nContent: ${news['content']}');
-          }
-        }
-
-        if (contextParts.isEmpty) {
-          return "No specific community data found for this query.";
-        }
-
-        return contextParts.join('\n');
-      } catch (e) {
-        logger.e('Error searching community content: $e');
-        return "Error retrieving community context.";
       }
+
+      // 2. Search Events (Keyword Match)
+      final eventsResponse = await _client
+          .from('local_events')
+          .select('id, title, description, location_name, event_date')
+          .or('title.ilike.%$queryText%,description.ilike.%$queryText%')
+          .limit(3);
+
+      if ((eventsResponse as List).isNotEmpty) {
+        contextParts.add('\n--- UPCOMING EVENTS ---');
+        for (var ev in eventsResponse as List) {
+          contextParts.add(
+            'ID: ${ev['id']} | Title: ${ev['title']} | Date: ${ev['event_date']}\nLocation: ${ev['location_name']}\nDescription: ${ev['description']}',
+          );
+        }
+      }
+
+      // 3. Search Announcements (Keyword Match)
+      final newsResponse = await _client
+          .from('announcements')
+          .select('id, title, content, category')
+          .or('title.ilike.%$queryText%,content.ilike.%$queryText%')
+          .limit(3);
+
+      if ((newsResponse as List).isNotEmpty) {
+        contextParts.add('\n--- COMMUNITY NEWS ---');
+        for (var news in newsResponse as List) {
+          contextParts.add(
+            'Category: ${news['category']} | Title: ${news['title']}\nContent: ${news['content']}',
+          );
+        }
+      }
+
+      if (contextParts.isEmpty) {
+        return "No specific community data found for this query.";
+      }
+
+      return contextParts.join('\n');
+    } catch (e) {
+      logger.e('Error searching community content: $e');
+      return "Error retrieving community context.";
     }
   }
+}

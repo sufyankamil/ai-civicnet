@@ -25,7 +25,7 @@ class EventComment {
 
   factory EventComment.fromJson(Map<String, dynamic> json) {
     final profile = json['profiles'] as Map<String, dynamic>? ?? {};
-    
+
     return EventComment(
       id: json['id'].toString(),
       eventId: json['event_id'].toString(),
@@ -39,9 +39,7 @@ class EventComment {
     );
   }
 
-  EventComment copyWith({
-    List<EventComment>? replies,
-  }) {
+  EventComment copyWith({List<EventComment>? replies}) {
     return EventComment(
       id: id,
       eventId: eventId,

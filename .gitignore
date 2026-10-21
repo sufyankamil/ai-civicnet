@@ -51,6 +51,7 @@ GoogleService-Info.plist
 # API Keys and Environment Variables
 .env
 .env*
+!.env.example
 android/local.properties
 ios/Flutter/Secrets.xcconfig
 

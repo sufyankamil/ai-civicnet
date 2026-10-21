@@ -1,13 +1,6 @@
 import '../../profile/models/user.dart';
 
-enum EventCategory {
-  community,
-  cleanup,
-  meeting,
-  social,
-  workshop,
-  other
-}
+enum EventCategory { community, cleanup, meeting, social, workshop, other }
 
 class Event {
   final String id;
@@ -42,8 +35,9 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) {
     final profileData = json['profiles'];
-    final Map<String, dynamic> profile = (profileData is List && profileData.isNotEmpty) 
-        ? profileData.first 
+    final Map<String, dynamic> profile =
+        (profileData is List && profileData.isNotEmpty)
+        ? profileData.first
         : (profileData is Map<String, dynamic> ? profileData : {});
 
     return Event(
@@ -63,10 +57,7 @@ class Event {
     );
   }
 
-  Event copyWith({
-    int? attendeeCount,
-    bool? isUserAttending,
-  }) {
+  Event copyWith({int? attendeeCount, bool? isUserAttending}) {
     return Event(
       id: id,
       title: title,

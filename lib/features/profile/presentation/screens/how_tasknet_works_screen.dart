@@ -147,7 +147,9 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? AppColors.backgroundDark : AppColors.backgroundLight;
+    final bgColor = isDark
+        ? AppColors.backgroundDark
+        : AppColors.backgroundLight;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -285,7 +287,11 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                 border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
               ),
               child: Center(
-                child: Icon(Icons.rocket_launch_rounded, size: 28, color: Colors.white.withValues(alpha: 0.9)),
+                child: Icon(
+                  Icons.rocket_launch_rounded,
+                  size: 28,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
               ),
             ),
           ],
@@ -308,7 +314,9 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
             'Tap any step to learn more',
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
             ),
           ),
           const SizedBox(height: 20),
@@ -341,7 +349,9 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                     : (isDark ? AppColors.surfaceDark : Colors.white),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isActive ? node.color : node.color.withValues(alpha: 0.2),
+                  color: isActive
+                      ? node.color
+                      : node.color.withValues(alpha: 0.2),
                   width: isActive ? 2 : 1,
                 ),
                 boxShadow: [
@@ -376,11 +386,7 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
                       ],
                     ),
                     child: Center(
-                      child: Icon(
-                        node.icon,
-                        color: Colors.white,
-                        size: 26,
-                      ),
+                      child: Icon(node.icon, color: Colors.white, size: 26),
                     ),
                   ),
                   const SizedBox(width: 14),
@@ -476,14 +482,10 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
     );
   }
 
-
   Widget _buildSectionLabel(String text, bool isDark) {
     return Text(
       text,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }
 }
@@ -533,7 +535,11 @@ class _ConnectorPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final glowPaint = Paint()
-      ..color = Color.lerp(fromColor, toColor, progress)!.withValues(alpha: 0.35)
+      ..color = Color.lerp(
+        fromColor,
+        toColor,
+        progress,
+      )!.withValues(alpha: 0.35)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6)
       ..style = PaintingStyle.fill;
 
@@ -543,5 +549,7 @@ class _ConnectorPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ConnectorPainter old) =>
-      old.progress != progress || old.fromColor != fromColor || old.toColor != toColor;
+      old.progress != progress ||
+      old.fromColor != fromColor ||
+      old.toColor != toColor;
 }

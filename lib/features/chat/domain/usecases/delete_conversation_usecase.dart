@@ -9,7 +9,8 @@ class DeleteConversationParams {
   DeleteConversationParams({required this.conversationId});
 }
 
-class DeleteConversationUseCase implements UseCase<void, DeleteConversationParams> {
+class DeleteConversationUseCase
+    implements UseCase<void, DeleteConversationParams> {
   final ChatRepository repository;
   DeleteConversationUseCase(this.repository);
 

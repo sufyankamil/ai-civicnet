@@ -28,23 +28,44 @@ class RequesterSection extends StatelessWidget {
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.primaryLight.withValues(alpha: 0.3),
+              ),
             ),
-            child: request.requesterAvatarUrl.isNotEmpty && (request.requesterAvatarUrl.startsWith('http'))
+            child:
+                request.requesterAvatarUrl.isNotEmpty &&
+                    (request.requesterAvatarUrl.startsWith('http'))
                 ? CachedNetworkImage(
                     imageUrl: request.requesterAvatarUrl,
-                    imageBuilder: (context, imageProvider) => CircleAvatar(radius: 20, backgroundImage: imageProvider),
-                    errorWidget: (context, url, error) => const CircleAvatar(radius: 20, backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                    imageBuilder: (context, imageProvider) => CircleAvatar(
+                      radius: 20,
+                      backgroundImage: imageProvider,
+                    ),
+                    errorWidget: (context, url, error) => const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.white),
+                    ),
                   )
-                : const CircleAvatar(radius: 20, backgroundColor: Colors.grey, child: Icon(Icons.person, color: Colors.white)),
+                : const CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.grey,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
           ),
         ),
         const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(request.requesterName, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),
-            Text(AppLocalizations.of(context)!.requester, style: TextStyle(color: Colors.grey[500], fontSize: 13)),
+            Text(
+              request.requesterName,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+            ),
+            Text(
+              AppLocalizations.of(context)!.requester,
+              style: TextStyle(color: Colors.grey[500], fontSize: 13),
+            ),
           ],
         ),
         const Spacer(),
@@ -58,8 +79,16 @@ class RequesterSection extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: isStartingChat
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
-                  : const Icon(Icons.chat_bubble_rounded, color: AppColors.primaryLight, size: 18),
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+                    )
+                  : const Icon(
+                      Icons.chat_bubble_rounded,
+                      color: AppColors.primaryLight,
+                      size: 18,
+                    ),
             ),
           ),
       ],

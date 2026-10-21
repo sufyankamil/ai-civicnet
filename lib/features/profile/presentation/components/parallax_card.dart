@@ -27,7 +27,7 @@ class ParallaxCard extends StatelessWidget {
         final box = renderObject as RenderBox;
         final offset = box.localToGlobal(Offset.zero);
         final size = MediaQuery.of(context).size;
-        
+
         double parallaxOffset;
         if (axis == Axis.vertical) {
           final centerOffset = (offset.dy + box.size.height / 2) / size.height;

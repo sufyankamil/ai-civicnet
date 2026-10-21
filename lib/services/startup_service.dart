@@ -44,7 +44,6 @@ class StartupService {
     AiService().initialize();
     logger.i('AiService initialized (${stopwatch.elapsedMilliseconds}ms)');
 
-
     // 2. Crashlytics Setup
     FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
     PlatformDispatcher.instance.onError = (error, stack) {
@@ -57,11 +56,11 @@ class StartupService {
     await Supabase.initialize(
       url: dotenv.env['SUPABASE_URL']!,
       anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-      headers: {
-        'User-Agent': deviceInfo,
-      },
+      headers: {'User-Agent': deviceInfo},
     );
-    logger.i('Supabase initialized with Device Info: $deviceInfo (${stopwatch.elapsedMilliseconds}ms)');
+    logger.i(
+      'Supabase initialized with Device Info: $deviceInfo (${stopwatch.elapsedMilliseconds}ms)',
+    );
 
     // 4. Parallel Services (FirebaseService also calls NotificationService().initialize())
     await Future.wait([
@@ -90,7 +89,7 @@ class StartupService {
         deviceModel = iosInfo.utsname.machine; // e.g., "iPhone15,3"
         // Try to map machine name to commercial name if possible, or just use model
         if (iosInfo.model.contains('iPhone')) {
-           deviceModel = iosInfo.name; // e.g. "iPhone 15 Pro"
+          deviceModel = iosInfo.name; // e.g. "iPhone 15 Pro"
         }
         osSystem = 'iOS ${iosInfo.systemVersion}';
       } else if (Platform.isAndroid) {

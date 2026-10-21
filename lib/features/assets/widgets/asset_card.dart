@@ -31,14 +31,13 @@ class AssetCard extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+              ),
             ),
             clipBehavior: Clip.antiAlias,
             child: asset.imageUrl != null
-                ? Image.network(
-                    asset.imageUrl!,
-                    fit: BoxFit.cover,
-                  )
+                ? Image.network(asset.imageUrl!, fit: BoxFit.cover)
                 : Center(
                     child: Icon(
                       _getCategoryIcon(asset.category),
@@ -74,7 +73,9 @@ class AssetCard extends StatelessWidget {
                 Text(
                   asset.description,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                    color: theme.textTheme.bodySmall?.color?.withValues(
+                      alpha: 0.7,
+                    ),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -95,8 +96,7 @@ class AssetCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    if (asset.similarity != null)
-                      _buildMatchScore(context),
+                    if (asset.similarity != null) _buildMatchScore(context),
                   ],
                 ),
               ],

@@ -4,10 +4,7 @@ import '../../../../../l10n/app_localizations.dart';
 class DescriptionSection extends StatelessWidget {
   final String description;
 
-  const DescriptionSection({
-    super.key,
-    required this.description,
-  });
+  const DescriptionSection({super.key, required this.description});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +26,9 @@ class DescriptionSection extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             height: 1.6,
-            color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[800],
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[300]
+                : Colors.grey[800],
           ),
         ),
       ],

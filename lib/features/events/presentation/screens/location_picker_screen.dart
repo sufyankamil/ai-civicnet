@@ -29,8 +29,12 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   Future<void> _setInitialLocation() async {
     final l10n = AppLocalizations.of(context)!;
     logger.i('LocationPickerScreen: _setInitialLocation started');
-    if (widget.initialLocation != null && (widget.initialLocation!.latitude != 0 || widget.initialLocation!.longitude != 0)) {
-      logger.i('LocationPickerScreen: Using provided initialLocation: ${widget.initialLocation}');
+    if (widget.initialLocation != null &&
+        (widget.initialLocation!.latitude != 0 ||
+            widget.initialLocation!.longitude != 0)) {
+      logger.i(
+        'LocationPickerScreen: Using provided initialLocation: ${widget.initialLocation}',
+      );
       setState(() {
         _selectedLocation = widget.initialLocation;
         _isLoading = false;
@@ -43,19 +47,22 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       logger.d('LocationPickerScreen: Checking permissions...');
       LocationPermission permission = await Geolocator.checkPermission();
       logger.d('LocationPickerScreen: Permission status: $permission');
-      
+
       if (permission == LocationPermission.denied) {
         logger.i('LocationPickerScreen: Permission denied, requesting...');
         permission = await Geolocator.requestPermission();
         logger.i('LocationPickerScreen: Permission after request: $permission');
-        if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        if (permission == LocationPermission.denied ||
+            permission == LocationPermission.deniedForever) {
           _handleLocationError(l10n.locationPermissionRequired);
           return;
         }
       }
 
       // 2. Check service
-      logger.d('LocationPickerScreen: Checking if location services are enabled...');
+      logger.d(
+        'LocationPickerScreen: Checking if location services are enabled...',
+      );
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       logger.d('LocationPickerScreen: Service enabled: $serviceEnabled');
       if (!serviceEnabled) {
@@ -67,20 +74,26 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
       logger.d('LocationPickerScreen: Fetching last known position...');
       Position? lastPosition = await Geolocator.getLastKnownPosition();
       logger.d('LocationPickerScreen: Last known position: $lastPosition');
-      
+
       // Ignore (0,0) which some devices return when they don't have a real fix
-      if (lastPosition != null && (lastPosition.latitude != 0 || lastPosition.longitude != 0)) {
+      if (lastPosition != null &&
+          (lastPosition.latitude != 0 || lastPosition.longitude != 0)) {
         logger.i('LocationPickerScreen: Successfully used last known position');
         setState(() {
-          _selectedLocation = LatLng(lastPosition.latitude, lastPosition.longitude);
+          _selectedLocation = LatLng(
+            lastPosition.latitude,
+            lastPosition.longitude,
+          );
           _isLoading = false;
         });
         _updateWithCurrentPosition();
         return;
       }
-      
+
       // 4. Get current position
-      logger.i('LocationPickerScreen: No valid last known pos, fetching fresh position...');
+      logger.i(
+        'LocationPickerScreen: No valid last known pos, fetching fresh position...',
+      );
       await _updateWithCurrentPosition();
     } catch (e) {
       logger.e('LocationPickerScreen: Error in _setInitialLocation: $e');
@@ -91,19 +104,25 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
   Future<void> _updateWithCurrentPosition() async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      logger.d('LocationPickerScreen: getCurrentPosition starting (12s timeout)...');
+      logger.d(
+        'LocationPickerScreen: getCurrentPosition starting (12s timeout)...',
+      );
       Position position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           timeLimit: Duration(seconds: 12),
         ),
       );
-      logger.i('LocationPickerScreen: Fresh position received: (${position.latitude}, ${position.longitude})');
-      
+      logger.i(
+        'LocationPickerScreen: Fresh position received: (${position.latitude}, ${position.longitude})',
+      );
+
       // Again, ignore if it's mock (0,0)
       if (position.latitude == 0 && position.longitude == 0) {
         logger.w('LocationPickerScreen: Received (0,0) position, ignoring.');
-        if (_selectedLocation == null) _handleLocationError('Received invalid (0,0) location.');
+        if (_selectedLocation == null) {
+          _handleLocationError('Received invalid (0,0) location.');
+        }
         return;
       }
 
@@ -125,16 +144,21 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
 
   void _moveCameraToSelected() {
     if (_mapController != null && _selectedLocation != null) {
-      if (_selectedLocation!.latitude == 0 && _selectedLocation!.longitude == 0) {
-         logger.e('LocationPickerScreen: Attempted to move camera to (0,0)! Blocking.');
-         return;
+      if (_selectedLocation!.latitude == 0 &&
+          _selectedLocation!.longitude == 0) {
+        logger.e(
+          'LocationPickerScreen: Attempted to move camera to (0,0)! Blocking.',
+        );
+        return;
       }
       logger.d('LocationPickerScreen: Camera animating to $_selectedLocation');
       _mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(_selectedLocation!, 15),
       );
     } else {
-      logger.w('LocationPickerScreen: Skip camera move - mapController or selectedLocation is null');
+      logger.w(
+        'LocationPickerScreen: Skip camera move - mapController or selectedLocation is null',
+      );
     }
   }
 
@@ -143,13 +167,15 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
     if (!mounted) return;
     setState(() {
       // Default to India center instead of 0,0
-      _selectedLocation = const LatLng(20.5937, 78.9629); 
+      _selectedLocation = const LatLng(20.5937, 78.9629);
       _isLoading = false;
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message ?? AppLocalizations.of(context)!.locationNotFoundDefault),
+        content: Text(
+          message ?? AppLocalizations.of(context)!.locationNotFoundDefault,
+        ),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Colors.redAccent,
       ),
@@ -176,7 +202,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
           if (_selectedLocation != null)
             TextButton(
               onPressed: () => Navigator.pop(context, _selectedLocation),
-              child: Text(AppLocalizations.of(context)!.confirmAllCaps, style: const TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                AppLocalizations.of(context)!.confirmAllCaps,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
         ],
       ),
@@ -227,7 +256,9 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.tapOnMapToSelectLocation,
+                          AppLocalizations.of(
+                            context,
+                          )!.tapOnMapToSelectLocation,
                           style: TextStyle(fontSize: 14),
                           textAlign: TextAlign.center,
                         ),
@@ -235,9 +266,10 @@ class _LocationPickerScreenState extends State<LocationPickerScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _selectedLocation == null 
-                                ? null 
-                                : () => Navigator.pop(context, _selectedLocation),
+                            onPressed: _selectedLocation == null
+                                ? null
+                                : () =>
+                                      Navigator.pop(context, _selectedLocation),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).primaryColor,
                               foregroundColor: Colors.white,

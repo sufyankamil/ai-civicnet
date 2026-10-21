@@ -4,7 +4,7 @@ import '../../../../services/biometric_service.dart';
 class SettingsController extends GetxController {
   final RxBool _isBiometricEnabled = false.obs;
   bool get isBiometricEnabled => _isBiometricEnabled.value;
-  
+
   final RxBool _isLoadingBiometrics = true.obs;
   bool get isLoadingBiometrics => _isLoadingBiometrics.value;
 

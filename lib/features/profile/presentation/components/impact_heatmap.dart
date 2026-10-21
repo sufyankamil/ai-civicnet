@@ -39,7 +39,11 @@ class ImpactHeatmap extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.flash_on_rounded, color: Colors.orange, size: 20),
+              const Icon(
+                Icons.flash_on_rounded,
+                color: Colors.orange,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Community Presence',
@@ -56,7 +60,9 @@ class ImpactHeatmap extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             reverse: true, // Show most recent weeks first
             child: Row(
-              children: weeks.map((week) => _buildWeekColumn(context, week)).toList(),
+              children: weeks
+                  .map((week) => _buildWeekColumn(context, week))
+                  .toList(),
             ),
           ),
           const SizedBox(height: 16),
@@ -77,7 +83,7 @@ class ImpactHeatmap extends StatelessWidget {
 
   Widget _buildDaySquare(BuildContext context, HeatmapDay day) {
     final color = _getColorForCount(day.count, isDark);
-    
+
     return GestureDetector(
       onTap: () => _showDayTooltip(context, day),
       child: Container(
@@ -87,13 +93,15 @@ class ImpactHeatmap extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(3),
-          boxShadow: day.count >= 5 ? [
-            BoxShadow(
-              color: color.withValues(alpha: 0.3),
-              blurRadius: 4,
-              spreadRadius: 1,
-            )
-          ] : null,
+          boxShadow: day.count >= 5
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
       ),
     );
@@ -105,29 +113,39 @@ class ImpactHeatmap extends StatelessWidget {
       children: [
         Text(
           'Less',
-          style: TextStyle(fontSize: 10, color: isDark ? Colors.white38 : Colors.grey[600]),
+          style: TextStyle(
+            fontSize: 10,
+            color: isDark ? Colors.white38 : Colors.grey[600],
+          ),
         ),
         const SizedBox(width: 4),
-        ...[0, 2, 5, 8].map((count) => Container(
-          width: 10,
-          height: 10,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            color: _getColorForCount(count, isDark),
-            borderRadius: BorderRadius.circular(2),
+        ...[0, 2, 5, 8].map(
+          (count) => Container(
+            width: 10,
+            height: 10,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              color: _getColorForCount(count, isDark),
+              borderRadius: BorderRadius.circular(2),
+            ),
           ),
-        )),
+        ),
         const SizedBox(width: 4),
         Text(
           'More',
-          style: TextStyle(fontSize: 10, color: isDark ? Colors.white38 : Colors.grey[600]),
+          style: TextStyle(
+            fontSize: 10,
+            color: isDark ? Colors.white38 : Colors.grey[600],
+          ),
         ),
       ],
     );
   }
 
   Color _getColorForCount(int count, bool isDark) {
-    if (count == 0) return isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey[200]!;
+    if (count == 0) {
+      return isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey[200]!;
+    }
     if (count < 3) return const Color(0xFF7B61FF).withValues(alpha: 0.3);
     if (count < 6) return const Color(0xFF7B61FF).withValues(alpha: 0.6);
     return const Color(0xFF7B61FF); // High intensity
@@ -135,8 +153,8 @@ class ImpactHeatmap extends StatelessWidget {
 
   void _showDayTooltip(BuildContext context, HeatmapDay day) {
     final dateStr = '${day.date.day}/${day.date.month}';
-    final msg = day.count == 0 
-        ? 'No activities on $dateStr' 
+    final msg = day.count == 0
+        ? 'No activities on $dateStr'
         : '${day.count} neighbors helped on $dateStr';
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -165,7 +183,7 @@ class ImpactHeatmap extends StatelessWidget {
       double roll = random.nextDouble();
       if (roll > 0.8) count = random.nextInt(4) + 1; // 1-4
       if (roll > 0.95) count = random.nextInt(5) + 5; // 5-9
-      
+
       data.add(HeatmapDay(date, count));
     }
     return data;

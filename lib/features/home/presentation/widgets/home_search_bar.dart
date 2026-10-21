@@ -24,7 +24,9 @@ class HomeSearchBar extends StatelessWidget {
       pinned: true,
       delegate: _PinnedHeaderDelegate(
         child: ColoredBox(
-          color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.92),
+          color: Theme.of(
+            context,
+          ).scaffoldBackgroundColor.withValues(alpha: 0.92),
           child: ClipRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
@@ -46,10 +48,12 @@ class HomeSearchBar extends StatelessWidget {
 
   Widget _buildAuraSearch(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor =
-        (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1);
-    final fillColor =
-        (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05);
+    final borderColor = (isDark ? Colors.white : Colors.black).withValues(
+      alpha: 0.1,
+    );
+    final fillColor = (isDark ? Colors.white : Colors.black).withValues(
+      alpha: 0.05,
+    );
 
     return SizedBox(
       height: 42,
@@ -62,9 +66,15 @@ class HomeSearchBar extends StatelessWidget {
         ),
         textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
-          hintText: tabController.index == 0 ? l10n.searchHelp : l10n.searchNews,
+          hintText: tabController.index == 0
+              ? l10n.searchHelp
+              : l10n.searchNews,
           hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey[400], size: 20),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: Colors.grey[400],
+            size: 20,
+          ),
           prefixIconConstraints: const BoxConstraints(
             minWidth: 42,
             minHeight: 42,
@@ -72,7 +82,10 @@ class HomeSearchBar extends StatelessWidget {
           filled: true,
           fillColor: fillColor,
           isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 0,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide(color: borderColor, width: 1),
@@ -99,10 +112,11 @@ class HomeSearchBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
-          color: (Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black)
-              .withValues(alpha: 0.05),
+          color:
+              (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(20),
         ),
         child: TabBar(
@@ -121,7 +135,10 @@ class HomeSearchBar extends StatelessWidget {
           indicatorSize: TabBarIndicatorSize.tab,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.grey[600],
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
           labelPadding: EdgeInsets.zero,
           dividerColor: Colors.transparent,
           tabs: [
@@ -146,11 +163,7 @@ class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     // Child must be exactly this tall or SliverGeometry asserts.
-    return SizedBox(
-      height: maxExtent,
-      width: double.infinity,
-      child: child,
-    );
+    return SizedBox(height: maxExtent, width: double.infinity, child: child);
   }
 
   @override

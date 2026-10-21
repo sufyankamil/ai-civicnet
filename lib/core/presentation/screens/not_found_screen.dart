@@ -58,7 +58,7 @@ class NotFoundScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 48),
-                
+
                 // 404 Text
                 const Text(
                   '404',
@@ -70,9 +70,9 @@ class NotFoundScreen extends StatelessWidget {
                     color: AppColors.primaryLight,
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Heading
                 const Text(
                   'Lost in CivicNet?',
@@ -83,22 +83,24 @@ class NotFoundScreen extends StatelessWidget {
                     letterSpacing: -0.5,
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 // Subtitle
                 Text(
                   "The page you're looking for doesn't exist or has been moved to another neighborhood.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
-                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5),
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.5,
+                    ),
                     height: 1.5,
                   ),
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 // Return Button
                 AppHaptic(
                   onTap: () => context.go('/home'),

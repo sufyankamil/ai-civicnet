@@ -32,10 +32,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
   void initState() {
     super.initState();
     _bannerController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900))
-      ..forward();
-    _bannerAnim =
-        CurvedAnimation(parent: _bannerController, curve: Curves.easeOutCubic);
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..forward();
+    _bannerAnim = CurvedAnimation(
+      parent: _bannerController,
+      curve: Curves.easeOutCubic,
+    );
     _scrollController.addListener(() {
       final collapsed = _scrollController.offset > _collapseOffset;
       if (collapsed != _isCollapsed) setState(() => _isCollapsed = collapsed);
@@ -58,17 +61,21 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
 
     setState(() => _isStartingChat = true);
     try {
-      final conversationId =
-          await SupabaseService().createConversation(user.id);
+      final conversationId = await SupabaseService().createConversation(
+        user.id,
+      );
       if (mounted) {
         final encodedName = Uri.encodeComponent(user.name);
         context.push(
-            '/chat-detail?id=$conversationId&name=$encodedName&uid=${user.id}');
+          '/chat-detail?id=$conversationId&name=$encodedName&uid=${user.id}',
+        );
       }
     } catch (e) {
       if (mounted) {
         ToastService.showError(
-            context, 'Unable to start chat with ${user.name}.');
+          context,
+          'Unable to start chat with ${user.name}.',
+        );
       }
     } finally {
       if (mounted) setState(() => _isStartingChat = false);
@@ -87,8 +94,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      backgroundColor: isDark
+          ? AppColors.backgroundDark
+          : AppColors.backgroundLight,
       body: FutureBuilder<User?>(
         future: _profileFuture,
         builder: (context, snapshot) {
@@ -101,7 +109,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Container(
+                  Container(
                     margin: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.1),
@@ -112,11 +120,13 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                       onPressed: () => context.pop(),
                     ),
                   ),
-                  const Icon(Icons.person_off_outlined,
-                      size: 56, color: Colors.grey),
+                  const Icon(
+                    Icons.person_off_outlined,
+                    size: 56,
+                    color: Colors.grey,
+                  ),
                   const SizedBox(height: 16),
-                  Text('User not found',
-                      style: TextStyle(color: Colors.grey)),
+                  Text('User not found', style: TextStyle(color: Colors.grey)),
                 ],
               ),
             );
@@ -143,14 +153,16 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                       const SizedBox(height: 28),
                       _buildSkillsSection(user, isDark),
                       const SizedBox(height: 32),
-                      
+
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(
-                            onPressed: _isStartingChat ? null : () => _startChat(user),
-                            icon: _isStartingChat 
+                            onPressed: _isStartingChat
+                                ? null
+                                : () => _startChat(user),
+                            icon: _isStartingChat
                                 ? const AppLoader(size: 20, centered: false)
                                 : const Icon(Icons.chat_bubble_outline),
                             label: const Text('Send Message'),
@@ -160,7 +172,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           ),
                         ),
                       ),
-                      
+
                       // Extra clearance
                       SizedBox(
                         height: MediaQuery.of(context).padding.bottom + 24,
@@ -177,8 +189,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
   }
 
   Widget _buildHeroSliver(User user, bool isDark) {
-    final displayName =
-        user.name.isEmpty || user.name == 'Unknown' ? 'Community Member' : user.name;
+    final displayName = user.name.isEmpty || user.name == 'Unknown'
+        ? 'Community Member'
+        : user.name;
 
     return SliverAppBar(
       expandedHeight: 280,
@@ -216,7 +229,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         ListTile(
-                          leading: const Icon(Icons.flag_outlined, color: Colors.red),
+                          leading: const Icon(
+                            Icons.flag_outlined,
+                            color: Colors.red,
+                          ),
                           title: const Text('Report & Block User'),
                           onTap: () {
                             Navigator.pop(context);
@@ -251,16 +267,25 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           radius: 16,
                           backgroundImage: imageProvider,
                         ),
-                        errorWidget: (context, url, error) => const CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, size: 20, color: Colors.white),
-                        ),
+                        errorWidget: (context, url, error) =>
+                            const CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.grey,
+                              child: Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ),
                       )
                     : const CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.grey,
-                        child: Icon(Icons.person, size: 20, color: Colors.white),
+                        child: Icon(
+                          Icons.person,
+                          size: 20,
+                          color: Colors.white,
+                        ),
                       ),
               ),
               const SizedBox(width: 10),
@@ -325,8 +350,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -361,20 +388,30 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                           child: user.avatarUrl.isNotEmpty
                               ? CachedNetworkImage(
                                   imageUrl: user.avatarUrl,
-                                  imageBuilder: (context, imageProvider) => CircleAvatar(
-                                    radius: 38,
-                                    backgroundImage: imageProvider,
-                                  ),
-                                  errorWidget: (context, url, error) => const CircleAvatar(
-                                    radius: 38,
-                                    backgroundColor: Colors.grey,
-                                    child: Icon(Icons.person, size: 40, color: Colors.white),
-                                  ),
+                                  imageBuilder: (context, imageProvider) =>
+                                      CircleAvatar(
+                                        radius: 38,
+                                        backgroundImage: imageProvider,
+                                      ),
+                                  errorWidget: (context, url, error) =>
+                                      const CircleAvatar(
+                                        radius: 38,
+                                        backgroundColor: Colors.grey,
+                                        child: Icon(
+                                          Icons.person,
+                                          size: 40,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                 )
                               : const CircleAvatar(
                                   radius: 38,
                                   backgroundColor: Colors.grey,
-                                  child: Icon(Icons.person, size: 40, color: Colors.white),
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 40,
+                                    color: Colors.white,
+                                  ),
                                 ),
                         ),
                       ),
@@ -396,18 +433,24 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.4)),
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.verified_rounded,
-                                      color: Colors.white, size: 13),
+                                  const Icon(
+                                    Icons.verified_rounded,
+                                    color: Colors.white,
+                                    size: 13,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     _trustLevel(user),
@@ -436,27 +479,71 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
 
   Widget _buildStatsRow(User user, bool isDark) {
     final stats = [
-      (Icons.handshake_rounded, 'Helps', user.helpCount.toString(), Colors.blue),
-      (Icons.star_rounded, 'Rating', user.rating.toStringAsFixed(1), Colors.amber),
-      (Icons.emoji_events_rounded, 'Points', user.points.toString(), Colors.orange),
+      (
+        Icons.handshake_rounded,
+        'Helps',
+        user.helpCount.toString(),
+        Colors.blue,
+      ),
+      (
+        Icons.star_rounded,
+        'Rating',
+        user.rating.toStringAsFixed(1),
+        Colors.amber,
+      ),
+      (
+        Icons.emoji_events_rounded,
+        'Points',
+        user.points.toString(),
+        Colors.orange,
+      ),
     ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard(stats[0].$1, stats[0].$2, stats[0].$3, stats[0].$4, isDark)),
+          Expanded(
+            child: _buildStatCard(
+              stats[0].$1,
+              stats[0].$2,
+              stats[0].$3,
+              stats[0].$4,
+              isDark,
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[1].$1, stats[1].$2, stats[1].$3, stats[1].$4, isDark)),
+          Expanded(
+            child: _buildStatCard(
+              stats[1].$1,
+              stats[1].$2,
+              stats[1].$3,
+              stats[1].$4,
+              isDark,
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard(stats[2].$1, stats[2].$2, stats[2].$3, stats[2].$4, isDark)),
+          Expanded(
+            child: _buildStatCard(
+              stats[2].$1,
+              stats[2].$2,
+              stats[2].$3,
+              stats[2].$4,
+              isDark,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildStatCard(
-      IconData icon, String label, String value, Color iconColor, bool isDark) {
+    IconData icon,
+    String label,
+    String value,
+    Color iconColor,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
@@ -482,13 +569,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
               color: AppColors.primaryLight,
             ),
           ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey,
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey)),
         ],
       ),
     );
@@ -496,7 +577,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
 
   Widget _buildSkillsSection(User user, bool isDark) {
     if (user.skills.isEmpty) return const SizedBox.shrink();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -504,10 +585,7 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
         children: [
           Text(
             'Skills',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -516,7 +594,9 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
             children: user.skills.map((skill) {
               return Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 8),
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
@@ -564,14 +644,17 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           try {
             await SupabaseService().reportUser(user.id, reason);
             if (!mounted) return;
-            
+
             // ignore: use_build_context_synchronously
-            ToastService.showSuccess(context, 'User reported and blocked. Thank you for helping keep the community safe.');
-            
+            ToastService.showSuccess(
+              context,
+              'User reported and blocked. Thank you for helping keep the community safe.',
+            );
+
             // Wait a brief moment for toast to start showing, then close
             await Future.delayed(const Duration(milliseconds: 300));
             if (!mounted) return;
-            
+
             // ignore: use_build_context_synchronously
             Navigator.of(dialogContext).pop(); // Close dialog
             // ignore: use_build_context_synchronously
@@ -579,7 +662,10 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
           } catch (e) {
             if (!mounted) return;
             // ignore: use_build_context_synchronously
-            ToastService.showError(context, 'Failed to submit report. Please try again.');
+            ToastService.showError(
+              context,
+              'Failed to submit report. Please try again.',
+            );
           }
         },
       ),

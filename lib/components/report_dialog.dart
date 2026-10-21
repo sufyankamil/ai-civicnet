@@ -6,11 +6,7 @@ class ReportDialog extends StatefulWidget {
   final String title;
   final Function(String reason) onReport;
 
-  const ReportDialog({
-    super.key,
-    required this.title,
-    required this.onReport,
-  });
+  const ReportDialog({super.key, required this.title, required this.onReport});
 
   @override
   State<ReportDialog> createState() => _ReportDialogState();
@@ -52,19 +48,25 @@ class _ReportDialogState extends State<ReportDialog> {
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? AppColors.primaryLight.withValues(alpha: 0.1) 
+                color: isSelected
+                    ? AppColors.primaryLight.withValues(alpha: 0.1)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected ? AppColors.primaryLight : Colors.grey.withValues(alpha: 0.3),
+                  color: isSelected
+                      ? AppColors.primaryLight
+                      : Colors.grey.withValues(alpha: 0.3),
                 ),
               ),
               child: ListTile(
                 dense: true,
-                onTap: _isLoading ? null : () => setState(() => _selectedReason = reason),
+                onTap: _isLoading
+                    ? null
+                    : () => setState(() => _selectedReason = reason),
                 leading: Icon(
-                  isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                  isSelected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
                   color: isSelected ? AppColors.primaryLight : Colors.grey,
                   size: 20,
                 ),
@@ -83,10 +85,7 @@ class _ReportDialogState extends State<ReportDialog> {
       actions: [
         TextButton(
           onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: Colors.grey),
-          ),
+          child: Text('Cancel', style: TextStyle(color: Colors.grey)),
         ),
         SizedBox(
           width: 100,
@@ -94,15 +93,15 @@ class _ReportDialogState extends State<ReportDialog> {
             text: 'Report',
             isLoading: _isLoading,
             onPressed: _selectedReason == null || _isLoading
-              ? null 
-              : () async {
-                setState(() => _isLoading = true);
-                try {
-                  await widget.onReport(_selectedReason!);
-                } finally {
-                  if (mounted) setState(() => _isLoading = false);
-                }
-              },
+                ? null
+                : () async {
+                    setState(() => _isLoading = true);
+                    try {
+                      await widget.onReport(_selectedReason!);
+                    } finally {
+                      if (mounted) setState(() => _isLoading = false);
+                    }
+                  },
           ),
         ),
       ],

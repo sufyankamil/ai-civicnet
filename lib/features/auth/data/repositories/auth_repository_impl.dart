@@ -12,12 +12,13 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Stream<UserEntity?> get authStateChanges => remoteDataSource.authStateChanges.map((user) {
-    if (user != null) {
-      return remoteDataSource.getCurrentUser();
-    }
-    return null;
-  });
+  Stream<UserEntity?> get authStateChanges =>
+      remoteDataSource.authStateChanges.map((user) {
+        if (user != null) {
+          return remoteDataSource.getCurrentUser();
+        }
+        return null;
+      });
 
   @override
   UserEntity? getCurrentUser() {
@@ -25,7 +26,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> signIn(String email, String password) async {
+  Future<Either<Failure, UserEntity>> signIn(
+    String email,
+    String password,
+  ) async {
     try {
       final user = await remoteDataSource.signIn(email, password);
       return Right(user);
@@ -34,18 +38,30 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on SocketException catch (_) {
-      return const Left(ServerFailure('Network connection error. Please try again.'));
+      return const Left(
+        ServerFailure('Network connection error. Please try again.'),
+      );
     } catch (e) {
       final errorStr = e.toString();
-      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
-        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      if (errorStr.contains('SocketException') ||
+          errorStr.contains('Failed host lookup') ||
+          errorStr.contains('ClientException')) {
+        return const Left(
+          ServerFailure(
+            'A network error occurred. Please check your internet connection.',
+          ),
+        );
       }
       return Left(ServerFailure(errorStr));
     }
   }
 
   @override
-  Future<Either<Failure, UserEntity>> signUp(String email, String password, String name) async {
+  Future<Either<Failure, UserEntity>> signUp(
+    String email,
+    String password,
+    String name,
+  ) async {
     try {
       final user = await remoteDataSource.signUp(email, password, name);
       return Right(user);
@@ -54,11 +70,19 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on SocketException catch (_) {
-      return const Left(ServerFailure('Network connection error. Please try again.'));
+      return const Left(
+        ServerFailure('Network connection error. Please try again.'),
+      );
     } catch (e) {
       final errorStr = e.toString();
-      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
-        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      if (errorStr.contains('SocketException') ||
+          errorStr.contains('Failed host lookup') ||
+          errorStr.contains('ClientException')) {
+        return const Left(
+          ServerFailure(
+            'A network error occurred. Please check your internet connection.',
+          ),
+        );
       }
       return Left(ServerFailure(errorStr));
     }
@@ -86,11 +110,19 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on SocketException catch (_) {
-      return const Left(ServerFailure('Network connection error. Please try again.'));
+      return const Left(
+        ServerFailure('Network connection error. Please try again.'),
+      );
     } catch (e) {
-       final errorStr = e.toString();
-      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
-        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      final errorStr = e.toString();
+      if (errorStr.contains('SocketException') ||
+          errorStr.contains('Failed host lookup') ||
+          errorStr.contains('ClientException')) {
+        return const Left(
+          ServerFailure(
+            'A network error occurred. Please check your internet connection.',
+          ),
+        );
       }
       return Left(ServerFailure(errorStr));
     }
@@ -106,11 +138,19 @@ class AuthRepositoryImpl implements AuthRepository {
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on SocketException catch (_) {
-      return const Left(ServerFailure('Network connection error. Please try again.'));
+      return const Left(
+        ServerFailure('Network connection error. Please try again.'),
+      );
     } catch (e) {
       final errorStr = e.toString();
-      if (errorStr.contains('SocketException') || errorStr.contains('Failed host lookup') || errorStr.contains('ClientException')) {
-        return const Left(ServerFailure('A network error occurred. Please check your internet connection.'));
+      if (errorStr.contains('SocketException') ||
+          errorStr.contains('Failed host lookup') ||
+          errorStr.contains('ClientException')) {
+        return const Left(
+          ServerFailure(
+            'A network error occurred. Please check your internet connection.',
+          ),
+        );
       }
       return Left(ServerFailure(errorStr));
     }

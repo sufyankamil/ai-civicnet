@@ -46,14 +46,21 @@ class ApplicationsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildApplicationCard(BuildContext context, legacy.RequestApplication app) {
+  Widget _buildApplicationCard(
+    BuildContext context,
+    legacy.RequestApplication app,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final statusColor = app.status == legacy.ApplicationStatus.accepted
-        ? (isDark ? const Color(0xFF34D399) : const Color(0xFF10B981)) // Modern Success Green
+        ? (isDark
+              ? const Color(0xFF34D399)
+              : const Color(0xFF10B981)) // Modern Success Green
         : app.status == legacy.ApplicationStatus.rejected
-            ? (isDark ? Colors.grey[400]! : Colors.grey[600]!)
-            : (isDark ? const Color(0xFFFBBF24) : const Color(0xFFF59E0B)); // Modern Warning Amber
+        ? (isDark ? Colors.grey[400]! : Colors.grey[600]!)
+        : (isDark
+              ? const Color(0xFFFBBF24)
+              : const Color(0xFFF59E0B)); // Modern Warning Amber
 
     return Container(
       key: ValueKey(app.id),
@@ -85,7 +92,13 @@ class ApplicationsSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(app.applicantName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                    Text(
+                      app.applicantName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       'Applied ${timeago.format(app.createdAt)}',
@@ -108,18 +121,27 @@ class ApplicationsSection extends StatelessWidget {
               children: [
                 Expanded(
                   child: AppHaptic(
-                    onTap: () => onUpdateStatus(app.id, legacy.ApplicationStatus.rejected),
+                    onTap: () => onUpdateStatus(
+                      app.id,
+                      legacy.ApplicationStatus.rejected,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.15)),
+                        border: Border.all(
+                          color: Colors.red.withValues(alpha: 0.15),
+                        ),
                       ),
                       child: const Center(
                         child: Text(
                           'Decline',
-                          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                          style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ),
@@ -128,12 +150,18 @@ class ApplicationsSection extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: AppHaptic(
-                    onTap: () => onUpdateStatus(app.id, legacy.ApplicationStatus.accepted),
+                    onTap: () => onUpdateStatus(
+                      app.id,
+                      legacy.ApplicationStatus.accepted,
+                    ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.greenAccent.shade400, Colors.greenAccent.shade700],
+                          colors: [
+                            Colors.greenAccent.shade400,
+                            Colors.greenAccent.shade700,
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
@@ -147,7 +175,11 @@ class ApplicationsSection extends StatelessWidget {
                       child: const Center(
                         child: Text(
                           'Accept',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ),
@@ -169,9 +201,20 @@ class ApplicationsSection extends StatelessWidget {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.chat_bubble_rounded, color: AppColors.primaryLight, size: 16),
+                    Icon(
+                      Icons.chat_bubble_rounded,
+                      color: AppColors.primaryLight,
+                      size: 16,
+                    ),
                     SizedBox(width: 8),
-                    Text('Message Applicant', style: TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text(
+                      'Message Applicant',
+                      style: TextStyle(
+                        color: AppColors.primaryLight,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -192,7 +235,11 @@ class ApplicationsSection extends StatelessWidget {
         const SizedBox(height: 24),
         Row(
           children: [
-            const Icon(Icons.group_outlined, color: AppColors.primaryLight, size: 22),
+            const Icon(
+              Icons.group_outlined,
+              color: AppColors.primaryLight,
+              size: 22,
+            ),
             const SizedBox(width: 8),
             Text(
               'Applications (${applications.length})'.toUpperCase(),
@@ -208,7 +255,10 @@ class ApplicationsSection extends StatelessWidget {
         const SizedBox(height: 16),
         if (isLoading)
           Column(
-            children: List.generate(2, (index) => _buildApplicationShimmer(context)),
+            children: List.generate(
+              2,
+              (index) => _buildApplicationShimmer(context),
+            ),
           )
         else if (applications.isEmpty)
           Padding(

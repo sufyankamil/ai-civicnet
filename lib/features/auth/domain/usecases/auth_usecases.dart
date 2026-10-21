@@ -72,12 +72,15 @@ class SendPasswordResetEmailParams {
   const SendPasswordResetEmailParams(this.email);
 }
 
-class SendPasswordResetEmailUseCase implements UseCase<void, SendPasswordResetEmailParams> {
+class SendPasswordResetEmailUseCase
+    implements UseCase<void, SendPasswordResetEmailParams> {
   final AuthRepository repository;
   SendPasswordResetEmailUseCase(this.repository);
 
   @override
-  Future<Either<Failure, void>> call(SendPasswordResetEmailParams params) async {
+  Future<Either<Failure, void>> call(
+    SendPasswordResetEmailParams params,
+  ) async {
     return await repository.sendPasswordResetEmail(params.email);
   }
 }

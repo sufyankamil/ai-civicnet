@@ -25,7 +25,10 @@ class Guild extends Equatable {
     this.isUserMember = false,
   });
 
-  factory Guild.fromJson(Map<String, dynamic> json, {bool isUserMember = false}) {
+  factory Guild.fromJson(
+    Map<String, dynamic> json, {
+    bool isUserMember = false,
+  }) {
     return Guild(
       id: json['id'],
       creatorId: json['creator_id'],
@@ -41,5 +44,16 @@ class Guild extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, creatorId, name, description, category, avatarUrl, memberCount, isPrivate, createdAt, isUserMember];
+  List<Object?> get props => [
+    id,
+    creatorId,
+    name,
+    description,
+    category,
+    avatarUrl,
+    memberCount,
+    isPrivate,
+    createdAt,
+    isUserMember,
+  ];
 }

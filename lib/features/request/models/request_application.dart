@@ -24,8 +24,9 @@ class RequestApplication {
   factory RequestApplication.fromJson(Map<String, dynamic> json) {
     // Handle potential joined profile data
     var profileData = json['profiles'];
-    final Map<String, dynamic> profile = (profileData is List && profileData.isNotEmpty) 
-        ? profileData.first 
+    final Map<String, dynamic> profile =
+        (profileData is List && profileData.isNotEmpty)
+        ? profileData.first
         : (profileData is Map<String, dynamic> ? profileData : {});
 
     return RequestApplication(

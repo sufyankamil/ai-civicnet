@@ -61,8 +61,10 @@ class User {
   int get pointsToNextRank => pointsPerRank - pointsInCurrentLevel;
   static User fromMap(Map<String, dynamic> data, {String? email}) {
     final skillsData = data['skills'];
-    final List<String> skillsList = (skillsData is List) ? skillsData.map((e) => e.toString()).toList() : [];
-    
+    final List<String> skillsList = (skillsData is List)
+        ? skillsData.map((e) => e.toString()).toList()
+        : [];
+
     return User(
       id: data['id'],
       name: data['name'] ?? 'Unknown',

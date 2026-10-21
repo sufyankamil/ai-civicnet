@@ -11,12 +11,13 @@ class UserModel extends UserEntity {
 
   factory UserModel.fromSupabaseUser(sb.User user) {
     final meta = user.userMetadata ?? {};
-    final name = meta['full_name'] ??
+    final name =
+        meta['full_name'] ??
         meta['name'] ??
         user.email?.split('@').first ??
         'User';
     final avatar = meta['avatar_url'] ?? meta['picture'] ?? '';
-    
+
     return UserModel(
       id: user.id,
       name: name,

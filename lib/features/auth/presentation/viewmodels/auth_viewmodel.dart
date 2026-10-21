@@ -26,10 +26,10 @@ class AuthViewModel extends GetxController {
 
   final RxBool _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
-  
+
   final RxBool _isGoogleLoading = false.obs;
   bool get isGoogleLoading => _isGoogleLoading.value;
-  
+
   final RxBool _isAppleLoading = false.obs;
   bool get isAppleLoading => _isAppleLoading.value;
 
@@ -39,13 +39,10 @@ class AuthViewModel extends GetxController {
     logger.e('AuthViewModel signIn result: $result');
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (userEntity) {
-        _user.value = userEntity;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (userEntity) {
+      _user.value = userEntity;
+      return null;
+    });
   }
 
   Future<String?> signUp(String email, String password, String name) async {
@@ -53,24 +50,18 @@ class AuthViewModel extends GetxController {
     final result = await signUpUseCase(SignUpParams(email, password, name));
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (userEntity) {
-        _user.value = userEntity;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (userEntity) {
+      _user.value = userEntity;
+      return null;
+    });
   }
 
   Future<String?> signOut() async {
     final result = await signOutUseCase(const NoParams());
-    return result.fold(
-      (failure) => failure.message,
-      (_) {
-        _user.value = null;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (_) {
+      _user.value = null;
+      return null;
+    });
   }
 
   Future<String?> signInWithGoogle() async {
@@ -78,13 +69,10 @@ class AuthViewModel extends GetxController {
     final result = await signInWithGoogleUseCase(const NoParams());
     _isGoogleLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (userEntity) {
-        _user.value = userEntity;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (userEntity) {
+      _user.value = userEntity;
+      return null;
+    });
   }
 
   Future<String?> signInWithApple() async {
@@ -92,23 +80,19 @@ class AuthViewModel extends GetxController {
     final result = await signInWithAppleUseCase(const NoParams());
     _isAppleLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (userEntity) {
-        _user.value = userEntity;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (userEntity) {
+      _user.value = userEntity;
+      return null;
+    });
   }
 
   Future<String?> sendPasswordResetEmail(String email) async {
     _isLoading.value = true;
-    final result = await sendPasswordResetEmailUseCase(SendPasswordResetEmailParams(email));
+    final result = await sendPasswordResetEmailUseCase(
+      SendPasswordResetEmailParams(email),
+    );
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (_) => null,
-    );
+    return result.fold((failure) => failure.message, (_) => null);
   }
 }

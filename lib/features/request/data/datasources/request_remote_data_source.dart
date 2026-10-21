@@ -11,9 +11,12 @@ abstract class RequestRemoteDataSource {
   Future<List<dynamic>> getMyRawHelpRequests(String userId);
   Future<dynamic> getRawHelpRequest(String id);
   Future<void> createHelpRequest(HelpRequestModel request);
-  Future<void> updateHelpRequestStatus(String requestId, RequestStatusEnum status);
+  Future<void> updateHelpRequestStatus(
+    String requestId,
+    RequestStatusEnum status,
+  );
   Future<void> deleteHelpRequest(String requestId);
-  
+
   void subscribeToHelpRequests(Function() callback);
   void unsubscribeFromHelpRequests();
 }
@@ -116,11 +119,16 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
   }
 
   @override
-  Future<void> updateHelpRequestStatus(String requestId, RequestStatusEnum status) async {
+  Future<void> updateHelpRequestStatus(
+    String requestId,
+    RequestStatusEnum status,
+  ) async {
     try {
-      await supabaseClient.from('help_requests').update({
-        'status': status.toString().split('.').last,
-      }).eq('id', requestId).withServerTimeout();
+      await supabaseClient
+          .from('help_requests')
+          .update({'status': status.toString().split('.').last})
+          .eq('id', requestId)
+          .withServerTimeout();
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -133,7 +141,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
       final dynamic idValue = int.tryParse(requestId) ?? requestId;
 
       // 2. Sequential Deep Deletion (Handle related data to bypass constraints)
-      
+
       // Delete any associated ratings
       await supabaseClient
           .from('user_ratings')
@@ -145,7 +153,10 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
       await supabaseClient
           .from('notifications')
           .delete()
-          .eq('related_id', requestId) // relatedIds are usually strings in notifications
+          .eq(
+            'related_id',
+            requestId,
+          ) // relatedIds are usually strings in notifications
           .withServerTimeout();
 
       // Delete any associated applications
@@ -154,7 +165,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .delete()
           .eq('request_id', idValue)
           .withServerTimeout();
-          
+
       // 3. Delete the request itself and VERIFY (Strict check)
       final response = await supabaseClient
           .from('help_requests')
@@ -162,11 +173,11 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .eq('id', idValue)
           .select() // Returning the deleted row to confirm it happened
           .withServerTimeout();
-      
+
       // If the list is empty, it means RLS blocked the delete or the row is already gone.
       if ((response as List).isEmpty) {
         throw const ServerException(
-          'Failed to delete. You may not have permission or the request was already removed.'
+          'Failed to delete. You may not have permission or the request was already removed.',
         );
       }
     } catch (e) {
@@ -179,16 +190,16 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
   void subscribeToHelpRequests(Function() callback) {
     unsubscribeFromHelpRequests();
     _subscription = supabaseClient
-      .channel('public:help_requests_module')
-      .onPostgresChanges(
-        event: sb.PostgresChangeEvent.all,
-        schema: 'public',
-        table: 'help_requests',
-        callback: (payload) {
-          callback();
-        },
-      )
-      .subscribe();
+        .channel('public:help_requests_module')
+        .onPostgresChanges(
+          event: sb.PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'help_requests',
+          callback: (payload) {
+            callback();
+          },
+        )
+        .subscribe();
   }
 
   @override

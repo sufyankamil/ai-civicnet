@@ -4,11 +4,7 @@ class PremiumChip extends StatelessWidget {
   final String label;
   final Color color;
 
-  const PremiumChip({
-    super.key,
-    required this.label,
-    required this.color,
-  });
+  const PremiumChip({super.key, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {

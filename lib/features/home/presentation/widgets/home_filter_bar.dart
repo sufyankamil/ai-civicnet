@@ -53,15 +53,15 @@ class HomeFilterBar extends StatelessWidget {
                 color: isSelected
                     ? color
                     : (isDark
-                        ? Colors.white.withValues(alpha: 0.06)
-                        : Colors.white),
+                          ? Colors.white.withValues(alpha: 0.06)
+                          : Colors.white),
                 borderRadius: BorderRadius.circular(22),
                 border: Border.all(
                   color: isSelected
                       ? color
                       : (isDark
-                          ? Colors.white.withValues(alpha: 0.10)
-                          : Colors.black.withValues(alpha: 0.08)),
+                            ? Colors.white.withValues(alpha: 0.10)
+                            : Colors.black.withValues(alpha: 0.08)),
                   width: 1,
                 ),
                 boxShadow: [
@@ -94,13 +94,14 @@ class HomeFilterBar extends StatelessWidget {
                     _getFilterLabel(filter, l10n),
                     style: TextStyle(
                       fontSize: 13,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w600,
                       color: isSelected
                           ? Colors.white
                           : (isDark
-                              ? Colors.white.withValues(alpha: 0.85)
-                              : AppColors.textPrimaryLight),
+                                ? Colors.white.withValues(alpha: 0.85)
+                                : AppColors.textPrimaryLight),
                       height: 1.1,
                     ),
                   ),

@@ -11,7 +11,9 @@ class AnnouncementCardSkeleton extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final baseColor = isDark ? Colors.grey[900]! : Colors.grey[200]!;
     final highlightColor = isDark ? Colors.grey[800]! : Colors.grey[100]!;
-    final glassColor = isDark ? AppColors.glassSurfaceDark : AppColors.glassSurfaceLight;
+    final glassColor = isDark
+        ? AppColors.glassSurfaceDark
+        : AppColors.glassSurfaceLight;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -35,7 +37,9 @@ class AnnouncementCardSkeleton extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: baseColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
             ),
             Padding(

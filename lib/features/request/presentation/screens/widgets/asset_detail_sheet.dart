@@ -7,7 +7,8 @@ import 'premium_chip.dart';
 class AssetDetailSheet extends StatelessWidget {
   final asset_models.CommunityAsset asset;
   final String? requestTitle;
-  final Function(String userId, String userName, {String? initialMessage}) onStartChat;
+  final Function(String userId, String userName, {String? initialMessage})
+  onStartChat;
 
   const AssetDetailSheet({
     super.key,
@@ -46,7 +47,7 @@ class AssetDetailSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Image / Header section
           Stack(
             children: [
@@ -62,10 +63,16 @@ class AssetDetailSheet extends StatelessWidget {
                           fit: BoxFit.cover,
                         )
                       : null,
-                  gradient: asset.imageUrl == null ? AppColors.auraGradient : null,
+                  gradient: asset.imageUrl == null
+                      ? AppColors.auraGradient
+                      : null,
                 ),
                 child: asset.imageUrl == null
-                    ? const Icon(Icons.construction_rounded, color: Colors.white, size: 64)
+                    ? const Icon(
+                        Icons.construction_rounded,
+                        color: Colors.white,
+                        size: 64,
+                      )
                     : null,
               ),
               Positioned(
@@ -91,21 +98,32 @@ class AssetDetailSheet extends StatelessWidget {
                 Row(
                   children: [
                     PremiumChip(
-                      label: asset.category.name.toUpperCase(), 
+                      label: asset.category.name.toUpperCase(),
                       color: AppColors.secondaryLight,
                     ),
                     const Spacer(),
                     if (asset.similarity != null)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: AppColors.primaryLight.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.bolt_rounded, color: AppColors.primaryLight, size: 16),
+                            const Icon(
+                              Icons.bolt_rounded,
+                              color: AppColors.primaryLight,
+                              size: 16,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${(asset.similarity! * 100).toInt()}% MATCH',
@@ -141,21 +159,32 @@ class AssetDetailSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
+
                 // Owner Info section
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.05,
+                    ),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
+                    border: Border.all(
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.1,
+                      ),
+                    ),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
-                        child: const Icon(Icons.person_rounded, color: AppColors.primaryLight),
+                        backgroundColor: AppColors.primaryLight.withValues(
+                          alpha: 0.1,
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: AppColors.primaryLight,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -164,11 +193,17 @@ class AssetDetailSheet extends StatelessWidget {
                           children: [
                             Text(
                               asset.ownerName ?? 'Neighbor',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
                             ),
                             Text(
                               'Willing to lend this tool',
-                              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
                             ),
                           ],
                         ),
@@ -176,15 +211,20 @@ class AssetDetailSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
                 PrimaryButton(
                   text: 'I CAN BRING THIS',
                   onPressed: () {
                     Navigator.pop(context);
                     final title = requestTitle ?? 'my request';
-                    final msg = 'Hi! I saw your "${asset.title}" and I can bring it to help with "$title".';
-                    onStartChat(asset.ownerId, asset.ownerName ?? 'Neighbor', initialMessage: msg);
+                    final msg =
+                        'Hi! I saw your "${asset.title}" and I can bring it to help with "$title".';
+                    onStartChat(
+                      asset.ownerId,
+                      asset.ownerName ?? 'Neighbor',
+                      initialMessage: msg,
+                    );
                   },
                 ),
               ],

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../l10n/app_localizations.dart';
@@ -10,11 +9,7 @@ class HelperCard extends StatelessWidget {
   final Helper helper;
   final VoidCallback onTap;
 
-  const HelperCard({
-    super.key,
-    required this.helper,
-    required this.onTap,
-  });
+  const HelperCard({super.key, required this.helper, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -42,15 +37,20 @@ class HelperCard extends StatelessWidget {
                     child: helper.user.avatarUrl.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: helper.user.avatarUrl,
-                            imageBuilder: (context, imageProvider) => CircleAvatar(
-                              radius: 20,
-                              backgroundImage: imageProvider,
-                            ),
-                            errorWidget: (context, url, error) => const CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.grey,
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
+                            imageBuilder: (context, imageProvider) =>
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundImage: imageProvider,
+                                ),
+                            errorWidget: (context, url, error) =>
+                                const CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: Colors.grey,
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                  ),
+                                ),
                           )
                         : const CircleAvatar(
                             radius: 20,
@@ -67,7 +67,11 @@ class HelperCard extends StatelessWidget {
                         color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.verified, color: AppColors.secondaryLight, size: 14),
+                      child: Icon(
+                        Icons.verified,
+                        color: AppColors.secondaryLight,
+                        size: 14,
+                      ),
                     ),
                   ),
                 ],
@@ -84,7 +88,9 @@ class HelperCard extends StatelessWidget {
                           child: Text(
                             helper.user.name,
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -103,9 +109,14 @@ class HelperCard extends StatelessWidget {
                       spacing: 4,
                       children: helper.matchReasons.take(2).map((reason) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(

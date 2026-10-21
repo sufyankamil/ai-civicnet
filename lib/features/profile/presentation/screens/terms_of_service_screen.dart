@@ -12,14 +12,22 @@ class TermsOfServiceScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.termsAndConditions, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.termsAndConditions,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 32),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          MediaQuery.of(context).padding.bottom + 32,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -75,7 +83,12 @@ class TermsOfServiceScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, String content, bool isDark) {
+  Widget _buildSection(
+    BuildContext context,
+    String title,
+    String content,
+    bool isDark,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
@@ -89,8 +102,8 @@ class TermsOfServiceScreen extends StatelessWidget {
           Text(
             content,
             style: TextStyle(
-              fontSize: 14, 
-              height: 1.5, 
+              fontSize: 14,
+              height: 1.5,
               color: isDark ? Colors.grey[300] : Colors.grey[800],
             ),
           ),

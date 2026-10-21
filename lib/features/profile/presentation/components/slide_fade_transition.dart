@@ -27,10 +27,7 @@ class _SlideFadeTransitionState extends State<SlideFadeTransition>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: widget.duration,
-    );
+    _controller = AnimationController(vsync: this, duration: widget.duration);
 
     _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -39,12 +36,10 @@ class _SlideFadeTransitionState extends State<SlideFadeTransition>
       ),
     );
 
-    _slideAnimation = Tween<Offset>(begin: widget.offset, end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutBack,
-      ),
-    );
+    _slideAnimation = Tween<Offset>(
+      begin: widget.offset,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     Future.delayed(widget.delay, () {
       if (mounted) {

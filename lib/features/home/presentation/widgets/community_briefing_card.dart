@@ -18,7 +18,8 @@ class CommunityBriefingCard extends StatefulWidget {
   State<CommunityBriefingCard> createState() => _CommunityBriefingCardState();
 }
 
-class _CommunityBriefingCardState extends State<CommunityBriefingCard> with SingleTickerProviderStateMixin {
+class _CommunityBriefingCardState extends State<CommunityBriefingCard>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _glowAnimation;
   bool _isExpanded = false;
@@ -30,10 +31,11 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
       vsync: this,
       duration: const Duration(seconds: 2),
     )..repeat(reverse: true);
-    
-    _glowAnimation = Tween<double>(begin: 0.0, end: 10.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 10.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -45,7 +47,7 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
       child: AnimatedContainer(
@@ -57,9 +59,15 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: isDark 
-                ? [const Color(0xFF1E293B).withValues(alpha: 0.98), const Color(0xFF0F172A).withValues(alpha: 0.98)]
-                : [Colors.white.withValues(alpha: 0.98), const Color(0xFFF1F5F9).withValues(alpha: 0.98)],
+            colors: isDark
+                ? [
+                    const Color(0xFF1E293B).withValues(alpha: 0.98),
+                    const Color(0xFF0F172A).withValues(alpha: 0.98),
+                  ]
+                : [
+                    Colors.white.withValues(alpha: 0.98),
+                    const Color(0xFFF1F5F9).withValues(alpha: 0.98),
+                  ],
           ),
           boxShadow: [
             BoxShadow(
@@ -69,7 +77,9 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
             ),
           ],
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            color: isDark
+                ? Colors.white10
+                : Colors.black.withValues(alpha: 0.05),
             width: 1.5,
           ),
         ),
@@ -85,7 +95,7 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
             child: AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              child: widget.isLoading 
+              child: widget.isLoading
                   ? _buildShimmer(isDark)
                   : _buildContent(context, isDark),
             ),
@@ -125,7 +135,11 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
                     child: child,
                   );
                 },
-                child: const Icon(Icons.auto_awesome_rounded, color: AppColors.primaryLight, size: 20),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: AppColors.primaryLight,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -146,7 +160,9 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                        color: isDark
+                            ? Colors.white
+                            : AppColors.textPrimaryLight,
                       ),
                     ),
                   ],
@@ -158,7 +174,11 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
                 child: IconButton(
                   onPressed: widget.onRefresh,
                   tooltip: 'Refresh Briefing',
-                  icon: const Icon(Icons.refresh_rounded, size: 20, color: Colors.grey),
+                  icon: const Icon(
+                    Icons.refresh_rounded,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
                   padding: const EdgeInsets.all(12),
                   constraints: const BoxConstraints(),
                   visualDensity: VisualDensity.compact,
@@ -167,15 +187,19 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
             ],
           ),
           const SizedBox(height: 16),
-          widget.briefing.contains(' neighborhood is bustling') // Detection for local fallback
+          widget.briefing.contains(
+                ' neighborhood is bustling',
+              ) // Detection for local fallback
               ? _buildBriefingFallback(isDark)
-              : _isExpanded 
-                  ? _buildBriefingText(isDark)
-                  : _buildBriefingPreview(isDark),
+              : _isExpanded
+              ? _buildBriefingText(isDark)
+              : _buildBriefingPreview(isDark),
           const SizedBox(height: 8),
           Center(
             child: Icon(
-              _isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+              _isExpanded
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
               color: Colors.grey.withValues(alpha: 0.5),
               size: 20,
             ),
@@ -206,7 +230,9 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
             backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
             foregroundColor: AppColors.primaryLight,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ],
@@ -215,7 +241,7 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
 
   Widget _buildBriefingPreview(bool isDark) {
     if (widget.briefing.isEmpty) return const SizedBox.shrink();
-    
+
     final firstParagraph = widget.briefing.split('\n\n').first;
     return Text(
       firstParagraph,
@@ -235,24 +261,32 @@ class _CommunityBriefingCardState extends State<CommunityBriefingCard> with Sing
     final paragraphs = widget.briefing.trim().split('\n\n');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: paragraphs.map((p) => Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: Text(
-          p,
-          style: TextStyle(
-            fontSize: 14,
-            height: 1.6,
-            color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
-          ),
-        ),
-      )).toList(),
+      children: paragraphs
+          .map(
+            (p) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Text(
+                p,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.6,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.9)
+                      : Colors.black87,
+                ),
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildShimmer(bool isDark) {
     return Shimmer.fromColors(
       baseColor: isDark ? Colors.white10 : Colors.grey[200]!,
-      highlightColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+      highlightColor: isDark
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

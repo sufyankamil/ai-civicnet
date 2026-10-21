@@ -19,7 +19,7 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
   Future<void> _checkProfileStatus() async {
     try {
       final userProfile = await SupabaseService().getCurrentUserProfile();
-      
+
       if (!mounted) return;
 
       if (userProfile != null) {
@@ -43,9 +43,7 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
-        child: CircularProgressIndicator(
-          color: Theme.of(context).primaryColor,
-        ),
+        child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
       ),
     );
   }

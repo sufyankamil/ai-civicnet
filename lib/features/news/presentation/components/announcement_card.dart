@@ -16,11 +16,7 @@ class AnnouncementCard extends StatelessWidget {
   final Announcement announcement;
   final VoidCallback? onTap;
 
-  const AnnouncementCard({
-    super.key,
-    required this.announcement,
-    this.onTap,
-  });
+  const AnnouncementCard({super.key, required this.announcement, this.onTap});
 
   Color _getCategoryColor(AnnouncementCategory category) {
     switch (category) {
@@ -53,7 +49,9 @@ class AnnouncementCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final categoryColor = _getCategoryColor(announcement.category);
-    final glassColor = isDark ? AppColors.glassSurfaceDark : AppColors.glassSurfaceLight;
+    final glassColor = isDark
+        ? AppColors.glassSurfaceDark
+        : AppColors.glassSurfaceLight;
 
     Widget cardContent = Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -84,14 +82,16 @@ class AnnouncementCard extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AnnouncementDetailScreen(announcement: announcement),
+                      builder: (context) =>
+                          AnnouncementDetailScreen(announcement: announcement),
                     ),
                   );
                 },
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (announcement.imageUrl != null && announcement.imageUrl!.isNotEmpty)
+                    if (announcement.imageUrl != null &&
+                        announcement.imageUrl!.isNotEmpty)
                       Stack(
                         children: [
                           CachedNetworkImage(
@@ -101,10 +101,14 @@ class AnnouncementCard extends StatelessWidget {
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Container(
                               height: 200,
-                              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-                              child: const Center(child: CircularProgressIndicator.adaptive()),
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withValues(alpha: 0.05),
+                              child: const Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              ),
                             ),
-                            errorWidget: (context, url, error) => const SizedBox.shrink(),
+                            errorWidget: (context, url, error) =>
+                                const SizedBox.shrink(),
                           ),
                           Positioned.fill(
                             child: Container(
@@ -131,17 +135,25 @@ class AnnouncementCard extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
                                   color: categoryColor.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: categoryColor.withValues(alpha: 0.2)),
+                                  border: Border.all(
+                                    color: categoryColor.withValues(alpha: 0.2),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(_getCategoryIcon(announcement.category), 
-                                         size: 14, color: categoryColor),
+                                    Icon(
+                                      _getCategoryIcon(announcement.category),
+                                      size: 14,
+                                      color: categoryColor,
+                                    ),
                                     const SizedBox(width: 6),
                                     Text(
                                       announcement.category.name.toUpperCase(),
@@ -160,7 +172,8 @@ class AnnouncementCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
-                                  color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                  color: theme.colorScheme.onSurfaceVariant
+                                      .withValues(alpha: 0.5),
                                 ),
                               ),
                             ],
@@ -183,14 +196,20 @@ class AnnouncementCard extends StatelessWidget {
                               ),
                               if (announcement.isVerified)
                                 Container(
-                                  margin: const EdgeInsets.only(left: 8, top: 4),
+                                  margin: const EdgeInsets.only(
+                                    left: 8,
+                                    top: 4,
+                                  ),
                                   padding: const EdgeInsets.all(4),
                                   decoration: BoxDecoration(
                                     color: Colors.blue.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.verified_rounded, 
-                                             color: Colors.blue, size: 16),
+                                  child: const Icon(
+                                    Icons.verified_rounded,
+                                    color: Colors.blue,
+                                    size: 16,
+                                  ),
                                 ),
                             ],
                           ),
@@ -199,30 +218,47 @@ class AnnouncementCard extends StatelessWidget {
                             announcement.content,
                             style: TextStyle(
                               fontSize: 15,
-                              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.8),
                               height: 1.6,
                             ),
                             maxLines: 3,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          if (announcement.sourceUrl != null && announcement.sourceUrl!.isNotEmpty) ...[
+                          if (announcement.sourceUrl != null &&
+                              announcement.sourceUrl!.isNotEmpty) ...[
                             const SizedBox(height: 16),
                             AppHaptic(
                               onTap: () => _launchURL(announcement.sourceUrl!),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: theme.primaryColor.withValues(alpha: 0.08),
+                                  color: theme.primaryColor.withValues(
+                                    alpha: 0.08,
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: theme.primaryColor.withValues(alpha: 0.15)),
+                                  border: Border.all(
+                                    color: theme.primaryColor.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.link_rounded, size: 16, color: theme.primaryColor),
+                                    Icon(
+                                      Icons.link_rounded,
+                                      size: 16,
+                                      color: theme.primaryColor,
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      AppLocalizations.of(context)!.sourceInformation,
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.sourceInformation,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -237,7 +273,8 @@ class AnnouncementCard extends StatelessWidget {
                           const SizedBox(height: 20),
                           Container(
                             height: 1,
-                            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+                            color: (isDark ? Colors.white : Colors.black)
+                                .withValues(alpha: 0.08),
                           ),
                           const SizedBox(height: 16),
                           Row(
@@ -251,13 +288,23 @@ class AnnouncementCard extends StatelessWidget {
                                 child: CircleAvatar(
                                   radius: 14,
                                   backgroundColor: Colors.grey[200],
-                                  backgroundImage: (announcement.authorAvatarUrl != null && 
-                                                    announcement.authorAvatarUrl!.isNotEmpty)
-                                      ? CachedNetworkImageProvider(announcement.authorAvatarUrl!)
+                                  backgroundImage:
+                                      (announcement.authorAvatarUrl != null &&
+                                          announcement
+                                              .authorAvatarUrl!
+                                              .isNotEmpty)
+                                      ? CachedNetworkImageProvider(
+                                          announcement.authorAvatarUrl!,
+                                        )
                                       : null,
-                                  child: (announcement.authorAvatarUrl == null || 
+                                  child:
+                                      (announcement.authorAvatarUrl == null ||
                                           announcement.authorAvatarUrl!.isEmpty)
-                                      ? const Icon(Icons.person, size: 16, color: Colors.grey)
+                                      ? const Icon(
+                                          Icons.person,
+                                          size: 16,
+                                          color: Colors.grey,
+                                        )
                                       : null,
                                 ),
                               ),
@@ -267,7 +314,8 @@ class AnnouncementCard extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      announcement.authorName ?? 'Community Leader',
+                                      announcement.authorName ??
+                                          'Community Leader',
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w700,
@@ -278,7 +326,10 @@ class AnnouncementCard extends StatelessWidget {
                                       'Official Source',
                                       style: TextStyle(
                                         fontSize: 11,
-                                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                                        color: theme
+                                            .colorScheme
+                                            .onSurfaceVariant
+                                            .withValues(alpha: 0.5),
                                       ),
                                     ),
                                   ],
@@ -295,8 +346,11 @@ class AnnouncementCard extends StatelessWidget {
                                       color: theme.primaryColor,
                                     ),
                                   ),
-                                  Icon(Icons.chevron_right_rounded, 
-                                       size: 18, color: theme.primaryColor),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 18,
+                                    color: theme.primaryColor,
+                                  ),
                                 ],
                               ),
                             ],
@@ -315,10 +369,7 @@ class AnnouncementCard extends StatelessWidget {
     );
 
     if (announcement.isVerified) {
-      return AnimatedGlowBorder(
-        borderRadius: 24,
-        child: cardContent,
-      );
+      return AnimatedGlowBorder(borderRadius: 24, child: cardContent);
     }
     return cardContent;
   }
@@ -338,7 +389,9 @@ class AnnouncementCard extends StatelessWidget {
         if (currentUser == null) return const SizedBox.shrink();
 
         final isSuperAdmin = currentUser.role == 'super_admin';
-        final isAdminAuthor = currentUser.role == 'admin' && announcement.authorId == currentUser.id;
+        final isAdminAuthor =
+            currentUser.role == 'admin' &&
+            announcement.authorId == currentUser.id;
 
         if (!isSuperAdmin && !isAdminAuthor) return const SizedBox.shrink();
 
@@ -352,7 +405,9 @@ class AnnouncementCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  isSuperAdmin ? AppLocalizations.of(context)!.superAdminActions : AppLocalizations.of(context)!.adminActions,
+                  isSuperAdmin
+                      ? AppLocalizations.of(context)!.superAdminActions
+                      : AppLocalizations.of(context)!.adminActions,
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -362,27 +417,43 @@ class AnnouncementCard extends StatelessWidget {
                 const Spacer(),
                 if (isSuperAdmin)
                   AppHaptic(
-                    onTap: () => _handleVerify(context, !announcement.isVerified),
+                    onTap: () =>
+                        _handleVerify(context, !announcement.isVerified),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color: (announcement.isVerified ? Colors.orange : Colors.blue).withValues(alpha: 0.1),
+                        color:
+                            (announcement.isVerified
+                                    ? Colors.orange
+                                    : Colors.blue)
+                                .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            announcement.isVerified ? Icons.unpublished_rounded : Icons.verified_rounded,
+                            announcement.isVerified
+                                ? Icons.unpublished_rounded
+                                : Icons.verified_rounded,
                             size: 16,
-                            color: announcement.isVerified ? Colors.orange : Colors.blue,
+                            color: announcement.isVerified
+                                ? Colors.orange
+                                : Colors.blue,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            announcement.isVerified ? AppLocalizations.of(context)!.unverify : AppLocalizations.of(context)!.verify,
+                            announcement.isVerified
+                                ? AppLocalizations.of(context)!.unverify
+                                : AppLocalizations.of(context)!.verify,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
-                              color: announcement.isVerified ? Colors.orange : Colors.blue,
+                              color: announcement.isVerified
+                                  ? Colors.orange
+                                  : Colors.blue,
                             ),
                           ),
                         ],
@@ -393,18 +464,29 @@ class AnnouncementCard extends StatelessWidget {
                 AppHaptic(
                   onTap: () => _handleDelete(context),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                        const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 16,
+                          color: Colors.red,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           AppLocalizations.of(context)!.delete,
-                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.red),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
                         ),
                       ],
                     ),
@@ -425,7 +507,10 @@ class AnnouncementCard extends StatelessWidget {
         title: Text(AppLocalizations.of(context)!.deleteAnnouncementTitle),
         content: Text(AppLocalizations.of(context)!.deleteAnnouncementContent),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(AppLocalizations.of(context)!.cancel)),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -439,11 +524,17 @@ class AnnouncementCard extends StatelessWidget {
       try {
         await SupabaseService().deleteAnnouncement(announcement.id);
         if (context.mounted) {
-          ToastService.showSuccess(context, AppLocalizations.of(context)!.announcementDeleted);
+          ToastService.showSuccess(
+            context,
+            AppLocalizations.of(context)!.announcementDeleted,
+          );
         }
       } catch (e) {
         if (context.mounted) {
-          ToastService.showError(context, AppLocalizations.of(context)!.actionFailed(e.toString()));
+          ToastService.showError(
+            context,
+            AppLocalizations.of(context)!.actionFailed(e.toString()),
+          );
         }
       }
     }
@@ -453,11 +544,19 @@ class AnnouncementCard extends StatelessWidget {
     try {
       await SupabaseService().verifyAnnouncement(announcement.id, verify);
       if (context.mounted) {
-        ToastService.showSuccess(context, verify ? AppLocalizations.of(context)!.announcementVerified : AppLocalizations.of(context)!.verificationRemoved);
+        ToastService.showSuccess(
+          context,
+          verify
+              ? AppLocalizations.of(context)!.announcementVerified
+              : AppLocalizations.of(context)!.verificationRemoved,
+        );
       }
     } catch (e) {
       if (context.mounted) {
-        ToastService.showError(context, AppLocalizations.of(context)!.actionFailed(e.toString()));
+        ToastService.showError(
+          context,
+          AppLocalizations.of(context)!.actionFailed(e.toString()),
+        );
       }
     }
   }

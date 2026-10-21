@@ -1,17 +1,6 @@
-enum AssetCategory {
-  tools,
-  garden,
-  transport,
-  electronics,
-  household,
-  other,
-}
+enum AssetCategory { tools, garden, transport, electronics, household, other }
 
-enum AssetStatus {
-  available,
-  lent,
-  private,
-}
+enum AssetStatus { available, lent, private }
 
 class CommunityAsset {
   final String id;

@@ -48,9 +48,15 @@ class HomeAppBar extends StatelessWidget {
                     center: const Alignment(0.85, -0.2),
                     radius: 1.05,
                     colors: [
-                      AppColors.primaryLight.withValues(alpha: isDark ? 0.28 : 0.22),
-                      AppColors.primaryLight.withValues(alpha: isDark ? 0.10 : 0.10),
-                      AppColors.primaryLight.withValues(alpha: isDark ? 0.03 : 0.03),
+                      AppColors.primaryLight.withValues(
+                        alpha: isDark ? 0.28 : 0.22,
+                      ),
+                      AppColors.primaryLight.withValues(
+                        alpha: isDark ? 0.10 : 0.10,
+                      ),
+                      AppColors.primaryLight.withValues(
+                        alpha: isDark ? 0.03 : 0.03,
+                      ),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.35, 0.65, 1.0],
@@ -94,12 +100,23 @@ class HomeAppBar extends StatelessWidget {
                 );
               },
             ),
-            Text(l10n.appTitle, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, letterSpacing: -0.7)),
+            Text(
+              l10n.appTitle,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.7,
+              ),
+            ),
             Text(
               l10n.findMatches,
               style: TextStyle(
                 fontSize: 12,
-                color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.5),
+                color:
+                    (Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black)
+                        .withValues(alpha: 0.5),
                 letterSpacing: 0.2,
                 fontWeight: FontWeight.w500,
               ),
@@ -108,7 +125,11 @@ class HomeAppBar extends StatelessWidget {
         ),
         Row(
           children: [
-            _buildHeaderIconButton(context, Icons.history_rounded, () => context.push('/activity')),
+            _buildHeaderIconButton(
+              context,
+              Icons.history_rounded,
+              () => context.push('/activity'),
+            ),
             if (showRegionalUpdateReminder) ...[
               const SizedBox(width: 8),
               _HeaderReminder(
@@ -133,24 +154,35 @@ class HomeAppBar extends StatelessWidget {
     );
   }
 
-  Widget _buildHeaderIconButton(BuildContext context, IconData icon, VoidCallback onTap, {bool isClose = false}) {
-     return AppHaptic(
-       onTap: onTap,
-       child: Container(
-         padding: const EdgeInsets.all(10),
-         decoration: BoxDecoration(
-           color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: isClose ? 0.1 : 0.05),
-           shape: BoxShape.circle,
-         ),
-         child: Icon(
-           icon, 
-           size: isClose ? 18 : 22, 
-           color: isClose 
-               ? (Theme.of(context).brightness == Brightness.dark ? Colors.grey[400] : Colors.grey[700]) 
-               : Colors.grey[600]
-         ),
-       ),
-     );
+  Widget _buildHeaderIconButton(
+    BuildContext context,
+    IconData icon,
+    VoidCallback onTap, {
+    bool isClose = false,
+  }) {
+    return AppHaptic(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color:
+              (Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : Colors.black)
+                  .withValues(alpha: isClose ? 0.1 : 0.05),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          size: isClose ? 18 : 22,
+          color: isClose
+              ? (Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
+                    : Colors.grey[700])
+              : Colors.grey[600],
+        ),
+      ),
+    );
   }
 
   Widget _buildProfileAvatar(BuildContext context) {
@@ -165,12 +197,19 @@ class HomeAppBar extends StatelessWidget {
             tag: 'profile-avatar',
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: BoxDecoration(gradient: AppColors.auraGradient, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                gradient: AppColors.auraGradient,
+                shape: BoxShape.circle,
+              ),
               child: CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.grey[200],
-                backgroundImage: hasAvatar ? CachedNetworkImageProvider(user.avatarUrl) : null,
-                child: hasAvatar ? null : const Icon(Icons.person, color: Colors.white, size: 20),
+                backgroundImage: hasAvatar
+                    ? CachedNetworkImageProvider(user.avatarUrl)
+                    : null,
+                child: hasAvatar
+                    ? null
+                    : const Icon(Icons.person, color: Colors.white, size: 20),
               ),
             ),
           ),
@@ -217,9 +256,10 @@ class _HeaderReminderState extends State<_HeaderReminder>
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
-      scale: Tween<double>(begin: 0.92, end: 1.08).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      ),
+      scale: Tween<double>(
+        begin: 0.92,
+        end: 1.08,
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut)),
       child: AppHaptic(
         onTap: widget.onTap ?? () {},
         child: Tooltip(

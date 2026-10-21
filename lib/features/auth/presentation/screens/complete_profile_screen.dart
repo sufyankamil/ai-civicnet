@@ -102,17 +102,25 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
       String avatarUrl = '';
       if (_selectedImage != null) {
-        final uploadedUrl = await StorageService().uploadAvatar(_selectedImage!, user.id);
+        final uploadedUrl = await StorageService().uploadAvatar(
+          _selectedImage!,
+          user.id,
+        );
         if (uploadedUrl != null) {
           avatarUrl = uploadedUrl;
         } else {
-           if (mounted) {
-             ToastService.showError(context, 'Failed to upload image. Using default avatar.');
-           }
+          if (mounted) {
+            ToastService.showError(
+              context,
+              'Failed to upload image. Using default avatar.',
+            );
+          }
         }
       }
 
-      final skillsList = _selectedSkills.map((s) => s.toString().split('.').last).toList();
+      final skillsList = _selectedSkills
+          .map((s) => s.toString().split('.').last)
+          .toList();
 
       await SupabaseService().updateUserProfile(
         user.name,
@@ -126,7 +134,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     } catch (e) {
       if (mounted) {
         logger.e('Failed to update profile: $e');
-        ToastService.showError(context, 'Could not save profile setup. Please try again.');
+        ToastService.showError(
+          context,
+          'Could not save profile setup. Please try again.',
+        );
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -141,18 +152,21 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
-          'Complete Profile', 
+          'Complete Profile',
           style: TextStyle(
-            fontWeight: FontWeight.w900, 
+            fontWeight: FontWeight.w900,
             color: isDark ? Colors.white : Theme.of(context).primaryColor,
             letterSpacing: -0.5,
-          )
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Theme.of(context).primaryColor),
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDark ? Colors.white : Theme.of(context).primaryColor,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -160,7 +174,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 20,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
                 child: Column(
@@ -174,7 +191,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : Theme.of(context).primaryColor,
+                          color: isDark
+                              ? Colors.white
+                              : Theme.of(context).primaryColor,
                           letterSpacing: -1,
                         ),
                       ),
@@ -185,7 +204,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                       child: Text(
                         'Add an avatar and select your skills to help us match you with community requests.',
                         style: TextStyle(
-                          fontSize: 15, 
+                          fontSize: 15,
                           color: isDark ? Colors.white60 : Colors.grey[700],
                           height: 1.5,
                         ),
@@ -203,12 +222,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(32),
                             decoration: BoxDecoration(
-                              color: isDark 
-                                ? Colors.white.withValues(alpha: 0.05) 
-                                : Colors.white.withValues(alpha: 0.6),
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.05)
+                                  : Colors.white.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(32),
                               border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : Colors.white,
                                 width: 1.5,
                               ),
                               boxShadow: [
@@ -234,9 +255,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                           height: 130,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
-                                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade100,
+                                            color: isDark
+                                                ? Colors.white.withValues(
+                                                    alpha: 0.1,
+                                                  )
+                                                : Colors.grey.shade100,
                                             border: Border.all(
-                                              color: Theme.of(context).primaryColor.withValues(alpha: _selectedImage == null ? 0.3 : 1.0),
+                                              color: Theme.of(context)
+                                                  .primaryColor
+                                                  .withValues(
+                                                    alpha:
+                                                        _selectedImage == null
+                                                        ? 0.3
+                                                        : 1.0,
+                                                  ),
                                               width: 3,
                                             ),
                                           ),
@@ -250,7 +282,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                               : Icon(
                                                   Icons.face_unlock_rounded,
                                                   size: 60,
-                                                  color: isDark ? Colors.white30 : Colors.grey.shade400,
+                                                  color: isDark
+                                                      ? Colors.white30
+                                                      : Colors.grey.shade400,
                                                 ),
                                         ),
                                         Positioned(
@@ -259,18 +293,31 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                           child: Container(
                                             padding: const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
-                                              color: Theme.of(context).primaryColor,
+                                              color: Theme.of(
+                                                context,
+                                              ).primaryColor,
                                               shape: BoxShape.circle,
-                                              border: Border.all(color: isDark ? Colors.black : Colors.white, width: 2),
+                                              border: Border.all(
+                                                color: isDark
+                                                    ? Colors.black
+                                                    : Colors.white,
+                                                width: 2,
+                                              ),
                                               boxShadow: [
                                                 BoxShadow(
-                                                  color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                                                  color: Theme.of(context)
+                                                      .primaryColor
+                                                      .withValues(alpha: 0.3),
                                                   blurRadius: 8,
                                                   offset: const Offset(0, 2),
                                                 ),
                                               ],
                                             ),
-                                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
+                                            child: const Icon(
+                                              Icons.camera_alt_rounded,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -282,21 +329,25 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                   child: Text(
                                     'Tap to upload a photo (Optional)',
                                     style: TextStyle(
-                                      fontSize: 12, 
-                                      color: isDark ? Colors.white38 : Colors.grey[500],
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? Colors.white38
+                                          : Colors.grey[500],
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ),
-                                
+
                                 const SizedBox(height: 40),
 
                                 Text(
                                   'Your Skills',
                                   style: TextStyle(
-                                    fontSize: 18, 
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w900,
-                                    color: isDark ? Colors.white : Colors.black87,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -304,14 +355,22 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                   spacing: 8.0,
                                   runSpacing: 10.0,
                                   children: HelpCategory.values.map((category) {
-                                    final isSelected = _selectedSkills.contains(category);
+                                    final isSelected = _selectedSkills.contains(
+                                      category,
+                                    );
                                     return ChoiceChip(
                                       label: Text(
                                         _skillLabels[category] ?? 'Unknown',
                                         style: TextStyle(
                                           fontSize: 13,
-                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                          color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.w500,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : (isDark
+                                                    ? Colors.white70
+                                                    : Colors.black54),
                                         ),
                                       ),
                                       selected: isSelected,
@@ -324,11 +383,20 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                                           }
                                         });
                                       },
-                                      selectedColor: Theme.of(context).primaryColor,
-                                      backgroundColor: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey[200],
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                      selectedColor: Theme.of(
+                                        context,
+                                      ).primaryColor,
+                                      backgroundColor: isDark
+                                          ? Colors.white.withValues(alpha: 0.1)
+                                          : Colors.grey[200],
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 4,
+                                      ),
                                       side: BorderSide.none,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
                                     );
                                   }).toList(),
                                 ),
@@ -346,9 +414,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     SlideFadeTransition(
                       delay: const Duration(milliseconds: 600),
                       child: Center(

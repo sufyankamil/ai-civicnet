@@ -5,7 +5,8 @@ import '../entities/help_request_entity.dart';
 import '../repositories/request_repository.dart';
 import '../entities/request_enums.dart';
 
-class GetHelpRequestsUseCase implements UseCase<List<HelpRequestEntity>, NoParams> {
+class GetHelpRequestsUseCase
+    implements UseCase<List<HelpRequestEntity>, NoParams> {
   final RequestRepository repository;
   GetHelpRequestsUseCase(this.repository);
 
@@ -15,7 +16,8 @@ class GetHelpRequestsUseCase implements UseCase<List<HelpRequestEntity>, NoParam
   }
 }
 
-class GetMyHelpRequestsUseCase implements UseCase<List<HelpRequestEntity>, NoParams> {
+class GetMyHelpRequestsUseCase
+    implements UseCase<List<HelpRequestEntity>, NoParams> {
   final RequestRepository repository;
   GetMyHelpRequestsUseCase(this.repository);
 
@@ -30,12 +32,15 @@ class GetHelpRequestParams {
   const GetHelpRequestParams(this.id);
 }
 
-class GetHelpRequestUseCase implements UseCase<HelpRequestEntity, GetHelpRequestParams> {
+class GetHelpRequestUseCase
+    implements UseCase<HelpRequestEntity, GetHelpRequestParams> {
   final RequestRepository repository;
   GetHelpRequestUseCase(this.repository);
 
   @override
-  Future<Either<Failure, HelpRequestEntity>> call(GetHelpRequestParams params) async {
+  Future<Either<Failure, HelpRequestEntity>> call(
+    GetHelpRequestParams params,
+  ) async {
     return await repository.getHelpRequest(params.id);
   }
 }
@@ -56,13 +61,17 @@ class UpdateRequestStatusParams {
   const UpdateRequestStatusParams(this.requestId, this.status);
 }
 
-class UpdateRequestStatusUseCase implements UseCase<void, UpdateRequestStatusParams> {
+class UpdateRequestStatusUseCase
+    implements UseCase<void, UpdateRequestStatusParams> {
   final RequestRepository repository;
   UpdateRequestStatusUseCase(this.repository);
 
   @override
   Future<Either<Failure, void>> call(UpdateRequestStatusParams params) async {
-    return await repository.updateHelpRequestStatus(params.requestId, params.status);
+    return await repository.updateHelpRequestStatus(
+      params.requestId,
+      params.status,
+    );
   }
 }
 

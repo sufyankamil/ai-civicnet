@@ -7,7 +7,9 @@ class CommitmentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? AppColors.backgroundDark : AppColors.backgroundLight;
+    final bgColor = isDark
+        ? AppColors.backgroundDark
+        : AppColors.backgroundLight;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -87,7 +89,8 @@ class CommitmentScreen extends StatelessWidget {
       title: 'Our Core Values',
       icon: Icons.verified_user_rounded,
       iconColor: Colors.blue,
-      content: 'At CivicNet, our mission is to empower local communities through selfless help and connection. We believe in the power of neighbors helping neighbors without barriers.',
+      content:
+          'At CivicNet, our mission is to empower local communities through selfless help and connection. We believe in the power of neighbors helping neighbors without barriers.',
       isDark: isDark,
     );
   }
@@ -105,7 +108,11 @@ class CommitmentScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
               const SizedBox(width: 12),
               Text(
                 'Safety Awareness',
@@ -144,13 +151,7 @@ class CommitmentScreen extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.5,
-            ),
-          ),
+          child: Text(text, style: TextStyle(fontSize: 14, height: 1.5)),
         ),
       ],
     );
@@ -161,7 +162,8 @@ class CommitmentScreen extends StatelessWidget {
       title: 'Personal Gestures',
       icon: Icons.volunteer_activism_rounded,
       iconColor: Colors.orange,
-      content: 'If users choose to exchange money or gifts as a personal gesture of thanks, it is strictly between those individuals. CivicNet is not responsible for any transactions or issues arising after such gestures.',
+      content:
+          'If users choose to exchange money or gifts as a personal gesture of thanks, it is strictly between those individuals. CivicNet is not responsible for any transactions or issues arising after such gestures.',
       isDark: isDark,
     );
   }
@@ -195,10 +197,7 @@ class CommitmentScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
             ],
           ),

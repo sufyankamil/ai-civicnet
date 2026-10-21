@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -19,24 +18,42 @@ class _Step {
 }
 
 const _flowSteps = [
-  _Step(Icons.edit_note_rounded, 'Post a Task',
-      'Describe what you need — skill, location & urgency.',
-      Color(0xFF4A90E2)),
-  _Step(Icons.search_rounded, 'Smart Matching',
-      'CivicNet ranks nearby helpers by skill, rating & availability.',
-      Color(0xFF7B61FF)),
-  _Step(Icons.notifications_active_rounded, 'Helpers Notified',
-      'Push notifications ping eligible helpers in real time.',
-      Color(0xFFFF9500)),
-  _Step(Icons.handshake_rounded, 'Offer & Accept',
-      'A helper taps "I can help". Requester reviews & accepts.',
-      Color(0xFF50E3C2)),
-  _Step(Icons.check_circle_rounded, 'Task Fulfilled',
-      'Task marked done. Both parties rate each other.',
-      Color(0xFF34C759)),
-  _Step(Icons.stars_rounded, 'Points & Trust',
-      'Helper earns points & boosts their community trust score.',
-      Color(0xFFFF6B6B)),
+  _Step(
+    Icons.edit_note_rounded,
+    'Post a Task',
+    'Describe what you need — skill, location & urgency.',
+    Color(0xFF4A90E2),
+  ),
+  _Step(
+    Icons.search_rounded,
+    'Smart Matching',
+    'CivicNet ranks nearby helpers by skill, rating & availability.',
+    Color(0xFF7B61FF),
+  ),
+  _Step(
+    Icons.notifications_active_rounded,
+    'Helpers Notified',
+    'Push notifications ping eligible helpers in real time.',
+    Color(0xFFFF9500),
+  ),
+  _Step(
+    Icons.handshake_rounded,
+    'Offer & Accept',
+    'A helper taps "I can help". Requester reviews & accepts.',
+    Color(0xFF50E3C2),
+  ),
+  _Step(
+    Icons.check_circle_rounded,
+    'Task Fulfilled',
+    'Task marked done. Both parties rate each other.',
+    Color(0xFF34C759),
+  ),
+  _Step(
+    Icons.stars_rounded,
+    'Points & Trust',
+    'Helper earns points & boosts their community trust score.',
+    Color(0xFFFF6B6B),
+  ),
 ];
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
@@ -244,18 +261,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               gradient: LinearGradient(
                 colors: [
                   AppColors.primaryLight.withValues(alpha: isDark ? 0.25 : 0.1),
-                  AppColors.secondaryLight.withValues(alpha: isDark ? 0.25 : 0.1),
+                  AppColors.secondaryLight.withValues(
+                    alpha: isDark ? 0.25 : 0.1,
+                  ),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(28),
             ),
-            child: Icon(
-              page.icon,
-              size: 90,
-              color: AppColors.primaryLight,
-            ),
+            child: Icon(page.icon, size: 90, color: AppColors.primaryLight),
           ),
           const SizedBox(height: 36),
           Text(
@@ -335,7 +350,11 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     ],
                   ),
                 ),
-                Icon(Icons.rocket_launch_rounded, size: 42, color: Colors.white.withValues(alpha: 0.8)),
+                Icon(
+                  Icons.rocket_launch_rounded,
+                  size: 42,
+                  color: Colors.white.withValues(alpha: 0.8),
+                ),
               ],
             ),
           ),
@@ -352,10 +371,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: _buildStepCard(step, i, isDark),
                 ),
                 if (!isLast)
-                  _buildConnector(
-                    step.color,
-                    _flowSteps[i + 1].color,
-                  ),
+                  _buildConnector(step.color, _flowSteps[i + 1].color),
               ],
             );
           }),
@@ -420,10 +436,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 ),
                 Text(
                   step.title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   step.desc,
@@ -471,14 +484,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 class _PacketPainter extends CustomPainter {
   final Color from, to;
   final double progress;
-  const _PacketPainter(
-      {required this.from, required this.to, required this.progress});
+  const _PacketPainter({
+    required this.from,
+    required this.to,
+    required this.progress,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..shader = LinearGradient(colors: [from, to]).createShader(
-          Rect.fromLTWH(0, 0, size.width, size.height))
+      ..shader = LinearGradient(
+        colors: [from, to],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -486,8 +503,11 @@ class _PacketPainter extends CustomPainter {
     // Dashes
     double y = 0;
     while (y < size.height) {
-      canvas.drawLine(Offset(size.width / 2, y),
-          Offset(size.width / 2, (y + 5).clamp(0.0, size.height)), linePaint);
+      canvas.drawLine(
+        Offset(size.width / 2, y),
+        Offset(size.width / 2, (y + 5).clamp(0.0, size.height)),
+        linePaint,
+      );
       y += 10;
     }
 
@@ -495,13 +515,13 @@ class _PacketPainter extends CustomPainter {
     final packetY = progress * size.height;
     final c = Color.lerp(from, to, progress)!;
     canvas.drawCircle(
-        Offset(size.width / 2, packetY),
-        6,
-        Paint()
-          ..color = c.withValues(alpha: 0.3)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5));
-    canvas.drawCircle(
-        Offset(size.width / 2, packetY), 3.5, Paint()..color = c);
+      Offset(size.width / 2, packetY),
+      6,
+      Paint()
+        ..color = c.withValues(alpha: 0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+    );
+    canvas.drawCircle(Offset(size.width / 2, packetY), 3.5, Paint()..color = c);
   }
 
   @override

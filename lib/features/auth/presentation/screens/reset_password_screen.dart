@@ -38,13 +38,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         UserAttributes(password: _passwordController.text.trim()),
       );
       if (mounted) {
-        ToastService.showSuccess(context, AppLocalizations.of(context)!.passwordUpdated);
+        ToastService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.passwordUpdated,
+        );
         context.go('/login');
       }
     } on AuthException catch (e) {
       if (mounted) ToastService.showError(context, e.message);
     } catch (e) {
-      if (mounted) ToastService.showError(context, AppLocalizations.of(context)!.somethingWentWrong);
+      if (mounted) {
+        ToastService.showError(
+          context,
+          AppLocalizations.of(context)!.somethingWentWrong,
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -57,15 +65,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: Theme.of(context).primaryColor),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Theme.of(context).primaryColor,
+          ),
           onPressed: () => context.go('/login'),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
-              24, 8, 24, MediaQuery.of(context).padding.bottom + 24),
+            24,
+            8,
+            24,
+            MediaQuery.of(context).padding.bottom + 24,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -75,7 +89,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    gradient: AppColors.primaryGradient(Theme.of(context).brightness),
+                    gradient: AppColors.primaryGradient(
+                      Theme.of(context).brightness,
+                    ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -85,8 +101,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.lock_outline_rounded,
-                      color: Colors.white, size: 32),
+                  child: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 Text(
@@ -101,7 +120,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 Text(
                   AppLocalizations.of(context)!.enterNewPassword,
                   style: TextStyle(
-                      fontSize: 15, color: Colors.grey, height: 1.6),
+                    fontSize: 15,
+                    color: Colors.grey,
+                    height: 1.6,
+                  ),
                 ),
                 const SizedBox(height: 40),
                 CustomTextField(
@@ -110,15 +132,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined),
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
                     onPressed: () =>
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return AppLocalizations.of(context)!.enterNewPasswordError;
+                      return AppLocalizations.of(
+                        context,
+                      )!.enterNewPasswordError;
                     }
                     if (value.length < 6) {
                       return AppLocalizations.of(context)!.passwordLengthError;
@@ -133,9 +159,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   controller: _confirmController,
                   obscureText: _obscureConfirm,
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined),
+                    icon: Icon(
+                      _obscureConfirm
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                    ),
                     onPressed: () =>
                         setState(() => _obscureConfirm = !_obscureConfirm),
                   ),

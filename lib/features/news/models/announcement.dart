@@ -1,11 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum AnnouncementCategory {
-  warning,
-  update,
-  event,
-  community,
-}
+enum AnnouncementCategory { warning, update, event, community }
 
 class Announcement extends Equatable {
   final String id;
@@ -41,7 +36,7 @@ class Announcement extends Equatable {
   factory Announcement.fromJson(Map<String, dynamic> json) {
     // Handling profiles join if provided
     final profile = json['profiles'] as Map<String, dynamic>?;
-    
+
     // Handling votes count and user vote state
     // Use the denormalized votes_count column for performance
     final votesCount = json['votes_count'] as int? ?? 0;
@@ -112,18 +107,18 @@ class Announcement extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        content,
-        imageUrl,
-        authorId,
-        authorName,
-        authorAvatarUrl,
-        category,
-        isVerified,
-        sourceUrl,
-        createdAt,
-        voteCount,
-        isVotedByMe,
-      ];
+    id,
+    title,
+    content,
+    imageUrl,
+    authorId,
+    authorName,
+    authorAvatarUrl,
+    category,
+    isVerified,
+    sourceUrl,
+    createdAt,
+    voteCount,
+    isVotedByMe,
+  ];
 }

@@ -33,12 +33,12 @@ class CustomTextField extends StatelessWidget {
       keyboardType: keyboardType,
       onChanged: onChanged,
       maxLines: maxLines,
-      style: TextStyle(
-        color: Theme.of(context).textTheme.bodyMedium?.color,
-      ),
+      style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
       decoration: InputDecoration(
         hintText: hintText,
-        prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Colors.grey) : null,
+        prefixIcon: prefixIcon != null
+            ? Icon(prefixIcon, color: Colors.grey)
+            : null,
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: Theme.of(context).inputDecorationTheme.fillColor,

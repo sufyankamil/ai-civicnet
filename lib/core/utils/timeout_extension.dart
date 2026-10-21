@@ -7,7 +7,9 @@ extension FutureTimeoutExtension<T> on Future<T> {
   Future<T> withServerTimeout([int seconds = 10]) {
     return timeout(
       Duration(seconds: seconds),
-      onTimeout: () => throw const ServerException('Unable to reach server. Please try again.'),
+      onTimeout: () => throw const ServerException(
+        'Unable to reach server. Please try again.',
+      ),
     );
   }
 }

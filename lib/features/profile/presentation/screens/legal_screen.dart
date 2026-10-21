@@ -8,10 +8,13 @@ class LegalScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Legal', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Legal',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -21,21 +24,30 @@ class LegalScreen extends StatelessWidget {
         children: [
           ListTile(
             title: Text(l10n.privacyPolicy),
-            leading: const Icon(Icons.privacy_tip_outlined, color: Colors.blueAccent),
+            leading: const Icon(
+              Icons.privacy_tip_outlined,
+              color: Colors.blueAccent,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/privacy-policy'),
           ),
           const Divider(),
           ListTile(
             title: Text(l10n.termsAndConditions),
-            leading: const Icon(Icons.gavel_rounded, color: Colors.indigoAccent),
+            leading: const Icon(
+              Icons.gavel_rounded,
+              color: Colors.indigoAccent,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/terms-of-service'),
           ),
           const Divider(),
           ListTile(
             title: Text(l10n.communityCommitment),
-            leading: const Icon(Icons.volunteer_activism_rounded, color: Colors.pinkAccent),
+            leading: const Icon(
+              Icons.volunteer_activism_rounded,
+              color: Colors.pinkAccent,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/commitment'),
           ),

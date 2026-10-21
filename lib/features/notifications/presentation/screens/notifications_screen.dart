@@ -10,7 +10,10 @@ class NotificationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Notifications',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 1,
       ),
@@ -28,9 +31,16 @@ class NotificationsScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Icon(Icons.notifications_off_outlined, size: 64, color: Colors.grey[400]),
-                   const SizedBox(height: 16),
-                   Text('No notifications yet', style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No notifications yet',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                  ),
                 ],
               ),
             );
@@ -46,18 +56,20 @@ class NotificationsScreen extends StatelessWidget {
                 notification: notif,
                 onTap: () async {
                   if (!notif.isRead) {
-                     await SupabaseService().markNotificationAsRead(notif.id);
+                    await SupabaseService().markNotificationAsRead(notif.id);
                   }
                   if (notif.relatedId != null) {
-                     if (context.mounted) {
-                        if (notif.type == 'new_request') {
-                           context.push('/request/${notif.relatedId}');
-                        } else if (notif.type == 'chat_message' || notif.type == 'message' || notif.type == 'chat') {
-                           context.push('/chat-detail?id=${notif.relatedId}');
-                        } else if (notif.type == 'event') {
-                           context.push('/event/${notif.relatedId}');
-                        }
-                     }
+                    if (context.mounted) {
+                      if (notif.type == 'new_request') {
+                        context.push('/request/${notif.relatedId}');
+                      } else if (notif.type == 'chat_message' ||
+                          notif.type == 'message' ||
+                          notif.type == 'chat') {
+                        context.push('/chat-detail?id=${notif.relatedId}');
+                      } else if (notif.type == 'event') {
+                        context.push('/event/${notif.relatedId}');
+                      }
+                    }
                   }
                 },
               );
@@ -73,10 +85,7 @@ class _NotificationItem extends StatelessWidget {
   final AppNotification notification;
   final VoidCallback onTap;
 
-  const _NotificationItem({
-    required this.notification,
-    required this.onTap,
-  });
+  const _NotificationItem({required this.notification, required this.onTap});
 
   String _formatTimeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);
@@ -95,7 +104,9 @@ class _NotificationItem extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isUnread ? Theme.of(context).primaryColor.withValues(alpha: 0.05) : Theme.of(context).cardColor,
+          color: isUnread
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
         ),
@@ -103,7 +114,9 @@ class _NotificationItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CircleAvatar(
-              backgroundColor: isUnread ? Theme.of(context).primaryColor : Colors.grey[300],
+              backgroundColor: isUnread
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey[300],
               child: Icon(
                 Icons.notifications_rounded,
                 color: isUnread ? Colors.white : Colors.grey[600],
@@ -122,9 +135,14 @@ class _NotificationItem extends StatelessWidget {
                         child: Text(
                           notification.title,
                           style: TextStyle(
-                            fontWeight: isUnread ? FontWeight.bold : FontWeight.w600,
+                            fontWeight: isUnread
+                                ? FontWeight.bold
+                                : FontWeight.w600,
                             fontSize: 16,
-                            color: Theme.of(context).brightness == Brightness.dark ? Colors.white70 : Colors.black87,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white70
+                                : Colors.black87,
                           ),
                         ),
                       ),
@@ -142,18 +160,12 @@ class _NotificationItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     notification.body,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[700],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _formatTimeAgo(notification.createdAt),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                   ),
                 ],
               ),

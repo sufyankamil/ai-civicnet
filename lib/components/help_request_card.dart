@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -23,7 +22,9 @@ class HelpRequestCard extends StatelessWidget {
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
+        side: BorderSide(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+        ),
       ),
       margin: const EdgeInsets.only(bottom: 16),
       child: InkWell(
@@ -38,18 +39,21 @@ class HelpRequestCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   request.requesterAvatarUrl.isNotEmpty &&
-                          (request.requesterAvatarUrl.startsWith('http://') || request.requesterAvatarUrl.startsWith('https://'))
+                          (request.requesterAvatarUrl.startsWith('http://') ||
+                              request.requesterAvatarUrl.startsWith('https://'))
                       ? CachedNetworkImage(
                           imageUrl: request.requesterAvatarUrl,
-                          imageBuilder: (context, imageProvider) => CircleAvatar(
-                            radius: 20,
-                            backgroundImage: imageProvider,
-                          ),
-                          errorWidget: (context, url, error) => const CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
+                          imageBuilder: (context, imageProvider) =>
+                              CircleAvatar(
+                                radius: 20,
+                                backgroundImage: imageProvider,
+                              ),
+                          errorWidget: (context, url, error) =>
+                              const CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Colors.grey,
+                                child: Icon(Icons.person, color: Colors.white),
+                              ),
                         )
                       : const CircleAvatar(
                           radius: 20,
@@ -72,10 +76,15 @@ class HelpRequestCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          AppLocalizations.of(context)!.postedByTime(request.requesterName, timeago.format(request.postedAt)),
+                          AppLocalizations.of(context)!.postedByTime(
+                            request.requesterName,
+                            timeago.format(request.postedAt),
+                          ),
                           style: TextStyle(
                             fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -95,14 +104,25 @@ class HelpRequestCard extends StatelessWidget {
               if (request.requesterId == SupabaseService().currentUserId) ...[
                 Row(
                   children: [
-                    Icon(Icons.near_me_rounded, size: 14, color: Theme.of(context).primaryColor.withValues(alpha: 0.6)),
+                    Icon(
+                      Icons.near_me_rounded,
+                      size: 14,
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.6),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Nearby',
-                      style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      ),
                     ),
                   ],
-                )
+                ),
               ] else
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -110,38 +130,75 @@ class HelpRequestCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                        if (request.distance.isNotEmpty &&
+                            request.distance.toLowerCase() != 'unknown') ...[
                           Row(
                             children: [
-                              Icon(Icons.location_on, size: 14, color: Theme.of(context).primaryColor),
+                              Icon(
+                                Icons.location_on,
+                                size: 14,
+                                color: Theme.of(context).primaryColor,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 request.distance,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).primaryColor,
+                                ),
                               ),
                             ],
                           ),
-                          if (!request.locationName.toLowerCase().contains('current location')) const SizedBox(height: 4),
+                          if (!request.locationName.toLowerCase().contains(
+                            'current location',
+                          ))
+                            const SizedBox(height: 4),
                         ],
-                        if (!request.locationName.toLowerCase().contains('current location'))
+                        if (!request.locationName.toLowerCase().contains(
+                          'current location',
+                        ))
                           Row(
                             children: [
-                              Icon(Icons.map_outlined, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                              Icon(
+                                Icons.map_outlined,
+                                size: 14,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 request.locationName,
-                                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
                               ),
                             ],
                           )
                         else
                           Row(
                             children: [
-                              Icon(Icons.near_me_rounded, size: 14, color: Theme.of(context).primaryColor.withValues(alpha: 0.6)),
+                              Icon(
+                                Icons.near_me_rounded,
+                                size: 14,
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.6),
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Nearby',
-                                style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withValues(alpha: 0.7),
+                                ),
                               ),
                             ],
                           ),
@@ -198,13 +255,15 @@ class HelpRequestCard extends StatelessWidget {
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isDark ? 0.2 : 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: isDark ? Border.all(color: color.withValues(alpha: 0.3), width: 1) : null,
+        border: isDark
+            ? Border.all(color: color.withValues(alpha: 0.3), width: 1)
+            : null,
       ),
       child: Text(
         text,

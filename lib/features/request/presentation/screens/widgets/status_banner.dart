@@ -16,10 +16,14 @@ class StatusBannerSection extends StatelessWidget {
   String _getLocalizedApplicationStatus(BuildContext context, String status) {
     final l10n = AppLocalizations.of(context)!;
     switch (status.toLowerCase()) {
-      case 'accepted': return l10n.applicationAccepted;
-      case 'not selected': return l10n.notSelected;
-      case 'applied': return l10n.interestSent;
-      default: return status;
+      case 'accepted':
+        return l10n.applicationAccepted;
+      case 'not selected':
+        return l10n.notSelected;
+      case 'applied':
+        return l10n.interestSent;
+      default:
+        return status;
     }
   }
 
@@ -55,7 +59,10 @@ class StatusBannerSection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.05)],
+          colors: [
+            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.05),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -66,7 +73,10 @@ class StatusBannerSection extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(width: 16),
@@ -75,17 +85,29 @@ class StatusBannerSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getLocalizedApplicationStatus(context, applicationStatus!.name).toUpperCase(),
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
+                  _getLocalizedApplicationStatus(
+                    context,
+                    applicationStatus!.name,
+                  ).toUpperCase(),
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   applicationStatus == legacy.ApplicationStatus.accepted
                       ? AppLocalizations.of(context)!.communicateWithRequester
                       : applicationStatus == legacy.ApplicationStatus.rejected
-                          ? 'The requester chose someone else for this task.'
-                          : 'Your interest has been noted. Please wait for a response.',
-                  style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.8), height: 1.3),
+                      ? 'The requester chose someone else for this task.'
+                      : 'Your interest has been noted. Please wait for a response.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: textColor.withValues(alpha: 0.8),
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
@@ -94,14 +116,20 @@ class StatusBannerSection extends StatelessWidget {
             AppHaptic(
               onTap: onChat,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   'CHAT',
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

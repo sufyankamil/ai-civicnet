@@ -33,7 +33,10 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Active Sessions', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Active Sessions',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -49,20 +52,30 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: Colors.redAccent,
+                  ),
                   const SizedBox(height: 16),
-                  const Text('Failed to load sessions', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Failed to load sessions',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      snapshot.error.toString(), 
+                      snapshot.error.toString(),
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  TextButton(onPressed: _refreshSessions, child: const Text('Retry')),
+                  TextButton(
+                    onPressed: _refreshSessions,
+                    child: const Text('Retry'),
+                  ),
                 ],
               ),
             );
@@ -71,14 +84,17 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
           final allSessions = snapshot.data ?? [];
           if (allSessions.isEmpty) {
             return const Center(
-              child: Text('No active sessions found.', style: TextStyle(color: Colors.grey)),
+              child: Text(
+                'No active sessions found.',
+                style: TextStyle(color: Colors.grey),
+              ),
             );
           }
 
           // Rely definitively on the locally parsed JWT session ID
           final localCurrentSessionId = SupabaseService().currentSessionId;
           final currentSessionIds = <String>{};
-          
+
           if (localCurrentSessionId != null) {
             currentSessionIds.add(localCurrentSessionId);
           }
@@ -98,16 +114,21 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
           for (final session in allSessions) {
             final isActuallyCurrent = currentSessionIds.contains(session.id);
             // Force legacy sessions to show correctly even if hot restart hasn't happened
-            final safeDeviceName = session.deviceName.contains('dart') || session.deviceName.contains('io') 
-                ? 'Mobile Device' : session.deviceName;
-                
+            final safeDeviceName =
+                session.deviceName.contains('dart') ||
+                    session.deviceName.contains('io')
+                ? 'Mobile Device'
+                : session.deviceName;
+
             if (!isActuallyCurrent && !seenDevices.contains(safeDeviceName)) {
               sessions.add(session);
               seenDevices.add(safeDeviceName);
             }
           }
 
-          final otherSessionsCount = sessions.where((s) => !currentSessionIds.contains(s.id)).length;
+          final otherSessionsCount = sessions
+              .where((s) => !currentSessionIds.contains(s.id))
+              .length;
 
           return Column(
             children: [
@@ -117,7 +138,8 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(0, 8, 0, 100),
                   itemCount: sessions.length,
-                  separatorBuilder: (context, index) => const Divider(indent: 72),
+                  separatorBuilder: (context, index) =>
+                      const Divider(indent: 72),
                   itemBuilder: (context, index) {
                     final session = sessions[index];
                     final isCurrent = currentSessionIds.contains(session.id);
@@ -126,17 +148,25 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
                       leading: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: (isCurrent ? AppColors.primaryLight : Colors.grey).withValues(alpha: 0.1),
+                          color:
+                              (isCurrent ? AppColors.primaryLight : Colors.grey)
+                                  .withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          session.isMobile ? Icons.phone_android_rounded : Icons.computer_rounded,
-                          color: isCurrent ? AppColors.primaryLight : Colors.grey,
+                          session.isMobile
+                              ? Icons.phone_android_rounded
+                              : Icons.computer_rounded,
+                          color: isCurrent
+                              ? AppColors.primaryLight
+                              : Colors.grey,
                         ),
                       ),
                       title: Text(
-                        session.deviceName.toLowerCase().contains('dart') || session.deviceName.toLowerCase().contains('io') 
-                            ? 'Mobile Device' : session.deviceName, 
+                        session.deviceName.toLowerCase().contains('dart') ||
+                                session.deviceName.toLowerCase().contains('io')
+                            ? 'Mobile Device'
+                            : session.deviceName,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -149,9 +179,9 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
                               child: Text(
                                 'Current Device',
                                 style: TextStyle(
-                                  color: Colors.green.shade600, 
-                                  fontSize: 12, 
-                                  fontWeight: FontWeight.bold
+                                  color: Colors.green.shade600,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -161,16 +191,23 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
                           ),
                           Text(
                             'IP: ${session.ipAddress}',
-                            style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[500],
+                            ),
                           ),
                         ],
                       ),
-                      trailing: isCurrent 
-                        ? null 
-                        : IconButton(
-                            icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
-                            onPressed: () => _confirmRevocation(session),
-                          ),
+                      trailing: isCurrent
+                          ? null
+                          : IconButton(
+                              icon: const Icon(
+                                Icons.logout_rounded,
+                                color: Colors.redAccent,
+                                size: 20,
+                              ),
+                              onPressed: () => _confirmRevocation(session),
+                            ),
                     );
                   },
                 ),
@@ -199,12 +236,18 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Unrecognized Devices?', 
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent),
+                  'Unrecognized Devices?',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
+                  ),
                 ),
                 Text(
                   'Log out from $count other sessions.',
-                  style: TextStyle(fontSize: 12, color: Colors.redAccent.withValues(alpha: 0.8)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.redAccent.withValues(alpha: 0.8),
+                  ),
                 ),
               ],
             ),
@@ -216,11 +259,23 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: _isRevokingAll 
-              ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : const Text('Log Out All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            child: _isRevokingAll
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    'Log Out All',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
           ),
         ],
       ),
@@ -232,13 +287,21 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
       context: context,
       builder: (ctx) => AlertDialog.adaptive(
         title: const Text('Secure Account?'),
-        content: const Text('This will log out all other devices except this one. You will stay logged in here.'),
+        content: const Text(
+          'This will log out all other devices except this one. You will stay logged in here.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Log Out All', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Log Out All',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -252,11 +315,17 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
         await Future.delayed(const Duration(milliseconds: 500));
         _refreshSessions();
         if (mounted) {
-          ToastService.showSuccess(context, 'All other sessions revoked successfully.');
+          ToastService.showSuccess(
+            context,
+            'All other sessions revoked successfully.',
+          );
         }
       } catch (e) {
         if (mounted) {
-          ToastService.showError(context, 'Failed to revoke sessions. Please try again.');
+          ToastService.showError(
+            context,
+            'Failed to revoke sessions. Please try again.',
+          );
         }
       } finally {
         if (mounted) setState(() => _isRevokingAll = false);
@@ -269,13 +338,21 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
       context: context,
       builder: (ctx) => AlertDialog.adaptive(
         title: const Text('Log out of device?'),
-        content: Text('Are you sure you want to log out of ${session.deviceName}?'),
+        content: Text(
+          'Are you sure you want to log out of ${session.deviceName}?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Log out', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Log out',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -288,13 +365,19 @@ class _ActiveSessionsScreenState extends State<ActiveSessionsScreen> {
         await Future.delayed(const Duration(milliseconds: 500));
         _refreshSessions();
         if (mounted) {
-          final safeName = session.deviceName.toLowerCase().contains('dart') || session.deviceName.toLowerCase().contains('io') 
-              ? 'Mobile Device' : session.deviceName;
+          final safeName =
+              session.deviceName.toLowerCase().contains('dart') ||
+                  session.deviceName.toLowerCase().contains('io')
+              ? 'Mobile Device'
+              : session.deviceName;
           ToastService.showSuccess(context, 'Logged out of $safeName');
         }
       } catch (e) {
         if (mounted) {
-          ToastService.showError(context, 'Failed to revoke session. Please try again.');
+          ToastService.showError(
+            context,
+            'Failed to revoke session. Please try again.',
+          );
         }
       }
     }

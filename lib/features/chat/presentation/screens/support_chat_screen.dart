@@ -40,19 +40,19 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return PopScope(
       canPop: false,
-        onPopInvokedWithResult: (bool didPop, dynamic result) async {
-          if (didPop) return;
-          
-          final navigator = Navigator.of(context);
-          final shouldPop = await _onWillPop();
-          if (shouldPop) {
-            if (_viewModel.isFeedbackState.value) {
-              navigator.pop();
-            } else {
-              _viewModel.prepareFeedbackSession();
-            }
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+
+        final navigator = Navigator.of(context);
+        final shouldPop = await _onWillPop();
+        if (shouldPop) {
+          if (_viewModel.isFeedbackState.value) {
+            navigator.pop();
+          } else {
+            _viewModel.prepareFeedbackSession();
           }
-        },
+        }
+      },
       child: Scaffold(
         backgroundColor: isDark ? const Color(0xFF0F1117) : Colors.grey[50],
         appBar: AppBar(
@@ -87,8 +87,11 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               children: [
                 Expanded(
                   child: Obx(() {
-                    if (_viewModel.isLoading.value && _viewModel.messages.isEmpty) {
-                      return const Center(child: CircularProgressIndicator.adaptive());
+                    if (_viewModel.isLoading.value &&
+                        _viewModel.messages.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator.adaptive(),
+                      );
                     }
 
                     if (_viewModel.errorMessage.isNotEmpty) {
@@ -98,12 +101,20 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline_rounded, color: Colors.red, size: 48),
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                color: Colors.red,
+                                size: 48,
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 _viewModel.errorMessage.value,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
+                                ),
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton(
@@ -111,7 +122,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primaryLight,
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
                                 child: const Text('Try Again'),
                               ),
@@ -121,7 +134,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                       );
                     }
 
-                    if (_viewModel.messages.isEmpty && !_viewModel.isTyping.value) {
+                    if (_viewModel.messages.isEmpty &&
+                        !_viewModel.isTyping.value) {
                       return Center(
                         child: Text(
                           'Connecting to support...',
@@ -143,20 +157,27 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
                     return ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      itemCount: _viewModel.messages.length + (_viewModel.isTyping.value ? 1 : 0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 20,
+                      ),
+                      itemCount:
+                          _viewModel.messages.length +
+                          (_viewModel.isTyping.value ? 1 : 0),
                       itemBuilder: (context, index) {
                         if (index == _viewModel.messages.length) {
                           return _buildTypingIndicator(isDark);
                         }
 
                         final message = _viewModel.messages[index];
-                        final isMe = message.senderType == SupportSenderType.user;
+                        final isMe =
+                            message.senderType == SupportSenderType.user;
                         final isLast = index == _viewModel.messages.length - 1;
 
                         return Column(
-                          crossAxisAlignment:
-                              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          crossAxisAlignment: isMe
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
                           children: [
                             _buildMessageBubble(message, isMe, isDark),
                             if (!isMe &&
@@ -182,7 +203,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
             Obx(() {
               if (_viewModel.isSessionFinished.value) {
                 return Container(
-                  color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.8),
+                  color: (isDark ? Colors.black : Colors.white).withValues(
+                    alpha: 0.8,
+                  ),
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -194,7 +217,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+                            color: isDark
+                                ? Colors.white
+                                : AppColors.textPrimaryLight,
                           ),
                         ),
                       ],
@@ -239,12 +264,16 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           ],
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Text(
               message.content,
               style: TextStyle(
-                color: isMe ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                color: isMe
+                    ? Colors.white
+                    : (isDark ? Colors.white : Colors.black87),
                 fontSize: 14,
                 height: 1.4,
               ),
@@ -292,7 +321,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.primaryLight.withValues(alpha: 0.15) : Colors.white,
+                color: isDark
+                    ? AppColors.primaryLight.withValues(alpha: 0.15)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppColors.primaryLight.withValues(alpha: 0.3),
@@ -351,7 +382,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       builder: (context) => AlertDialog.adaptive(
         title: const Text('Exit Support?'),
         content: const Text(
-            'Once you exit, you will need to re-initiate the chat for any further help.'),
+          'Once you exit, you will need to re-initiate the chat for any further help.',
+        ),
         actions: [
           if (Theme.of(context).platform == TargetPlatform.iOS) ...[
             CupertinoDialogAction(
@@ -378,7 +410,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               },
               child: const Text('Exit', style: TextStyle(color: Colors.red)),
             ),
-          ]
+          ],
         ],
       ),
     );
@@ -392,7 +424,9 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
         color: isDark ? const Color(0xFF0F1117) : Colors.grey[50],
         border: Border(
           top: BorderSide(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey[200]!,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.grey[200]!,
             width: 1,
           ),
         ),
@@ -403,12 +437,17 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           children: [
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF1E222D) : Colors.white,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
-                    color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey[300]!,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.grey[300]!,
                   ),
                   boxShadow: [
                     BoxShadow(

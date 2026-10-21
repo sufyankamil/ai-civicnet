@@ -9,7 +9,6 @@ import '../../../../components/request_card_skeleton.dart';
 import '../../../../features/home/presentation/widgets/opportunity_card.dart';
 import 'package:go_router/go_router.dart';
 
-
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
 
@@ -49,7 +48,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.discoverTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.discoverTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         actions: [
@@ -79,19 +81,19 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
                 // --- True AI Recommendations ---
                 _buildSectionHeader(
-                  context, 
-                  title: 'True AI: For You', 
-                  subtitle: 'Semantic matches based on your skills'
+                  context,
+                  title: 'True AI: For You',
+                  subtitle: 'Semantic matches based on your skills',
                 ),
                 const SizedBox(height: 12),
                 _buildAiRecommendations(),
                 const SizedBox(height: 12),
-                
+
                 // --- Community Asset Library ---
                 _buildSectionHeader(
-                  context, 
-                  title: 'Community Assets', 
-                  subtitle: 'Borrow resources from neighbors'
+                  context,
+                  title: 'Community Assets',
+                  subtitle: 'Borrow resources from neighbors',
                 ),
                 const SizedBox(height: 12),
                 _buildAssetLibraryBanner(context),
@@ -124,7 +126,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildCategoryChip(BuildContext context, {required String title, required IconData icon, required Color color}) {
+  Widget _buildCategoryChip(
+    BuildContext context, {
+    required String title,
+    required IconData icon,
+    required Color color,
+  }) {
     return InkWell(
       onTap: () => context.go('/home?filter=$title'),
       borderRadius: BorderRadius.circular(16),
@@ -160,7 +167,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, {required String title, String? subtitle}) {
+  Widget _buildSectionHeader(
+    BuildContext context, {
+    required String title,
+    String? subtitle,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -175,10 +186,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         if (subtitle != null)
           Text(
             subtitle,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).hintColor,
-            ),
+            style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor),
           ),
       ],
     );
@@ -192,10 +200,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           scrollDirection: Axis.horizontal,
           itemCount: 3,
           separatorBuilder: (context, index) => const SizedBox(width: 12),
-          itemBuilder: (context, index) => const SizedBox(
-            width: 300,
-            child: RequestCardSkeleton(),
-          ),
+          itemBuilder: (context, index) =>
+              const SizedBox(width: 300, child: RequestCardSkeleton()),
         ),
       );
     }
@@ -211,7 +217,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         ),
         child: Column(
           children: [
-            Icon(Icons.auto_awesome_outlined, size: 40, color: Theme.of(context).primaryColor.withValues(alpha: 0.5)),
+            Icon(
+              Icons.auto_awesome_outlined,
+              size: 40,
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 12),
             const Text(
               'No semantic matches yet.',
@@ -245,7 +255,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             description: request.description,
             category: request.category,
             urgency: UrgencyLevel.values.firstWhere(
-              (e) => e.toString().split('.').last == request.urgency.toString().split('.').last,
+              (e) =>
+                  e.toString().split('.').last ==
+                  request.urgency.toString().split('.').last,
               orElse: () => UrgencyLevel.medium,
             ),
             postedAt: request.postedAt,
@@ -255,12 +267,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             lat: request.lat,
             lng: request.lng,
             status: RequestStatusEnum.values.firstWhere(
-              (e) => e.toString().split('.').last == request.status.toString().split('.').last,
+              (e) =>
+                  e.toString().split('.').last ==
+                  request.status.toString().split('.').last,
               orElse: () => RequestStatusEnum.open,
             ),
             helperId: request.helperId,
           );
-          
+
           return OpportunityCard(
             request: entity,
             width: 320,
@@ -270,12 +284,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               bottom: 0,
             ),
           );
-
         },
       ),
     );
   }
-
 
   String _getCategoryTitle(AppLocalizations l10n, HelpCategory category) {
     switch (category) {
@@ -388,7 +400,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -417,4 +432,3 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 }
-

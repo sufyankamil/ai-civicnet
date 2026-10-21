@@ -17,7 +17,9 @@ class ChatCardSkeleton extends StatelessWidget {
         color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.03),
           width: 1,
         ),
       ),

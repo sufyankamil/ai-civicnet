@@ -29,10 +29,7 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
     final controller = Get.find<AssetsViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Community Assets'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Community Assets'), elevation: 0),
       body: Column(
         children: [
           // Category Filter
@@ -51,7 +48,7 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
               },
             ),
           ),
-          
+
           Expanded(
             child: Obx(() {
               if (controller.isLoading && controller.publicAssets.isEmpty) {
@@ -63,7 +60,11 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.search_off_outlined, size: 64, color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                      Icon(
+                        Icons.search_off_outlined,
+                        size: 64,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      ),
                       const SizedBox(height: 16),
                       const Text('No assets found in this category'),
                     ],
@@ -72,7 +73,8 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
               }
 
               return RefreshIndicator(
-                onRefresh: () => controller.loadPublicAssets(category: _selectedCategory),
+                onRefresh: () =>
+                    controller.loadPublicAssets(category: _selectedCategory),
                 child: GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -109,14 +111,16 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
           setState(() {
             _selectedCategory = selected ? category : null;
           });
-          Get.find<AssetsViewModel>().loadPublicAssets(category: _selectedCategory);
+          Get.find<AssetsViewModel>().loadPublicAssets(
+            category: _selectedCategory,
+          );
         },
       ),
     );
   }
 
   void _showBorrowDialog(BuildContext context, CommunityAsset asset) {
-     showDialog(
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Borrow ${asset.title}?'),
@@ -126,7 +130,8 @@ class _AssetDiscoveryScreenState extends State<AssetDiscoveryScreen> {
           children: [
             Text(asset.description),
             const SizedBox(height: 16),
-            const Text('Note: This will open a chat with the owner to arrange the lending details.', 
+            const Text(
+              'Note: This will open a chat with the owner to arrange the lending details.',
               style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
             ),
           ],

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../theme/app_theme.dart';
@@ -46,9 +45,9 @@ class AiMatchBadge extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
           Text(
-            score > 0.6 
-              ? 'AI RECOMMENDED • ${(score.isFinite ? score * 100 : 0).toInt()}%' 
-              : '${(score.isFinite ? score * 100 : 0).toInt()}% $text',
+            score > 0.6
+                ? 'AI RECOMMENDED • ${(score.isFinite ? score * 100 : 0).toInt()}%'
+                : '${(score.isFinite ? score * 100 : 0).toInt()}% $text',
             style: TextStyle(
               color: color,
               fontSize: score > 0.6 ? 10 : 12,

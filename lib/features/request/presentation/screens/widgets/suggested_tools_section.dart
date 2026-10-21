@@ -25,9 +25,20 @@ class SuggestedToolsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.construction_rounded, color: Colors.blueAccent, size: 20),
+            const Icon(
+              Icons.construction_rounded,
+              color: Colors.blueAccent,
+              size: 20,
+            ),
             const SizedBox(width: 8),
-            Container(width: 150, height: 16, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4))),
+            Container(
+              width: 150,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
@@ -64,11 +75,20 @@ class SuggestedToolsSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Icon(Icons.construction_rounded, color: Colors.blueAccent, size: 20),
+            const Icon(
+              Icons.construction_rounded,
+              color: Colors.blueAccent,
+              size: 20,
+            ),
             const SizedBox(width: 8),
             Text(
               'SUGGESTED TOOLS',
-              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.0, color: Colors.grey[500]),
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 13,
+                letterSpacing: 1.0,
+                color: Colors.grey[500],
+              ),
             ),
             const SizedBox(width: 8),
             Container(
@@ -76,7 +96,9 @@ class SuggestedToolsSection extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.blueAccent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+                border: Border.all(
+                  color: Colors.blueAccent.withValues(alpha: 0.2),
+                ),
               ),
               child: const Text(
                 'BETA',
@@ -101,10 +123,7 @@ class SuggestedToolsSection extends StatelessWidget {
               return Container(
                 width: 200,
                 margin: const EdgeInsets.only(right: 16),
-                child: AssetCard(
-                  asset: asset,
-                  onTap: () => onAssetTap(asset),
-                ),
+                child: AssetCard(asset: asset, onTap: () => onAssetTap(asset)),
               );
             },
           ),

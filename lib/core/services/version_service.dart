@@ -19,16 +19,19 @@ class VersionService {
   static Future<String?> checkUpdateNeeded() async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-      
+      final currentVersion =
+          '${packageInfo.version}+${packageInfo.buildNumber}';
+
       final prefs = await SharedPreferences.getInstance();
       final lastNotifiedVersion = prefs.getString(_kLastNotifiedVersionKey);
 
       if (lastNotifiedVersion != currentVersion) {
-        logger.d('Update detected: Old Version ($lastNotifiedVersion) -> New Version ($currentVersion)');
+        logger.d(
+          'Update detected: Old Version ($lastNotifiedVersion) -> New Version ($currentVersion)',
+        );
         return currentVersion;
       }
-      
+
       return null;
     } catch (e) {
       logger.e('Error checking version update', error: e);
@@ -42,13 +45,15 @@ class VersionService {
     try {
       await _upgrader.initialize();
       final isAvailable = _upgrader.isUpdateAvailable();
-      
+
       if (isAvailable) {
         final storeVersion = _upgrader.currentAppStoreVersion;
-        logger.d('Store Update Available: Current: ${_upgrader.currentInstalledVersion} -> Store: $storeVersion');
+        logger.d(
+          'Store Update Available: Current: ${_upgrader.currentInstalledVersion} -> Store: $storeVersion',
+        );
         return storeVersion;
       }
-      
+
       return null;
     } catch (e) {
       logger.e('Error checking store update', error: e);
@@ -60,8 +65,9 @@ class VersionService {
   static Future<void> markAsNotified() async {
     try {
       final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = '${packageInfo.version}+${packageInfo.buildNumber}';
-      
+      final currentVersion =
+          '${packageInfo.version}+${packageInfo.buildNumber}';
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_kLastNotifiedVersionKey, currentVersion);
       logger.d('Version $currentVersion marked as notified.');
@@ -97,14 +103,15 @@ class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
       title: 'Turbo Chat Sync',
-      description: "Experience lag-free conversations. We've upgraded the chat engine to deliver messages instantly, even on cellular networks.",
+      description:
+          "Experience lag-free conversations. We've upgraded the chat engine to deliver messages instantly, even on cellular networks.",
       icon: Icons.bolt_rounded,
     ),
     UpdateNote(
       title: 'Pro Notifications',
-      description: "Stay in the loop with readable notification previews and smarter badge updates that keep your inbox clean.",
+      description:
+          "Stay in the loop with readable notification previews and smarter badge updates that keep your inbox clean.",
       icon: Icons.notifications_active_rounded,
     ),
   ];
 }
-

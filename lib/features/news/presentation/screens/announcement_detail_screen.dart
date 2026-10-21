@@ -9,13 +9,11 @@ import 'package:civic_net/services/toast_service.dart';
 class AnnouncementDetailScreen extends StatefulWidget {
   final Announcement announcement;
 
-  const AnnouncementDetailScreen({
-    super.key,
-    required this.announcement,
-  });
+  const AnnouncementDetailScreen({super.key, required this.announcement});
 
   @override
-  State<AnnouncementDetailScreen> createState() => _AnnouncementDetailScreenState();
+  State<AnnouncementDetailScreen> createState() =>
+      _AnnouncementDetailScreenState();
 }
 
 class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
@@ -29,14 +27,16 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     // Use data passed from the list for immediate display
     _voteCount = widget.announcement.voteCount;
     _isVotedByMe = widget.announcement.isVotedByMe;
-    
+
     // Refresh for absolute accuracy in the background
     _fetchLatestVoteStatus();
   }
 
   Future<void> _fetchLatestVoteStatus() async {
     try {
-      final data = await SupabaseService().getAnnouncementVotesInfo(widget.announcement.id);
+      final data = await SupabaseService().getAnnouncementVotesInfo(
+        widget.announcement.id,
+      );
       if (mounted) {
         setState(() {
           _voteCount = data['count'];
@@ -50,7 +50,7 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
 
   Future<void> _toggleVote() async {
     if (_isLoading) return;
-    
+
     final originalVoted = _isVotedByMe;
     final originalCount = _voteCount;
 
@@ -61,11 +61,14 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
     });
 
     try {
-      await SupabaseService().toggleAnnouncementVote(widget.announcement.id, _isVotedByMe);
+      await SupabaseService().toggleAnnouncementVote(
+        widget.announcement.id,
+        _isVotedByMe,
+      );
       if (mounted) {
         ToastService.showSuccess(
-          context, 
-          _isVotedByMe ? 'You upvoted this' : 'Upvote removed'
+          context,
+          _isVotedByMe ? 'You upvoted this' : 'Upvote removed',
         );
       }
     } catch (e) {
@@ -138,7 +141,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: widget.announcement.imageUrl != null && widget.announcement.imageUrl!.isNotEmpty
+              background:
+                  widget.announcement.imageUrl != null &&
+                      widget.announcement.imageUrl!.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: widget.announcement.imageUrl!,
                       fit: BoxFit.cover,
@@ -170,21 +175,29 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: categoryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: categoryColor.withValues(alpha: 0.3)),
+                          border: Border.all(
+                            color: categoryColor.withValues(alpha: 0.3),
+                          ),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(_getCategoryIcon(widget.announcement.category), 
-                                 size: 14, color: categoryColor),
+                            Icon(
+                              _getCategoryIcon(widget.announcement.category),
+                              size: 14,
+                              color: categoryColor,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               widget.announcement.category.name.toUpperCase(),
@@ -200,7 +213,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       Text(
                         timeago.format(widget.announcement.createdAt),
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          color: theme.colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.6,
+                          ),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -220,7 +235,11 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       padding: const EdgeInsets.only(top: 8),
                       child: Row(
                         children: [
-                          const Icon(Icons.verified_rounded, color: Colors.blue, size: 16),
+                          const Icon(
+                            Icons.verified_rounded,
+                            color: Colors.blue,
+                            size: 16,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Verified Trusted Information',
@@ -244,13 +263,16 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  if (widget.announcement.sourceUrl != null && widget.announcement.sourceUrl!.isNotEmpty) ...[
+                  if (widget.announcement.sourceUrl != null &&
+                      widget.announcement.sourceUrl!.isNotEmpty) ...[
                     Text(
                       'REFERENCE',
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -260,10 +282,13 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                          color: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: theme.colorScheme.outline.withValues(alpha: 0.1),
+                            color: theme.colorScheme.outline.withValues(
+                              alpha: 0.1,
+                            ),
                           ),
                         ),
                         child: Row(
@@ -271,10 +296,16 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: theme.primaryColor.withValues(alpha: 0.1),
+                                color: theme.primaryColor.withValues(
+                                  alpha: 0.1,
+                                ),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(Icons.link_rounded, size: 20, color: theme.primaryColor),
+                              child: Icon(
+                                Icons.link_rounded,
+                                size: 20,
+                                color: theme.primaryColor,
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
@@ -301,7 +332,12 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                                 ],
                               ),
                             ),
-                            Icon(Icons.open_in_new_rounded, size: 18, color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                            Icon(
+                              Icons.open_in_new_rounded,
+                              size: 18,
+                              color: theme.colorScheme.onSurfaceVariant
+                                  .withValues(alpha: 0.5),
+                            ),
                           ],
                         ),
                       ),
@@ -325,7 +361,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.2),
+        ),
       ),
       child: Column(
         children: [
@@ -333,10 +371,14 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
             children: [
               CircleAvatar(
                 radius: 24,
-                backgroundImage: widget.announcement.authorAvatarUrl != null && widget.announcement.authorAvatarUrl!.isNotEmpty
+                backgroundImage:
+                    widget.announcement.authorAvatarUrl != null &&
+                        widget.announcement.authorAvatarUrl!.isNotEmpty
                     ? NetworkImage(widget.announcement.authorAvatarUrl!)
                     : null,
-                child: widget.announcement.authorAvatarUrl == null || widget.announcement.authorAvatarUrl!.isEmpty
+                child:
+                    widget.announcement.authorAvatarUrl == null ||
+                        widget.announcement.authorAvatarUrl!.isEmpty
                     ? const Icon(Icons.person, size: 24)
                     : null,
               ),
@@ -350,7 +392,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       style: theme.textTheme.labelMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                     Text(
@@ -379,7 +423,9 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
                       style: theme.textTheme.labelSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                     Text(
@@ -434,7 +480,9 @@ class _VoteButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isVoted ? primaryColor : theme.colorScheme.primary.withValues(alpha: 0.3),
+              color: isVoted
+                  ? primaryColor
+                  : theme.colorScheme.primary.withValues(alpha: 0.3),
               width: 1.5,
             ),
           ),
@@ -445,7 +493,10 @@ class _VoteButton extends StatelessWidget {
                 const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               else
                 Icon(

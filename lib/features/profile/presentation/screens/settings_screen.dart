@@ -36,7 +36,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.settingsTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.settingsTitle,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: IconButton(
@@ -45,19 +48,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: ListView(
-        padding: EdgeInsets.fromLTRB(0, 16, 0, MediaQuery.of(context).padding.bottom + 100),
+        padding: EdgeInsets.fromLTRB(
+          0,
+          16,
+          0,
+          MediaQuery.of(context).padding.bottom + 100,
+        ),
         children: [
           // Theme settings - kept for convenience but cleaner
           _buildSectionHeader(l10n.appearance),
           ListTile(
             title: Text(l10n.theme),
-            leading: const Icon(Icons.brightness_6_outlined, color: AppColors.primaryLight),
+            leading: const Icon(
+              Icons.brightness_6_outlined,
+              color: AppColors.primaryLight,
+            ),
             trailing: DropdownButton<ThemeMode>(
               value: themeService.themeMode,
               underline: const SizedBox(),
               items: [
-                DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.system)),
-                DropdownMenuItem(value: ThemeMode.light, child: Text(l10n.light)),
+                DropdownMenuItem(
+                  value: ThemeMode.system,
+                  child: Text(l10n.system),
+                ),
+                DropdownMenuItem(
+                  value: ThemeMode.light,
+                  child: Text(l10n.light),
+                ),
                 DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.dark)),
               ],
               onChanged: (ThemeMode? mode) async {
@@ -79,19 +96,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           ListTile(
             title: Text(l10n.faq),
-            leading: const Icon(Icons.help_outline_rounded, color: Colors.blueGrey),
+            leading: const Icon(
+              Icons.help_outline_rounded,
+              color: Colors.blueGrey,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push('/faq'),
           ),
           ListTile(
             title: const Text('Rate CivicNet'),
-            leading: const Icon(Icons.star_outline_rounded, color: Colors.amber),
+            leading: const Icon(
+              Icons.star_outline_rounded,
+              color: Colors.amber,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => RatingService.openStore(),
           ),
           ListTile(
             title: Text(l10n.supportChat),
-            leading: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.blueAccent),
+            leading: const Icon(
+              Icons.chat_bubble_outline_rounded,
+              color: Colors.blueAccent,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(builder: (_) => const SupportChatScreen()),
@@ -103,7 +129,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // NEW MODULES FROM IMAGE 1
           ListTile(
-            leading: const Icon(Icons.people_alt_outlined, size: 28, color: Colors.blueGrey),
+            leading: const Icon(
+              Icons.people_alt_outlined,
+              size: 28,
+              color: Colors.blueGrey,
+            ),
             title: const Text(
               'Refer friends',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -113,7 +143,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           ListTile(
-            leading: const Icon(Icons.person_outline, size: 28, color: Colors.blueGrey),
+            leading: const Icon(
+              Icons.person_outline,
+              size: 28,
+              color: Colors.blueGrey,
+            ),
             title: const Text(
               'Manage CivicNet account',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -123,7 +157,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           ListTile(
-            leading: const Icon(Icons.info_outline, size: 28, color: Colors.blueGrey),
+            leading: const Icon(
+              Icons.info_outline,
+              size: 28,
+              color: Colors.blueGrey,
+            ),
             title: const Text(
               'Legal',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -133,7 +171,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           ListTile(
-            leading: const Icon(Icons.shield_outlined, size: 28, color: AppColors.accentLight),
+            leading: const Icon(
+              Icons.shield_outlined,
+              size: 28,
+              color: AppColors.accentLight,
+            ),
             title: Text(
               l10n.commitmentSafety,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
@@ -180,10 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               fontSize: 14,
             ),
           ),
-          if (suffix != null) ...[
-            const SizedBox(width: 8),
-            suffix,
-          ],
+          if (suffix != null) ...[const SizedBox(width: 8), suffix],
         ],
       ),
     );

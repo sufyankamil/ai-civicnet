@@ -29,7 +29,7 @@ class HomeViewModel extends GetxController {
   final RxString _communityBriefing = ''.obs;
   final RxBool _isBriefingLoading = false.obs;
   final RxBool _briefingTimedOut = false.obs;
-  
+
   Timer? _debounce;
   Timer? _longLoadTimer;
   Timer? _briefingTimer;
@@ -53,11 +53,13 @@ class HomeViewModel extends GetxController {
   void onInit() {
     super.onInit();
     // Subscribe to requests changes
-    getHelpRequestsUseCase.repository.subscribeToHelpRequests(_onRequestsUpdated);
+    getHelpRequestsUseCase.repository.subscribeToHelpRequests(
+      _onRequestsUpdated,
+    );
     refreshHome();
     fetchPolls();
     fetchGuilds();
-    
+
     // Defer the checking logic as before
     Future.delayed(const Duration(milliseconds: 500), () {
       if (!_isDisposed) {
@@ -68,12 +70,15 @@ class HomeViewModel extends GetxController {
 
   Future<void> fetchTopRecommendation() async {
     try {
-      final recommendations = await SupabaseService().getRecommendedHelpRequests();
+      final recommendations = await SupabaseService()
+          .getRecommendedHelpRequests();
       if (recommendations.isNotEmpty) {
         // Recommendations are sorted by similarity in the RPC
         final first = recommendations.first;
-        logger.d('AI MATCH DEBUG: Found "${first.title}" with Relevance Score: ${first.aiRelevanceScore}');
-        
+        logger.d(
+          'AI MATCH DEBUG: Found "${first.title}" with Relevance Score: ${first.aiRelevanceScore}',
+        );
+
         _topRecommendation.value = HelpRequestEntity(
           id: first.id,
           title: first.title,
@@ -82,7 +87,7 @@ class HomeViewModel extends GetxController {
           urgency: domain.UrgencyLevel.values.firstWhere(
             (e) => e.name == first.urgency.name,
             orElse: () => domain.UrgencyLevel.medium,
-          ), 
+          ),
           postedAt: first.postedAt,
           distance: first.distance,
           aiRelevanceScore: first.aiRelevanceScore,
@@ -134,10 +139,12 @@ class HomeViewModel extends GetxController {
     // Only apply timing/frequency logic if not a manual force-refresh
     if (!force) {
       final now = DateTime.now();
-      
+
       // 1. Time Check: Only show after 11:00 AM
       if (now.hour < 11) {
-        logger.d('AI Scribe: Suppressed briefing - too early (Hour: ${now.hour})');
+        logger.d(
+          'AI Scribe: Suppressed briefing - too early (Hour: ${now.hour})',
+        );
         _communityBriefing.value = '';
         return;
       }
@@ -148,7 +155,9 @@ class HomeViewModel extends GetxController {
       final todayDate = "${now.year}-${now.month}-${now.day}";
 
       if (lastDate == todayDate) {
-        logger.d('AI Scribe: Suppressed briefing - already shown today ($todayDate)');
+        logger.d(
+          'AI Scribe: Suppressed briefing - already shown today ($todayDate)',
+        );
         _communityBriefing.value = '';
         return;
       }
@@ -156,14 +165,14 @@ class HomeViewModel extends GetxController {
 
     _isBriefingLoading.value = true;
     _briefingTimedOut.value = false;
-    
+
     // Set 10s timeout for briefing
     _briefingTimer?.cancel();
     _briefingTimer = Timer(const Duration(seconds: 10), () {
       if (_isBriefingLoading.value && !_isDisposed) {
         logger.w('AI Scribe: Briefing timed out after 10s');
         _briefingTimedOut.value = true;
-        // We don't necessarily set isLoading to false, as it might still complete, 
+        // We don't necessarily set isLoading to false, as it might still complete,
         // but the UI will hide it based on this flag.
       }
     });
@@ -174,18 +183,20 @@ class HomeViewModel extends GetxController {
 
       // Get some context data
       final recentRequests = _allRequests.take(5).toList();
-      final upcomingEvents = await SupabaseService().getEvents(); 
-      
+      final upcomingEvents = await SupabaseService().getEvents();
+
       final briefing = await AiService().generateCommunityBriefing(
         requests: recentRequests,
         events: upcomingEvents,
         user: user,
       );
-      
+
       _communityBriefing.value = briefing;
 
       // If briefing was successfully shown (not empty and not the local fallback), mark as seen
-      if (!force && briefing.isNotEmpty && !briefing.contains(' neighborhood is bustling')) {
+      if (!force &&
+          briefing.isNotEmpty &&
+          !briefing.contains(' neighborhood is bustling')) {
         final prefs = await SharedPreferences.getInstance();
         final now = DateTime.now();
         final todayDate = "${now.year}-${now.month}-${now.day}";
@@ -216,7 +227,7 @@ class HomeViewModel extends GetxController {
     });
 
     final result = await getHelpRequestsUseCase(const NoParams());
-    
+
     result.fold(
       (failure) {
         _fetchError.value = true;
@@ -300,9 +311,9 @@ class HomeViewModel extends GetxController {
 
     if (_searchQuery.value.isNotEmpty) {
       filtered = filtered.where((r) {
-        return r.title.toLowerCase().contains(_searchQuery.value) || 
-               r.description.toLowerCase().contains(_searchQuery.value) ||
-               r.category.toString().toLowerCase().contains(_searchQuery.value);
+        return r.title.toLowerCase().contains(_searchQuery.value) ||
+            r.description.toLowerCase().contains(_searchQuery.value) ||
+            r.category.toString().toLowerCase().contains(_searchQuery.value);
       }).toList();
     }
 
@@ -310,14 +321,23 @@ class HomeViewModel extends GetxController {
       _filteredRequests.value = filtered;
       return;
     } else if (_selectedFilter.value == 'Recommended') {
-      _filteredRequests.value = filtered.where((r) => r.aiRelevanceScore > 0.8).toList();
+      _filteredRequests.value = filtered
+          .where((r) => r.aiRelevanceScore > 0.8)
+          .toList();
       return;
     } else {
       _filteredRequests.value = filtered.where((r) {
-        if (_selectedFilter.value == 'Tech Support') return r.category.toString().split('.').last == 'techSupport';
-        if (_selectedFilter.value == 'Emergency') return r.category.toString().split('.').last == 'emergency';
-        if (_selectedFilter.value == 'Household') return r.category.toString().split('.').last == 'household';
-        return r.category.toString().split('.').last.toLowerCase() == _selectedFilter.value.toLowerCase().replaceAll(' ', '');
+        if (_selectedFilter.value == 'Tech Support') {
+          return r.category.toString().split('.').last == 'techSupport';
+        }
+        if (_selectedFilter.value == 'Emergency') {
+          return r.category.toString().split('.').last == 'emergency';
+        }
+        if (_selectedFilter.value == 'Household') {
+          return r.category.toString().split('.').last == 'household';
+        }
+        return r.category.toString().split('.').last.toLowerCase() ==
+            _selectedFilter.value.toLowerCase().replaceAll(' ', '');
       }).toList();
     }
   }
@@ -330,7 +350,8 @@ class HomeViewModel extends GetxController {
         if (Get.context != null) {
           Get.defaultDialog(
             title: 'Warning Issued',
-            middleText: 'Your account has been reported by multiple users for violating community guidelines. Please ensure you respect other users and follow our safety guidelines. Continued reports will result in a temporary ban.',
+            middleText:
+                'Your account has been reported by multiple users for violating community guidelines. Please ensure you respect other users and follow our safety guidelines. Continued reports will result in a temporary ban.',
             textConfirm: 'I Understand',
             onConfirm: () => Get.back(),
             barrierDismissible: false,

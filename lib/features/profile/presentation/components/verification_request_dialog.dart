@@ -7,7 +7,8 @@ class VerificationRequestDialog extends StatefulWidget {
   const VerificationRequestDialog({super.key});
 
   @override
-  State<VerificationRequestDialog> createState() => _VerificationRequestDialogState();
+  State<VerificationRequestDialog> createState() =>
+      _VerificationRequestDialogState();
 }
 
 class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
@@ -35,7 +36,9 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
         ToastService.showSuccess(context, 'Request submitted successfully!');
       }
     } catch (e) {
-      if (mounted) ToastService.showError(context, 'Failed to submit request: $e');
+      if (mounted) {
+        ToastService.showError(context, 'Failed to submit request: $e');
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -61,7 +64,8 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
             controller: _reasonController,
             maxLines: 4,
             decoration: InputDecoration(
-              hintText: 'Describe your role or contributions to the community...',
+              hintText:
+                  'Describe your role or contributions to the community...',
               hintStyle: TextStyle(fontSize: 13),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -89,10 +93,19 @@ class _VerificationRequestDialogState extends State<VerificationRequestDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).primaryColor,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
           child: _isLoading
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
               : const Text('Submit Request'),
         ),
       ],

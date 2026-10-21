@@ -21,7 +21,7 @@ class VerificationRequest extends Equatable {
 
   factory VerificationRequest.fromJson(Map<String, dynamic> json) {
     final profile = json['profiles'] as Map<String, dynamic>?;
-    
+
     return VerificationRequest(
       id: json['id'] as String,
       userId: json['user_id'] as String,
@@ -34,5 +34,13 @@ class VerificationRequest extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, userId, reason, status, createdAt, userName, userAvatarUrl];
+  List<Object?> get props => [
+    id,
+    userId,
+    reason,
+    status,
+    createdAt,
+    userName,
+    userAvatarUrl,
+  ];
 }

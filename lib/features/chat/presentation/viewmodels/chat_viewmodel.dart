@@ -27,7 +27,8 @@ class ChatViewModel extends GetxController {
     required this.deleteConversationUseCase,
   });
 
-  final RxList<ChatConversationEntity> _conversations = <ChatConversationEntity>[].obs;
+  final RxList<ChatConversationEntity> _conversations =
+      <ChatConversationEntity>[].obs;
   final RxBool _isLoading = false.obs;
   final RxBool _isSending = false.obs;
   RealtimeChannel? _messageSubscription;
@@ -48,16 +49,21 @@ class ChatViewModel extends GetxController {
   int get totalUnreadCount => _totalUnreadCount.value;
 
   void _updateUnreadCount() {
-    _totalUnreadCount.value = _conversations.fold(0, (sum, conv) => sum + conv.unreadCount);
+    _totalUnreadCount.value = _conversations.fold(
+      0,
+      (sum, conv) => sum + conv.unreadCount,
+    );
   }
 
   @override
   void onInit() {
     super.onInit();
-    
+
     _currentUserId = Supabase.instance.client.auth.currentUser?.id;
 
-    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) {
       final session = data.session;
       final newUserId = session?.user.id;
 
@@ -100,10 +106,10 @@ class ChatViewModel extends GetxController {
           schema: 'public',
           table: 'messages',
           callback: (payload) {
-             final newRecord = payload.newRecord;
-             if (newRecord['sender_id'] != currentUserId) {
-                fetchConversations();
-             }
+            final newRecord = payload.newRecord;
+            if (newRecord['sender_id'] != currentUserId) {
+              fetchConversations();
+            }
           },
         )
         .onPostgresChanges(
@@ -131,7 +137,7 @@ class ChatViewModel extends GetxController {
   Future<void> fetchConversations() async {
     _isLoading.value = true;
     final result = await getConversationsUseCase(const NoParams());
-    
+
     result.fold(
       (failure) {
         logger.e('Failed to fetch conversations: ${failure.message}');
@@ -156,11 +162,13 @@ class ChatViewModel extends GetxController {
   ) {
     final pending = _pendingMessages.where((pending) {
       if (pending.conversationId != conversationId) return false;
-      final confirmed = serverMessages.any((server) =>
-          server.senderId == pending.senderId &&
-          server.content == pending.content &&
-          !server.isPending &&
-          server.createdAt.difference(pending.createdAt).abs().inMinutes < 5);
+      final confirmed = serverMessages.any(
+        (server) =>
+            server.senderId == pending.senderId &&
+            server.content == pending.content &&
+            !server.isPending &&
+            server.createdAt.difference(pending.createdAt).abs().inMinutes < 5,
+      );
       return !confirmed;
     }).toList();
     if (pending.isEmpty) return serverMessages;
@@ -182,15 +190,21 @@ class ChatViewModel extends GetxController {
     if (_pendingMessages.isEmpty) return;
     _pendingMessages.removeWhere((pending) {
       if (pending.conversationId != conversationId) return false;
-      return serverMessages.any((server) =>
-          server.senderId == pending.senderId &&
-          server.content == pending.content &&
-          !server.isPending &&
-          server.createdAt.difference(pending.createdAt).abs().inMinutes < 5);
+      return serverMessages.any(
+        (server) =>
+            server.senderId == pending.senderId &&
+            server.content == pending.content &&
+            !server.isPending &&
+            server.createdAt.difference(pending.createdAt).abs().inMinutes < 5,
+      );
     });
   }
 
-  Future<bool> sendMessage(String conversationId, String content, {String type = 'text'}) async {
+  Future<bool> sendMessage(
+    String conversationId,
+    String content, {
+    String type = 'text',
+  }) async {
     if (content.isEmpty || _isSending.value) return false;
 
     final userId = Supabase.instance.client.auth.currentUser?.id;
@@ -224,27 +238,21 @@ class ChatViewModel extends GetxController {
     final result = await sendMessageUseCase(params);
 
     _isSending.value = false;
-    return result.fold(
-      (failure) {
-        _pendingMessages.removeWhere((m) => m.id == tempId);
-        logger.e('Failed to send message: ${failure.message}');
-        return false;
-      },
-      (_) => true,
-    );
+    return result.fold((failure) {
+      _pendingMessages.removeWhere((m) => m.id == tempId);
+      logger.e('Failed to send message: ${failure.message}');
+      return false;
+    }, (_) => true);
   }
 
   Future<bool> deleteMessage(String messageId) async {
     final params = DeleteMessageParams(messageId: messageId);
     final result = await deleteMessageUseCase(params);
 
-    final failed = result.fold(
-      (failure) {
-        logger.e('Failed to delete message: ${failure.message}');
-        return true;
-      },
-      (_) => false,
-    );
+    final failed = result.fold((failure) {
+      logger.e('Failed to delete message: ${failure.message}');
+      return true;
+    }, (_) => false);
     if (failed) return false;
 
     // Keep inbox preview in sync (don't wait for pop-to-list refresh).
@@ -255,7 +263,7 @@ class ChatViewModel extends GetxController {
   Future<bool> deleteConversation(String conversationId) async {
     final params = DeleteConversationParams(conversationId: conversationId);
     final result = await deleteConversationUseCase(params);
-    
+
     return result.fold(
       (failure) {
         logger.e('Failed to delete conversation: ${failure.message}');
@@ -273,7 +281,7 @@ class ChatViewModel extends GetxController {
   Future<bool> markConversationAsRead(String conversationId) async {
     final params = MarkConversationAsReadParams(conversationId: conversationId);
     final result = await markConversationAsReadUseCase(params);
-    
+
     return result.fold(
       (failure) {
         logger.e('Failed to mark conversation as read: ${failure.message}');
@@ -296,7 +304,7 @@ class ChatViewModel extends GetxController {
     _isLoading.value = true;
     final result = await markAllConversationsAsReadUseCase(const NoParams());
     _isLoading.value = false;
-    
+
     return result.fold(
       (failure) {
         logger.e('Failed to mark all as read: ${failure.message}');
@@ -316,7 +324,9 @@ class ChatViewModel extends GetxController {
   }
 
   Future<bool> isUserBlocked(String userId) async {
-    final result = await getConversationsUseCase.repository.isUserBlocked(userId);
+    final result = await getConversationsUseCase.repository.isUserBlocked(
+      userId,
+    );
     return result.fold((l) => false, (r) => r);
   }
 
@@ -336,7 +346,10 @@ class ChatViewModel extends GetxController {
   }
 
   Future<bool> reportUser(String userId, String reason) async {
-    final result = await getConversationsUseCase.repository.reportUser(userId, reason);
+    final result = await getConversationsUseCase.repository.reportUser(
+      userId,
+      reason,
+    );
     return result.fold((l) => false, (r) => true);
   }
 }

@@ -26,18 +26,32 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
     });
   }
 
-  Future<void> _handleResolution(VerificationRequest request, bool approved) async {
+  Future<void> _handleResolution(
+    VerificationRequest request,
+    bool approved,
+  ) async {
     try {
       if (approved) {
         // Update role FIRST. If this fails (RLS), we don't mark as approved yet.
         await SupabaseService().updateUserRole(request.userId, 'admin');
-        await SupabaseService().updateVerificationStatus(request.id, 'approved');
-        if (mounted) ToastService.showSuccess(context, '${request.userName} is now an Admin!');
+        await SupabaseService().updateVerificationStatus(
+          request.id,
+          'approved',
+        );
+        if (mounted) {
+          ToastService.showSuccess(
+            context,
+            '${request.userName} is now an Admin!',
+          );
+        }
       } else {
-        await SupabaseService().updateVerificationStatus(request.id, 'rejected');
+        await SupabaseService().updateVerificationStatus(
+          request.id,
+          'rejected',
+        );
         if (mounted) ToastService.showInfo(context, 'Request rejected');
       }
-      
+
       _refreshRequests();
     } catch (e) {
       if (mounted) ToastService.showError(context, 'Error: $e');
@@ -48,7 +62,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Control Panel', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Admin Control Panel',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: FutureBuilder<List<VerificationRequest>>(
         future: _requestsFuture,
@@ -56,18 +73,25 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator.adaptive());
           }
-          
+
           final requests = snapshot.data ?? [];
-          
+
           if (requests.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle_outline_rounded, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
+                  Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 64,
+                    color: Colors.grey.withValues(alpha: 0.3),
+                  ),
                   const SizedBox(height: 16),
                   Text('All caught up!', style: TextStyle(color: Colors.grey)),
-                  Text('No pending verification requests.', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(
+                    'No pending verification requests.',
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
                 ],
               ),
             );
@@ -80,7 +104,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
               final request = requests[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -90,10 +116,14 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundImage: (request.userAvatarUrl != null && request.userAvatarUrl!.isNotEmpty)
+                            backgroundImage:
+                                (request.userAvatarUrl != null &&
+                                    request.userAvatarUrl!.isNotEmpty)
                                 ? NetworkImage(request.userAvatarUrl!)
                                 : null,
-                            child: (request.userAvatarUrl == null || request.userAvatarUrl!.isEmpty)
+                            child:
+                                (request.userAvatarUrl == null ||
+                                    request.userAvatarUrl!.isEmpty)
                                 ? const Icon(Icons.person)
                                 : null,
                           ),
@@ -102,8 +132,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(request.userName ?? 'Unknown User', style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text('Applied for Leader status', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                Text(
+                                  request.userName ?? 'Unknown User',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Applied for Leader status',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -127,7 +166,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                         children: [
                           AppTextButton(
                             onPressed: () => _handleResolution(request, false),
-                            style: TextButton.styleFrom(foregroundColor: Colors.red),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
                             child: const Text('Reject'),
                           ),
                           const SizedBox(width: 8),
@@ -136,7 +177,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             child: const Text('Approve'),
                           ),

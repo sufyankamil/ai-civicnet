@@ -42,8 +42,10 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
   }
 
   Future<void> _checkAutoCelebration() async {
-    if (widget.user.neighborsImpacted < ImpactDashboard._exportThreshold) return;
-    
+    if (widget.user.neighborsImpacted < ImpactDashboard._exportThreshold) {
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final key = 'has_seen_50_neighbor_celebration_${widget.user.id}';
     final hasSeen = prefs.getBool(key) ?? false;
@@ -56,7 +58,8 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
           SuccessAnimation.show(
             context,
             title: 'Community Pillar!',
-            subtitle: 'You have impacted 50+ neighbors. Your dedication is inspiring!',
+            subtitle:
+                'You have impacted 50+ neighbors. Your dedication is inspiring!',
             icon: Icons.workspace_premium_rounded,
           );
           prefs.setBool(key, true);
@@ -67,9 +70,10 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
 
   Widget _buildExportButton(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isLocked = widget.user.neighborsImpacted < ImpactDashboard._exportThreshold;
-    final accentColor = isLocked 
-        ? (isDark ? Colors.grey[600] : Colors.grey[400]) 
+    final isLocked =
+        widget.user.neighborsImpacted < ImpactDashboard._exportThreshold;
+    final accentColor = isLocked
+        ? (isDark ? Colors.grey[600] : Colors.grey[400])
         : AppColors.primaryLight;
 
     return IconButton(
@@ -91,7 +95,9 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
               ),
               backgroundColor: AppColors.primaryLight,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               margin: const EdgeInsets.all(20),
             ),
           );
@@ -111,7 +117,9 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
           color: accentColor,
         ),
       ),
-      tooltip: isLocked ? 'Locked: Help 50 neighbors' : 'Export Volunteer Certificate',
+      tooltip: isLocked
+          ? 'Locked: Help 50 neighbors'
+          : 'Export Volunteer Certificate',
     );
   }
 
@@ -131,29 +139,32 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDark 
-              ? [const Color(0xFF1E293B).withValues(alpha: 0.8), const Color(0xFF0F172A).withValues(alpha: 0.9)]
+          colors: isDark
+              ? [
+                  const Color(0xFF1E293B).withValues(alpha: 0.8),
+                  const Color(0xFF0F172A).withValues(alpha: 0.9),
+                ]
               : [Colors.white, const Color(0xFFF8FAFC)],
         ),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
-          color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withValues(alpha: 0.3) : AppColors.primaryLight.withValues(alpha: 0.08),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.3)
+                : AppColors.primaryLight.withValues(alpha: 0.08),
             blurRadius: 24,
             spreadRadius: -4,
             offset: const Offset(0, 8),
           ),
           // Inner subtle glow for light mode
           if (!isDark)
-            BoxShadow(
-              color: Colors.white,
-              blurRadius: 10,
-              spreadRadius: 5,
-            ),
+            BoxShadow(color: Colors.white, blurRadius: 10, spreadRadius: 5),
         ],
       ),
       child: Column(
@@ -161,7 +172,11 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_graph_rounded, color: AppColors.primaryLight, size: 20),
+              const Icon(
+                Icons.auto_graph_rounded,
+                color: AppColors.primaryLight,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Community Impact',
@@ -172,15 +187,21 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
                 ),
               ),
               const Spacer(),
-              if (widget.user.neighborsImpacted >= ImpactDashboard._exportThreshold)
+              if (widget.user.neighborsImpacted >=
+                  ImpactDashboard._exportThreshold)
                 IconButton(
                   onPressed: () => SuccessAnimation.show(
                     context,
                     title: 'Community Pillar!',
-                    subtitle: 'You have impacted 50+ neighbors. Your dedication is inspiring!',
+                    subtitle:
+                        'You have impacted 50+ neighbors. Your dedication is inspiring!',
                     icon: Icons.workspace_premium_rounded,
                   ),
-                  icon: const Icon(Icons.celebration_rounded, color: Colors.amber, size: 20),
+                  icon: const Icon(
+                    Icons.celebration_rounded,
+                    color: Colors.amber,
+                    size: 20,
+                  ),
                   tooltip: 'Celebrate Achievement',
                 ),
               _buildExportButton(context),
@@ -268,7 +289,9 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
                             borderRadius: BorderRadius.circular(4),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryLight.withValues(alpha: 0.4),
+                                color: AppColors.primaryLight.withValues(
+                                  alpha: 0.4,
+                                ),
                                 blurRadius: 8,
                                 spreadRadius: 1,
                               ),
@@ -279,7 +302,9 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
                       // Glowing Tip
                       if (value > 0.01)
                         Positioned(
-                          left: (MediaQuery.of(context).size.width - 80) * value - 4,
+                          left:
+                              (MediaQuery.of(context).size.width - 80) * value -
+                              4,
                           child: Container(
                             width: 8,
                             height: 12,
@@ -354,15 +379,15 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
               ),
               shape: BoxShape.circle,
               border: Border.all(
-                color: color.withValues(alpha: onTap != null ? 0.4 : 0.1), 
-                width: 1
+                color: color.withValues(alpha: onTap != null ? 0.4 : 0.1),
+                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: color.withValues(alpha: 0.15),
                   blurRadius: 12,
                   spreadRadius: -2,
-                )
+                ),
               ],
             ),
             child: ParallaxCard(
@@ -411,7 +436,9 @@ class _ImpactDashboardState extends State<ImpactDashboard> {
             Text(
               'Trust Score Details',
               style: TextStyle(
-                color: widget.isDark ? Colors.white : AppColors.textPrimaryLight,
+                color: widget.isDark
+                    ? Colors.white
+                    : AppColors.textPrimaryLight,
               ),
             ),
           ],

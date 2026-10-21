@@ -15,10 +15,7 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Community Assets'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('My Community Assets'), elevation: 0),
       body: Obx(() {
         if (controller.isLoading && controller.myAssets.isEmpty) {
           return const Center(child: AppLoader());
@@ -48,7 +45,9 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
                   Text(
                     'Share tools, equipment, or transport with your neighbors to build community trust and earn Karma.',
                     style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                      color: theme.textTheme.bodyMedium?.color?.withValues(
+                        alpha: 0.7,
+                      ),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -85,13 +84,15 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
           ),
         );
       }),
-      floatingActionButton: Obx(() => controller.myAssets.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: () => _showAddAssetSheet(context),
-              label: const Text('Add Asset'),
-              icon: const Icon(Icons.add),
-            )
-          : const SizedBox.shrink()),
+      floatingActionButton: Obx(
+        () => controller.myAssets.isNotEmpty
+            ? FloatingActionButton.extended(
+                onPressed: () => _showAddAssetSheet(context),
+                label: const Text('Add Asset'),
+                icon: const Icon(Icons.add),
+              )
+            : const SizedBox.shrink(),
+      ),
     );
   }
 
@@ -130,7 +131,9 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
               child: Row(
                 children: [
                   CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
                     child: Icon(_getCategoryIcon(asset.category)),
                   ),
                   const SizedBox(width: 16),
@@ -168,7 +171,10 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Delete Asset', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Delete Asset',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(context, asset);
@@ -186,7 +192,9 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Asset?'),
-        content: Text('Are you sure you want to remove "${asset.title}" from your library?'),
+        content: Text(
+          'Are you sure you want to remove "${asset.title}" from your library?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -206,12 +214,18 @@ class MyAssetsScreen extends GetView<AssetsViewModel> {
 
   IconData _getCategoryIcon(AssetCategory category) {
     switch (category) {
-      case AssetCategory.tools: return Icons.build_outlined;
-      case AssetCategory.garden: return Icons.yard_outlined;
-      case AssetCategory.transport: return Icons.directions_car_outlined;
-      case AssetCategory.electronics: return Icons.electrical_services_outlined;
-      case AssetCategory.household: return Icons.home_repair_service_outlined;
-      case AssetCategory.other: return Icons.reorder_outlined;
+      case AssetCategory.tools:
+        return Icons.build_outlined;
+      case AssetCategory.garden:
+        return Icons.yard_outlined;
+      case AssetCategory.transport:
+        return Icons.directions_car_outlined;
+      case AssetCategory.electronics:
+        return Icons.electrical_services_outlined;
+      case AssetCategory.household:
+        return Icons.home_repair_service_outlined;
+      case AssetCategory.other:
+        return Icons.reorder_outlined;
     }
   }
 }

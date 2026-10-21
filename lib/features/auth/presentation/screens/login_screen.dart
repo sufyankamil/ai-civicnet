@@ -63,12 +63,18 @@ class _LoginScreenState extends State<LoginScreen> {
           if (error == null) {
             context.go('/home');
           } else {
-             ToastService.showError(context, AppLocalizations.of(context)!.biometricLoginFailed(error));
+            ToastService.showError(
+              context,
+              AppLocalizations.of(context)!.biometricLoginFailed(error),
+            );
           }
         }
       } else {
         if (mounted) {
-          ToastService.showError(context, AppLocalizations.of(context)!.noCredentialsFound);
+          ToastService.showError(
+            context,
+            AppLocalizations.of(context)!.noCredentialsFound,
+          );
         }
       }
     }
@@ -122,13 +128,16 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       body: AuthBackground(
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 40,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
                 child: Column(
@@ -142,7 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : Theme.of(context).primaryColor,
+                          color: isDark
+                              ? Colors.white
+                              : Theme.of(context).primaryColor,
                           letterSpacing: -1,
                         ),
                       ),
@@ -153,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         AppLocalizations.of(context)!.signInToContinue,
                         style: TextStyle(
-                          fontSize: 16, 
+                          fontSize: 16,
                           color: isDark ? Colors.white60 : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -171,12 +182,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Container(
                             padding: const EdgeInsets.all(32),
                             decoration: BoxDecoration(
-                              color: isDark 
-                                ? Colors.white.withValues(alpha: 0.05) 
-                                : Colors.white.withValues(alpha: 0.6),
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.05)
+                                  : Colors.white.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(32),
                               border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : Colors.white,
                                 width: 1.5,
                               ),
                               boxShadow: [
@@ -195,11 +208,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 450),
                                     child: CustomTextField(
-                                      hintText: AppLocalizations.of(context)!.emailAddress,
+                                      hintText: AppLocalizations.of(
+                                        context,
+                                      )!.emailAddress,
                                       prefixIcon: Icons.email_outlined,
                                       controller: _emailController,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterEmail;
+                                        if (value == null || value.isEmpty) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.enterEmail;
+                                        }
                                         return null;
                                       },
                                     ),
@@ -208,20 +227,30 @@ class _LoginScreenState extends State<LoginScreen> {
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 550),
                                     child: CustomTextField(
-                                      hintText: AppLocalizations.of(context)!.password,
+                                      hintText: AppLocalizations.of(
+                                        context,
+                                      )!.password,
                                       prefixIcon: Icons.lock_outline,
                                       obscureText: _obscurePassword,
                                       controller: _passwordController,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterPassword;
+                                        if (value == null || value.isEmpty) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.enterPassword;
+                                        }
                                         return null;
                                       },
                                       suffixIcon: IconButton(
-                                        icon: Icon(_obscurePassword
-                                            ? Icons.visibility_off
-                                            : Icons.visibility),
-                                        onPressed: () =>
-                                            setState(() => _obscurePassword = !_obscurePassword),
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => _obscurePassword =
+                                              !_obscurePassword,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -231,14 +260,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                     child: Align(
                                       alignment: Alignment.centerRight,
                                       child: TextButton(
-                                        onPressed: () => context.push('/forgot-password'),
+                                        onPressed: () =>
+                                            context.push('/forgot-password'),
                                         style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                          ),
                                         ),
                                         child: Text(
-                                          AppLocalizations.of(context)!.forgotPassword,
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.forgotPassword,
                                           style: TextStyle(
-                                            color: Theme.of(context).primaryColor,
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -247,18 +283,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 28),
-                                  
+
                                   // Action Row
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 750),
                                     child: Row(
                                       children: [
                                         Expanded(
-                                          child: Obx(() => PrimaryButton(
-                                            text: AppLocalizations.of(context)!.login,
-                                            isLoading: _authViewModel.isLoading,
-                                            onPressed: _handleLogin,
-                                          )),
+                                          child: Obx(
+                                            () => PrimaryButton(
+                                              text: AppLocalizations.of(
+                                                context,
+                                              )!.login,
+                                              isLoading:
+                                                  _authViewModel.isLoading,
+                                              onPressed: _handleLogin,
+                                            ),
+                                          ),
                                         ),
                                         if (_biometricEnabled) ...[
                                           const SizedBox(width: 16),
@@ -266,23 +307,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                             height: 56, // Match primary button
                                             width: 56,
                                             decoration: BoxDecoration(
-                                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                                              borderRadius: BorderRadius.circular(16),
+                                              color: Theme.of(context)
+                                                  .primaryColor
+                                                  .withValues(alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                               border: Border.all(
-                                                color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                                                color: Theme.of(context)
+                                                    .primaryColor
+                                                    .withValues(alpha: 0.2),
                                                 width: 1,
                                               ),
                                             ),
                                             child: IconButton(
                                               icon: Icon(
-                                                defaultTargetPlatform == TargetPlatform.iOS
+                                                defaultTargetPlatform ==
+                                                        TargetPlatform.iOS
                                                     ? Icons.face
                                                     : Icons.fingerprint,
-                                                color: Theme.of(context).primaryColor,
+                                                color: Theme.of(
+                                                  context,
+                                                ).primaryColor,
                                                 size: 28,
                                               ),
                                               onPressed: _handleBiometricLogin,
-                                              tooltip: AppLocalizations.of(context)!.loginWithBiometrics,
+                                              tooltip: AppLocalizations.of(
+                                                context,
+                                              )!.loginWithBiometrics,
                                             ),
                                           ),
                                         ],
@@ -296,7 +347,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
                     SlideFadeTransition(
                       delay: const Duration(milliseconds: 600),
@@ -305,7 +356,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Text(
                             '${AppLocalizations.of(context)!.dontHaveAccount.split('?').first}?',
-                            style: TextStyle(color: isDark ? Colors.white60 : Colors.grey[700]),
+                            style: TextStyle(
+                              color: isDark ? Colors.white60 : Colors.grey[700],
+                            ),
                           ),
                           TextButton(
                             onPressed: () => context.push('/signup'),
@@ -349,25 +402,31 @@ class _LoginScreenState extends State<LoginScreen> {
   // ignore: unused_element
   Widget _buildSocialButtons() {
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
-    
+    final isIOS =
+        defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isAndroid)
-          Obx(() => SocialLoginButton(
-            icon: googleIcon(),
-            label: 'Google',
-            isLoading: _authViewModel.isGoogleLoading,
-            onTap: _handleGoogleSignIn,
-          )),
+          Obx(
+            () => SocialLoginButton(
+              icon: googleIcon(),
+              label: 'Google',
+              isLoading: _authViewModel.isGoogleLoading,
+              onTap: _handleGoogleSignIn,
+            ),
+          ),
         if (isIOS)
-          Obx(() => SocialLoginButton(
-            icon: appleIcon(),
-            label: 'Apple',
-            isLoading: _authViewModel.isAppleLoading,
-            onTap: _handleAppleSignIn,
-          )),
+          Obx(
+            () => SocialLoginButton(
+              icon: appleIcon(),
+              label: 'Apple',
+              isLoading: _authViewModel.isAppleLoading,
+              onTap: _handleAppleSignIn,
+            ),
+          ),
       ],
     );
   }

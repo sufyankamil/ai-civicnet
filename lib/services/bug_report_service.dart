@@ -13,7 +13,7 @@ class BugReportService {
   BugReportService._internal();
 
   final DeviceInfoPlugin _deviceInfo = DeviceInfoPlugin();
-  
+
   Future<Map<String, dynamic>> collectMetadata() async {
     final Map<String, dynamic> metadata = {};
 
@@ -67,7 +67,7 @@ class BugReportService {
 
       // 7. Timestamp
       metadata['timestamp'] = DateTime.now().toUtc().toIso8601String();
-      
+
       logger.i('Enhanced bug report metadata collected successfully');
     } catch (e) {
       logger.e('Error collecting bug report metadata: $e');
