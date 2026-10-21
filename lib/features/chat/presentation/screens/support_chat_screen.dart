@@ -595,46 +595,57 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 2,
+                  child: TextField(
+                    controller: _messageController,
+                    focusNode: _focusNode,
+                    maxLines: 4,
+                    minLines: 1,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
                     ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.surfaceVariantDark.withValues(alpha: 0.6)
-                          : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
+                    onSubmitted: (_) => _handleSendMessage(),
+                    decoration: InputDecoration(
+                      hintText:
+                          AppLocalizations.of(context)?.typeMessageHint ??
+                          'Ask anything about CivicNet...',
+                      hintStyle: TextStyle(
                         color: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.grey[300]!,
-                      ),
-                    ),
-                    child: TextField(
-                      controller: _messageController,
-                      focusNode: _focusNode,
-                      maxLines: 4,
-                      minLines: 1,
-                      style: TextStyle(
+                            ? const Color(0xFFA09BB8)
+                            : const Color(0xFF9CA3AF),
                         fontSize: 14,
-                        color: isDark ? Colors.white : Colors.black87,
                       ),
-                      onSubmitted: (_) => _handleSendMessage(),
-                      decoration: InputDecoration(
-                        hintText:
-                            AppLocalizations.of(context)?.typeMessageHint ??
-                            'Ask anything about CivicNet...',
-                        hintStyle: TextStyle(
+                      filled: true,
+                      fillColor: isDark
+                          ? AppColors.surfaceVariantDark.withValues(alpha: 0.7)
+                          : const Color(0xFFF3F4F6),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 11,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(
                           color: isDark
-                              ? const Color(0xFFA09BB8)
-                              : Colors.grey[400],
-                          fontSize: 14,
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : const Color(0xFFE5E7EB),
+                          width: 1,
                         ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : const Color(0xFFE5E7EB),
+                          width: 1,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryLight,
+                          width: 1.5,
                         ),
                       ),
                     ),
