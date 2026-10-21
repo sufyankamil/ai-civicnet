@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
@@ -14,6 +13,7 @@ class VoiceTaskSheet extends StatefulWidget {
     return showModalBottomSheet<ParsedVoiceTask>(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const VoiceTaskSheet(),
     );
@@ -173,6 +173,16 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
     setState(() => _isListening = false);
   }
 
+  void _dismissSheet() {
+    AppHaptic.lightImpact();
+    if (_isListening) {
+      _speech.stop();
+    }
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _processTranscript() async {
     final text = _recognizedWords.trim();
     if (text.isEmpty) {
@@ -214,267 +224,265 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
       ),
       child: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF131124).withValues(alpha: 0.92)
-                  : Colors.white.withValues(alpha: 0.94),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(28),
-              ),
-              border: Border.all(
-                color: primaryAccent.withValues(alpha: 0.2),
-                width: 1.5,
-              ),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161426) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(
+              color: primaryAccent.withValues(alpha: 0.22),
+              width: 1.5,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Drag handle
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                const SizedBox(height: 18),
+              ),
+              const SizedBox(height: 18),
 
-                // Header
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: primaryAccent.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: primaryAccent.withValues(alpha: 0.35),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.auto_awesome,
-                        color: primaryAccent,
-                        size: 20,
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: primaryAccent.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: primaryAccent.withValues(alpha: 0.35),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'AI Voice Assistant',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                          ),
-                          Text(
-                            'Speak naturally. AI will auto-fill your request.',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: isDark
-                                      ? Colors.white60
-                                      : Colors.black54,
-                                ),
+                    child: const Icon(
+                      Icons.auto_awesome,
+                      color: primaryAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AI Voice Assistant',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                        ),
+                        Text(
+                          'Speak naturally. AI will auto-fill your request.',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, size: 20),
+                    onPressed: _dismissSheet,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Pulsing Mic Button
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  final scale = _isListening
+                      ? 1.0 + (_pulseController.value * 0.12)
+                      : 1.0;
+                  final glowRadius = _isListening
+                      ? 20.0 + (_pulseController.value * 20.0)
+                      : 8.0;
+
+                  return GestureDetector(
+                    onTap: _isAnalyzing
+                        ? null
+                        : () {
+                            if (_isListening) {
+                              _stopListening();
+                            } else if (!_speechEnabled) {
+                              _initSpeechAndStart();
+                            } else {
+                              _startListening();
+                            }
+                          },
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF7B61FF), Color(0xFF9D4EDD)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryAccent.withValues(
+                              alpha: _isListening ? 0.6 : 0.25,
+                            ),
+                            blurRadius: glowRadius,
+                            spreadRadius: _isListening ? 4 : 1,
                           ),
                         ],
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Pulsing Mic Button
-                AnimatedBuilder(
-                  animation: _pulseController,
-                  builder: (context, child) {
-                    final scale = _isListening
-                        ? 1.0 + (_pulseController.value * 0.12)
-                        : 1.0;
-                    final glowRadius = _isListening
-                        ? 20.0 + (_pulseController.value * 20.0)
-                        : 8.0;
-
-                    return GestureDetector(
-                      onTap: _isAnalyzing
-                          ? null
-                          : () {
-                              if (_isListening) {
-                                _stopListening();
-                              } else if (!_speechEnabled) {
-                                _initSpeechAndStart();
-                              } else {
-                                _startListening();
-                              }
-                            },
-                      child: Container(
-                        width: 90,
-                        height: 90,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF7B61FF), Color(0xFF9D4EDD)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: primaryAccent.withValues(
-                                alpha: _isListening ? 0.6 : 0.25,
-                              ),
-                              blurRadius: glowRadius,
-                              spreadRadius: _isListening ? 4 : 1,
-                            ),
-                          ],
-                        ),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: Icon(
-                            _isListening ? Icons.mic : Icons.mic_none,
-                            size: 44,
-                            color: Colors.white,
-                          ),
+                      child: Transform.scale(
+                        scale: scale,
+                        child: Icon(
+                          _isListening ? Icons.mic : Icons.mic_none,
+                          size: 44,
+                          color: Colors.white,
                         ),
                       ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
 
-                // Listening Status Text
-                Text(
-                  _isAnalyzing
-                      ? 'Analyzing with Gemini AI...'
-                      : _isListening
-                      ? 'Listening... Speak now'
-                      : _recognizedWords.isNotEmpty
-                      ? 'Tap to re-record or Auto-Fill below'
-                      : 'Tap microphone to speak',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              // Listening Status Text
+              Text(
+                _isAnalyzing
+                    ? 'Analyzing with Gemini AI...'
+                    : _isListening
+                    ? 'Listening... Speak now'
+                    : _recognizedWords.isNotEmpty
+                    ? 'Tap to re-record or Auto-Fill below'
+                    : 'Tap microphone to speak',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _isListening
+                      ? primaryAccent
+                      : isDark
+                      ? Colors.white70
+                      : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Transcript Box
+              Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(
+                  minHeight: 80,
+                  maxHeight: 150,
+                ),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
                     color: _isListening
-                        ? primaryAccent
-                        : isDark
-                        ? Colors.white70
-                        : Colors.black87,
+                        ? primaryAccent.withValues(alpha: 0.4)
+                        : Colors.white.withValues(alpha: 0.08),
                   ),
                 ),
-                const SizedBox(height: 18),
+                child: SingleChildScrollView(
+                  child: Text(
+                    _recognizedWords.isEmpty
+                        ? (_isListening
+                              ? 'Say something like: "My kitchen pipe is leaking water everywhere, I need an urgent plumber with a wrench..."'
+                              : 'Your spoken words will appear here in real time.')
+                        : _recognizedWords,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontStyle: _recognizedWords.isEmpty
+                          ? FontStyle.italic
+                          : FontStyle.normal,
+                      color: _recognizedWords.isEmpty
+                          ? (isDark ? Colors.white38 : Colors.black38)
+                          : (isDark ? Colors.white : Colors.black87),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
 
-                // Transcript Box
-                Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(
-                    minHeight: 80,
-                    maxHeight: 150,
-                  ),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.04)
-                        : Colors.black.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _isListening
-                          ? primaryAccent.withValues(alpha: 0.4)
-                          : Colors.white.withValues(alpha: 0.08),
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Text(
-                      _recognizedWords.isEmpty
-                          ? (_isListening
-                                ? 'Say something like: "My kitchen pipe is leaking water everywhere, I need an urgent plumber with a wrench..."'
-                                : 'Your spoken words will appear here in real time.')
-                          : _recognizedWords,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontStyle: _recognizedWords.isEmpty
-                            ? FontStyle.italic
-                            : FontStyle.normal,
-                        color: _recognizedWords.isEmpty
-                            ? (isDark ? Colors.white38 : Colors.black38)
-                            : (isDark ? Colors.white : Colors.black87),
-                        height: 1.4,
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _dismissSheet,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.18),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 22),
-
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.18),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.black87,
-                          ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          (_recognizedWords.trim().isEmpty || _isAnalyzing)
+                          ? null
+                          : _processTranscript,
+                      icon: _isAnalyzing
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.auto_awesome, size: 18),
+                      label: Text(
+                        _isAnalyzing ? 'Processing...' : 'Auto-Fill Request',
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: primaryAccent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: ElevatedButton.icon(
-                        onPressed:
-                            (_recognizedWords.trim().isEmpty || _isAnalyzing)
-                            ? null
-                            : _processTranscript,
-                        icon: _isAnalyzing
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Icon(Icons.auto_awesome, size: 18),
-                        label: Text(
-                          _isAnalyzing ? 'Processing...' : 'Auto-Fill Request',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          backgroundColor: primaryAccent,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
