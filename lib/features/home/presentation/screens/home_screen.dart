@@ -28,6 +28,7 @@ import '../../../../core/services/version_service.dart';
 import '../widgets/update_popup.dart';
 import '../../../../core/services/vpn_service.dart';
 import '../widgets/vpn_warning_banner.dart';
+import '../../../ai_assistant/presentation/widgets/aura_floating_orb.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -574,6 +575,9 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
           ),
+
+          // Aura AI Floating Orb
+          const Positioned(right: 18, bottom: 128, child: AuraFloatingOrb()),
         ],
       ),
     );

@@ -140,9 +140,9 @@ class AiService {
     if (!_isInitialized || _chatModel == null) initialize();
 
     final systemPrompt =
-        'You are the CivicNet AI Assistant, a helpful and friendly guide for a local community networking app. '
-        'Your goal is to help users find help, discover events, and stay informed about their neighborhood. '
-        'Use the following context to give accurate and relevant answers. '
+        'You are Aura AI, the neighborhood intelligence guide for CivicNet. '
+        'Your goal is to help users find assistance, discover borrowable assets, find events, and stay informed about their neighborhood. '
+        'Use the following community context to give accurate and relevant answers. '
         'Always be polite, encouraging, and focus on fostering community spirit.\n\n';
 
     final prompt =
@@ -154,19 +154,35 @@ class AiService {
         'If the answer is not in the context, use your general knowledge but mention that this is general information. '
         'Keep the response concise, helpful, and community-oriented.';
 
-    final content = [Content.text(prompt)];
+    if (_isInitialized && _chatModel != null) {
+      try {
+        final content = [Content.text(prompt)];
 
-    // We can use startChat if history is provided
-    if (history != null && history.isNotEmpty) {
-      final chat = _chatModel!.startChat(history: history);
-      final response = await chat.sendMessage(Content.text(prompt));
-      return response.text ??
-          'I apologize, but I am unable to generate a response at the moment.';
-    } else {
-      final response = await _chatModel!.generateContent(content);
-      return response.text ??
-          'I apologize, but I am unable to generate a response at the moment.';
+        if (history != null && history.isNotEmpty) {
+          final chat = _chatModel!.startChat(history: history);
+          final response = await chat.sendMessage(Content.text(prompt));
+          final text = response.text?.trim();
+          if (text != null && text.isNotEmpty) return text;
+        } else {
+          final response = await _chatModel!.generateContent(content);
+          final text = response.text?.trim();
+          if (text != null && text.isNotEmpty) return text;
+        }
+      } catch (e) {
+        logger.w(
+          'AiService: Gemini API failed, falling back to local synthesis: $e',
+        );
+      }
     }
+
+    // Resilient local fallback using retrieved community context
+    if (context.trim().isNotEmpty) {
+      return 'Here is the community information I found regarding "$query":\n\n'
+          '$context\n\n'
+          'Let me know if you would like me to narrow down by urgency, category, or distance!';
+    }
+
+    return _generateSupportResponseHeuristic(query).message;
   }
 
   /// Categorizes a help request based on its title and description.
@@ -576,8 +592,9 @@ class AiService {
           final response = await chat.sendMessage(Content.text(prompt));
           rawResponse = response.text?.trim() ?? '';
         } else {
-          final response =
-              await _chatModel!.generateContent([Content.text(prompt)]);
+          final response = await _chatModel!.generateContent([
+            Content.text(prompt),
+          ]);
           rawResponse = response.text?.trim() ?? '';
         }
 

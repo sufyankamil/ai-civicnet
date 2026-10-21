@@ -33,7 +33,9 @@ class AiAssistantViewModel extends GetxController {
     messages.add(
       AiMessage(
         text:
-            "Hello! I'm your CivicNet AI Assistant. I can help you find help requests, upcoming events, or community news. How can I help you today?",
+            "Hello! I'm **Aura AI**, your CivicNet community intelligence companion.\n\n"
+            "I can help you search urgent requests, find borrowable tools, discover local events, or navigate neighborhood activities.\n\n"
+            "How can I help you today?",
         isUser: false,
         timestamp: DateTime.now(),
       ),
@@ -53,26 +55,37 @@ class AiAssistantViewModel extends GetxController {
     isLoading.value = true;
 
     try {
-      // 2. RAG: Retrieve context
+      // 2. RAG: Resiliently retrieve context
       logger.i('AI Assistant: Processing query "$text"');
 
-      // We generate both an embedding and a search query for maximum coverage
-      final List<dynamic> results = await Future.wait([
-        _aiService.generateEmbedding(text, taskType: TaskType.retrievalQuery),
-        _aiService.generateSearchQuery(text),
-      ]);
+      List<double>? embedding;
+      try {
+        embedding = await _aiService.generateEmbedding(
+          text,
+          taskType: TaskType.retrievalQuery,
+        );
+      } catch (e) {
+        logger.d('Embedding generation skipped: $e');
+      }
 
-      final List<double>? embedding = results[0] as List<double>?;
-      final String searchQuery = results[1] as String;
+      String searchQuery = text;
+      try {
+        searchQuery = await _aiService.generateSearchQuery(text);
+      } catch (e) {
+        logger.d('Search query optimization skipped: $e');
+      }
 
-      logger.d('AI Assistant: Search Query: $searchQuery');
+      String context = '';
+      try {
+        context = await _supabaseService.searchCommunityContent(
+          queryEmbedding: embedding ?? [],
+          queryText: searchQuery,
+        );
+      } catch (e) {
+        logger.w('Community content search skipped: $e');
+      }
 
-      final String context = await _supabaseService.searchCommunityContent(
-        queryEmbedding: embedding ?? [],
-        queryText: searchQuery,
-      );
-
-      // 3. Generate AI Response
+      // 3. Generate AI Response (with built-in Gemini & local synthesis fallback)
       final aiResponse = await _aiService.generateChatResponse(
         query: text,
         context: context,
