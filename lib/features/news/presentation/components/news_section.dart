@@ -9,14 +9,15 @@ import '../../../../theme/app_theme.dart';
 
 class NewsSection extends StatefulWidget {
   final String? searchQuery;
-  
+
   const NewsSection({super.key, this.searchQuery});
 
   @override
   State<NewsSection> createState() => _NewsSectionState();
 }
 
-class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClientMixin {
+class _NewsSectionState extends State<NewsSection>
+    with AutomaticKeepAliveClientMixin {
   late Future<User?> _userProfileFuture;
   late Future<List<Announcement>> _announcementsFuture;
 
@@ -44,7 +45,7 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
   Widget build(BuildContext context) {
     super.build(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return FutureBuilder<User?>(
       future: _userProfileFuture,
       builder: (context, userSnapshot) {
@@ -56,25 +57,28 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Column(
-                children: List.generate(3, (index) => const AnnouncementCardSkeleton()),
+                children: List.generate(
+                  3,
+                  (index) => const AnnouncementCardSkeleton(),
+                ),
               );
             }
-            
+
             if (snapshot.hasError) {
               return _buildErrorState(isDark, snapshot.error.toString());
             }
-            
+
             List<Announcement> announcements = snapshot.data ?? [];
 
             if (widget.searchQuery != null && widget.searchQuery!.isNotEmpty) {
               final query = widget.searchQuery!.toLowerCase();
               announcements = announcements.where((a) {
-                return a.title.toLowerCase().contains(query) || 
-                       a.content.toLowerCase().contains(query) ||
-                       a.category.name.toLowerCase().contains(query);
+                return a.title.toLowerCase().contains(query) ||
+                    a.content.toLowerCase().contains(query) ||
+                    a.category.name.toLowerCase().contains(query);
               }).toList();
             }
-            
+
             return RefreshIndicator(
               onRefresh: () async {
                 _handleRetry();
@@ -89,7 +93,10 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
                       _buildEmptyState(isDark)
                     else
                       ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: announcements.length,
@@ -107,7 +114,10 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const CreateAnnouncementScreen()),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const CreateAnnouncementScreen(),
+                              ),
                             );
                           },
                           child: Container(
@@ -118,7 +128,9 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primaryLight.withValues(alpha: 0.3),
+                                  color: AppColors.primaryLight.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -127,7 +139,11 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.add_comment_rounded, color: Colors.white, size: 20),
+                                Icon(
+                                  Icons.add_comment_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                                 SizedBox(width: 12),
                                 Text(
                                   'Post News',
@@ -166,8 +182,8 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.cloud_off_rounded, 
-              size: 64, 
+              Icons.cloud_off_rounded,
+              size: 64,
               color: Colors.redAccent,
             ),
           ),
@@ -175,17 +191,16 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
           const Text(
             'Connection Timed Out',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 12),
           Text(
             'We couldn\'t load the news feed. Please check your internet connection and try again.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.4,
+              ),
               fontSize: 14,
             ),
           ),
@@ -229,37 +244,45 @@ class _NewsSectionState extends State<NewsSection> with AutomaticKeepAliveClient
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.05,
+              ),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
-                ? Icons.search_off_rounded 
-                : Icons.newspaper_rounded, 
-              size: 64, 
-              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.2),
+              widget.searchQuery != null && widget.searchQuery!.isNotEmpty
+                  ? Icons.search_off_rounded
+                  : Icons.newspaper_rounded,
+              size: 64,
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.2,
+              ),
             ),
           ),
           const SizedBox(height: 24),
           Text(
-            widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
-              ? 'No matches found' 
-              : 'No announcements yet',
+            widget.searchQuery != null && widget.searchQuery!.isNotEmpty
+                ? 'No matches found'
+                : 'No announcements yet',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.5),
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.5,
+              ),
               fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            widget.searchQuery != null && widget.searchQuery!.isNotEmpty 
-              ? 'Try a different search term.'
-              : 'Stay tuned for official updates from your community.',
+            widget.searchQuery != null && widget.searchQuery!.isNotEmpty
+                ? 'Try a different search term.'
+                : 'Stay tuned for official updates from your community.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.3),
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.3,
+              ),
               fontSize: 14,
             ),
           ),

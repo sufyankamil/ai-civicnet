@@ -5,24 +5,27 @@ import '../../../../widgets/haptic_buttons.dart';
 class VpnWarningBanner extends StatelessWidget {
   final VoidCallback onDismiss;
 
-  const VpnWarningBanner({
-    super.key,
-    required this.onDismiss,
-  });
+  const VpnWarningBanner({super.key, required this.onDismiss});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: isDark 
-              ? [Colors.orange.withValues(alpha: 0.15), Colors.orange.withValues(alpha: 0.05)]
-              : [Colors.orange.withValues(alpha: 0.1), Colors.orange.withValues(alpha: 0.02)],
+          colors: isDark
+              ? [
+                  Colors.orange.withValues(alpha: 0.15),
+                  Colors.orange.withValues(alpha: 0.05),
+                ]
+              : [
+                  Colors.orange.withValues(alpha: 0.1),
+                  Colors.orange.withValues(alpha: 0.02),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -42,9 +45,10 @@ class VpnWarningBanner extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.vignette_rounded, // Using vignette as a proxy for VPN/Shield if no better one
-              color: Colors.orange, 
-              size: 20
+              Icons
+                  .vignette_rounded, // Using vignette as a proxy for VPN/Shield if no better one
+              color: Colors.orange,
+              size: 20,
             ),
           ),
           const SizedBox(width: 12),
@@ -53,21 +57,21 @@ class VpnWarningBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  l10n.vpnWarningTitle, 
+                  l10n.vpnWarningTitle,
                   style: const TextStyle(
-                    fontWeight: FontWeight.bold, 
-                    fontSize: 14, 
-                    color: Colors.orange
-                  )
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.orange,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  l10n.vpnWarningDesc, 
+                  l10n.vpnWarningDesc,
                   style: TextStyle(
-                    fontSize: 12, 
+                    fontSize: 12,
                     height: 1.4,
-                    color: isDark ? Colors.grey[300] : Colors.grey[800]
-                  )
+                    color: isDark ? Colors.grey[300] : Colors.grey[800],
+                  ),
                 ),
               ],
             ),
@@ -77,13 +81,15 @@ class VpnWarningBanner extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.05,
+                ),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.close_rounded, 
-                size: 16, 
-                color: isDark ? Colors.grey[400] : Colors.grey[600]
+                Icons.close_rounded,
+                size: 16,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
               ),
             ),
           ),

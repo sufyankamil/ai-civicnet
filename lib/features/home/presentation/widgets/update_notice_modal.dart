@@ -12,17 +12,19 @@ class UpdateNoticeModal extends StatelessWidget {
     required this.onDismiss,
   });
 
-  static Future<void> show(BuildContext context, List<UpdateNote> updates, VoidCallback onDismiss) {
+  static Future<void> show(
+    BuildContext context,
+    List<UpdateNote> updates,
+    VoidCallback onDismiss,
+  ) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useRootNavigator: true, // Shows above bottom nav and FAB
       backgroundColor: Colors.transparent,
       enableDrag: true,
-      builder: (context) => UpdateNoticeModal(
-        updates: updates,
-        onDismiss: onDismiss,
-      ),
+      builder: (context) =>
+          UpdateNoticeModal(updates: updates, onDismiss: onDismiss),
     );
   }
 
@@ -71,18 +73,14 @@ class UpdateNoticeModal extends StatelessWidget {
                       const SizedBox(height: 16),
                       Text(
                         "What's New in CivicNet",
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "Discover the latest enhancements designed to help your community thrive.",
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                     ],
                   ),
@@ -103,7 +101,9 @@ class UpdateNoticeModal extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryLight.withValues(alpha: 0.1),
+                                color: AppColors.primaryLight.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(

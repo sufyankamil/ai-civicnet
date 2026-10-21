@@ -16,10 +16,12 @@ class AccountManagementScreen extends StatefulWidget {
   const AccountManagementScreen({super.key});
 
   @override
-  State<AccountManagementScreen> createState() => _AccountManagementScreenState();
+  State<AccountManagementScreen> createState() =>
+      _AccountManagementScreenState();
 }
 
-class _AccountManagementScreenState extends State<AccountManagementScreen> with SingleTickerProviderStateMixin {
+class _AccountManagementScreenState extends State<AccountManagementScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final SettingsController _controller = Get.find<SettingsController>();
   late Stream<User?> _userStream;
@@ -29,7 +31,9 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _controller.loadBiometricSettings();
-    _userStream = SupabaseService().getCurrentUserProfileStream().asBroadcastStream();
+    _userStream = SupabaseService()
+        .getCurrentUserProfileStream()
+        .asBroadcastStream();
   }
 
   @override
@@ -82,14 +86,14 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
     );
   }
 
-
   Widget _buildPersonalInfoTab() {
     final l10n = AppLocalizations.of(context)!;
 
     return StreamBuilder(
       stream: _userStream,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
           return _buildProfileShimmer();
         }
 
@@ -97,7 +101,7 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
         final name = user?.name ?? 'CivicNet User';
         final email = user?.email ?? '...';
         final avatarUrl = user?.avatarUrl;
-        
+
         String initials = '';
         if (name.isNotEmpty) {
           final parts = name.split(' ');
@@ -122,7 +126,9 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: (avatarUrl == null || avatarUrl.isEmpty)
-                          ? AppColors.primaryGradient(Theme.of(context).brightness)
+                          ? AppColors.primaryGradient(
+                              Theme.of(context).brightness,
+                            )
                           : null,
                       boxShadow: [
                         BoxShadow(
@@ -135,7 +141,8 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                     child: CircleAvatar(
                       radius: 45,
                       backgroundColor: Colors.transparent,
-                      backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
+                      backgroundImage:
+                          (avatarUrl != null && avatarUrl.isNotEmpty)
                           ? NetworkImage(avatarUrl)
                           : null,
                       child: (avatarUrl == null || avatarUrl.isEmpty)
@@ -153,7 +160,10 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                   const SizedBox(height: 16),
                   Text(
                     name,
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     email,
@@ -172,13 +182,22 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
             const Divider(),
             ListTile(
               title: const Text('Verified Status'),
-              subtitle: const Text('Your identity is verified for community trust.'),
-              leading: const Icon(Icons.verified_user_outlined, color: Colors.green),
-              trailing: const Icon(Icons.check_circle, color: Colors.green, size: 20),
+              subtitle: const Text(
+                'Your identity is verified for community trust.',
+              ),
+              leading: const Icon(
+                Icons.verified_user_outlined,
+                color: Colors.green,
+              ),
+              trailing: const Icon(
+                Icons.check_circle,
+                color: Colors.green,
+                size: 20,
+              ),
             ),
           ],
         );
-      }
+      },
     );
   }
 
@@ -264,33 +283,45 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Obx(() => _controller.isLoadingBiometrics
-          ? const Center(child: CupertinoActivityIndicator())
-          : SwitchListTile(
-              title: Text(l10n.biometricLogin),
-              subtitle: Text(l10n.biometricDescription),
-              value: _controller.isBiometricEnabled,
-              secondary: const Icon(Icons.fingerprint, color: AppColors.primaryLight),
-              onChanged: (bool value) async {
-                if (value) {
-                  final isAvailable = await BiometricService().isBiometricAvailable();
-                  if (!mounted) return;
-                  
-                  if (!isAvailable) {
-                    ToastService.showError(context, 'Biometrics not available on this device.');
-                    return;
-                  }
-                  _showPasswordPromptDialog(context);
-                } else {
-                  await _controller.toggleBiometrics(false);
-                }
-              },
-            )),
+        Obx(
+          () => _controller.isLoadingBiometrics
+              ? const Center(child: CupertinoActivityIndicator())
+              : SwitchListTile(
+                  title: Text(l10n.biometricLogin),
+                  subtitle: Text(l10n.biometricDescription),
+                  value: _controller.isBiometricEnabled,
+                  secondary: const Icon(
+                    Icons.fingerprint,
+                    color: AppColors.primaryLight,
+                  ),
+                  onChanged: (bool value) async {
+                    if (value) {
+                      final isAvailable = await BiometricService()
+                          .isBiometricAvailable();
+                      if (!mounted) return;
+
+                      if (!isAvailable) {
+                        ToastService.showError(
+                          context,
+                          'Biometrics not available on this device.',
+                        );
+                        return;
+                      }
+                      _showPasswordPromptDialog(context);
+                    } else {
+                      await _controller.toggleBiometrics(false);
+                    }
+                  },
+                ),
+        ),
         const Divider(),
         ListTile(
           title: const Text('Change Password'),
           subtitle: const Text('Update your login credentials'),
-          leading: const Icon(Icons.lock_reset_outlined, color: Colors.blueGrey),
+          leading: const Icon(
+            Icons.lock_reset_outlined,
+            color: Colors.blueGrey,
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push('/forgot-password'),
         ),
@@ -323,7 +354,9 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
               const Divider(),
               ListTile(
                 title: const Text('Data & Personalization'),
-                subtitle: const Text('Manage what data is shared and how it is used.'),
+                subtitle: const Text(
+                  'Manage what data is shared and how it is used.',
+                ),
                 leading: const Icon(Icons.data_usage),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
@@ -341,8 +374,8 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
             child: Text(
               l10n.deleteAccount,
               style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark 
-                    ? Colors.grey[400] 
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[400]
                     : Colors.grey[600],
                 fontSize: 12,
               ),
@@ -382,7 +415,9 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
               ),
               const SizedBox(height: 8),
               const BulletItem(text: 'Location usage: High relevance matching'),
-              const BulletItem(text: 'Skill analysis: AI-driven task suggestions'),
+              const BulletItem(
+                text: 'Skill analysis: AI-driven task suggestions',
+              ),
               const BulletItem(text: 'Encryption: End-to-end active'),
               const SizedBox(height: 24),
               SizedBox(
@@ -406,9 +441,11 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
   Future<void> _showPasswordPromptDialog(BuildContext context) async {
     final passwordController = TextEditingController();
     bool isLoading = false;
-    final isIOS = Theme.of(context).platform == TargetPlatform.iOS || Theme.of(context).platform == TargetPlatform.macOS;
+    final isIOS =
+        Theme.of(context).platform == TargetPlatform.iOS ||
+        Theme.of(context).platform == TargetPlatform.macOS;
     final l10n = AppLocalizations.of(context)!;
-    
+
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -423,21 +460,30 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
 
               final currentUser = SupabaseService().currentUser;
               if (currentUser?.email == null) {
-                 setDialogState(() => isLoading = false);
-                 if (ctx.mounted) Navigator.pop(ctx);
-                 return;
+                setDialogState(() => isLoading = false);
+                if (ctx.mounted) Navigator.pop(ctx);
+                return;
               }
-              
+
               try {
-                final response = await SupabaseService().signIn(currentUser!.email!, password);
-                
+                final response = await SupabaseService().signIn(
+                  currentUser!.email!,
+                  password,
+                );
+
                 if (response.session != null) {
-                    await BiometricService().enableBiometrics(currentUser.email!, password);
-                    _controller.loadBiometricSettings();
-                   if (ctx.mounted) {
-                     Navigator.pop(ctx);
-                     ToastService.showSuccess(context, 'Biometric Login Enabled!');
-                   }
+                  await BiometricService().enableBiometrics(
+                    currentUser.email!,
+                    password,
+                  );
+                  _controller.loadBiometricSettings();
+                  if (ctx.mounted) {
+                    Navigator.pop(ctx);
+                    ToastService.showSuccess(
+                      context,
+                      'Biometric Login Enabled!',
+                    );
+                  }
                 }
               } catch (e) {
                 setDialogState(() => isLoading = false);
@@ -453,31 +499,41 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
               children: [
                 Text(
                   l10n.verifyPassword,
-                  style: isIOS 
-                      ? const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel) 
+                  style: isIOS
+                      ? const TextStyle(
+                          fontSize: 13,
+                          color: CupertinoColors.secondaryLabel,
+                        )
                       : null,
                 ),
                 const SizedBox(height: 16),
                 isIOS
-                  ? Material(
-                      color: Colors.transparent,
-                      child: CupertinoTextField(
+                    ? Material(
+                        color: Colors.transparent,
+                        child: CupertinoTextField(
+                          controller: passwordController,
+                          obscureText: true,
+                          placeholder: l10n.password,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          prefix: const Padding(
+                            padding: EdgeInsets.only(left: 12.0),
+                            child: Icon(
+                              CupertinoIcons.lock,
+                              color: Colors.grey,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      )
+                    : CustomTextField(
                         controller: passwordController,
                         obscureText: true,
-                        placeholder: l10n.password,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        prefix: const Padding(
-                          padding: EdgeInsets.only(left: 12.0),
-                          child: Icon(CupertinoIcons.lock, color: Colors.grey, size: 20),
-                        ),
+                        hintText: l10n.password,
+                        prefixIcon: Icons.lock_outline,
                       ),
-                    )
-                  : CustomTextField(
-                      controller: passwordController,
-                      obscureText: true,
-                      hintText: l10n.password,
-                      prefixIcon: Icons.lock_outline,
-                    ),
               ],
             );
 
@@ -496,16 +552,19 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                   CupertinoDialogAction(
                     isDefaultAction: true,
                     onPressed: isLoading ? null : handleEnable,
-                    child: isLoading 
-                      ? const CupertinoActivityIndicator() 
-                      : Text(l10n.enable),
+                    child: isLoading
+                        ? const CupertinoActivityIndicator()
+                        : Text(l10n.enable),
                   ),
                 ],
               );
             }
 
             return AlertDialog(
-              title: Text(l10n.confirmPassword, style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(
+                l10n.confirmPassword,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               content: contentWidget,
               actions: [
                 TextButton(
@@ -518,15 +577,22 @@ class _AccountManagementScreenState extends State<AccountManagementScreen> with 
                     backgroundColor: AppColors.primaryLight,
                     foregroundColor: Colors.white,
                   ),
-                  child: isLoading 
-                    ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text(l10n.enable),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(l10n.enable),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 }
@@ -558,7 +624,8 @@ class KeepAliveWrapper extends StatefulWidget {
   State<KeepAliveWrapper> createState() => _KeepAliveWrapperState();
 }
 
-class _KeepAliveWrapperState extends State<KeepAliveWrapper> with AutomaticKeepAliveClientMixin {
+class _KeepAliveWrapperState extends State<KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);

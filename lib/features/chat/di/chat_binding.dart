@@ -19,38 +19,73 @@ class ChatBinding extends Bindings {
     // UseCases
     Get.lazyPut(() => GetConversationsUseCase(Get.find<ChatRepositoryImpl>()));
     Get.lazyPut(() => SendMessageUseCase(Get.find<ChatRepositoryImpl>()));
-    Get.lazyPut(() => MarkConversationAsReadUseCase(Get.find<ChatRepositoryImpl>()));
-    Get.lazyPut(() => MarkAllConversationsAsReadUseCase(Get.find<ChatRepositoryImpl>()));
+    Get.lazyPut(
+      () => MarkConversationAsReadUseCase(Get.find<ChatRepositoryImpl>()),
+    );
+    Get.lazyPut(
+      () => MarkAllConversationsAsReadUseCase(Get.find<ChatRepositoryImpl>()),
+    );
     Get.lazyPut(() => DeleteMessageUseCase(Get.find<ChatRepositoryImpl>()));
-    Get.lazyPut(() => DeleteConversationUseCase(Get.find<ChatRepositoryImpl>()));
+    Get.lazyPut(
+      () => DeleteConversationUseCase(Get.find<ChatRepositoryImpl>()),
+    );
 
     // ViewModel
-    Get.lazyPut(() => ChatViewModel(
-      getConversationsUseCase: Get.find<GetConversationsUseCase>(),
-      sendMessageUseCase: Get.find<SendMessageUseCase>(),
-      markConversationAsReadUseCase: Get.find<MarkConversationAsReadUseCase>(),
-      markAllConversationsAsReadUseCase: Get.find<MarkAllConversationsAsReadUseCase>(),
-      deleteMessageUseCase: Get.find<DeleteMessageUseCase>(),
-      deleteConversationUseCase: Get.find<DeleteConversationUseCase>(),
-    ));
+    Get.lazyPut(
+      () => ChatViewModel(
+        getConversationsUseCase: Get.find<GetConversationsUseCase>(),
+        sendMessageUseCase: Get.find<SendMessageUseCase>(),
+        markConversationAsReadUseCase:
+            Get.find<MarkConversationAsReadUseCase>(),
+        markAllConversationsAsReadUseCase:
+            Get.find<MarkAllConversationsAsReadUseCase>(),
+        deleteMessageUseCase: Get.find<DeleteMessageUseCase>(),
+        deleteConversationUseCase: Get.find<DeleteConversationUseCase>(),
+      ),
+    );
   }
 }
 
 Future<void> initChatDI() async {
   Get.lazyPut(() => ChatRemoteDataSource(SupabaseService()), fenix: true);
-  Get.lazyPut(() => ChatRepositoryImpl(Get.find<ChatRemoteDataSource>()), fenix: true);
-  Get.lazyPut(() => GetConversationsUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
-  Get.lazyPut(() => SendMessageUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
-  Get.lazyPut(() => MarkConversationAsReadUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
-  Get.lazyPut(() => MarkAllConversationsAsReadUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
-  Get.lazyPut(() => DeleteMessageUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
-  Get.lazyPut(() => DeleteConversationUseCase(Get.find<ChatRepositoryImpl>()), fenix: true);
-  Get.lazyPut(() => ChatViewModel(
-    getConversationsUseCase: Get.find<GetConversationsUseCase>(),
-    sendMessageUseCase: Get.find<SendMessageUseCase>(),
-    markConversationAsReadUseCase: Get.find<MarkConversationAsReadUseCase>(),
-    markAllConversationsAsReadUseCase: Get.find<MarkAllConversationsAsReadUseCase>(),
-    deleteMessageUseCase: Get.find<DeleteMessageUseCase>(),
-    deleteConversationUseCase: Get.find<DeleteConversationUseCase>(),
-  ), fenix: true);
+  Get.lazyPut(
+    () => ChatRepositoryImpl(Get.find<ChatRemoteDataSource>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetConversationsUseCase(Get.find<ChatRepositoryImpl>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => SendMessageUseCase(Get.find<ChatRepositoryImpl>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => MarkConversationAsReadUseCase(Get.find<ChatRepositoryImpl>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => MarkAllConversationsAsReadUseCase(Get.find<ChatRepositoryImpl>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => DeleteMessageUseCase(Get.find<ChatRepositoryImpl>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => DeleteConversationUseCase(Get.find<ChatRepositoryImpl>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ChatViewModel(
+      getConversationsUseCase: Get.find<GetConversationsUseCase>(),
+      sendMessageUseCase: Get.find<SendMessageUseCase>(),
+      markConversationAsReadUseCase: Get.find<MarkConversationAsReadUseCase>(),
+      markAllConversationsAsReadUseCase:
+          Get.find<MarkAllConversationsAsReadUseCase>(),
+      deleteMessageUseCase: Get.find<DeleteMessageUseCase>(),
+      deleteConversationUseCase: Get.find<DeleteConversationUseCase>(),
+    ),
+    fenix: true,
+  );
 }

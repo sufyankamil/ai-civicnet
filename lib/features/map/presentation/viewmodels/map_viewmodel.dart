@@ -19,9 +19,9 @@ class MapViewModel extends GetxController {
   final RxString _selectedCategory = 'All'.obs;
   final Rx<DiscoveryMode> _discoveryMode = DiscoveryMode.requests.obs;
   final RxDouble _radiusKm = 5.0.obs;
-  
+
   GoogleMapController? _mapController;
-  
+
   LocationPermission? get permission => _permission.value;
   Position? get currentPosition => _currentPosition.value;
   Set<Marker> get markers => _markers;
@@ -32,7 +32,9 @@ class MapViewModel extends GetxController {
   DiscoveryMode get discoveryMode => _discoveryMode.value;
   double get radiusKm => _radiusKm.value;
 
-  bool get hasPermission => _permission.value == LocationPermission.always || _permission.value == LocationPermission.whileInUse;
+  bool get hasPermission =>
+      _permission.value == LocationPermission.always ||
+      _permission.value == LocationPermission.whileInUse;
 
   @override
   void onInit() {
@@ -46,17 +48,18 @@ class MapViewModel extends GetxController {
   void onMapCreated(GoogleMapController controller) {
     _mapController = controller;
     if (_currentPosition.value != null) {
-      final latLng = LatLng(_currentPosition.value!.latitude, _currentPosition.value!.longitude);
-      _mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(latLng, 14),
+      final latLng = LatLng(
+        _currentPosition.value!.latitude,
+        _currentPosition.value!.longitude,
       );
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(latLng, 14));
       _lastSearchPosition.value = latLng;
     }
   }
 
   void onCameraMove(CameraPosition position) {
     _cameraPosition.value = position.target;
-    
+
     // Show "Search this area" button if moved more than ~500m from last search
     if (_lastSearchPosition.value != null) {
       final distance = _calculateDistance(
@@ -77,9 +80,10 @@ class MapViewModel extends GetxController {
     if (perm == LocationPermission.denied) {
       perm = await Geolocator.requestPermission();
     }
-    
+
     Position? pos;
-    if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+    if (perm == LocationPermission.whileInUse ||
+        perm == LocationPermission.always) {
       try {
         pos = await Geolocator.getCurrentPosition();
       } catch (e) {
@@ -94,11 +98,17 @@ class MapViewModel extends GetxController {
   Future<void> fetchMarkers({bool useCameraCenter = false}) async {
     _isLoading.value = true;
     _showSearchAreaButton.value = false;
-    
+
     try {
       final supabase = SupabaseService();
-      final lat = useCameraCenter ? (_cameraPosition.value?.latitude ?? _currentPosition.value?.latitude) : _currentPosition.value?.latitude;
-      final lng = useCameraCenter ? (_cameraPosition.value?.longitude ?? _currentPosition.value?.longitude) : _currentPosition.value?.longitude;
+      final lat = useCameraCenter
+          ? (_cameraPosition.value?.latitude ??
+                _currentPosition.value?.latitude)
+          : _currentPosition.value?.latitude;
+      final lng = useCameraCenter
+          ? (_cameraPosition.value?.longitude ??
+                _currentPosition.value?.longitude)
+          : _currentPosition.value?.longitude;
 
       if (useCameraCenter && _cameraPosition.value != null) {
         _lastSearchPosition.value = _cameraPosition.value;
@@ -114,18 +124,23 @@ class MapViewModel extends GetxController {
         );
         for (var request in requests) {
           if (request.lat == 0 && request.lng == 0) continue;
-          if (_selectedCategory.value != 'All' && 
-              request.category.toString().split('.').last.toLowerCase() != _selectedCategory.value.toLowerCase()) {
+          if (_selectedCategory.value != 'All' &&
+              request.category.toString().split('.').last.toLowerCase() !=
+                  _selectedCategory.value.toLowerCase()) {
             continue;
           }
-          newMarkers.add(Marker(
-            markerId: MarkerId('request_${request.id}'),
-            position: LatLng(request.lat, request.lng),
-            onTap: () => _selectedItem.value = request,
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              request.urgency.toString().contains('high') ? BitmapDescriptor.hueRed : BitmapDescriptor.hueAzure,
+          newMarkers.add(
+            Marker(
+              markerId: MarkerId('request_${request.id}'),
+              position: LatLng(request.lat, request.lng),
+              onTap: () => _selectedItem.value = request,
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                request.urgency.toString().contains('high')
+                    ? BitmapDescriptor.hueRed
+                    : BitmapDescriptor.hueAzure,
+              ),
             ),
-          ));
+          );
         }
       } else if (_discoveryMode.value == DiscoveryMode.assets) {
         final assets = await supabase.getCommunityAssets(
@@ -136,12 +151,16 @@ class MapViewModel extends GetxController {
         );
         for (var asset in assets) {
           if (asset.lat == null || asset.lng == null) continue;
-          newMarkers.add(Marker(
-            markerId: MarkerId('asset_${asset.id}'),
-            position: LatLng(asset.lat!, asset.lng!),
-            onTap: () => _selectedItem.value = asset,
-            icon: BitmapDescriptor.defaultMarkerWithHue(10) // Custom hue for Assets (orange-ish)
-          ));
+          newMarkers.add(
+            Marker(
+              markerId: MarkerId('asset_${asset.id}'),
+              position: LatLng(asset.lat!, asset.lng!),
+              onTap: () => _selectedItem.value = asset,
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                10,
+              ), // Custom hue for Assets (orange-ish)
+            ),
+          );
         }
       } else if (_discoveryMode.value == DiscoveryMode.neighbors) {
         final neighbors = await supabase.getActiveNeighbors(
@@ -152,15 +171,19 @@ class MapViewModel extends GetxController {
         for (var neighbor in neighbors) {
           if (neighbor.lat == null || neighbor.lng == null) continue;
           if (neighbor.id == supabase.currentUserId) continue;
-          newMarkers.add(Marker(
-            markerId: MarkerId('neighbor_${neighbor.id}'),
-            position: LatLng(neighbor.lat!, neighbor.lng!),
-            onTap: () => _selectedItem.value = neighbor,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          ));
+          newMarkers.add(
+            Marker(
+              markerId: MarkerId('neighbor_${neighbor.id}'),
+              position: LatLng(neighbor.lat!, neighbor.lng!),
+              onTap: () => _selectedItem.value = neighbor,
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueGreen,
+              ),
+            ),
+          );
         }
       }
-      
+
       _markers.assignAll(newMarkers);
     } catch (e) {
       logger.e('Error fetching map markers: $e');
@@ -186,9 +209,16 @@ class MapViewModel extends GetxController {
   }
 
   // Haversine helper for local distance checks
-  double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+  double _calculateDistance(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const p = 0.017453292519943295;
-    final a = 0.5 - cos((lat2 - lat1) * p) / 2 +
+    final a =
+        0.5 -
+        cos((lat2 - lat1) * p) / 2 +
         cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lng2 - lng1) * p)) / 2;
     return 12742 * asin(sqrt(a));
   }
@@ -207,7 +237,10 @@ class MapViewModel extends GetxController {
     if (_currentPosition.value != null && _mapController != null) {
       _mapController?.animateCamera(
         CameraUpdate.newLatLngZoom(
-          LatLng(_currentPosition.value!.latitude, _currentPosition.value!.longitude),
+          LatLng(
+            _currentPosition.value!.latitude,
+            _currentPosition.value!.longitude,
+          ),
           15,
         ),
       );

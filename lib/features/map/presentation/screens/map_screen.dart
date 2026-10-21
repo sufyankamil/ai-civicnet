@@ -43,12 +43,12 @@ class MapScreen extends StatelessWidget {
                     onTap: (_) => viewModel.deselect(),
                   )
                 : _buildNoPermissionView(viewModel, context),
-            
+
             if (viewModel.isLoading)
               const Center(child: CircularProgressIndicator()),
-            
+
             // --- TOP OVERLAYS ---
-            
+
             // Search & Filter Header
             Positioned(
               top: 50,
@@ -81,20 +81,38 @@ class MapScreen extends StatelessWidget {
                   child: AppHaptic(
                     onTap: viewModel.searchThisArea,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryLight,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                          Icon(
+                            Icons.refresh_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
-                          Text('Search this area', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                          Text(
+                            'Search this area',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -114,7 +132,10 @@ class MapScreen extends StatelessWidget {
               child: FloatingActionButton.small(
                 onPressed: viewModel.recenter,
                 backgroundColor: Theme.of(context).cardColor,
-                child: const Icon(Icons.my_location, color: AppColors.primaryLight),
+                child: const Icon(
+                  Icons.my_location,
+                  color: AppColors.primaryLight,
+                ),
               ),
             ),
           ],
@@ -133,13 +154,17 @@ class MapScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.location_off, color: isDark ? Colors.white38 : Colors.grey, size: 48),
+            Icon(
+              Icons.location_off,
+              color: isDark ? Colors.white38 : Colors.grey,
+              size: 48,
+            ),
             const SizedBox(height: 16),
             Text(
               'Location permission not given',
               style: TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold, 
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white60 : Colors.grey[700],
               ),
             ),
@@ -163,7 +188,7 @@ class MapScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1), 
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -171,18 +196,25 @@ class MapScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(
+            Icons.search,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Search area...', 
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7)),
+              'Search area...',
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
             ),
           ),
           VerticalDivider(
-            width: 20, 
-            indent: 12, 
-            endIndent: 12, 
+            width: 20,
+            indent: 12,
+            endIndent: 12,
             color: Theme.of(context).dividerColor,
           ),
           const Icon(Icons.tune_rounded, color: AppColors.primaryLight),
@@ -199,20 +231,33 @@ class MapScreen extends StatelessWidget {
         color: Theme.of(context).cardColor.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Row(
         children: [
           _buildModeTab(context, 'Help', DiscoveryMode.requests, viewModel),
           _buildModeTab(context, 'Tools', DiscoveryMode.assets, viewModel),
-          _buildModeTab(context, 'Neighbors', DiscoveryMode.neighbors, viewModel),
+          _buildModeTab(
+            context,
+            'Neighbors',
+            DiscoveryMode.neighbors,
+            viewModel,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildModeTab(BuildContext context, String label, DiscoveryMode mode, MapViewModel viewModel) {
+  Widget _buildModeTab(
+    BuildContext context,
+    String label,
+    DiscoveryMode mode,
+    MapViewModel viewModel,
+  ) {
     final isSelected = viewModel.discoveryMode == mode;
     return Expanded(
       child: AppHaptic(
@@ -284,18 +329,33 @@ class MapScreen extends StatelessWidget {
         padding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: isSelected ? AppColors.primaryLight : Colors.transparent),
+          side: BorderSide(
+            color: isSelected ? AppColors.primaryLight : Colors.transparent,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCategoryFilters(MapViewModel viewModel, BuildContext context) {
-    final requestCategories = ['All', 'Emergency', 'TechSupport', 'Household', 'Neighbors'];
-    final assetCategories = ['All', 'Tools', 'Garden', 'Transport', 'Electronics', 'Household'];
-    
-    final categories = viewModel.discoveryMode == DiscoveryMode.requests 
-        ? requestCategories 
+    final requestCategories = [
+      'All',
+      'Emergency',
+      'TechSupport',
+      'Household',
+      'Neighbors',
+    ];
+    final assetCategories = [
+      'All',
+      'Tools',
+      'Garden',
+      'Transport',
+      'Electronics',
+      'Household',
+    ];
+
+    final categories = viewModel.discoveryMode == DiscoveryMode.requests
+        ? requestCategories
         : assetCategories;
 
     return SizedBox(
@@ -315,7 +375,9 @@ class MapScreen extends StatelessWidget {
             selectedColor: AppColors.primaryLight,
             backgroundColor: Colors.white.withValues(alpha: 0.8),
             labelStyle: TextStyle(
-              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+              color: isSelected
+                  ? Colors.white
+                  : Theme.of(context).colorScheme.onSurface,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               fontSize: 12,
             ),
@@ -338,30 +400,42 @@ class MapScreen extends StatelessWidget {
       bottom: item != null ? 124 : -200,
       left: 16,
       right: 16,
-      child: item == null ? const SizedBox() : _buildPreviewCard(context, item, viewModel),
+      child: item == null
+          ? const SizedBox()
+          : _buildPreviewCard(context, item, viewModel),
     );
   }
 
-  Widget _buildPreviewCard(BuildContext context, dynamic item, MapViewModel viewModel) {
+  Widget _buildPreviewCard(
+    BuildContext context,
+    dynamic item,
+    MapViewModel viewModel,
+  ) {
     final bool isRequest = item is HelpRequest;
     final bool isAsset = item is CommunityAsset;
-    
-    final String title = isRequest 
-        ? item.title 
+
+    final String title = isRequest
+        ? item.title
         : (isAsset ? item.title : (item as profile.User).name);
-        
-    final String subtitle = isRequest 
+
+    final String subtitle = isRequest
         ? '${item.category.toString().split('.').last} • ${item.urgency.toString().split('.').last}'
-        : (isAsset 
-            ? '${item.category.name} • Owned by ${item.ownerName ?? 'a neighbor'}'
-            : 'Active Community Member');
+        : (isAsset
+              ? '${item.category.name} • Owned by ${item.ownerName ?? 'a neighbor'}'
+              : 'Active Community Member');
 
-    final IconData icon = isRequest 
-        ? (item.urgency.toString().contains('high') ? Icons.warning_rounded : Icons.help_rounded)
-        : (isAsset ? Icons.inventory_2_rounded : Icons.person_pin_circle_rounded);
+    final IconData icon = isRequest
+        ? (item.urgency.toString().contains('high')
+              ? Icons.warning_rounded
+              : Icons.help_rounded)
+        : (isAsset
+              ? Icons.inventory_2_rounded
+              : Icons.person_pin_circle_rounded);
 
-    final Color color = isRequest 
-        ? (item.urgency.toString().contains('high') ? AppColors.accentLight : AppColors.primaryLight)
+    final Color color = isRequest
+        ? (item.urgency.toString().contains('high')
+              ? AppColors.accentLight
+              : AppColors.primaryLight)
         : (isAsset ? Colors.deepPurple : Colors.green);
 
     return Container(
@@ -370,7 +444,11 @@ class MapScreen extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -392,8 +470,19 @@ class MapScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
                   ],
                 ),
               ),
@@ -412,12 +501,16 @@ class MapScreen extends StatelessWidget {
                   context.push('/request/${item.id}');
                 } else if (isAsset) {
                   // In a real app, open asset detail. For now, show context
-                  context.push('/chat/${item.ownerId}'); 
+                  context.push('/chat/${item.ownerId}');
                 } else {
                   context.push('/profile/${item.id}');
                 }
               },
-              child: Text(isRequest ? 'View Request' : (isAsset ? 'Contact Owner' : 'View Profile')),
+              child: Text(
+                isRequest
+                    ? 'View Request'
+                    : (isAsset ? 'Contact Owner' : 'View Profile'),
+              ),
             ),
           ),
         ],
@@ -532,8 +625,8 @@ class MapScreen extends StatelessWidget {
     ''';
 
   String? _getMapStyle(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark 
-        ? _darkMapStyleJson 
+    return Theme.of(context).brightness == Brightness.dark
+        ? _darkMapStyleJson
         : _mapStyleJson;
   }
 }

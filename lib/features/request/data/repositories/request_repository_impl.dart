@@ -27,16 +27,23 @@ class RequestRepositoryImpl implements RequestRepository {
     try {
       final remoteData = await remoteDataSource.getRawHelpRequests();
       await CacheService().put('help_requests_v2', remoteData);
-      
-      List<HelpRequestEntity> requests = await compute(parseHelpRequestsList, remoteData);
+
+      List<HelpRequestEntity> requests = await compute(
+        parseHelpRequestsList,
+        remoteData,
+      );
       requests = await _calculateDistances(requests);
       return Right(requests);
     } on ServerException catch (e) {
       try {
-        final cachedData = await CacheService().get('help_requests_v2') ??
+        final cachedData =
+            await CacheService().get('help_requests_v2') ??
             await CacheService().get('help_requests');
         if (cachedData != null) {
-          List<HelpRequestEntity> requests = await compute(parseHelpRequestsList, cachedData as List<dynamic>);
+          List<HelpRequestEntity> requests = await compute(
+            parseHelpRequestsList,
+            cachedData as List<dynamic>,
+          );
           requests = await _calculateDistances(requests);
           return Right(requests);
         }
@@ -45,7 +52,9 @@ class RequestRepositoryImpl implements RequestRepository {
       return const Left(ServerFailure('Failed to load help requests.'));
     } catch (e) {
       logger.e('Error in getHelpRequests: $e');
-      return const Left(ServerFailure('An unexpected error occurred while loading requests.'));
+      return const Left(
+        ServerFailure('An unexpected error occurred while loading requests.'),
+      );
     }
   }
 
@@ -54,16 +63,23 @@ class RequestRepositoryImpl implements RequestRepository {
     try {
       final user = await SupabaseService().getCurrentUserProfile();
       if (user == null) return const Left(ServerFailure('User not logged in'));
-      
+
       final remoteData = await remoteDataSource.getMyRawHelpRequests(user.id);
-      List<HelpRequestEntity> requests = await compute(parseHelpRequestsList, remoteData);
+      List<HelpRequestEntity> requests = await compute(
+        parseHelpRequestsList,
+        remoteData,
+      );
       return Right(requests);
     } on ServerException catch (e) {
       logger.e('Server exception in getMyHelpRequests: ${e.message}');
       return const Left(ServerFailure('Failed to load your requests.'));
     } catch (e) {
       logger.e('Error in getMyHelpRequests: $e');
-      return const Left(ServerFailure('An unexpected error occurred while loading your requests.'));
+      return const Left(
+        ServerFailure(
+          'An unexpected error occurred while loading your requests.',
+        ),
+      );
     }
   }
 
@@ -72,7 +88,7 @@ class RequestRepositoryImpl implements RequestRepository {
     try {
       final remoteData = await remoteDataSource.getRawHelpRequest(id);
       await CacheService().put('help_request_$id', remoteData);
-      
+
       return Right(HelpRequestModel.fromJson(remoteData));
     } on ServerException catch (e) {
       try {
@@ -85,12 +101,18 @@ class RequestRepositoryImpl implements RequestRepository {
       return const Left(ServerFailure('Failed to load the request details.'));
     } catch (e) {
       logger.e('Error in getHelpRequest: $e');
-      return const Left(ServerFailure('An unexpected error occurred while loading the request.'));
+      return const Left(
+        ServerFailure(
+          'An unexpected error occurred while loading the request.',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> createHelpRequest(HelpRequestEntity request) async {
+  Future<Either<Failure, void>> createHelpRequest(
+    HelpRequestEntity request,
+  ) async {
     try {
       final model = HelpRequestModel(
         id: request.id,
@@ -113,24 +135,39 @@ class RequestRepositoryImpl implements RequestRepository {
       return const Right(null);
     } on ServerException catch (e) {
       logger.e('Server exception in createHelpRequest: ${e.message}');
-      return const Left(ServerFailure('Failed to create request. Please try again.'));
+      return const Left(
+        ServerFailure('Failed to create request. Please try again.'),
+      );
     } catch (e) {
       logger.e('Error in createHelpRequest: $e');
-      return const Left(ServerFailure('An unexpected error occurred while creating the request.'));
+      return const Left(
+        ServerFailure(
+          'An unexpected error occurred while creating the request.',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> updateHelpRequestStatus(String requestId, RequestStatusEnum status) async {
+  Future<Either<Failure, void>> updateHelpRequestStatus(
+    String requestId,
+    RequestStatusEnum status,
+  ) async {
     try {
       await remoteDataSource.updateHelpRequestStatus(requestId, status);
       return const Right(null);
     } on ServerException catch (e) {
       logger.e('Server exception in updateHelpRequestStatus: ${e.message}');
-      return const Left(ServerFailure('Failed to update request status. Please try again.'));
+      return const Left(
+        ServerFailure('Failed to update request status. Please try again.'),
+      );
     } catch (e) {
       logger.e('Error in updateHelpRequestStatus: $e');
-      return const Left(ServerFailure('An unexpected error occurred while updating the status.'));
+      return const Left(
+        ServerFailure(
+          'An unexpected error occurred while updating the status.',
+        ),
+      );
     }
   }
 
@@ -138,18 +175,24 @@ class RequestRepositoryImpl implements RequestRepository {
   Future<Either<Failure, void>> deleteHelpRequest(String requestId) async {
     try {
       await remoteDataSource.deleteHelpRequest(requestId);
-      
+
       // Invalidate caches to ensure the UI shows updated data
       await CacheService().delete('help_requests');
       await CacheService().delete('help_request_$requestId');
-      
+
       return const Right(null);
     } on ServerException catch (e) {
       logger.e('Server exception in deleteHelpRequest: ${e.message}');
-      return const Left(ServerFailure('Failed to delete request. Please try again.'));
+      return const Left(
+        ServerFailure('Failed to delete request. Please try again.'),
+      );
     } catch (e) {
       logger.e('Error in deleteHelpRequest: $e');
-      return const Left(ServerFailure('An unexpected error occurred while deleting the request.'));
+      return const Left(
+        ServerFailure(
+          'An unexpected error occurred while deleting the request.',
+        ),
+      );
     }
   }
 
@@ -163,23 +206,33 @@ class RequestRepositoryImpl implements RequestRepository {
     remoteDataSource.unsubscribeFromHelpRequests();
   }
 
-  Future<List<HelpRequestEntity>> _calculateDistances(List<HelpRequestEntity> requests) async {
+  Future<List<HelpRequestEntity>> _calculateDistances(
+    List<HelpRequestEntity> requests,
+  ) async {
     try {
       // Temporarily use SupabaseService for location distance until profile feature refactoring
-      final currentUserProfile = await SupabaseService().getCurrentUserProfile();
-      
-      if (currentUserProfile != null && currentUserProfile.lat != null && currentUserProfile.lng != null && 
-          currentUserProfile.lat != 0 && currentUserProfile.lng != 0) {
-        
+      final currentUserProfile = await SupabaseService()
+          .getCurrentUserProfile();
+
+      if (currentUserProfile != null &&
+          currentUserProfile.lat != null &&
+          currentUserProfile.lng != null &&
+          currentUserProfile.lat != 0 &&
+          currentUserProfile.lng != 0) {
         return requests.map((r) {
           if (r.lat != 0 && r.lng != 0) {
-            double distKm = _calculateDistance(r.lat, r.lng, currentUserProfile.lat!, currentUserProfile.lng!);
+            double distKm = _calculateDistance(
+              r.lat,
+              r.lng,
+              currentUserProfile.lat!,
+              currentUserProfile.lng!,
+            );
             return r.copyWith(distance: '${distKm.toStringAsFixed(1)} km');
           }
           return r.copyWith(distance: 'Unknown');
         }).toList();
       } else {
-         return requests.map((r) => r.copyWith(distance: 'Unknown')).toList();
+        return requests.map((r) => r.copyWith(distance: 'Unknown')).toList();
       }
     } catch (e) {
       logger.e('Failed to calc distances: $e');
@@ -187,11 +240,17 @@ class RequestRepositoryImpl implements RequestRepository {
     }
   }
 
-  double _calculateDistance(double lat1, double lng1, double lat2, double lng2) {
+  double _calculateDistance(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
     const toRad = 0.017453292519943295; // pi / 180
     final dLat = (lat2 - lat1) * toRad;
     final dLng = (lng2 - lng1) * toRad;
-    final a = sin(dLat / 2) * sin(dLat / 2) +
+    final a =
+        sin(dLat / 2) * sin(dLat / 2) +
         cos(lat1 * toRad) * cos(lat2 * toRad) * sin(dLng / 2) * sin(dLng / 2);
     final clampedA = a > 1.0 ? 1.0 : a;
     return 6371.0 * 2 * asin(sqrt(clampedA)); // Earth radius 6371 km

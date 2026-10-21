@@ -7,7 +7,7 @@ class VpnService {
   VpnService._internal();
 
   final _detector = VpnConnectionDetector();
-  
+
   /// Check if VPN is currently active
   Future<bool> isVpnActive() async {
     try {

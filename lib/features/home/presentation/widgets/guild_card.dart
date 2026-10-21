@@ -9,11 +9,7 @@ class GuildCard extends StatelessWidget {
   final Guild guild;
   final VoidCallback onToggleJoin;
 
-  const GuildCard({
-    super.key,
-    required this.guild,
-    required this.onToggleJoin,
-  });
+  const GuildCard({super.key, required this.guild, required this.onToggleJoin});
 
   @override
   Widget build(BuildContext context) {
@@ -50,17 +46,27 @@ class GuildCard extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 22,
                         backgroundColor: Colors.white,
-                        backgroundImage: guild.avatarUrl != null ? NetworkImage(guild.avatarUrl!) : null,
-                        child: guild.avatarUrl == null 
-                          ? const Icon(Icons.groups_rounded, color: AppColors.primaryLight, size: 20) 
-                          : null,
+                        backgroundImage: guild.avatarUrl != null
+                            ? NetworkImage(guild.avatarUrl!)
+                            : null,
+                        child: guild.avatarUrl == null
+                            ? const Icon(
+                                Icons.groups_rounded,
+                                color: AppColors.primaryLight,
+                                size: 20,
+                              )
+                            : null,
                       ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                        color: (isDark ? Colors.white : Colors.black)
+                            .withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -88,7 +94,8 @@ class GuildCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  guild.description ?? AppLocalizations.of(context)!.noDescription,
+                  guild.description ??
+                      AppLocalizations.of(context)!.noDescription,
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.grey[500],
@@ -103,10 +110,16 @@ class GuildCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.person_outline_rounded, size: 14, color: AppColors.primaryLight),
+                        const Icon(
+                          Icons.person_outline_rounded,
+                          size: 14,
+                          color: AppColors.primaryLight,
+                        ),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context)!.membersCount(guild.memberCount),
+                          AppLocalizations.of(
+                            context,
+                          )!.membersCount(guild.memberCount),
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -118,26 +131,38 @@ class GuildCard extends StatelessWidget {
                     AppHaptic(
                       onTap: onToggleJoin,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: guild.isUserMember 
-                            ? (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05)
-                            : AppColors.primaryLight,
+                          color: guild.isUserMember
+                              ? (isDark ? Colors.white : Colors.black)
+                                    .withValues(alpha: 0.05)
+                              : AppColors.primaryLight,
                           borderRadius: BorderRadius.circular(14),
-                          boxShadow: guild.isUserMember ? null : [
-                            BoxShadow(
-                              color: AppColors.primaryLight.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
+                          boxShadow: guild.isUserMember
+                              ? null
+                              : [
+                                  BoxShadow(
+                                    color: AppColors.primaryLight.withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                         ),
                         child: Text(
-                          guild.isUserMember ? AppLocalizations.of(context)!.joined : AppLocalizations.of(context)!.join,
+                          guild.isUserMember
+                              ? AppLocalizations.of(context)!.joined
+                              : AppLocalizations.of(context)!.join,
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
-                            color: guild.isUserMember ? Colors.grey[500] : Colors.white,
+                            color: guild.isUserMember
+                                ? Colors.grey[500]
+                                : Colors.white,
                           ),
                         ),
                       ),

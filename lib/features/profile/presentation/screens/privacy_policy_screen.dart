@@ -9,14 +9,22 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Privacy Policy', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Privacy Policy',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(16, 16, 16, MediaQuery.of(context).padding.bottom + 32),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          MediaQuery.of(context).padding.bottom + 32,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -63,24 +71,41 @@ class PrivacyPolicyScreen extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                   color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.open_in_browser_rounded, color: Theme.of(context).primaryColor),
+                    Icon(
+                      Icons.open_in_browser_rounded,
+                      color: Theme.of(context).primaryColor,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('View Full Policy Online',
-                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                          Text('privacypolicy-ruddy.vercel.app',
-                              style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(
+                            'View Full Policy Online',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            'privacypolicy-ruddy.vercel.app',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
                         ],
                       ),
                     ),
@@ -108,7 +133,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             content,
-            style: TextStyle(fontSize: 14, height: 1.5, color: Theme.of(context).brightness == Brightness.dark ? Colors.grey[300] : Colors.grey[800]),
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey[300]
+                  : Colors.grey[800],
+            ),
           ),
         ],
       ),

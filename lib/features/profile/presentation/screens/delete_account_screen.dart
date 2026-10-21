@@ -43,7 +43,9 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
     try {
       // Queue the toast BEFORE deletion — auth redirect fires immediately on signOut,
       // so we store it in a singleton and display it on the next screen.
-      PendingToastService().setSuccess('Your account has been deleted successfully.');
+      PendingToastService().setSuccess(
+        'Your account has been deleted successfully.',
+      );
 
       await SupabaseService().deleteUserAccount();
       // GoRouter's refreshListenable now redirects to /onboarding automatically.
@@ -102,7 +104,10 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Delete Account', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Delete Account',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -112,7 +117,11 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 64),
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.redAccent,
+                size: 64,
+              ),
               const SizedBox(height: 16),
               Text(
                 'We hate to see you go',
@@ -128,13 +137,17 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 style: TextStyle(fontSize: 14, color: Colors.grey[700]),
               ),
               const SizedBox(height: 24),
-              
+
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Theme.of(context).primaryColor.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,17 +167,19 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                       icon: const Icon(Icons.mail_outline, size: 18),
                       label: const Text('Contact Support'),
                       style: OutlinedButton.styleFrom(
-                         foregroundColor: Theme.of(context).primaryColor,
-                         side: BorderSide(color: Theme.of(context).primaryColor),
-                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        foregroundColor: Theme.of(context).primaryColor,
+                        side: BorderSide(color: Theme.of(context).primaryColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               Text(
                 'To verify your request, please type "DELETE" below:',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
@@ -175,52 +190,72 @@ class _DeleteAccountScreenState extends State<DeleteAccountScreen> {
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.deleteAccountConfirm,
                   filled: true,
-                  fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade100,
+                  fillColor: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade100,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.redAccent, width: 2),
+                    borderSide: const BorderSide(
+                      color: Colors.redAccent,
+                      width: 2,
+                    ),
                   ),
                 ),
                 textCapitalization: TextCapitalization.characters,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isConfirmed && !_isLoading ? _handleDeleteAccount : null,
+                  onPressed: _isConfirmed && !_isLoading
+                      ? _handleDeleteAccount
+                      : null,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: Colors.redAccent,
-                    disabledBackgroundColor: Colors.redAccent.withValues(alpha: 0.3),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    disabledBackgroundColor: Colors.redAccent.withValues(
+                      alpha: 0.3,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: _isLoading 
+                  child: _isLoading
                       ? const SizedBox(
-                          height: 20, 
-                          width: 20, 
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Text(
                           'Permanently Delete Account',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               Center(
                 child: TextButton(
                   onPressed: () => context.pop(),
                   child: Text(
                     'Cancel & Go Back',
-                    style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

@@ -6,11 +6,11 @@ import '../../../services/bug_report_service.dart';
 
 class SupportViewModel extends GetxController {
   final SupabaseService _supabase = SupabaseService();
-  
+
   final RxString conversationId = ''.obs;
   final RxList<SupportMessage> messages = <SupportMessage>[].obs;
   final RxBool isLoading = false.obs;
-  
+
   // Decision tree state
   final RxString currentNode = 'root'.obs;
   final RxBool isTyping = false.obs;
@@ -21,20 +21,45 @@ class SupportViewModel extends GetxController {
 
   final Map<String, Map<String, dynamic>> _decisionTree = {
     'root': {
-      'message': 'Hello!\nThank you for connecting to chat support! How can I help you today?',
-      'options': ['Account Issues', 'Technical Problem', 'Feedback', 'Other', 'Exit'],
+      'message':
+          'Hello!\nThank you for connecting to chat support! How can I help you today?',
+      'options': [
+        'Account Issues',
+        'Technical Problem',
+        'Feedback',
+        'Other',
+        'Exit',
+      ],
     },
     'Account Issues': {
       'message': 'What kind of account issue are you having?',
-      'options': ['Forgot Password', 'Change Email', 'Delete Account', 'Back', 'Exit'],
+      'options': [
+        'Forgot Password',
+        'Change Email',
+        'Delete Account',
+        'Back',
+        'Exit',
+      ],
     },
     'Technical Problem': {
       'message': 'I\'m sorry to hear that. Could you specify?',
-      'options': ['App Crashing', 'Slow Performance', 'Feature Not Working', 'Back', 'Exit'],
+      'options': [
+        'App Crashing',
+        'Slow Performance',
+        'Feature Not Working',
+        'Back',
+        'Exit',
+      ],
     },
     'Feedback': {
       'message': 'We love hearing from you! What would you like to share?',
-      'options': ['New Feature Suggestion', 'Bug Report', 'General Praise', 'Back', 'Exit'],
+      'options': [
+        'New Feature Suggestion',
+        'Bug Report',
+        'General Praise',
+        'Back',
+        'Exit',
+      ],
     },
     'Other': {
       'message': 'Please tell us more about your issue.',
@@ -42,39 +67,45 @@ class SupportViewModel extends GetxController {
       'requiresInput': true,
     },
     'New Feature Suggestion': {
-      'message': 'Great! We love hearing new ideas. What feature would you like to see?',
+      'message':
+          'Great! We love hearing new ideas. What feature would you like to see?',
       'options': ['Back', 'Exit'],
       'requiresInput': true,
     },
     'Bug Report': {
-      'message': 'I\'m sorry you encountered a bug. Please describe it in detail.',
+      'message':
+          'I\'m sorry you encountered a bug. Please describe it in detail.',
       'options': ['Back', 'Exit'],
       'requiresInput': true,
     },
     'General Praise': {
-      'message': 'Thank you! We love hearing positive feedback. What did you enjoy?',
+      'message':
+          'Thank you! We love hearing positive feedback. What did you enjoy?',
       'options': ['Back', 'Exit'],
       'requiresInput': true,
     },
     'Feature Not Working': {
-      'message': 'I\'m sorry to hear that. Which feature is giving you trouble?',
+      'message':
+          'I\'m sorry to hear that. Which feature is giving you trouble?',
       'options': ['Back', 'Exit'],
       'requiresInput': true,
     },
     'Forgot Password': {
-      'message': 'You can reset your password from the login screen using the "Forgot Password" link.',
+      'message':
+          'You can reset your password from the login screen using the "Forgot Password" link.',
       'options': ['Back', 'Exit'],
     },
     'Change Email': {
-      'message': 'Currently, you need to contact an admin to change your email. Would you like to proceed with a ticket?',
+      'message':
+          'Currently, you need to contact an admin to change your email. Would you like to proceed with a ticket?',
       'options': ['Yes, proceed', 'Back'],
     },
     'Delete Account': {
-      'message': 'You can delete your account from Profile Settings. Warning: This action is permanent.',
+      'message':
+          'You can delete your account from Profile Settings. Warning: This action is permanent.',
       'options': ['Back', 'Exit'],
     },
   };
-
 
   Future<void> startNewSession() async {
     logger.i('Starting new support session...');
@@ -85,23 +116,31 @@ class SupportViewModel extends GetxController {
     isFeedbackState.value = false;
     isSessionFinished.value = false;
     conversationId.value = '';
-    
+
     isLoading.value = true;
     errorMessage.value = '';
     try {
       final id = await _supabase.createSupportConversation();
       logger.i('Conversation created with ID: $id');
       conversationId.value = id;
-      
+
       // Listen to messages
       logger.i('Subscribing to messages stream...');
-      _supabase.getSupportMessagesStream(id).listen((newMessages) {
-        logger.i('Stream update: ${newMessages.length} messages received');
-        messages.value = newMessages;
-      }, onError: (err) {
-        logger.e('Stream error: $err');
-        errorMessage.value = 'Real-time connection failed. Please ensure tables exist.';
-      });
+      _supabase
+          .getSupportMessagesStream(id)
+          .listen(
+            (newMessages) {
+              logger.i(
+                'Stream update: ${newMessages.length} messages received',
+              );
+              messages.value = newMessages;
+            },
+            onError: (err) {
+              logger.e('Stream error: $err');
+              errorMessage.value =
+                  'Real-time connection failed. Please ensure tables exist.';
+            },
+          );
 
       // Send initial greeting
       await Future.delayed(const Duration(milliseconds: 800));
@@ -110,7 +149,8 @@ class SupportViewModel extends GetxController {
       logger.i('Initial greeting sent.');
     } catch (e) {
       logger.e('Error starting support session: $e');
-      errorMessage.value = 'Could not start chat. Please ensure the support tables exist in Supabase and you have run the updated SQL script.';
+      errorMessage.value =
+          'Could not start chat. Please ensure the support tables exist in Supabase and you have run the updated SQL script.';
     } finally {
       isLoading.value = false;
     }
@@ -118,7 +158,7 @@ class SupportViewModel extends GetxController {
 
   Future<void> selectOption(String option) async {
     isWaitingForInput.value = false;
-    
+
     if (option == 'Back') {
       // Simple back logic (to root for now, or keep a stack)
       currentNode.value = 'root';
@@ -163,9 +203,9 @@ class SupportViewModel extends GetxController {
 
   Future<void> sendFreeTextMessage(String text) async {
     if (text.trim().isEmpty) return;
-    
+
     isWaitingForInput.value = false;
-    
+
     Map<String, dynamic>? metadata;
     if (currentNode.value == 'Bug Report') {
       // Show immediate feedback to user
@@ -173,12 +213,12 @@ class SupportViewModel extends GetxController {
         "Hang on a second, I'm gathering technical details for your report...",
         options: [],
       );
-      
+
       metadata = await BugReportService().collectMetadata();
     }
-    
+
     await _sendUserMessage(text, metadata: metadata);
-    
+
     // After text input, usually a generic acknowledgment or further questions
     await _sendBotMessageContent(
       "Thank you for sharing that with us! I've recorded your message. Is there anything else you'd like to discuss?",
@@ -189,7 +229,7 @@ class SupportViewModel extends GetxController {
   Future<void> prepareFeedbackSession() async {
     isWaitingForInput.value = true;
     isFeedbackState.value = true;
-    
+
     // Send a bot message asking for feedback
     await _sendBotMessageContent(
       "Thank you for reaching out to CivicNet Support! Before you go, we'd love to hear about your experience. How was your interaction today?",
@@ -199,17 +239,20 @@ class SupportViewModel extends GetxController {
 
   Future<void> submitExitFeedback(String feedback) async {
     if (feedback.trim().isEmpty) return;
-    
+
     isLoading.value = true;
     try {
       if (conversationId.isNotEmpty) {
         await _supabase.updateSupportFeedback(conversationId.value, feedback);
         await _sendUserMessage("Feedback provided: $feedback");
-        await _sendBotMessageContent("Thank you for your valuable feedback! It helps us improve our support experience. Have a great day!", options: []);
-        
+        await _sendBotMessageContent(
+          "Thank you for your valuable feedback! It helps us improve our support experience. Have a great day!",
+          options: [],
+        );
+
         // Final close
         await closeSession();
-        
+
         // Signal UI to redirect after a delay
         isSessionFinished.value = true;
       }
@@ -232,7 +275,10 @@ class SupportViewModel extends GetxController {
     _sendBotMessage('root');
   }
 
-  Future<void> _sendUserMessage(String content, {Map<String, dynamic>? metadata}) async {
+  Future<void> _sendUserMessage(
+    String content, {
+    Map<String, dynamic>? metadata,
+  }) async {
     final msg = SupportMessage(
       id: '', // Generated by DB
       conversationId: conversationId.value,
@@ -263,7 +309,10 @@ class SupportViewModel extends GetxController {
     isTyping.value = false;
   }
 
-  Future<void> _sendBotMessageContent(String content, {List<String>? options}) async {
+  Future<void> _sendBotMessageContent(
+    String content, {
+    List<String>? options,
+  }) async {
     isTyping.value = true;
     await Future.delayed(const Duration(seconds: 1));
 

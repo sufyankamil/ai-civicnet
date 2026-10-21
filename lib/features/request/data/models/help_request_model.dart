@@ -23,13 +23,16 @@ class HelpRequestModel extends HelpRequestEntity {
 
   factory HelpRequestModel.fromJson(Map<String, dynamic> json) {
     var profileData = json['profiles'];
-    final Map<String, dynamic> profile = (profileData is List && profileData.isNotEmpty) 
-        ? profileData.first 
+    final Map<String, dynamic> profile =
+        (profileData is List && profileData.isNotEmpty)
+        ? profileData.first
         : (profileData is Map<String, dynamic> ? profileData : {});
 
     String rawAvatar =
         json['requester_avatar_url'] ?? profile['avatar_url'] ?? '';
-    String avatarUrl = rawAvatar.contains('?t=') ? rawAvatar.split('?t=').first : rawAvatar;
+    String avatarUrl = rawAvatar.contains('?t=')
+        ? rawAvatar.split('?t=').first
+        : rawAvatar;
 
     return HelpRequestModel(
       id: json['id'].toString(),
@@ -47,8 +50,9 @@ class HelpRequestModel extends HelpRequestEntity {
         orElse: () => UrgencyLevel.medium,
       ),
       postedAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
-      distance: 'Unknown', 
-      aiRelevanceScore: (json['ai_score'] ?? json['similarity'] ?? 0.0).toDouble(),
+      distance: 'Unknown',
+      aiRelevanceScore: (json['ai_score'] ?? json['similarity'] ?? 0.0)
+          .toDouble(),
       locationName: json['location_name'] ?? 'Unknown Location',
       lat: (json['lat'] ?? 0).toDouble(),
       lng: (json['lng'] ?? 0).toDouble(),

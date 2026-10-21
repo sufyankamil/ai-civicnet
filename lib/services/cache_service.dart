@@ -27,7 +27,9 @@ class CacheService {
         'ttl': ttl?.inMilliseconds,
       };
       await _box.put(key, entry);
-      logger.d('Cache entry saved for key: $key${ttl != null ? ' (TTL: ${ttl.inMinutes} mins)' : ''}');
+      logger.d(
+        'Cache entry saved for key: $key${ttl != null ? ' (TTL: ${ttl.inMinutes} mins)' : ''}',
+      );
     } catch (e) {
       logger.e('Failed to cache data for key: $key', error: e);
     }
@@ -57,7 +59,7 @@ class CacheService {
 
   bool _isExpired(dynamic entry) {
     if (entry['ttl'] == null) return false;
-    
+
     final timestamp = DateTime.parse(entry['timestamp']);
     final ttl = Duration(milliseconds: entry['ttl']);
     return DateTime.now().difference(timestamp) > ttl;

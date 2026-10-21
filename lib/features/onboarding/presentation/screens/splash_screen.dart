@@ -7,10 +7,10 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = Theme.of(context).primaryColor != Colors.blue 
-        ? Theme.of(context).primaryColor 
+    final baseColor = Theme.of(context).primaryColor != Colors.blue
+        ? Theme.of(context).primaryColor
         : const Color(0xFF6750A4);
-        
+
     final centerColor = baseColor.withValues(alpha: 0.8);
     final edgeColor = baseColor.withValues(alpha: 1.0);
 
@@ -23,10 +23,7 @@ class SplashScreen extends StatelessWidget {
           gradient: RadialGradient(
             center: const Alignment(0, -0.1),
             radius: 1.0,
-            colors: [
-              centerColor,
-              edgeColor,
-            ],
+            colors: [centerColor, edgeColor],
             stops: const [0.3, 1.0],
           ),
         ),
@@ -48,8 +45,8 @@ class SplashScreen extends StatelessWidget {
                   ],
                 ),
                 child: const Icon(
-                  Icons.handshake_rounded, 
-                  size: 90, 
+                  Icons.handshake_rounded,
+                  size: 90,
                   color: Colors.white,
                 ),
               ),
@@ -82,10 +79,7 @@ class SplashScreen extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const AppLoader(
-                  size: 30, 
-                  color: Colors.white, 
-                ),
+                child: const AppLoader(size: 30, color: Colors.white),
               ),
             ],
           ),

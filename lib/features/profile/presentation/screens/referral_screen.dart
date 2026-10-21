@@ -13,7 +13,10 @@ class ReferralScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Refer Friends', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Refer Friends',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -30,7 +33,11 @@ class ReferralScreen extends StatelessWidget {
                   color: AppColors.primaryLight.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.people_alt_rounded, size: 64, color: AppColors.primaryLight),
+                child: const Icon(
+                  Icons.people_alt_rounded,
+                  size: 64,
+                  color: AppColors.primaryLight,
+                ),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -58,8 +65,13 @@ class ReferralScreen extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryLight,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ],

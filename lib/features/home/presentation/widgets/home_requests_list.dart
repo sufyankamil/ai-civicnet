@@ -10,10 +10,7 @@ import '../viewmodels/home_viewmodel.dart';
 class HomeRequestsList extends StatelessWidget {
   final HomeViewModel viewModel;
 
-  const HomeRequestsList({
-    super.key,
-    required this.viewModel,
-  });
+  const HomeRequestsList({super.key, required this.viewModel});
 
   @override
   Widget build(BuildContext context) {
@@ -60,21 +57,29 @@ class HomeRequestsList extends StatelessWidget {
           ],
         );
       }
-      
+
       if (viewModel.filteredRequests.isEmpty) {
         final filter = viewModel.selectedFilter;
-        final icon = viewModel.fetchError ? Icons.wifi_off_rounded : _getFilterIcon(filter);
-        final color = viewModel.fetchError ? Colors.orange : _getFilterColor(filter);
-        
-        String title = filter == 'All' ? l10n.noRequests : 'No $filter Requests';
+        final icon = viewModel.fetchError
+            ? Icons.wifi_off_rounded
+            : _getFilterIcon(filter);
+        final color = viewModel.fetchError
+            ? Colors.orange
+            : _getFilterColor(filter);
+
+        String title = filter == 'All'
+            ? l10n.noRequests
+            : 'No $filter Requests';
         String description = l10n.noRequestsDescription;
 
         if (viewModel.fetchError) {
           title = 'Connection Issue';
-          description = 'We\'re having trouble reaching the server. Please check your internet and try again.';
+          description =
+              'We\'re having trouble reaching the server. Please check your internet and try again.';
         } else if (!viewModel.hasFetchedOnce) {
           title = 'Searching for neighbors...';
-          description = 'Connecting to your community. This might take a moment if the connection is slow.';
+          description =
+              'Connecting to your community. This might take a moment if the connection is slow.';
         }
         return Center(
           child: Padding(
@@ -88,16 +93,24 @@ class HomeRequestsList extends StatelessWidget {
                     color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 64, color: color.withValues(alpha: 0.5)),
+                  child: Icon(
+                    icon,
+                    size: 64,
+                    color: color.withValues(alpha: 0.5),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   title,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 20, 
-                    fontWeight: FontWeight.w900, 
-                    color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.7),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color:
+                        (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withValues(alpha: 0.7),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -105,12 +118,18 @@ class HomeRequestsList extends StatelessWidget {
                   description,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14, 
-                    color: (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black).withValues(alpha: 0.4),
+                    fontSize: 14,
+                    color:
+                        (Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black)
+                            .withValues(alpha: 0.4),
                     height: 1.5,
                   ),
                 ),
-                if (filter != 'All' || viewModel.fetchError || !viewModel.hasFetchedOnce) ...[
+                if (filter != 'All' ||
+                    viewModel.fetchError ||
+                    !viewModel.hasFetchedOnce) ...[
                   const SizedBox(height: 32),
                   AppHaptic(
                     onTap: () {
@@ -121,24 +140,36 @@ class HomeRequestsList extends StatelessWidget {
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: AppColors.primaryLight.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            (viewModel.fetchError || !viewModel.hasFetchedOnce) ? Icons.refresh_rounded : Icons.grid_view_rounded, 
-                            size: 18, 
-                            color: AppColors.primaryLight
+                            (viewModel.fetchError || !viewModel.hasFetchedOnce)
+                                ? Icons.refresh_rounded
+                                : Icons.grid_view_rounded,
+                            size: 18,
+                            color: AppColors.primaryLight,
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            (viewModel.fetchError || !viewModel.hasFetchedOnce) ? 'Try Again' : 'Show All Requests',
-                            style: const TextStyle(color: AppColors.primaryLight, fontWeight: FontWeight.bold),
+                            (viewModel.fetchError || !viewModel.hasFetchedOnce)
+                                ? 'Try Again'
+                                : 'Show All Requests',
+                            style: const TextStyle(
+                              color: AppColors.primaryLight,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -151,8 +182,13 @@ class HomeRequestsList extends StatelessWidget {
         );
       }
 
-      final list = viewModel.filteredRequests.where((r) => 
-        !(viewModel.topRecommendation?.id == r.id && viewModel.topRecommendation!.aiRelevanceScore > 0.6)).toList();
+      final list = viewModel.filteredRequests
+          .where(
+            (r) =>
+                !(viewModel.topRecommendation?.id == r.id &&
+                    viewModel.topRecommendation!.aiRelevanceScore > 0.6),
+          )
+          .toList();
 
       return ListView.builder(
         shrinkWrap: true,

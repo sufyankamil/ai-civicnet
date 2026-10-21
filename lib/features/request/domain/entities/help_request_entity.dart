@@ -65,21 +65,21 @@ class HelpRequestEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        requesterId,
-        requesterName,
-        requesterAvatarUrl,
-        title,
-        description,
-        category,
-        urgency,
-        postedAt,
-        distance,
-        aiRelevanceScore,
-        locationName,
-        lat,
-        lng,
-        status,
-        helperId,
-      ];
+    id,
+    requesterId,
+    requesterName,
+    requesterAvatarUrl,
+    title,
+    description,
+    category,
+    urgency,
+    postedAt,
+    distance,
+    aiRelevanceScore,
+    locationName,
+    lat,
+    lng,
+    status,
+    helperId,
+  ];
 }

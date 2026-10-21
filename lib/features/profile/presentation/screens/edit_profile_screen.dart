@@ -60,13 +60,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       String avatarToSave = _currentAvatarUrl;
       if (_selectedImage != null) {
-        final uploadedUrl = await StorageService().uploadAvatar(_selectedImage!, user.id);
+        final uploadedUrl = await StorageService().uploadAvatar(
+          _selectedImage!,
+          user.id,
+        );
         if (uploadedUrl != null) {
           avatarToSave = uploadedUrl;
         } else {
-           if (mounted) {
-             ToastService.showError(context, 'Failed to upload image. Keeping previous avatar.');
-           }
+          if (mounted) {
+            ToastService.showError(
+              context,
+              'Failed to upload image. Keeping previous avatar.',
+            );
+          }
         }
       }
 
@@ -84,7 +90,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     } catch (e) {
       if (mounted) {
         logger.e('Error updating profile: $e');
-        ToastService.showError(context, 'Unable to update profile. Please try again later.');
+        ToastService.showError(
+          context,
+          'Unable to update profile. Please try again later.',
+        );
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -160,185 +169,250 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Edit Profile',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator.adaptive())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Basic Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Full Name',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.person),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: GestureDetector(
-                      onTap: _showImageSourceDialog,
-                      child: Stack(
-                        children: [
-                          Container(
-                            width: 120,
-                            height: 120,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.grey.shade200,
-                              border: Border.all(
-                                color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
-                                width: 3,
-                              ),
-                            ),
-                            child: _selectedImage != null
-                                ? ClipOval(
-                                    child: Image.file(
-                                      _selectedImage!,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : (_currentAvatarUrl.isNotEmpty
-                                    ? ClipOval(
-                                        child: CachedNetworkImage(
-                                          imageUrl: _currentAvatarUrl,
-                                          fit: BoxFit.cover,
-                                          errorWidget: (context, url, error) =>
-                                              Icon(Icons.person, size: 60, color: Colors.grey.shade400),
-                                        ),
-                                      )
-                                    : Icon(Icons.person, size: 60, color: Colors.grey.shade400)),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).primaryColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                            ),
-                          ),
-                        ],
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator.adaptive())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Basic Information',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
-                    child: Text(
-                      'Tap to change photo',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Full Name',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.person),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  Text('Regional updates', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Used only for relevant community and holiday updates. You can change this anytime.',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    initialValue: _countryCode,
-                    decoration: InputDecoration(
-                      labelText: 'Country / region',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      prefixIcon: const Icon(Icons.public_rounded),
-                    ),
-                    items: const [
-                      DropdownMenuItem(value: 'IN', child: Text('India')),
-                      DropdownMenuItem(value: 'US', child: Text('United States')),
-                      DropdownMenuItem(value: 'GB', child: Text('United Kingdom')),
-                      DropdownMenuItem(value: 'CA', child: Text('Canada')),
-                      DropdownMenuItem(value: 'AU', child: Text('Australia')),
-                    ],
-                    onChanged: (value) => setState(() => _countryCode = value),
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    'Skills & Expertise',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Add skills to help neighbors find you (e.g. Plumbing, IT Support, Babysitting)',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _skillController,
-                          decoration: InputDecoration(
-                            labelText: 'Add a skill',
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          onSubmitted: (_) => _addSkill(),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: GestureDetector(
+                        onTap: _showImageSourceDialog,
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.grey.shade200,
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).primaryColor.withValues(alpha: 0.3),
+                                  width: 3,
+                                ),
+                              ),
+                              child: _selectedImage != null
+                                  ? ClipOval(
+                                      child: Image.file(
+                                        _selectedImage!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : (_currentAvatarUrl.isNotEmpty
+                                        ? ClipOval(
+                                            child: CachedNetworkImage(
+                                              imageUrl: _currentAvatarUrl,
+                                              fit: BoxFit.cover,
+                                              errorWidget:
+                                                  (context, url, error) => Icon(
+                                                    Icons.person,
+                                                    size: 60,
+                                                    color: Colors.grey.shade400,
+                                                  ),
+                                            ),
+                                          )
+                                        : Icon(
+                                            Icons.person,
+                                            size: 60,
+                                            color: Colors.grey.shade400,
+                                          )),
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).primaryColor,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      IconButton(
-                        onPressed: _addSkill,
-                        icon: const Icon(Icons.add_circle, color: AppColors.primaryLight, size: 32),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _skills.map((skill) => Chip(
-                      label: Text(skill),
-                      backgroundColor: AppColors.primaryLight.withValues(alpha: 0.1),
-                      labelStyle: const TextStyle(color: AppColors.primaryLight),
-                      deleteIcon: const Icon(Icons.close, size: 18),
-                      onDeleted: () => _removeSkill(skill),
-                    )).toList(),
-                  ),
-                  const SizedBox(height: 48),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _isSaving ? null : _saveProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryLight,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      child: _isSaving 
-                        ? const CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-                        : Text(
-                            'Save Changes',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    Center(
+                      child: Text(
+                        'Tap to change photo',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Regional updates',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Used only for relevant community and holiday updates. You can change this anytime.',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      initialValue: _countryCode,
+                      decoration: InputDecoration(
+                        labelText: 'Country / region',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.public_rounded),
+                      ),
+                      items: const [
+                        DropdownMenuItem(value: 'IN', child: Text('India')),
+                        DropdownMenuItem(
+                          value: 'US',
+                          child: Text('United States'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'GB',
+                          child: Text('United Kingdom'),
+                        ),
+                        DropdownMenuItem(value: 'CA', child: Text('Canada')),
+                        DropdownMenuItem(value: 'AU', child: Text('Australia')),
+                      ],
+                      onChanged: (value) =>
+                          setState(() => _countryCode = value),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Skills & Expertise',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add skills to help neighbors find you (e.g. Plumbing, IT Support, Babysitting)',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _skillController,
+                            decoration: InputDecoration(
+                              labelText: 'Add a skill',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onSubmitted: (_) => _addSkill(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        IconButton(
+                          onPressed: _addSkill,
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: AppColors.primaryLight,
+                            size: 32,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _skills
+                          .map(
+                            (skill) => Chip(
+                              label: Text(skill),
+                              backgroundColor: AppColors.primaryLight
+                                  .withValues(alpha: 0.1),
+                              labelStyle: const TextStyle(
+                                color: AppColors.primaryLight,
+                              ),
+                              deleteIcon: const Icon(Icons.close, size: 18),
+                              onDeleted: () => _removeSkill(skill),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                    const SizedBox(height: 48),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _isSaving ? null : _saveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isSaving
+                            ? const CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              )
+                            : Text(
+                                'Save Changes',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
     );
   }
 }

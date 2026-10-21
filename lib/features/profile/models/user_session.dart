@@ -30,14 +30,14 @@ class UserSession {
   String get deviceName {
     final ua = userAgent; // Keep case for extraction
     final lowerUa = ua.toLowerCase();
-    
+
     // 1. Try to extract from our custom format: "CivicNet/1.1.5 (iPhone 15 Pro; iOS 17.5)"
     if (ua.contains('(') && ua.contains(')')) {
       try {
         final startIndex = ua.indexOf('(') + 1;
         final endIndex = ua.indexOf(')');
         final content = ua.substring(startIndex, endIndex);
-        
+
         // If it contains a semicolon, the first part is the model
         if (content.contains(';')) {
           return content.split(';').first.trim();
@@ -55,21 +55,22 @@ class UserSession {
     if (lowerUa.contains('macintosh')) return 'Mac';
     if (lowerUa.contains('windows')) return 'Windows PC';
     if (lowerUa.contains('linux')) return 'Linux PC';
-    
+
     // 3. Clean up technical legacy strings (e.g. "dart:io", "dart", "active session")
-    if (lowerUa.contains('dart') || 
-        lowerUa.contains('active session') || 
+    if (lowerUa.contains('dart') ||
+        lowerUa.contains('active session') ||
         lowerUa.contains('io') ||
         lowerUa.length < 5) {
       return 'Mobile Device';
     }
-    
+
     return 'Unknown Device';
   }
 
   /// Returns a representative icon for the device.
-  bool get isMobile => userAgent.toLowerCase().contains('iphone') || 
-                        userAgent.toLowerCase().contains('android') || 
-                        userAgent.toLowerCase().contains('ipad') ||
-                        userAgent.toLowerCase().contains('dart');
+  bool get isMobile =>
+      userAgent.toLowerCase().contains('iphone') ||
+      userAgent.toLowerCase().contains('android') ||
+      userAgent.toLowerCase().contains('ipad') ||
+      userAgent.toLowerCase().contains('dart');
 }

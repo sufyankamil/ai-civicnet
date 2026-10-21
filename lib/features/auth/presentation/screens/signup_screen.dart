@@ -30,7 +30,6 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _obscurePassword = true;
   bool _acceptTerms = false;
 
-
   final AuthViewModel _authViewModel = Get.find<AuthViewModel>();
 
   // Password requirement flags (updated live as user types)
@@ -48,7 +47,7 @@ class _SignupScreenState extends State<SignupScreen> {
         _hasMinLength = pw.length >= 8;
         _hasUppercase = pw.contains(RegExp(r'[A-Z]'));
         _hasLowercase = pw.contains(RegExp(r'[a-z]'));
-        _hasDigit    = pw.contains(RegExp(r'[0-9]'));
+        _hasDigit = pw.contains(RegExp(r'[0-9]'));
       });
     });
   }
@@ -64,8 +63,6 @@ class _SignupScreenState extends State<SignupScreen> {
   void _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       final error = await _authViewModel.signUp(
-
-
         _emailController.text.trim(),
         _passwordController.text,
         _nameController.text.trim(),
@@ -79,6 +76,7 @@ class _SignupScreenState extends State<SignupScreen> {
       }
     }
   }
+
   Future<void> _handleGoogleSignIn() async {
     final error = await _authViewModel.signInWithGoogle();
     if (mounted) {
@@ -111,7 +109,10 @@ class _SignupScreenState extends State<SignupScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: isDark ? Colors.white : Theme.of(context).primaryColor),
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDark ? Colors.white : Theme.of(context).primaryColor,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -119,7 +120,10 @@ class _SignupScreenState extends State<SignupScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 20,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 500),
                 child: Column(
@@ -133,7 +137,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         style: TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.w900,
-                          color: isDark ? Colors.white : Theme.of(context).primaryColor,
+                          color: isDark
+                              ? Colors.white
+                              : Theme.of(context).primaryColor,
                           letterSpacing: -1,
                         ),
                       ),
@@ -144,7 +150,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: Text(
                         AppLocalizations.of(context)!.joinCommunity,
                         style: TextStyle(
-                          fontSize: 16, 
+                          fontSize: 16,
                           color: isDark ? Colors.white60 : Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
@@ -160,14 +166,19 @@ class _SignupScreenState extends State<SignupScreen> {
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 32,
+                            ),
                             decoration: BoxDecoration(
-                              color: isDark 
-                                ? Colors.white.withValues(alpha: 0.05) 
-                                : Colors.white.withValues(alpha: 0.6),
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.05)
+                                  : Colors.white.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(32),
                               border: Border.all(
-                                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : Colors.white,
                                 width: 1.5,
                               ),
                               boxShadow: [
@@ -186,12 +197,23 @@ class _SignupScreenState extends State<SignupScreen> {
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 450),
                                     child: CustomTextField(
-                                      hintText: AppLocalizations.of(context)!.fullName,
+                                      hintText: AppLocalizations.of(
+                                        context,
+                                      )!.fullName,
                                       prefixIcon: Icons.person_outline,
                                       controller: _nameController,
                                       validator: (value) {
-                                        if (value == null || value.trim().isEmpty) return AppLocalizations.of(context)!.enterName;
-                                        if (value.trim().length < 3) return AppLocalizations.of(context)!.nameTooShort;
+                                        if (value == null ||
+                                            value.trim().isEmpty) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.enterName;
+                                        }
+                                        if (value.trim().length < 3) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.nameTooShort;
+                                        }
                                         return null;
                                       },
                                     ),
@@ -200,11 +222,17 @@ class _SignupScreenState extends State<SignupScreen> {
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 550),
                                     child: CustomTextField(
-                                      hintText: AppLocalizations.of(context)!.emailAddress,
+                                      hintText: AppLocalizations.of(
+                                        context,
+                                      )!.emailAddress,
                                       prefixIcon: Icons.email_outlined,
                                       controller: _emailController,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterEmail;
+                                        if (value == null || value.isEmpty) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.enterEmail;
+                                        }
                                         return null;
                                       },
                                     ),
@@ -213,28 +241,54 @@ class _SignupScreenState extends State<SignupScreen> {
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 650),
                                     child: CustomTextField(
-                                      hintText: AppLocalizations.of(context)!.password,
+                                      hintText: AppLocalizations.of(
+                                        context,
+                                      )!.password,
                                       prefixIcon: Icons.lock_outline,
                                       obscureText: _obscurePassword,
                                       controller: _passwordController,
                                       validator: (value) {
-                                        if (value == null || value.isEmpty) return AppLocalizations.of(context)!.enterPasswordSignup;
-                                        if (value.length < 8) return AppLocalizations.of(context)!.passwordTooShort;
-                                        if (!value.contains(RegExp(r'[A-Z]'))) return AppLocalizations.of(context)!.passwordUppercase;
-                                        if (!value.contains(RegExp(r'[a-z]'))) return AppLocalizations.of(context)!.passwordLowercase;
-                                        if (!value.contains(RegExp(r'[0-9]'))) return AppLocalizations.of(context)!.passwordNumber;
+                                        if (value == null || value.isEmpty) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.enterPasswordSignup;
+                                        }
+                                        if (value.length < 8) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.passwordTooShort;
+                                        }
+                                        if (!value.contains(RegExp(r'[A-Z]'))) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.passwordUppercase;
+                                        }
+                                        if (!value.contains(RegExp(r'[a-z]'))) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.passwordLowercase;
+                                        }
+                                        if (!value.contains(RegExp(r'[0-9]'))) {
+                                          return AppLocalizations.of(
+                                            context,
+                                          )!.passwordNumber;
+                                        }
                                         return null;
                                       },
                                       suffixIcon: IconButton(
-                                        icon: Icon(_obscurePassword
-                                            ? Icons.visibility_off
-                                            : Icons.visibility),
-                                        onPressed: () =>
-                                            setState(() => _obscurePassword = !_obscurePassword),
+                                        icon: Icon(
+                                          _obscurePassword
+                                              ? Icons.visibility_off
+                                              : Icons.visibility,
+                                        ),
+                                        onPressed: () => setState(
+                                          () => _obscurePassword =
+                                              !_obscurePassword,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  
+
                                   // Password requirements within the glass card
                                   if (_passwordController.text.isNotEmpty)
                                     Padding(
@@ -243,22 +297,34 @@ class _SignupScreenState extends State<SignupScreen> {
                                         children: _buildPasswordRequirements(),
                                       ),
                                     ),
-                                    
+
                                   const SizedBox(height: 12),
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 750),
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
                                       children: [
                                         SizedBox(
                                           height: 24,
                                           width: 24,
                                           child: Checkbox(
                                             value: _acceptTerms,
-                                            activeColor: Theme.of(context).primaryColor,
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            activeColor: Theme.of(
+                                              context,
+                                            ).primaryColor,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
                                             side: BorderSide(
-                                              color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.6),
+                                              color:
+                                                  (Theme.of(context)
+                                                              .textTheme
+                                                              .bodyMedium
+                                                              ?.color ??
+                                                          Colors.grey)
+                                                      .withValues(alpha: 0.6),
                                               width: 1.5,
                                             ),
                                             onChanged: (value) {
@@ -272,24 +338,55 @@ class _SignupScreenState extends State<SignupScreen> {
                                         Expanded(
                                           child: GestureDetector(
                                             onTap: () => launchUrl(
-                                              Uri.parse('https://privacypolicy-ruddy.vercel.app/terms'),
-                                              mode: LaunchMode.externalApplication,
+                                              Uri.parse(
+                                                'https://privacypolicy-ruddy.vercel.app/terms',
+                                              ),
+                                              mode: LaunchMode
+                                                  .externalApplication,
                                             ),
                                             child: Text.rich(
                                               TextSpan(
-                                                text: AppLocalizations.of(context)!.agreeTerms(AppLocalizations.of(context)!.termsAndConditions).split(AppLocalizations.of(context)!.termsAndConditions).first,
+                                                text:
+                                                    AppLocalizations.of(
+                                                          context,
+                                                        )!
+                                                        .agreeTerms(
+                                                          AppLocalizations.of(
+                                                            context,
+                                                          )!.termsAndConditions,
+                                                        )
+                                                        .split(
+                                                          AppLocalizations.of(
+                                                            context,
+                                                          )!.termsAndConditions,
+                                                        )
+                                                        .first,
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey).withValues(alpha: 0.7),
+                                                  color:
+                                                      (Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color ??
+                                                              Colors.grey)
+                                                          .withValues(
+                                                            alpha: 0.7,
+                                                          ),
                                                 ),
                                                 children: [
                                                   TextSpan(
-                                                    text: AppLocalizations.of(context)!.termsAndConditions,
+                                                    text: AppLocalizations.of(
+                                                      context,
+                                                    )!.termsAndConditions,
                                                     style: TextStyle(
                                                       fontSize: 12,
-                                                      color: Theme.of(context).primaryColor,
-                                                      fontWeight: FontWeight.w600,
-                                                      decoration: TextDecoration.underline,
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).primaryColor,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      decoration: TextDecoration
+                                                          .underline,
                                                     ),
                                                   ),
                                                 ],
@@ -303,11 +400,17 @@ class _SignupScreenState extends State<SignupScreen> {
                                   const SizedBox(height: 28),
                                   SlideFadeTransition(
                                     delay: const Duration(milliseconds: 850),
-                                    child: Obx(() => PrimaryButton(
-                                      text: AppLocalizations.of(context)!.signup,
-                                      isLoading: _authViewModel.isLoading,
-                                      onPressed: _acceptTerms ? _handleSignup : null,
-                                    )),
+                                    child: Obx(
+                                      () => PrimaryButton(
+                                        text: AppLocalizations.of(
+                                          context,
+                                        )!.signup,
+                                        isLoading: _authViewModel.isLoading,
+                                        onPressed: _acceptTerms
+                                            ? _handleSignup
+                                            : null,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -325,7 +428,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         children: [
                           Text(
                             '${AppLocalizations.of(context)!.alreadyHaveAccount.split('?').first}?',
-                            style: TextStyle(color: isDark ? Colors.white60 : Colors.grey[700]),
+                            style: TextStyle(
+                              color: isDark ? Colors.white60 : Colors.grey[700],
+                            ),
                           ),
                           TextButton(
                             onPressed: () => context.pop(),
@@ -369,25 +474,31 @@ class _SignupScreenState extends State<SignupScreen> {
   // ignore: unused_element
   Widget _buildSocialButtons() {
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
-    final isIOS = defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS;
-    
+    final isIOS =
+        defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isAndroid)
-          Obx(() => SocialLoginButton(
-            icon: googleIcon(),
-            label: 'Google',
-            isLoading: _authViewModel.isGoogleLoading,
-            onTap: _handleGoogleSignIn,
-          )),
+          Obx(
+            () => SocialLoginButton(
+              icon: googleIcon(),
+              label: 'Google',
+              isLoading: _authViewModel.isGoogleLoading,
+              onTap: _handleGoogleSignIn,
+            ),
+          ),
         if (isIOS)
-          Obx(() => SocialLoginButton(
-            icon: appleIcon(),
-            label: 'Apple',
-            isLoading: _authViewModel.isAppleLoading,
-            onTap: _handleAppleSignIn,
-          )),
+          Obx(
+            () => SocialLoginButton(
+              icon: appleIcon(),
+              label: 'Apple',
+              isLoading: _authViewModel.isAppleLoading,
+              onTap: _handleAppleSignIn,
+            ),
+          ),
       ],
     );
   }
@@ -416,7 +527,9 @@ class _SignupScreenState extends State<SignupScreen> {
               met ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
               key: ValueKey(met),
               size: 16,
-              color: met ? Colors.green[400] : Colors.grey.withValues(alpha: 0.4),
+              color: met
+                  ? Colors.green[400]
+                  : Colors.grey.withValues(alpha: 0.4),
             ),
           ),
           const SizedBox(width: 8),
@@ -424,7 +537,11 @@ class _SignupScreenState extends State<SignupScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: met ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87) : Colors.grey.withValues(alpha: 0.6),
+              color: met
+                  ? (Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87)
+                  : Colors.grey.withValues(alpha: 0.6),
               fontWeight: met ? FontWeight.w600 : FontWeight.normal,
             ),
           ),

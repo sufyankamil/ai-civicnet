@@ -62,18 +62,20 @@ class MilestoneGallery extends StatelessWidget {
         color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: m.isEarned 
-            ? Colors.amber.withValues(alpha: 0.3) 
-            : Colors.transparent,
+          color: m.isEarned
+              ? Colors.amber.withValues(alpha: 0.3)
+              : Colors.transparent,
           width: 2,
         ),
-        boxShadow: m.isEarned ? [
-          BoxShadow(
-            color: Colors.amber.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ] : null,
+        boxShadow: m.isEarned
+            ? [
+                BoxShadow(
+                  color: Colors.amber.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -91,11 +93,7 @@ class MilestoneGallery extends StatelessWidget {
                 ),
               ),
               if (!m.isEarned && !m.isUnlocked)
-                const Icon(
-                  Icons.lock_rounded,
-                  size: 16,
-                  color: Colors.white70,
-                ),
+                const Icon(Icons.lock_rounded, size: 16, color: Colors.white70),
             ],
           ),
           const SizedBox(height: 12),
@@ -114,14 +112,10 @@ class MilestoneGallery extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 9,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 9, color: Colors.grey[600]),
           ),
         ],
       ),
     );
   }
 }
-

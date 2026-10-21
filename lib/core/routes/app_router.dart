@@ -6,7 +6,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../main.dart'; // for prefsGlobal
 import '../../services/logger_service.dart';
 
-
 // Screens
 import '../../features/profile/presentation/screens/privacy_policy_screen.dart';
 import '../../features/profile/presentation/screens/terms_of_service_screen.dart';
@@ -57,8 +56,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 String lastAppLocation = '/';
 
-
-
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
 );
@@ -71,7 +68,8 @@ GoRouter createRouter({String initialLocation = '/'}) {
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: initialLocation,
-    errorBuilder: (context, state) => NotFoundScreen(location: state.uri.toString()),
+    errorBuilder: (context, state) =>
+        NotFoundScreen(location: state.uri.toString()),
     refreshListenable: GoRouterRefreshStream(
       Supabase.instance.client.auth.onAuthStateChange,
     ),
@@ -86,13 +84,19 @@ GoRouter createRouter({String initialLocation = '/'}) {
         if (currentPath == '/' || currentPath.startsWith('/home')) {
           // Check if onboarding was seen
           final prefs = prefsGlobal;
-          final hasSeenOnboarding = prefs?.getBool('has_seen_onboarding') ?? false;
+          final hasSeenOnboarding =
+              prefs?.getBool('has_seen_onboarding') ?? false;
           if (hasSeenOnboarding) {
             return '/login';
           }
           return '/onboarding';
-        } else if (currentPath.startsWith('/profile') || currentPath == '/chat' || currentPath == '/activity' || currentPath == '/discover' || currentPath == '/map' || currentPath == '/events') {
-            return '/login';
+        } else if (currentPath.startsWith('/profile') ||
+            currentPath == '/chat' ||
+            currentPath == '/activity' ||
+            currentPath == '/discover' ||
+            currentPath == '/map' ||
+            currentPath == '/events') {
+          return '/login';
         }
       } else {
         if (currentPath == '/' ||
@@ -365,7 +369,8 @@ GoRouter createRouter({String initialLocation = '/'}) {
   );
 
   router.routerDelegate.addListener(() {
-    final String location = router.routerDelegate.currentConfiguration.uri.toString();
+    final String location = router.routerDelegate.currentConfiguration.uri
+        .toString();
     lastAppLocation = location;
     logger.d('Navigation update: $location');
   });

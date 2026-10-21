@@ -41,10 +41,7 @@ class RequestViewModel extends GetxController {
     final result = await createHelpRequestUseCase(request);
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (_) => null,
-    );
+    return result.fold((failure) => failure.message, (_) => null);
   }
 
   Future<String?> fetchMyRequests() async {
@@ -52,13 +49,10 @@ class RequestViewModel extends GetxController {
     final result = await getMyHelpRequestsUseCase(const NoParams());
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (requests) {
-        _myRequests.value = requests;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (requests) {
+      _myRequests.value = requests;
+      return null;
+    });
   }
 
   Future<String?> fetchHelpRequest(String id) async {
@@ -66,15 +60,12 @@ class RequestViewModel extends GetxController {
     final result = await getHelpRequestUseCase(GetHelpRequestParams(id));
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (request) {
-        _currentRequest.value = request;
-        // Also fetch helpers when a request is fetched
-        fetchPotentialHelpers(request);
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (request) {
+      _currentRequest.value = request;
+      // Also fetch helpers when a request is fetched
+      fetchPotentialHelpers(request);
+      return null;
+    });
   }
 
   Future<void> fetchPotentialHelpers(HelpRequestEntity entity) async {
@@ -89,11 +80,15 @@ class RequestViewModel extends GetxController {
         title: entity.title,
         description: entity.description,
         category: HelpCategory.values.firstWhere(
-          (e) => e.toString().split('.').last == entity.category.toString().split('.').last,
+          (e) =>
+              e.toString().split('.').last ==
+              entity.category.toString().split('.').last,
           orElse: () => HelpCategory.other,
         ),
         urgency: legacy.UrgencyLevel.values.firstWhere(
-          (e) => e.toString().split('.').last == entity.urgency.toString().split('.').last,
+          (e) =>
+              e.toString().split('.').last ==
+              entity.urgency.toString().split('.').last,
           orElse: () => legacy.UrgencyLevel.medium,
         ),
         postedAt: entity.postedAt,
@@ -103,15 +98,21 @@ class RequestViewModel extends GetxController {
         lat: entity.lat,
         lng: entity.lng,
         status: legacy.RequestStatus.values.firstWhere(
-          (e) => e.toString().split('.').last == entity.status.toString().split('.').last,
+          (e) =>
+              e.toString().split('.').last ==
+              entity.status.toString().split('.').last,
           orElse: () => legacy.RequestStatus.open,
         ),
         helperId: entity.helperId,
       );
 
-      final helpers = await SupabaseService().getPotentialHelpers(legacyRequest);
+      final helpers = await SupabaseService().getPotentialHelpers(
+        legacyRequest,
+      );
       final currentUserId = SupabaseService().currentUserId;
-      _potentialHelpers.value = helpers.where((h) => h.user.id != currentUserId).toList();
+      _potentialHelpers.value = helpers
+          .where((h) => h.user.id != currentUserId)
+          .toList();
     } catch (e) {
       // Error handling is minimal here as it's a non-critical list
       _potentialHelpers.clear();
@@ -120,15 +121,17 @@ class RequestViewModel extends GetxController {
     }
   }
 
-  Future<String?> updateRequestStatus(String id, RequestStatusEnum status) async {
+  Future<String?> updateRequestStatus(
+    String id,
+    RequestStatusEnum status,
+  ) async {
     _isLoading.value = true;
-    final result = await updateRequestStatusUseCase(UpdateRequestStatusParams(id, status));
+    final result = await updateRequestStatusUseCase(
+      UpdateRequestStatusParams(id, status),
+    );
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (_) => null,
-    );
+    return result.fold((failure) => failure.message, (_) => null);
   }
 
   Future<String?> deleteRequest(String id) async {
@@ -136,12 +139,9 @@ class RequestViewModel extends GetxController {
     final result = await deleteHelpRequestUseCase(id);
     _isLoading.value = false;
 
-    return result.fold(
-      (failure) => failure.message,
-      (_) {
-        _currentRequest.value = null;
-        return null;
-      },
-    );
+    return result.fold((failure) => failure.message, (_) {
+      _currentRequest.value = null;
+      return null;
+    });
   }
 }

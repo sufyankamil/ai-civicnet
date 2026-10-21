@@ -28,14 +28,17 @@ class NotificationService {
     // Initialize timezone for scheduled notifications
     tz_init.initializeTimeZones();
     try {
-      final TimezoneInfo timeZoneInfo = await FlutterTimezone.getLocalTimezone();
+      final TimezoneInfo timeZoneInfo =
+          await FlutterTimezone.getLocalTimezone();
       String tzName = timeZoneInfo.identifier;
       if (tzName == 'Asia/Calcutta') {
         tzName = 'Asia/Kolkata';
       }
       tz.setLocalLocation(tz.getLocation(tzName));
     } catch (e) {
-      logger.e('Error setting local location timezone, falling back to UTC: $e');
+      logger.e(
+        'Error setting local location timezone, falling back to UTC: $e',
+      );
       tz.setLocalLocation(tz.getLocation('UTC'));
     }
 
@@ -46,15 +49,16 @@ class NotificationService {
     // iOS initialization
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
 
     await flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
@@ -65,13 +69,15 @@ class NotificationService {
             final payloadData = jsonDecode(response.payload!);
             final type = payloadData['type'];
             final relatedId = payloadData['related_id'];
-            
+
             if (relatedId != null) {
               final context = rootNavigatorKey.currentContext;
               if (context != null && context.mounted) {
                 if (type == 'new_request') {
                   context.push('/request/$relatedId');
-                } else if (type == 'chat_message' || type == 'message' || type == 'chat') {
+                } else if (type == 'chat_message' ||
+                    type == 'message' ||
+                    type == 'chat') {
                   context.push('/chat-detail?id=$relatedId');
                 } else if (type == 'event') {
                   context.push('/event/$relatedId');
@@ -89,7 +95,8 @@ class NotificationService {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel', // id
       'High Importance Notifications', // title
-      description: 'This channel is used for important notifications.', // description
+      description:
+          'This channel is used for important notifications.', // description
       importance: Importance.max,
       playSound: true,
       enableVibration: true,
@@ -97,7 +104,8 @@ class NotificationService {
 
     await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
 
     _isInitialized = true;
@@ -107,9 +115,10 @@ class NotificationService {
   Future<void> showNotification(RemoteMessage message) async {
     final data = message.data;
     RemoteNotification? notification = message.notification;
-    
+
     // Extract title and body from notification OR data fallback
-    final String? title = notification?.title ?? data['senderName'] ?? data['title'];
+    final String? title =
+        notification?.title ?? data['senderName'] ?? data['title'];
     final String? body = notification?.body ?? data['content'] ?? data['body'];
 
     if (title == null && body == null) return;
@@ -117,23 +126,24 @@ class NotificationService {
     // Android configuration
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'high_importance_channel', 
-      'High Importance Notifications',
-      channelDescription: 'This channel is used for important notifications.',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/launcher_icon',
-      playSound: true,
-      enableVibration: true,
-    );
+          'high_importance_channel',
+          'High Importance Notifications',
+          channelDescription:
+              'This channel is used for important notifications.',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/launcher_icon',
+          playSound: true,
+          enableVibration: true,
+        );
 
     // iOS configuration
     const DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-    );
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+        );
 
     const NotificationDetails notificationDetails = NotificationDetails(
       android: androidNotificationDetails,
@@ -141,7 +151,9 @@ class NotificationService {
     );
 
     await flutterLocalNotificationsPlugin.show(
-      id: notification.hashCode != 0 ? notification.hashCode : DateTime.now().millisecond,
+      id: notification.hashCode != 0
+          ? notification.hashCode
+          : DateTime.now().millisecond,
       title: title,
       body: body,
       notificationDetails: notificationDetails,
@@ -157,18 +169,20 @@ class NotificationService {
   }) async {
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'high_importance_channel', 
-      'High Importance Notifications',
-      channelDescription: 'This channel is used for important notifications.',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/launcher_icon',
-      playSound: true,
-      enableVibration: true,
-    );
+          'high_importance_channel',
+          'High Importance Notifications',
+          channelDescription:
+              'This channel is used for important notifications.',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/launcher_icon',
+          playSound: true,
+          enableVibration: true,
+        );
 
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+    );
 
     await flutterLocalNotificationsPlugin.show(
       id: id,
@@ -188,18 +202,20 @@ class NotificationService {
   }) async {
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'high_importance_channel',
-      'High Importance Notifications',
-      channelDescription: 'This channel is used for important notifications.',
-      importance: Importance.max,
-      priority: Priority.high,
-      icon: '@mipmap/launcher_icon',
-      playSound: true,
-      enableVibration: true,
-    );
+          'high_importance_channel',
+          'High Importance Notifications',
+          channelDescription:
+              'This channel is used for important notifications.',
+          importance: Importance.max,
+          priority: Priority.high,
+          icon: '@mipmap/launcher_icon',
+          playSound: true,
+          enableVibration: true,
+        );
 
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+    );
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id: id,
@@ -215,22 +231,24 @@ class NotificationService {
   Future<void> scheduleDailyCheckInNotification() async {
     const int id = 999;
     const String title = 'Community Check-in';
-    const String body = 'Take a moment to check if anyone in your community needs help today!';
+    const String body =
+        'Take a moment to check if anyone in your community needs help today!';
 
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'daily_checkin_channel',
-      'Daily Check-in Notifications',
-      channelDescription: 'Daily reminders to check in with the community.',
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-      icon: '@mipmap/launcher_icon',
-      playSound: true,
-      enableVibration: true,
-    );
+          'daily_checkin_channel',
+          'Daily Check-in Notifications',
+          channelDescription: 'Daily reminders to check in with the community.',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/launcher_icon',
+          playSound: true,
+          enableVibration: true,
+        );
 
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+    );
 
     final scheduledTime = _nextInstanceOfTime(11, 00);
     logger.i('Attempting to schedule daily notification at $scheduledTime');
@@ -259,7 +277,9 @@ class NotificationService {
           androidScheduleMode: AndroidScheduleMode.inexact,
           matchDateTimeComponents: DateTimeComponents.time,
         );
-        logger.i('✅ Daily check-in notification scheduled (inexact) at ~11:00 PM');
+        logger.i(
+          '✅ Daily check-in notification scheduled (inexact) at ~11:00 PM',
+        );
       } catch (e2) {
         logger.e('❌ Failed to schedule daily notification: $e2');
       }
@@ -268,8 +288,14 @@ class NotificationService {
 
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate =
-        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }

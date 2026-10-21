@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -33,7 +32,8 @@ class GlassCard extends StatelessWidget {
           child: Container(
             padding: padding ?? const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: (color ?? Theme.of(context).colorScheme.surface).withValues(alpha: opacity),
+              color: (color ?? Theme.of(context).colorScheme.surface)
+                  .withValues(alpha: opacity),
               borderRadius: borderRadius ?? BorderRadius.circular(16),
               border: Border.all(
                 color: Theme.of(context).brightness == Brightness.light

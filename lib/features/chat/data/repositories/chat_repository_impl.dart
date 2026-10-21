@@ -39,7 +39,8 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, List<ChatConversationEntity>>> getConversations() async {
+  Future<Either<Failure, List<ChatConversationEntity>>>
+  getConversations() async {
     try {
       final models = await remoteDataSource.getConversations();
       final entities = models.map(_mapConversation).toList();
@@ -52,15 +53,25 @@ class ChatRepositoryImpl implements ChatRepository {
 
   @override
   Stream<List<MessageEntity>> getMessagesStream(String conversationId) {
-    return remoteDataSource.getMessagesStream(conversationId).map(
-      (models) => models.map(_mapMessage).toList(),
-    );
+    return remoteDataSource
+        .getMessagesStream(conversationId)
+        .map((models) => models.map(_mapMessage).toList());
   }
 
   @override
-  Future<Either<Failure, void>> sendMessage(String conversationId, String content, {String type = 'text', String? replyToId}) async {
+  Future<Either<Failure, void>> sendMessage(
+    String conversationId,
+    String content, {
+    String type = 'text',
+    String? replyToId,
+  }) async {
     try {
-      await remoteDataSource.sendMessage(conversationId, content, type: type, replyToId: replyToId);
+      await remoteDataSource.sendMessage(
+        conversationId,
+        content,
+        type: type,
+        replyToId: replyToId,
+      );
       return const Right(null);
     } catch (e) {
       logger.e('Failed to send message', error: e);
@@ -80,7 +91,9 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, void>> markConversationAsRead(String conversationId) async {
+  Future<Either<Failure, void>> markConversationAsRead(
+    String conversationId,
+  ) async {
     try {
       await remoteDataSource.markConversationAsRead(conversationId);
       return const Right(null);
@@ -152,7 +165,9 @@ class ChatRepositoryImpl implements ChatRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteConversation(String conversationId) async {
+  Future<Either<Failure, void>> deleteConversation(
+    String conversationId,
+  ) async {
     try {
       await remoteDataSource.deleteConversation(conversationId);
       return const Right(null);

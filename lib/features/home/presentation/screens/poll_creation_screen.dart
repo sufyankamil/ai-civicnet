@@ -41,7 +41,10 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
         _optionControllers.add(TextEditingController());
       });
     } else {
-      ToastService.showInfo(context, AppLocalizations.of(context)!.maxOptionsAllowed);
+      ToastService.showInfo(
+        context,
+        AppLocalizations.of(context)!.maxOptionsAllowed,
+      );
     }
   }
 
@@ -63,16 +66,26 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
       await SupabaseService().createPoll(
         _questionController.text,
         options,
-        description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        description: _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text,
       );
-      
+
       if (mounted) {
-        ToastService.showSuccess(context, AppLocalizations.of(context)!.pollCreatedSuccessfully);
+        ToastService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.pollCreatedSuccessfully,
+        );
         Get.find<HomeViewModel>().fetchPolls();
         context.pop();
       }
     } catch (e) {
-      if (mounted) ToastService.showError(context, '${AppLocalizations.of(context)!.failedToCreatePoll}: $e');
+      if (mounted) {
+        ToastService.showError(
+          context,
+          '${AppLocalizations.of(context)!.failedToCreatePoll}: $e',
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -82,7 +95,10 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.createPoll, style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          AppLocalizations.of(context)!.createPoll,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -96,18 +112,26 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
                 style: TextStyle(color: Colors.grey[600]),
               ),
               const SizedBox(height: 32),
-              
-              Text(AppLocalizations.of(context)!.question, style: TextStyle(fontWeight: FontWeight.bold)),
+
+              Text(
+                AppLocalizations.of(context)!.question,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
               CustomTextField(
                 controller: _questionController,
                 hintText: AppLocalizations.of(context)!.pollQuestionHint,
                 maxLines: 2,
-                validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.fieldRequired : null,
+                validator: (v) => v == null || v.isEmpty
+                    ? AppLocalizations.of(context)!.fieldRequired
+                    : null,
               ),
               const SizedBox(height: 24),
 
-              Text(AppLocalizations.of(context)!.descriptionOptional, style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                AppLocalizations.of(context)!.descriptionOptional,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 12),
               CustomTextField(
                 controller: _descriptionController,
@@ -119,7 +143,10 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppLocalizations.of(context)!.options, style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    AppLocalizations.of(context)!.options,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   if (_optionControllers.length < 5)
                     TextButton.icon(
                       onPressed: _addOption,
@@ -139,29 +166,39 @@ class _PollCreationScreenState extends State<PollCreationScreen> {
                       Expanded(
                         child: CustomTextField(
                           controller: controller,
-                          hintText: AppLocalizations.of(context)!.optionHint(idx + 1),
-                          validator: (v) => v == null || v.isEmpty ? AppLocalizations.of(context)!.fieldRequired : null,
+                          hintText: AppLocalizations.of(
+                            context,
+                          )!.optionHint(idx + 1),
+                          validator: (v) => v == null || v.isEmpty
+                              ? AppLocalizations.of(context)!.fieldRequired
+                              : null,
                         ),
                       ),
                       if (_optionControllers.length > 2)
                         IconButton(
                           onPressed: () => _removeOption(idx),
-                          icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                          icon: const Icon(
+                            Icons.remove_circle_outline,
+                            color: Colors.red,
+                          ),
                         ),
                     ],
                   ),
                 );
               }),
-              
+
               const SizedBox(height: 48),
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: AppElevatedButton(
                   onPressed: _isLoading ? null : _submit,
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(AppLocalizations.of(context)!.createPoll, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text(
+                          AppLocalizations.of(context)!.createPoll,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
             ],

@@ -34,7 +34,9 @@ class RequestActionBottomBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
             color: Colors.amber.withValues(alpha: 0.1),
-            border: const Border(top: BorderSide(color: Colors.amber, width: 0.5)),
+            border: const Border(
+              top: BorderSide(color: Colors.amber, width: 0.5),
+            ),
           ),
           child: Row(
             children: [
@@ -45,17 +47,38 @@ class RequestActionBottomBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('YOUR RATING', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.amber, letterSpacing: 1.0)),
+                    const Text(
+                      'YOUR RATING',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        color: Colors.amber,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
                     Row(
                       children: List.generate(
                         5,
-                        (i) => Icon(i < ratingGiven ? Icons.star_rounded : Icons.star_border_rounded, color: Colors.amber, size: 20),
+                        (i) => Icon(
+                          i < ratingGiven
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          color: Colors.amber,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              Text('$ratingGiven / 5', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.amber)),
+              Text(
+                '$ratingGiven / 5',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: Colors.amber,
+                ),
+              ),
             ],
           ),
         ),
@@ -68,12 +91,11 @@ class RequestActionBottomBar extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
-            border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.1))),
+            border: Border(
+              top: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+            ),
           ),
-          child: PrimaryButton(
-            text: 'SUBMIT RATING',
-            onPressed: onRate,
-          ),
+          child: PrimaryButton(text: 'SUBMIT RATING', onPressed: onRate),
         ),
       );
     }

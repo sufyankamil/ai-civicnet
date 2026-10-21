@@ -1,20 +1,9 @@
 import "../domain/entities/request_enums.dart";
 import '../../profile/models/user.dart';
 
+enum UrgencyLevel { low, medium, high, critical }
 
-enum UrgencyLevel {
-  low,
-  medium,
-  high,
-  critical
-}
-
-enum RequestStatus {
-  open,
-  inProgress,
-  completed,
-  closed
-}
+enum RequestStatus { open, inProgress, completed, closed }
 
 class HelpRequest {
   final String id;
@@ -53,10 +42,7 @@ class HelpRequest {
     this.helperId,
   });
 
-  HelpRequest copyWith({
-    String? distance,
-    double? aiRelevanceScore,
-  }) {
+  HelpRequest copyWith({String? distance, double? aiRelevanceScore}) {
     return HelpRequest(
       id: id,
       requesterId: requesterId,
@@ -81,15 +67,18 @@ class HelpRequest {
     // Handle potential nulls or missing fields comfortably
     var profileData = json['profiles'];
     // Handle if profiles is returned as list or map
-    final Map<String, dynamic> profile = (profileData is List && profileData.isNotEmpty) 
-        ? profileData.first 
+    final Map<String, dynamic> profile =
+        (profileData is List && profileData.isNotEmpty)
+        ? profileData.first
         : (profileData is Map<String, dynamic> ? profileData : {});
 
     return HelpRequest(
       id: json['id'].toString(),
       requesterId: json['requester_id'] ?? '',
       requesterName: json['requester_name'] ?? profile['name'] ?? 'Unknown',
-      requesterAvatarUrl: sanitizeAvatarUrl(json['requester_avatar_url'] ?? profile['avatar_url']),
+      requesterAvatarUrl: sanitizeAvatarUrl(
+        json['requester_avatar_url'] ?? profile['avatar_url'],
+      ),
 
       title: json['title'] ?? '',
       description: json['description'] ?? '',
@@ -102,8 +91,9 @@ class HelpRequest {
         orElse: () => UrgencyLevel.medium,
       ),
       postedAt: DateTime.tryParse(json['created_at'] ?? '') ?? DateTime.now(),
-      distance: 'Unknown', 
-      aiRelevanceScore: (json['ai_score'] ?? json['similarity'] ?? 0.0).toDouble(), // Only use actual RPC scores
+      distance: 'Unknown',
+      aiRelevanceScore: (json['ai_score'] ?? json['similarity'] ?? 0.0)
+          .toDouble(), // Only use actual RPC scores
       locationName: json['location_name'] ?? 'Unknown Location',
       lat: (json['lat'] ?? 0).toDouble(),
       lng: (json['lng'] ?? 0).toDouble(),

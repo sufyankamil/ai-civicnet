@@ -78,13 +78,19 @@ class EventCardSkeleton extends StatelessWidget {
                   Container(
                     width: 14,
                     height: 14,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     width: 180,
                     height: 12,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
                 ],
               ),
@@ -94,13 +100,19 @@ class EventCardSkeleton extends StatelessWidget {
                   Container(
                     width: 14,
                     height: 14,
-                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     width: 220,
                     height: 12,
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(3)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
                 ],
               ),

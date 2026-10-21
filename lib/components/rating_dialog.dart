@@ -32,25 +32,25 @@ class _RatingDialogState extends State<RatingDialog> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-        Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: const CircleAvatar(
+              radius: 40,
+              backgroundColor: Colors.grey,
+              child: Icon(Icons.person, size: 40, color: Colors.white),
+            ),
           ),
-          child: const CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.grey,
-            child: Icon(Icons.person, size: 40, color: Colors.white),
-          ),
-        ),
           const SizedBox(height: 12),
           Text(
             'How was your experience with ${widget.ratedUserName}?',
@@ -84,7 +84,7 @@ class _RatingDialogState extends State<RatingDialog> {
           child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
         ),
         ElevatedButton(
-          onPressed: _rating > 0 
+          onPressed: _rating > 0
               ? () {
                   widget.onRate(_rating.toInt());
                   Navigator.pop(context);
@@ -93,7 +93,9 @@ class _RatingDialogState extends State<RatingDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.amber,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
           ),
           child: const Text('Submit Rating'),
         ),

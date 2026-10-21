@@ -11,7 +11,8 @@ class CreateAnnouncementScreen extends StatefulWidget {
   const CreateAnnouncementScreen({super.key});
 
   @override
-  State<CreateAnnouncementScreen> createState() => _CreateAnnouncementScreenState();
+  State<CreateAnnouncementScreen> createState() =>
+      _CreateAnnouncementScreenState();
 }
 
 class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
@@ -19,7 +20,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _sourceUrlController = TextEditingController();
-  
+
   AnnouncementCategory _selectedCategory = AnnouncementCategory.community;
   File? _imageFile;
   bool _isLoading = false;
@@ -55,7 +56,9 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
         content: _contentController.text.trim(),
         category: _selectedCategory.name,
         imageUrl: imageUrl,
-        sourceUrl: _sourceUrlController.text.trim().isEmpty ? null : _sourceUrlController.text.trim(),
+        sourceUrl: _sourceUrlController.text.trim().isEmpty
+            ? null
+            : _sourceUrlController.text.trim(),
       );
 
       if (mounted) {
@@ -76,7 +79,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -99,7 +102,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               _buildLabel('Title'),
               TextFormField(
                 controller: _titleController,
@@ -107,7 +110,8 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.announcementTitleHint,
                   filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.3),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
@@ -121,21 +125,29 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                       width: 1.5,
                     ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter a title' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter a title'
+                    : null,
               ),
               const SizedBox(height: 20),
-              
+
               _buildLabel('Content'),
               TextFormField(
                 controller: _contentController,
                 maxLines: 6,
                 style: TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.announcementContentHint,
+                  hintText: AppLocalizations.of(
+                    context,
+                  )!.announcementContentHint,
                   filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.3),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
@@ -157,15 +169,19 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   ),
                   contentPadding: const EdgeInsets.all(16),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Please enter content' : null,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Please enter content'
+                    : null,
               ),
               const SizedBox(height: 20),
-              
+
               _buildLabel('Category'),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: theme.colorScheme.outline.withValues(alpha: 0.2),
@@ -204,10 +220,16 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                 style: TextStyle(fontSize: 14),
                 keyboardType: TextInputType.url,
                 decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.announcementSourceHint,
-                  prefixIcon: Icon(Icons.link_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+                  hintText: AppLocalizations.of(
+                    context,
+                  )!.announcementSourceHint,
+                  prefixIcon: Icon(
+                    Icons.link_rounded,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                  ),
                   filled: true,
-                  fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  fillColor: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.3),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide(
@@ -221,11 +243,14 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                       width: 1.5,
                     ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               _buildLabel('Image Attachment'),
               GestureDetector(
                 onTap: _pickImage,
@@ -233,7 +258,9 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   width: double.infinity,
                   height: 180,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    color: theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.3,
+                    ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: theme.colorScheme.outline.withValues(alpha: 0.2),
@@ -251,7 +278,9 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                             Icon(
                               Icons.add_photo_alternate_rounded,
                               size: 48,
-                              color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.5,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Text(
@@ -270,9 +299,11 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
                   onPressed: () => setState(() => _imageFile = null),
                   icon: const Icon(Icons.close, size: 16),
                   label: const Text('Remove Image'),
-                  style: TextButton.styleFrom(foregroundColor: theme.colorScheme.error),
+                  style: TextButton.styleFrom(
+                    foregroundColor: theme.colorScheme.error,
+                  ),
                 ),
-              
+
               const SizedBox(height: 40),
               PrimaryButton(
                 onPressed: _isLoading ? null : _submit,
@@ -292,10 +323,7 @@ class _CreateAnnouncementScreenState extends State<CreateAnnouncementScreen> {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }

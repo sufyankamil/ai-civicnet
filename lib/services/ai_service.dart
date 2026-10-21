@@ -25,20 +25,24 @@ class AiService {
     );
 
     // Chat model for RAG and interaction
-    _chatModel = GenerativeModel(
-      model: 'gemini-flash-latest',
-      apiKey: apiKey,
-    );
+    _chatModel = GenerativeModel(model: 'gemini-flash-latest', apiKey: apiKey);
 
     _isInitialized = true;
     logger.i('AiService: Initialized with Gemini Embedding and Flash models');
   }
 
   /// Generates a 768-dimension vector for the given text.
-  Future<List<double>?> generateEmbedding(String text, {TaskType? taskType}) async {
+  Future<List<double>?> generateEmbedding(
+    String text, {
+    TaskType? taskType,
+  }) async {
     if (!_isInitialized || _embeddingModel == null) {
-      if (!_isInitialized) initialize(); 
-      if (!_isInitialized) throw Exception('AI Service failed to initialize. Check GEMINI_API_KEY in .env');
+      if (!_isInitialized) initialize();
+      if (!_isInitialized) {
+        throw Exception(
+          'AI Service failed to initialize. Check GEMINI_API_KEY in .env',
+        );
+      }
     }
 
     try {
@@ -48,10 +52,15 @@ class AiService {
         content,
         taskType: taskType,
       );
-      
+
       if (result.embedding.values.isNotEmpty) {
-        logger.d('AiService: Generated embedding for text (${text.length} chars)');
-        return result.embedding.values.take(768).map((e) => e.toDouble()).toList();
+        logger.d(
+          'AiService: Generated embedding for text (${text.length} chars)',
+        );
+        return result.embedding.values
+            .take(768)
+            .map((e) => e.toDouble())
+            .toList();
       }
 
       return null;
@@ -62,43 +71,61 @@ class AiService {
   }
 
   /// Helper to generate a combined embedding for a help request.
-  Future<List<double>?> generateRequestEmbedding(String title, String description, String category, {bool isQuery = false}) async {
-    final combinedText = 'Title: $title\nCategory: $category\nDescription: $description';
+  Future<List<double>?> generateRequestEmbedding(
+    String title,
+    String description,
+    String category, {
+    bool isQuery = false,
+  }) async {
+    final combinedText =
+        'Title: $title\nCategory: $category\nDescription: $description';
     return generateEmbedding(
-      combinedText, 
-      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument
+      combinedText,
+      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument,
     );
   }
 
   /// Helper to generate a combined embedding for a user profile.
-  Future<List<double>?> generateProfileEmbedding(String name, List<String> skills, {bool isQuery = false}) async {
+  Future<List<double>?> generateProfileEmbedding(
+    String name,
+    List<String> skills, {
+    bool isQuery = false,
+  }) async {
     final combinedText = 'Name: $name\nSkills: ${skills.join(", ")}';
     return generateEmbedding(
-      combinedText, 
-      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument
+      combinedText,
+      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument,
     );
   }
 
   /// Helper to generate a combined embedding for a community asset.
-  Future<List<double>?> generateAssetEmbedding(String title, String description, String category, {bool isQuery = false}) async {
-    final combinedText = 'Asset: $title\nCategory: $category\nDescription: $description';
+  Future<List<double>?> generateAssetEmbedding(
+    String title,
+    String description,
+    String category, {
+    bool isQuery = false,
+  }) async {
+    final combinedText =
+        'Asset: $title\nCategory: $category\nDescription: $description';
     return generateEmbedding(
-      combinedText, 
-      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument
+      combinedText,
+      taskType: isQuery ? TaskType.retrievalQuery : TaskType.retrievalDocument,
     );
   }
 
   /// Generates a search query for the RAG system based on the user's message.
   Future<String> generateSearchQuery(String userMessage) async {
     if (!_isInitialized || _chatModel == null) initialize();
-    
-    final systemPrompt = 'You are the CivicNet AI Assistant. Helping a community networking app.\n\n';
-    final prompt = '$systemPrompt'
+
+    final systemPrompt =
+        'You are the CivicNet AI Assistant. Helping a community networking app.\n\n';
+    final prompt =
+        '$systemPrompt'
         'Given this user message, extract 2-4 key search keywords '
         'or a short descriptive phrase that can be used to find relevant community content (help requests, events, news). '
         'Output ONLY the keywords/phrase, nothing else.\n\n'
         'User Message: $userMessage';
-        
+
     final response = await _chatModel!.generateContent([Content.text(prompt)]);
     return response.text?.trim() ?? userMessage;
   }
@@ -111,12 +138,14 @@ class AiService {
   }) async {
     if (!_isInitialized || _chatModel == null) initialize();
 
-    final systemPrompt = 'You are the CivicNet AI Assistant, a helpful and friendly guide for a local community networking app. '
+    final systemPrompt =
+        'You are the CivicNet AI Assistant, a helpful and friendly guide for a local community networking app. '
         'Your goal is to help users find help, discover events, and stay informed about their neighborhood. '
         'Use the following context to give accurate and relevant answers. '
         'Always be polite, encouraging, and focus on fostering community spirit.\n\n';
 
-    final prompt = '$systemPrompt'
+    final prompt =
+        '$systemPrompt'
         'Context from the CivicNet community:\n'
         '$context\n\n'
         'User Question: $query\n\n'
@@ -125,15 +154,17 @@ class AiService {
         'Keep the response concise, helpful, and community-oriented.';
 
     final content = [Content.text(prompt)];
-    
+
     // We can use startChat if history is provided
     if (history != null && history.isNotEmpty) {
       final chat = _chatModel!.startChat(history: history);
       final response = await chat.sendMessage(Content.text(prompt));
-      return response.text ?? 'I apologize, but I am unable to generate a response at the moment.';
+      return response.text ??
+          'I apologize, but I am unable to generate a response at the moment.';
     } else {
       final response = await _chatModel!.generateContent(content);
-      return response.text ?? 'I apologize, but I am unable to generate a response at the moment.';
+      return response.text ??
+          'I apologize, but I am unable to generate a response at the moment.';
     }
   }
 
@@ -141,7 +172,8 @@ class AiService {
   Future<String?> categorizeRequest(String title, String description) async {
     if (!_isInitialized || _chatModel == null) initialize();
 
-    final systemPrompt = 'You are an AI assistant for a local community networking app (CivicNet). '
+    final systemPrompt =
+        'You are an AI assistant for a local community networking app (CivicNet). '
         'Your task is to categorize a user\'s help request into exactly one of the following categories:\n'
         '- ERRANDS\n'
         '- TECHSUPPORT\n'
@@ -154,22 +186,29 @@ class AiService {
         'Analyze the title and description of the request and respond ONLY with the exact category name in all caps. '
         'Do not provide any explanation or extra text.';
 
-    final prompt = '$systemPrompt\n\n'
+    final prompt =
+        '$systemPrompt\n\n'
         'Title: $title\n'
         'Description: $description';
 
     try {
-      final response = await _chatModel!.generateContent(
-          [Content.text(prompt)]);
+      final response = await _chatModel!.generateContent([
+        Content.text(prompt),
+      ]);
       return response.text?.trim().toUpperCase();
     } catch (e) {
-      if (e.toString().contains('503') || e.toString().contains('SERVICE_UNAVAILABLE')) {
+      if (e.toString().contains('503') ||
+          e.toString().contains('SERVICE_UNAVAILABLE')) {
         // Simple retry once after 2 seconds for 503 during categorization
         await Future.delayed(const Duration(seconds: 2));
         try {
-          final retryResponse = await _chatModel!.generateContent([Content.text(prompt)]);
+          final retryResponse = await _chatModel!.generateContent([
+            Content.text(prompt),
+          ]);
           return retryResponse.text?.trim().toUpperCase();
-        } catch (_) { /* fall through */ }
+        } catch (_) {
+          /* fall through */
+        }
       }
       logger.e('AiService: Error categorizing request', error: e);
       return null;
@@ -208,7 +247,9 @@ class AiService {
     final hour = DateTime.now().hour;
     if (hour >= 5 && hour < 12) return 'Morning (a fresh start)';
     if (hour >= 12 && hour < 17) return 'Afternoon (active and buzzing)';
-    if (hour >= 17 && hour < 21) return 'Evening (winding down but still engaged)';
+    if (hour >= 17 && hour < 21) {
+      return 'Evening (winding down but still engaged)';
+    }
     return 'Night (peaceful and reflective, planning for tomorrow)';
   }
 
@@ -221,17 +262,26 @@ class AiService {
     if (!_isInitialized || _chatModel == null) initialize();
 
     final timeOfDay = _getTimeOfDayContext();
-    final requestsText = requests.take(3).map((r) => 
-      '- ${r.title} (${r.category.toString().split('.').last}) at ${r.distance ?? 'nearby'}'
-    ).join('\n');
+    final requestsText = requests
+        .take(3)
+        .map(
+          (r) =>
+              '- ${r.title} (${r.category.toString().split('.').last}) at ${r.distance ?? 'nearby'}',
+        )
+        .join('\n');
 
-    final eventsText = events.isEmpty 
-        ? 'No upcoming guild events today.' 
-        : events.take(2).map((e) => '- ${e.title} in your joined guild').join('\n');
+    final eventsText = events.isEmpty
+        ? 'No upcoming guild events today.'
+        : events
+              .take(2)
+              .map((e) => '- ${e.title} in your joined guild')
+              .join('\n');
 
-    final userStats = 'Points: ${user.points}, People Helped: ${user.helpCount}, Level: ${user.karmaLevel}';
+    final userStats =
+        'Points: ${user.points}, People Helped: ${user.helpCount}, Level: ${user.karmaLevel}';
 
-    final systemPrompt = 'You are the "CivicNet Scribe," a friendly and inspiring community AI. '
+    final systemPrompt =
+        'You are the "CivicNet Scribe," a friendly and inspiring community AI. '
         'Your goal is to write a short, personalized briefing for a user in a neighborhood networking app. '
         'The current time of day is: $timeOfDay.\n\n'
         'Keep it to exactly 3 short, punchy paragraphs in a professional magazine style. '
@@ -239,7 +289,8 @@ class AiService {
         'Paragraph 2: Highlight 1-2 ways they could help today (or plan for tomorrow if it is night) based on the requests provided. '
         'Paragraph 3: A boost of encouragement based on their impact stats and a clear call to action.\n\n';
 
-    final prompt = '$systemPrompt'
+    final prompt =
+        '$systemPrompt'
         'Community Data:\n'
         'Requests nearby:\n$requestsText\n\n'
         'Events:\n$eventsText\n\n'
@@ -247,20 +298,36 @@ class AiService {
         'Write the briefing now. Use friendly but professional language. Avoid using "Dear [Name]" at the start, just start with an appropriate greeting like "Good morning", "Good evening", or "Hello, neighbor".';
 
     try {
-      final response = await _chatModel!.generateContent([Content.text(prompt)]);
-      return response.text?.trim() ?? generateLocalBriefing(requests: requests, events: events, user: user);
+      final response = await _chatModel!.generateContent([
+        Content.text(prompt),
+      ]);
+      return response.text?.trim() ??
+          generateLocalBriefing(requests: requests, events: events, user: user);
     } catch (e) {
-      if (e.toString().contains('503') || e.toString().contains('SERVICE_UNAVAILABLE')) {
+      if (e.toString().contains('503') ||
+          e.toString().contains('SERVICE_UNAVAILABLE')) {
         // Automatic retry once for the briefing
         await Future.delayed(const Duration(seconds: 2));
         try {
-          final retryResponse = await _chatModel!.generateContent([Content.text(prompt)]);
-          return retryResponse.text?.trim() ?? generateLocalBriefing(requests: requests, events: events, user: user);
-        } catch (_) { /* fall through */ }
+          final retryResponse = await _chatModel!.generateContent([
+            Content.text(prompt),
+          ]);
+          return retryResponse.text?.trim() ??
+              generateLocalBriefing(
+                requests: requests,
+                events: events,
+                user: user,
+              );
+        } catch (_) {
+          /* fall through */
+        }
       }
       logger.e('AiService: Error generating community briefing', error: e);
-      return generateLocalBriefing(requests: requests, events: events, user: user);
+      return generateLocalBriefing(
+        requests: requests,
+        events: events,
+        user: user,
+      );
     }
   }
 }
-

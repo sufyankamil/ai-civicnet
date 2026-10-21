@@ -32,11 +32,7 @@ class SuccessAnimation extends StatelessWidget {
       barrierColor: Colors.black.withValues(alpha: 0.85),
       transitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, anim1, anim2) {
-        return SuccessAnimation(
-          title: title,
-          subtitle: subtitle,
-          icon: icon,
-        );
+        return SuccessAnimation(title: title, subtitle: subtitle, icon: icon);
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
@@ -54,7 +50,8 @@ class SuccessAnimation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String confettiUrl = 'https://lottie.host/6ab623c2-d1d5-4521-862a-0630b925f385/u6mE1j0c8o.json';
+    const String confettiUrl =
+        'https://lottie.host/6ab623c2-d1d5-4521-862a-0630b925f385/u6mE1j0c8o.json';
 
     if (size != null) {
       return SizedBox(
@@ -67,10 +64,10 @@ class SuccessAnimation extends StatelessWidget {
               confettiUrl,
               fit: BoxFit.contain,
               repeat: false,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+              errorBuilder: (context, error, stackTrace) =>
+                  const SizedBox.shrink(),
             ),
-            if (icon != null)
-              Icon(icon, size: size! * 0.4, color: baseColor),
+            if (icon != null) Icon(icon, size: size! * 0.4, color: baseColor),
           ],
         ),
       );
@@ -87,9 +84,10 @@ class SuccessAnimation extends StatelessWidget {
             height: double.infinity,
             fit: BoxFit.cover,
             repeat: false,
-            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+            errorBuilder: (context, error, stackTrace) =>
+                const SizedBox.shrink(),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Column(
@@ -155,12 +153,20 @@ class SuccessAnimation extends StatelessWidget {
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: baseColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 15,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   child: const Text(
                     'AMAZING!',
-                    style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.1),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
                   ),
                 ),
               ],

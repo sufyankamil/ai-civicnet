@@ -1,26 +1,33 @@
-
 import 'package:flutter/material.dart';
 
 class AppColors {
   // Light Mode
-  static const Color primaryLight = Color(0xFF7B61FF); // Vivid Violet (profile gradient)
+  static const Color primaryLight = Color(
+    0xFF7B61FF,
+  ); // Vivid Violet (profile gradient)
   static const Color secondaryLight = Color(0xFFB388FF); // Soft Lavender
   static const Color accentLight = Color(0xFFFF6B6B); // Warm Alert/Action
-  static const Color backgroundLight = Color(0xFFF7F7F9); // Subtle off-white (not bright, not purple)
+  static const Color backgroundLight = Color(
+    0xFFF7F7F9,
+  ); // Subtle off-white (not bright, not purple)
   static const Color surfaceLight = Colors.white;
   static const Color textPrimaryLight = Color(0xFF2D2436);
   static const Color textSecondaryLight = Color(0xFF636E72);
 
   // Dark Mode
-  static const Color primaryDark = Color(0xFFC2B4FF); // Softer, more readable violet
+  static const Color primaryDark = Color(
+    0xFFC2B4FF,
+  ); // Softer, more readable violet
   static const Color secondaryDark = Color(0xFFE0D4FF); // Very pale lavender
   static const Color accentDark = Color(0xFFFF9E9E); // Softer Red
   static const Color backgroundDark = Color(0xFF0F0E17); // Deeper purple-black
   static const Color surfaceDark = Color(0xFF161622); // Card surface
   static const Color surfaceVariantDark = Color(0xFF232232); // For inputs/chips
-  static const Color textPrimaryDark = Color(0xFFF9F9FB); // Off-white for less eye strain
-  static const Color textSecondaryDark = Color(0xFFA7A9BE); 
-  
+  static const Color textPrimaryDark = Color(
+    0xFFF9F9FB,
+  ); // Off-white for less eye strain
+  static const Color textSecondaryDark = Color(0xFFA7A9BE);
+
   // Aura & Glass Effects
   static const Color glassSurfaceLight = Color(0x99FFFFFF); // 60% White
   static const Color glassSurfaceDark = Color(0x33161622); // 20% surfaceDark
@@ -42,7 +49,9 @@ class AppColors {
   );
 
   static LinearGradient primaryGradient(Brightness brightness) {
-    return brightness == Brightness.dark ? primaryGradientDark : primaryGradientLight;
+    return brightness == Brightness.dark
+        ? primaryGradientDark
+        : primaryGradientLight;
   }
 
   static const LinearGradient auraGradient = LinearGradient(
@@ -76,7 +85,9 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 4,
           shadowColor: AppColors.primaryLight.withValues(alpha: 0.4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
       ),
@@ -127,7 +138,9 @@ class AppTheme {
           foregroundColor: AppColors.backgroundDark,
           elevation: 4,
           shadowColor: AppColors.primaryDark.withValues(alpha: 0.4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         ),
       ),

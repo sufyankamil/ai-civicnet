@@ -21,14 +21,14 @@ class ChatConversationEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        otherUserId,
-        otherUserName,
-        otherUserAvatar,
-        lastMessage,
-        lastMessageTime,
-        unreadCount,
-      ];
+    id,
+    otherUserId,
+    otherUserName,
+    otherUserAvatar,
+    lastMessage,
+    lastMessageTime,
+    unreadCount,
+  ];
 
   ChatConversationEntity copyWith({
     String? id,

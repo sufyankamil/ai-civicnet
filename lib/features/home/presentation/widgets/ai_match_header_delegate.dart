@@ -17,7 +17,11 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
     final double t = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final int matchPercentage = (request.aiRelevanceScore * 100).toInt();
@@ -27,11 +31,21 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
     final double cardPadding = lerpDouble(16.0, 12.0, t)!.roundToDouble();
     final double borderRadius = lerpDouble(24.0, 16.0, t)!.roundToDouble();
     final double titleSize = lerpDouble(22.0, 15.0, t)!.roundToDouble();
-    final double opacity = (1.0 - t * 2.5).clamp(0.0, 1.0); // Description fades quickly
+    final double opacity = (1.0 - t * 2.5).clamp(
+      0.0,
+      1.0,
+    ); // Description fades quickly
 
     return Container(
-      padding: EdgeInsets.fromLTRB(horizontalPadding, 2.0, horizontalPadding, 16.0),
-      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: t > 0.5 ? (t - 0.5) * 2 : 0.0),
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
+        2.0,
+        horizontalPadding,
+        16.0,
+      ),
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(
+        alpha: t > 0.5 ? (t - 0.5) * 2 : 0.0,
+      ),
       child: AppHaptic(
         onTap: () => context.push('/request/${request.id}'),
         child: Container(
@@ -47,7 +61,9 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryLight.withValues(alpha: 0.2 * (1 - t * 0.5)),
+                color: AppColors.primaryLight.withValues(
+                  alpha: 0.2 * (1 - t * 0.5),
+                ),
                 blurRadius: 20 * (1 - t * 0.5),
                 offset: Offset(0, 10 * (1 - t * 0.5)),
               ),
@@ -78,8 +94,10 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                 child: Container(
                   padding: EdgeInsets.all(cardPadding),
                   decoration: BoxDecoration(
-                   color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.05),
-                   borderRadius: BorderRadius.circular(borderRadius),
+                    color: (isDark ? Colors.black : Colors.white).withValues(
+                      alpha: 0.05,
+                    ),
+                    borderRadius: BorderRadius.circular(borderRadius),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -90,7 +108,11 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             _buildMatchBadge(matchPercentage),
-                            const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -98,15 +120,19 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                       Row(
                         children: [
                           if (t > 0.5) ...[
-                             const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
-                             const SizedBox(width: 8),
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
                           ],
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                if (t < 0.3) 
+                                if (t < 0.3)
                                   const Text(
                                     'PREMIUM AI MATCH',
                                     style: TextStyle(
@@ -125,7 +151,9 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
                                     height: 1.1,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.black.withValues(alpha: 0.2),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),
@@ -183,7 +211,11 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
           const SizedBox(width: 4),
           Text(
             '$percentage% MATCH',
-            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -202,7 +234,11 @@ class AiMatchHeaderDelegate extends SliverPersistentHeaderDelegate {
         children: [
           Text(
             'Action',
-            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 8),
         ],

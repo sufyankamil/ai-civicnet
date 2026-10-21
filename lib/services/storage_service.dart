@@ -15,12 +15,15 @@ class StorageService {
   Future<String?> uploadAvatar(File imageFile, String userId) async {
     try {
       final ext = imageFile.path.split('.').last;
-      final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final fileName =
+          '${userId}_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final path = fileName;
 
       logger.i('Uploading avatar to path: $path');
 
-      await _client.storage.from('avatars').upload(
+      await _client.storage
+          .from('avatars')
+          .upload(
             path,
             imageFile,
             fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
@@ -32,10 +35,12 @@ class StorageService {
       final cacheBustedUrl = publicUrl;
 
       logger.i('Avatar uploaded successfully. Public URL: $cacheBustedUrl');
-      
+
       return cacheBustedUrl;
     } on StorageException catch (se) {
-      logger.e('Storage Exception: ${se.message}\nThis often means the "avatars" bucket is missing or RLS policies deny upload.');
+      logger.e(
+        'Storage Exception: ${se.message}\nThis often means the "avatars" bucket is missing or RLS policies deny upload.',
+      );
       return null;
     } catch (e) {
       logger.e('Error uploading avatar: $e');

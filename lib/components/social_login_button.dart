@@ -28,9 +28,7 @@ class SocialLoginButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
             border: Border.all(
-              color: isLoading
-                  ? Colors.grey.shade200
-                  : Colors.grey.shade300,
+              color: isLoading ? Colors.grey.shade200 : Colors.grey.shade300,
             ),
             borderRadius: BorderRadius.circular(16),
             color: isDark ? const Color(0xFF2D2D44) : Colors.white,

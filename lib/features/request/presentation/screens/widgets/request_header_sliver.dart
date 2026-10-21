@@ -19,13 +19,17 @@ class RequestHeaderSliver extends StatelessWidget {
     required this.onDelete,
   });
 
-  Widget _buildGlassIconButton(BuildContext context, IconData icon, VoidCallback onTap) {
+  Widget _buildGlassIconButton(
+    BuildContext context,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final Color bgColor = isDark 
-        ? Colors.black.withValues(alpha: 0.4) 
+
+    final Color bgColor = isDark
+        ? Colors.black.withValues(alpha: 0.4)
         : Colors.white.withValues(alpha: 0.85);
-    
+
     final Color iconColor = isDark ? Colors.white : Colors.black87;
 
     return Container(
@@ -33,7 +37,9 @@ class RequestHeaderSliver extends StatelessWidget {
       decoration: BoxDecoration(
         color: bgColor,
         shape: BoxShape.circle,
-        border: Border.all(color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1)),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
+        ),
       ),
       child: ClipOval(
         child: BackdropFilter(
@@ -55,16 +61,27 @@ class RequestHeaderSliver extends StatelessWidget {
       stretch: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
-      leading: _buildGlassIconButton(context, Icons.arrow_back_rounded, () => context.pop()),
+      leading: _buildGlassIconButton(
+        context,
+        Icons.arrow_back_rounded,
+        () => context.pop(),
+      ),
       actions: [
         if (currentUserId != null && currentUserId != request.requesterId)
           _buildGlassIconButton(context, Icons.flag_outlined, onReport),
         if (currentUserId != null && currentUserId == request.requesterId)
-          _buildGlassIconButton(context, Icons.delete_outline_rounded, onDelete),
+          _buildGlassIconButton(
+            context,
+            Icons.delete_outline_rounded,
+            onDelete,
+          ),
         const SizedBox(width: 8),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
+        stretchModes: const [
+          StretchMode.zoomBackground,
+          StretchMode.blurBackground,
+        ],
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -106,13 +123,19 @@ class RequestHeaderSliver extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryLight.withValues(alpha: 0.3),
+                            color: AppColors.primaryLight.withValues(
+                              alpha: 0.3,
+                            ),
                             blurRadius: 20,
                             spreadRadius: 5,
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.location_on_rounded, color: Colors.white, size: 32),
+                      child: const Icon(
+                        Icons.location_on_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
                     ),
                     onEnd: () {},
                   ),

@@ -39,12 +39,18 @@ class RequestInfoSection extends StatelessWidget {
   String _getLocalizedCategory(BuildContext context, String category) {
     final l10n = AppLocalizations.of(context)!;
     switch (category.toLowerCase()) {
-      case 'emergency': return l10n.categoryEmergency;
-      case 'tech support': return l10n.categoryTechSupport;
-      case 'household': return l10n.categoryHousehold;
-      case 'education': return l10n.categoryEducation;
-      case 'general': return l10n.categoryGeneral;
-      default: return category;
+      case 'emergency':
+        return l10n.categoryEmergency;
+      case 'tech support':
+        return l10n.categoryTechSupport;
+      case 'household':
+        return l10n.categoryHousehold;
+      case 'education':
+        return l10n.categoryEducation;
+      case 'general':
+        return l10n.categoryGeneral;
+      default:
+        return category;
     }
   }
 
@@ -68,14 +74,24 @@ class RequestInfoSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChipContent(BuildContext context, RequestStatusEnum status, Color color, bool isInteractive) {
+  Widget _buildStatusChipContent(
+    BuildContext context,
+    RequestStatusEnum status,
+    Color color,
+    bool isInteractive,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? color : (
-      color == Colors.green ? Colors.green[700]! :
-      color == Colors.blue ? Colors.blue[700]! :
-      color == Colors.purple ? Colors.purple[700]! :
-      color == Colors.grey ? Colors.grey[800]! : color
-    );
+    final Color textColor = isDark
+        ? color
+        : (color == Colors.green
+              ? Colors.green[700]!
+              : color == Colors.blue
+              ? Colors.blue[700]!
+              : color == Colors.purple
+              ? Colors.purple[700]!
+              : color == Colors.grey
+              ? Colors.grey[800]!
+              : color);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -95,7 +111,11 @@ class RequestInfoSection extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             status.toString().split('.').last.toUpperCase(),
-            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 12),
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
           ),
           if (isInteractive) ...[
             const SizedBox(width: 4),
@@ -122,7 +142,11 @@ class RequestInfoSection extends StatelessWidget {
                 value: s,
                 child: Text(
                   s.toString().split('.').last.toUpperCase(),
-                  style: TextStyle(color: _statusColor(s), fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                    color: _statusColor(s),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             )
@@ -149,11 +173,16 @@ class RequestInfoSection extends StatelessWidget {
                     _getLocalizedCategory(context, request.category.name),
                     _getCategoryColor(request.category.name),
                   ),
-                  if (request.distance.isNotEmpty && request.distance.toLowerCase() != 'unknown') ...[
+                  if (request.distance.isNotEmpty &&
+                      request.distance.toLowerCase() != 'unknown') ...[
                     const SizedBox(width: 8),
                     Text(
                       request.distance,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ],

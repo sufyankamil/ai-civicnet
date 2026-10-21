@@ -21,17 +21,19 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
   void initState() {
     super.initState();
     _checkInitialConnectivity();
-    _subscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
-       _updateConnectionStatus(results);
+    _subscription = Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
+      _updateConnectionStatus(results);
     });
   }
 
   Future<void> _checkInitialConnectivity() async {
     try {
-      // Force a manual internet check regardless of what hardware reports, 
+      // Force a manual internet check regardless of what hardware reports,
       // especially useful when the user explicitly taps "Retry"
       bool hasInternet = await _hasActualInternet();
-      
+
       _setConnectionState(hasInternet);
     } catch (e) {
       logger.e("Couldn't check connectivity status", error: e);
@@ -48,12 +50,14 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
   }
 
   void _updateConnectionStatus(List<ConnectivityResult> results) async {
-    bool isConnectedByHardware = results.isNotEmpty && !results.every((r) => r == ConnectivityResult.none);
-    
+    bool isConnectedByHardware =
+        results.isNotEmpty &&
+        !results.every((r) => r == ConnectivityResult.none);
+
     if (isConnectedByHardware && !_isConnected) {
-       isConnectedByHardware = await _hasActualInternet();
+      isConnectedByHardware = await _hasActualInternet();
     }
-    
+
     _setConnectionState(isConnectedByHardware);
   }
 
@@ -83,15 +87,10 @@ class _ConnectivityWrapperState extends State<ConnectivityWrapper> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        AbsorbPointer(
-          absorbing: !_isConnected,
-          child: widget.child,
-        ),
+        AbsorbPointer(absorbing: !_isConnected, child: widget.child),
         if (!_isConnected)
           Positioned.fill(
-            child: _NoInternetScreen(
-              onRetry: _checkInitialConnectivity,
-            ),
+            child: _NoInternetScreen(onRetry: _checkInitialConnectivity),
           ),
       ],
     );
@@ -152,7 +151,8 @@ class _NoInternetScreenState extends State<_NoInternetScreen> {
                 'Please check your network settings and try again.',
                 style: TextStyle(
                   fontSize: 16,
-                  color: theme.textTheme.bodyMedium?.color ?? Colors.grey.shade600,
+                  color:
+                      theme.textTheme.bodyMedium?.color ?? Colors.grey.shade600,
                   inherit: false,
                 ),
                 textAlign: TextAlign.center,
@@ -173,11 +173,18 @@ class _NoInternetScreenState extends State<_NoInternetScreen> {
                       ? const SizedBox(
                           height: 24,
                           width: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text(
                           'Retry Connection',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                 ),
               ),

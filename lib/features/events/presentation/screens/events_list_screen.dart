@@ -18,7 +18,8 @@ class EventsListScreen extends StatefulWidget {
   State<EventsListScreen> createState() => _EventsListScreenState();
 }
 
-class _EventsListScreenState extends State<EventsListScreen> with SingleTickerProviderStateMixin {
+class _EventsListScreenState extends State<EventsListScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -47,10 +48,14 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: AppBar(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.7),
+              backgroundColor: Theme.of(
+                context,
+              ).scaffoldBackgroundColor.withValues(alpha: 0.7),
               elevation: 0,
               centerTitle: false,
-              systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+              systemOverlayStyle: isDark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark,
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -84,7 +89,10 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                         color: AppColors.primaryLight.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.add_rounded, color: AppColors.primaryLight),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: AppColors.primaryLight,
+                      ),
                     ),
                   ),
                 ),
@@ -110,7 +118,7 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
         child: Column(
           children: [
             const SizedBox(height: 136),
-            
+
             // Custom Segmented Control
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -118,7 +126,9 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                 height: 50,
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: TabBar(
@@ -135,9 +145,18 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                     ],
                   ),
                   labelColor: Colors.white,
-                  unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey[600],
-                  labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.3),
-                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  unselectedLabelColor: isDark
+                      ? Colors.grey[400]
+                      : Colors.grey[600],
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
+                    letterSpacing: 0.3,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
                   dividerColor: Colors.transparent,
                   indicatorSize: TabBarIndicatorSize.tab,
                   tabs: [
@@ -147,14 +166,26 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                 ),
               ),
             ),
-    
+
             // Events List
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildEventsList(context, viewModel, viewModel.upcomingEvents, l10n, true),
-                  _buildEventsList(context, viewModel, viewModel.pastEvents, l10n, false),
+                  _buildEventsList(
+                    context,
+                    viewModel,
+                    viewModel.upcomingEvents,
+                    l10n,
+                    true,
+                  ),
+                  _buildEventsList(
+                    context,
+                    viewModel,
+                    viewModel.pastEvents,
+                    l10n,
+                    false,
+                  ),
                 ],
               ),
             ),
@@ -164,13 +195,21 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
     );
   }
 
-  Widget _buildEventsList(BuildContext context, EventsViewModel viewModel, List<Event> events, AppLocalizations l10n, bool upcoming) {
+  Widget _buildEventsList(
+    BuildContext context,
+    EventsViewModel viewModel,
+    List<Event> events,
+    AppLocalizations l10n,
+    bool upcoming,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return RefreshIndicator(
       onRefresh: viewModel.fetchEvents,
       child: Obx(() {
-        final currentEvents = upcoming ? viewModel.upcomingEvents : viewModel.pastEvents;
+        final currentEvents = upcoming
+            ? viewModel.upcomingEvents
+            : viewModel.pastEvents;
 
         if (viewModel.isLoading && currentEvents.isEmpty) {
           return ListView.builder(
@@ -192,13 +231,17 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.03),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.03)
+                            : Colors.black.withValues(alpha: 0.03),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        upcoming ? Icons.calendar_today_rounded : Icons.history_rounded, 
-                        size: 64, 
-                        color: Colors.grey[300]
+                        upcoming
+                            ? Icons.calendar_today_rounded
+                            : Icons.history_rounded,
+                        size: 64,
+                        color: Colors.grey[300],
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -231,13 +274,18 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                       AppHaptic(
                         onTap: () => context.push('/create-event'),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryLight,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primaryLight.withValues(alpha: 0.3),
+                                color: AppColors.primaryLight.withValues(
+                                  alpha: 0.3,
+                                ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -246,7 +294,11 @@ class _EventsListScreenState extends State<EventsListScreen> with SingleTickerPr
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                              const Icon(
+                                Icons.add_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 l10n.postAnEvent.toUpperCase(),

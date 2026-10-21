@@ -34,11 +34,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   Future<void> _handleReset() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final error = await _authViewModel.sendPasswordResetEmail(
       _emailController.text.trim(),
     );
-    
+
     if (mounted) {
       if (error == null) {
         setState(() => _emailSent = true);
@@ -52,10 +52,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final error = await _authViewModel.sendPasswordResetEmail(
       _emailController.text.trim(),
     );
-    
+
     if (mounted) {
       if (error == null) {
-        ToastService.showSuccess(context, AppLocalizations.of(context)!.resetLinkResent);
+        ToastService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.resetLinkResent,
+        );
       } else {
         ToastService.showError(context, error);
       }
@@ -72,8 +75,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: isDark ? Colors.white : Theme.of(context).primaryColor),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: isDark ? Colors.white : Theme.of(context).primaryColor,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -93,12 +98,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
-                          color: isDark 
-                            ? Colors.white.withValues(alpha: 0.05) 
-                            : Colors.white.withValues(alpha: 0.6),
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.white.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.white,
                             width: 1.5,
                           ),
                           boxShadow: [
@@ -109,7 +116,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             ),
                           ],
                         ),
-                        child: _emailSent ? _buildSuccessView(isDark) : _buildFormView(isDark),
+                        child: _emailSent
+                            ? _buildSuccessView(isDark)
+                            : _buildFormView(isDark),
                       ),
                     ),
                   ),
@@ -146,8 +155,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
               ],
             ),
-            child: const Icon(Icons.lock_reset_rounded,
-                color: Colors.white, size: 32),
+            child: const Icon(
+              Icons.lock_reset_rounded,
+              color: Colors.white,
+              size: 32,
+            ),
           ),
           const SizedBox(height: 28),
           Text(
@@ -161,11 +173,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 10),
           Text(
             AppLocalizations.of(context)!.noWorriesReset,
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey,
-              height: 1.6,
-            ),
+            style: TextStyle(fontSize: 15, color: Colors.grey, height: 1.6),
           ),
           const SizedBox(height: 40),
           CustomTextField(
@@ -183,11 +191,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             },
           ),
           const SizedBox(height: 32),
-          Obx(() => PrimaryButton(
-            text: AppLocalizations.of(context)!.sendResetLink,
-            isLoading: _authViewModel.isLoading,
-            onPressed: _handleReset,
-          )),
+          Obx(
+            () => PrimaryButton(
+              text: AppLocalizations.of(context)!.sendResetLink,
+              isLoading: _authViewModel.isLoading,
+              onPressed: _handleReset,
+            ),
+          ),
           const SizedBox(height: 24),
           Center(
             child: TextButton(
@@ -231,28 +241,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
             ],
           ),
-          child: const Icon(Icons.mark_email_read_rounded,
-              color: Colors.white, size: 52),
+          child: const Icon(
+            Icons.mark_email_read_rounded,
+            color: Colors.white,
+            size: 52,
+          ),
         ),
         const SizedBox(height: 36),
         Text(
           AppLocalizations.of(context)!.checkYourInbox,
-          style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 14),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(
-            AppLocalizations.of(context)!.resetSentTo(_emailController.text.trim()),
+            AppLocalizations.of(
+              context,
+            )!.resetSentTo(_emailController.text.trim()),
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey,
-              height: 1.6,
-            ),
+            style: TextStyle(fontSize: 15, color: Colors.grey, height: 1.6),
           ),
         ),
         const SizedBox(height: 8),

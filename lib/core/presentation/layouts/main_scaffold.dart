@@ -34,10 +34,15 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     final String location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/home')) { _selectedIndex = 0; }
-    else if (location.startsWith('/discover')) { _selectedIndex = 1; }
-    else if (location.startsWith('/events')) { _selectedIndex = 2; }
-    else if (location.startsWith('/chat')) { _selectedIndex = 3; }
+    if (location.startsWith('/home')) {
+      _selectedIndex = 0;
+    } else if (location.startsWith('/discover')) {
+      _selectedIndex = 1;
+    } else if (location.startsWith('/events')) {
+      _selectedIndex = 2;
+    } else if (location.startsWith('/chat')) {
+      _selectedIndex = 3;
+    }
 
     return Scaffold(
       extendBody: true,
@@ -46,15 +51,19 @@ class _MainScaffoldState extends State<MainScaffold> {
           NotificationListener<UserScrollNotification>(
             onNotification: (notification) {
               if (notification.direction == ScrollDirection.forward) {
-                if (!_isBottomNavVisible) setState(() => _isBottomNavVisible = true);
+                if (!_isBottomNavVisible) {
+                  setState(() => _isBottomNavVisible = true);
+                }
               } else if (notification.direction == ScrollDirection.reverse) {
-                if (_isBottomNavVisible) setState(() => _isBottomNavVisible = false);
+                if (_isBottomNavVisible) {
+                  setState(() => _isBottomNavVisible = false);
+                }
               }
               return true;
             },
             child: widget.child,
           ),
-          
+
           // Floating Bottom Navigation Bar Overlay
           Positioned(
             left: 0,
@@ -77,7 +86,9 @@ class _MainScaffoldState extends State<MainScaffold> {
               child: AnimatedSlide(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOutCubic,
-                offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 2.8),
+                offset: _isBottomNavVisible
+                    ? Offset.zero
+                    : const Offset(0, 2.8),
                 child: Padding(
                   // 4 (nav bottom margin) + 35 (half nav height) - 28 (half FAB height) = 11
                   padding: const EdgeInsets.only(bottom: 11),
@@ -100,15 +111,25 @@ class _MainScaffoldState extends State<MainScaffold> {
 
           double targetX;
           if (_isDragging) {
-            targetX = (_dragX - 24 - (itemWidth / 2)).clamp(0, barWidth - itemWidth);
+            targetX = (_dragX - 24 - (itemWidth / 2)).clamp(
+              0,
+              barWidth - itemWidth,
+            );
           } else {
             // Current logical index position (mapping 0-5 index to 0-6 position)
-            int posIndex = _navItems.indexWhere((n) => n.index == _selectedIndex);
+            int posIndex = _navItems.indexWhere(
+              (n) => n.index == _selectedIndex,
+            );
             targetX = posIndex * itemWidth;
           }
 
           return Container(
-            margin: const EdgeInsets.only(left: 24, right: 24, bottom: 4, top: 20),
+            margin: const EdgeInsets.only(
+              left: 24,
+              right: 24,
+              bottom: 4,
+              top: 20,
+            ),
             height: 70,
             child: Stack(
               children: [
@@ -124,7 +145,11 @@ class _MainScaffoldState extends State<MainScaffold> {
                             : Colors.black.withValues(alpha: 0.4),
                         borderRadius: BorderRadius.circular(35),
                         border: Border.all(
-                          color: (Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.white).withValues(alpha: 0.15),
+                          color:
+                              (Theme.of(context).brightness == Brightness.light
+                                      ? Colors.white
+                                      : Colors.white)
+                                  .withValues(alpha: 0.15),
                           width: 1.5,
                         ),
                         boxShadow: [
@@ -141,7 +166,9 @@ class _MainScaffoldState extends State<MainScaffold> {
 
                 // 2. Sliding Highlight
                 AnimatedPositioned(
-                  duration: _isDragging ? Duration.zero : const Duration(milliseconds: 400),
+                  duration: _isDragging
+                      ? Duration.zero
+                      : const Duration(milliseconds: 400),
                   curve: Curves.easeOutBack,
                   left: targetX,
                   top: 0,
@@ -152,10 +179,14 @@ class _MainScaffoldState extends State<MainScaffold> {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.12),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.2),
                           width: 1,
                         ),
                       ),
@@ -174,13 +205,17 @@ class _MainScaffoldState extends State<MainScaffold> {
                   onHorizontalDragUpdate: (details) {
                     setState(() {
                       _dragX = details.globalPosition.dx;
-                      
+
                       // Identify current hover index for haptics
                       final localX = details.localPosition.dx;
-                      final hoverPos = (localX / itemWidth).floor().clamp(0, _navItems.length - 1);
+                      final hoverPos = (localX / itemWidth).floor().clamp(
+                        0,
+                        _navItems.length - 1,
+                      );
                       final navItem = _navItems[hoverPos];
-                      
-                      if (navItem.index != -1 && navItem.index != _lastHapticIndex) {
+
+                      if (navItem.index != -1 &&
+                          navItem.index != _lastHapticIndex) {
                         HapticFeedback.lightImpact();
                         _lastHapticIndex = navItem.index;
                       }
@@ -188,8 +223,12 @@ class _MainScaffoldState extends State<MainScaffold> {
                   },
                   onHorizontalDragEnd: (details) {
                     final renderBox = context.findRenderObject() as RenderBox;
-                    final localX = renderBox.globalToLocal(Offset(_dragX, 0)).dx - 24;
-                    final finalPos = (localX / itemWidth).floor().clamp(0, _navItems.length - 1);
+                    final localX =
+                        renderBox.globalToLocal(Offset(_dragX, 0)).dx - 24;
+                    final finalPos = (localX / itemWidth).floor().clamp(
+                      0,
+                      _navItems.length - 1,
+                    );
                     final navItem = _navItems[finalPos];
 
                     setState(() {
@@ -197,7 +236,8 @@ class _MainScaffoldState extends State<MainScaffold> {
                       _lastHapticIndex = -1;
                     });
 
-                    if (navItem.index != -1 && navItem.index != _selectedIndex) {
+                    if (navItem.index != -1 &&
+                        navItem.index != _selectedIndex) {
                       context.go(navItem.route);
                       setState(() => _selectedIndex = navItem.index);
                     }
@@ -205,9 +245,9 @@ class _MainScaffoldState extends State<MainScaffold> {
                   child: Row(
                     children: _navItems.map((item) {
                       return Expanded(
-                        child: item.index == -1 
-                          ? const SizedBox.shrink() 
-                          : _buildNavItemWidget(item),
+                        child: item.index == -1
+                            ? const SizedBox.shrink()
+                            : _buildNavItemWidget(item),
                       );
                     }).toList(),
                   ),
@@ -222,8 +262,8 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   Widget _buildNavItemWidget(NavConfig item) {
     final isSelected = _selectedIndex == item.index;
-    final Color color = isSelected 
-        ? Theme.of(context).primaryColor 
+    final Color color = isSelected
+        ? Theme.of(context).primaryColor
         : Colors.grey.withValues(alpha: 0.8);
 
     Widget iconWidget = Icon(item.icon, color: color, size: 24);
@@ -242,10 +282,17 @@ class _MainScaffoldState extends State<MainScaffold> {
                 top: -4,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
                   child: Text(
                     count.toString(),
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               );
@@ -271,28 +318,31 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   Widget _buildFab() {
     return GestureDetector(
-        onTap: () {
-          if (_selectedIndex == 1) { // Discover
-            context.push('/create-event');
-          } else {
-            context.push('/create-request');
-          }
-        },
-        child: Container(
-          width: 56, height: 56,
-          decoration: BoxDecoration(
-            gradient: AppColors.primaryGradient(Theme.of(context).brightness),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primaryLight.withValues(alpha: 0.4),
-                blurRadius: 10, offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.add, color: Colors.white, size: 32),
+      onTap: () {
+        if (_selectedIndex == 1) {
+          // Discover
+          context.push('/create-event');
+        } else {
+          context.push('/create-request');
+        }
+      },
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: AppColors.primaryGradient(Theme.of(context).brightness),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryLight.withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      );
+        child: const Icon(Icons.add, color: Colors.white, size: 32),
+      ),
+    );
   }
 }
 

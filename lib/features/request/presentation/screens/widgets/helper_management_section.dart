@@ -48,7 +48,11 @@ class HelperManagementSection extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.people_alt_rounded, size: 40, color: Colors.grey.withValues(alpha: 0.3)),
+          Icon(
+            Icons.people_alt_rounded,
+            size: 40,
+            color: Colors.grey.withValues(alpha: 0.3),
+          ),
           const SizedBox(height: 12),
           Text(
             AppLocalizations.of(context)!.noHelpersYet,
@@ -65,7 +69,10 @@ class HelperManagementSection extends StatelessWidget {
     );
   }
 
-  void _showAllHelpersBottomSheet(BuildContext context, List<legacy.Helper> helpers) {
+  void _showAllHelpersBottomSheet(
+    BuildContext context,
+    List<legacy.Helper> helpers,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -92,11 +99,18 @@ class HelperManagementSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    Icon(Icons.auto_awesome, color: AppColors.secondaryLight, size: 24),
+                    Icon(
+                      Icons.auto_awesome,
+                      color: AppColors.secondaryLight,
+                      size: 24,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'All Community Helpers',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
                   ],
                 ),
@@ -104,7 +118,10 @@ class HelperManagementSection extends StatelessWidget {
               const Divider(),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: helpers.length,
                   itemBuilder: (context, index) {
                     final helper = helpers[index];
@@ -135,18 +152,34 @@ class HelperManagementSection extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 20),
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Colors.amber,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   AppLocalizations.of(context)!.communityHelpers.toUpperCase(),
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.0, color: Colors.grey[500]),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 1.0,
+                    color: Colors.grey[500],
+                  ),
                 ),
               ],
             ),
             if (potentialHelpers.length > 3)
               TextButton(
-                onPressed: () => _showAllHelpersBottomSheet(context, potentialHelpers),
-                child: Text(AppLocalizations.of(context)!.viewAll, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                onPressed: () =>
+                    _showAllHelpersBottomSheet(context, potentialHelpers),
+                child: Text(
+                  AppLocalizations.of(context)!.viewAll,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
           ],
         ),
@@ -161,10 +194,14 @@ class HelperManagementSection extends StatelessWidget {
         else if (potentialHelpers.isEmpty)
           _buildEmptyHelpers(context)
         else
-          ...potentialHelpers.take(3).map((helper) => HelperCard(
-                helper: helper,
-                onTap: () => context.push('/profile/${helper.user.id}'),
-              )),
+          ...potentialHelpers
+              .take(3)
+              .map(
+                (helper) => HelperCard(
+                  helper: helper,
+                  onTap: () => context.push('/profile/${helper.user.id}'),
+                ),
+              ),
       ],
     );
   }

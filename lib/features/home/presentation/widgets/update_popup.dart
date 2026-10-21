@@ -36,10 +36,12 @@ class UpdatePopup extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = isDark ? AppColors.surfaceDark : Colors.white;
-    final titleColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
-    final bodyColor =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final titleColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
+    final bodyColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -65,7 +67,9 @@ class UpdatePopup extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: RadialGradient(
                         colors: [
-                          AppColors.primaryLight.withValues(alpha: isDark ? 0.28 : 0.16),
+                          AppColors.primaryLight.withValues(
+                            alpha: isDark ? 0.28 : 0.16,
+                          ),
                           AppColors.primaryLight.withValues(alpha: 0.0),
                         ],
                       ),
@@ -135,7 +139,9 @@ class UpdatePopup extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         elevation: 0,
-                        shadowColor: AppColors.primaryLight.withValues(alpha: 0.35),
+                        shadowColor: AppColors.primaryLight.withValues(
+                          alpha: 0.35,
+                        ),
                       ),
                       child: const Text(
                         'Update Now',

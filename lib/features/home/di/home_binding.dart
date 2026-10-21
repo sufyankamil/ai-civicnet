@@ -11,7 +11,8 @@ class HomeBinding extends Bindings {
   void dependencies() {
     // Data Sources
     Get.lazyPut<RequestRemoteDataSource>(
-      () => RequestRemoteDataSourceImpl(supabaseClient: Supabase.instance.client),
+      () =>
+          RequestRemoteDataSourceImpl(supabaseClient: Supabase.instance.client),
     );
 
     // Repositories

@@ -41,8 +41,10 @@ class _ProfileScreenState extends State<ProfileScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..forward();
-    _bannerAnim =
-        CurvedAnimation(parent: _bannerController, curve: Curves.easeOutCubic);
+    _bannerAnim = CurvedAnimation(
+      parent: _bannerController,
+      curve: Curves.easeOutCubic,
+    );
     _scrollController.addListener(() {
       final collapsed = _scrollController.offset > _collapseOffset;
       if (collapsed != _isCollapsed) setState(() => _isCollapsed = collapsed);
@@ -74,145 +76,167 @@ class _ProfileScreenState extends State<ProfileScreen>
         children: [
           Container(
             decoration: BoxDecoration(
-              gradient: isDark 
+              gradient: isDark
                   ? const LinearGradient(
                       colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
-                      begin: Alignment.topRight, end: Alignment.bottomLeft)
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                    )
                   : const LinearGradient(
                       colors: [Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
-                      begin: Alignment.topRight, end: Alignment.bottomLeft),
+                      begin: Alignment.topRight,
+                      end: Alignment.bottomLeft,
+                    ),
             ),
           ),
           StreamBuilder<User?>(
-        stream: _profileStream,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
-            return const AppLoader();
-          }
+            stream: _profileStream,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting &&
+                  !snapshot.hasData) {
+                return const AppLoader();
+              }
 
-          if (snapshot.hasError) {
-             return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline_rounded, size: 56, color: Colors.redAccent),
-                  const SizedBox(height: 16),
-                  Text('Error: ${snapshot.error}', // TODO: Localize
-                      style: const TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  AppElevatedButton(
-                      onPressed: _refreshProfile,
-                      child: const Text('Retry')),
-                ],
-              ),
-            );
-          }
-
-          if (snapshot.data == null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.person_off_outlined,
-                      size: 56, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  Text('Could not load profile', // TODO: Localize
-                      style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  AppElevatedButton(
-                      onPressed: _refreshProfile,
-                      child: const Text('Retry')),
-                ],
-              ),
-            );
-          }
-
-          final user = snapshot.data!;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              _refreshProfile();
-            },
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              slivers: [
-                _buildHeroSliver(user, isDark),
-                if (!user.isPublicProfile)
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: _buildPrivatePlaceholder(isDark),
-                  )
-                else
-                  SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 24),
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 100),
-                          child: ImpactDashboard(
-                            user: user,
-                            isDark: isDark,
-                            scrollController: _scrollController,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 250),
-                          child: _buildSkillsSection(user, isDark),
-                        ),
-                        const SizedBox(height: 28),
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 400),
-                          child: MilestoneGallery(
-                            user: user,
-                            isDark: isDark,
-                            scrollController: _scrollController,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 550),
-                          child: ImpactHeatmap(isDark: isDark),
-                        ),
-                        const SizedBox(height: 28),
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 700),
-                          child: _buildBadgeGallery(user, isDark),
-                        ),
-                        const SizedBox(height: 28),
-                      
-                        // SlideFadeTransition(
-                        //   delay: const Duration(milliseconds: 850),
-                        //   child: PrivacySettingsSection(isDark: isDark, user: user),
-                        // ),
-                        // const SizedBox(height: 28),
-                      
-                        SlideFadeTransition(
-                          delay: const Duration(milliseconds: 1000),
-                          child: _buildActionsSection(context, isDark, user),
-                        ),
-                        const SizedBox(height: 20),
-                        Center(
-                          child: Text(
-                            '"Empowering communities, one connection at a time."',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontStyle: FontStyle.italic,
-                              color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.4),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 60),
-                      ],
-                    ),
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        size: 56,
+                        color: Colors.redAccent,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error: ${snapshot.error}', // TODO: Localize
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      AppElevatedButton(
+                        onPressed: _refreshProfile,
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
-              ],
-            ),
-          );
-        },
-      ),
+                );
+              }
+
+              if (snapshot.data == null) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.person_off_outlined,
+                        size: 56,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Could not load profile', // TODO: Localize
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 16),
+                      AppElevatedButton(
+                        onPressed: _refreshProfile,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final user = snapshot.data!;
+
+              return RefreshIndicator(
+                onRefresh: () async {
+                  _refreshProfile();
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  slivers: [
+                    _buildHeroSliver(user, isDark),
+                    if (!user.isPublicProfile)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _buildPrivatePlaceholder(isDark),
+                      )
+                    else
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 24),
+                            SlideFadeTransition(
+                              delay: const Duration(milliseconds: 100),
+                              child: ImpactDashboard(
+                                user: user,
+                                isDark: isDark,
+                                scrollController: _scrollController,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            SlideFadeTransition(
+                              delay: const Duration(milliseconds: 250),
+                              child: _buildSkillsSection(user, isDark),
+                            ),
+                            const SizedBox(height: 28),
+                            SlideFadeTransition(
+                              delay: const Duration(milliseconds: 400),
+                              child: MilestoneGallery(
+                                user: user,
+                                isDark: isDark,
+                                scrollController: _scrollController,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            SlideFadeTransition(
+                              delay: const Duration(milliseconds: 550),
+                              child: ImpactHeatmap(isDark: isDark),
+                            ),
+                            const SizedBox(height: 28),
+                            SlideFadeTransition(
+                              delay: const Duration(milliseconds: 700),
+                              child: _buildBadgeGallery(user, isDark),
+                            ),
+                            const SizedBox(height: 28),
+
+                            // SlideFadeTransition(
+                            //   delay: const Duration(milliseconds: 850),
+                            //   child: PrivacySettingsSection(isDark: isDark, user: user),
+                            // ),
+                            // const SizedBox(height: 28),
+                            SlideFadeTransition(
+                              delay: const Duration(milliseconds: 1000),
+                              child: _buildActionsSection(
+                                context,
+                                isDark,
+                                user,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Center(
+                              child: Text(
+                                '"Empowering communities, one connection at a time."',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                  color: (isDark ? Colors.white : Colors.black)
+                                      .withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 60),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -227,7 +251,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           child: Container(
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark.withValues(alpha: 0.5) : Colors.white,
+              color: isDark
+                  ? AppColors.surfaceDark.withValues(alpha: 0.5)
+                  : Colors.white,
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -276,7 +302,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               backgroundColor: AppColors.primaryLight,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
             ),
           ),
         ),
@@ -287,8 +315,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   // ─── Hero Sliver ─────────────────────────────────────────────────────────
 
   Widget _buildHeroSliver(User user, bool isDark) {
-    final displayName =
-        user.name.isEmpty || user.name == 'Unknown' ? AppLocalizations.of(context)!.noName : user.name;
+    final displayName = user.name.isEmpty || user.name == 'Unknown'
+        ? AppLocalizations.of(context)!.noName
+        : user.name;
 
     return SliverAppBar(
       expandedHeight: 280,
@@ -317,16 +346,25 @@ class _ProfileScreenState extends State<ProfileScreen>
                           radius: 16,
                           backgroundImage: imageProvider,
                         ),
-                        errorWidget: (context, url, error) => const CircleAvatar(
-                          radius: 16,
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, size: 20, color: Colors.white),
-                        ),
+                        errorWidget: (context, url, error) =>
+                            const CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.grey,
+                              child: Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ),
                       )
                     : const CircleAvatar(
                         radius: 16,
                         backgroundColor: Colors.grey,
-                        child: Icon(Icons.person, size: 20, color: Colors.white),
+                        child: Icon(
+                          Icons.person,
+                          size: 20,
+                          color: Colors.white,
+                        ),
                       ),
               ),
               const SizedBox(width: 10),
@@ -421,7 +459,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                   width: 200,
                   height: 200,
                   fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                  errorBuilder: (context, error, stackTrace) =>
+                      const SizedBox.shrink(),
                 ),
               ),
               // Name + email overlay at bottom (CENTERED, PREMIUM)
@@ -438,7 +477,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                       colors: [
                         Colors.transparent,
                         Colors.black.withValues(alpha: 0.6),
-                        Colors.black.withValues(alpha: 0.95), // Deep dark for emphasis
+                        Colors.black.withValues(
+                          alpha: 0.95,
+                        ), // Deep dark for emphasis
                       ],
                     ),
                   ),
@@ -455,11 +496,14 @@ class _ProfileScreenState extends State<ProfileScreen>
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
                                 colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
-                                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF7B61FF).withValues(alpha: 0.5),
+                                  color: const Color(
+                                    0xFF7B61FF,
+                                  ).withValues(alpha: 0.5),
                                   blurRadius: 18,
                                   spreadRadius: 2,
                                   offset: const Offset(0, 4),
@@ -475,20 +519,30 @@ class _ProfileScreenState extends State<ProfileScreen>
                               child: user.avatarUrl.isNotEmpty
                                   ? CachedNetworkImage(
                                       imageUrl: user.avatarUrl,
-                                      imageBuilder: (context, imageProvider) => CircleAvatar(
-                                        radius: 46,
-                                        backgroundImage: imageProvider,
-                                      ),
-                                      errorWidget: (context, url, error) => const CircleAvatar(
-                                        radius: 46,
-                                        backgroundColor: Colors.grey,
-                                        child: Icon(Icons.person, size: 48, color: Colors.white),
-                                      ),
+                                      imageBuilder: (context, imageProvider) =>
+                                          CircleAvatar(
+                                            radius: 46,
+                                            backgroundImage: imageProvider,
+                                          ),
+                                      errorWidget: (context, url, error) =>
+                                          const CircleAvatar(
+                                            radius: 46,
+                                            backgroundColor: Colors.grey,
+                                            child: Icon(
+                                              Icons.person,
+                                              size: 48,
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                     )
                                   : const CircleAvatar(
                                       radius: 46,
                                       backgroundColor: Colors.grey,
-                                      child: Icon(Icons.person, size: 48, color: Colors.white),
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 48,
+                                        color: Colors.white,
+                                      ),
                                     ),
                             ),
                           ),
@@ -500,7 +554,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                               shape: const CircleBorder(),
                               child: IconButton(
                                 tooltip: 'Edit profile',
-                                icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 18),
+                                icon: const Icon(
+                                  Icons.edit_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
                                 onPressed: () async {
                                   await context.push('/edit-profile');
                                   if (mounted) _refreshProfile();
@@ -541,7 +599,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                       const SizedBox(height: 12),
                       // Glass Trust Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(24),
@@ -554,17 +615,20 @@ class _ProfileScreenState extends State<ProfileScreen>
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 4,
-                            )
+                            ),
                           ],
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              (user.role == 'admin' || user.role == 'super_admin')
+                              (user.role == 'admin' ||
+                                      user.role == 'super_admin')
                                   ? Icons.verified_user_rounded
                                   : Icons.stars_rounded, // Premium icon
-                              color: (user.role == 'admin' || user.role == 'super_admin')
+                              color:
+                                  (user.role == 'admin' ||
+                                      user.role == 'super_admin')
                                   ? Colors.amber[300]
                                   : Colors.white,
                               size: 14,
@@ -576,7 +640,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
-                                color: (user.role == 'admin' || user.role == 'super_admin')
+                                color:
+                                    (user.role == 'admin' ||
+                                        user.role == 'super_admin')
                                     ? Colors.amber[100]
                                     : Colors.white,
                               ),
@@ -607,10 +673,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             children: [
               Text(
                 AppLocalizations.of(context)!.skills,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               TextButton.icon(
@@ -623,7 +686,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primaryLight,
                   textStyle: TextStyle(
-                      fontSize: 13, fontWeight: FontWeight.w600),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
@@ -637,18 +702,21 @@ class _ProfileScreenState extends State<ProfileScreen>
                 color: isDark ? AppColors.surfaceDark : Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                    color: AppColors.primaryLight.withValues(alpha: 0.2),
-                    style: BorderStyle.solid),
+                  color: AppColors.primaryLight.withValues(alpha: 0.2),
+                  style: BorderStyle.solid,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.lightbulb_outline_rounded,
-                      color: AppColors.primaryLight.withValues(alpha: 0.6), size: 20),
+                  Icon(
+                    Icons.lightbulb_outline_rounded,
+                    color: AppColors.primaryLight.withValues(alpha: 0.6),
+                    size: 20,
+                  ),
                   const SizedBox(width: 10),
                   Text(
                     AppLocalizations.of(context)!.addSkillsDescription,
-                    style: TextStyle(
-                        fontSize: 13, color: Colors.grey),
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
                   ),
                 ],
               ),
@@ -660,7 +728,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               children: user.skills.map((skill) {
                 return Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 8),
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF4A90E2), Color(0xFF7B61FF)],
@@ -702,10 +772,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         children: [
           Text(
             AppLocalizations.of(context)!.account,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           Container(
@@ -741,7 +808,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                           _buildActionTile(
                             icon: Icons.admin_panel_settings_rounded,
                             iconColor: Colors.amber,
-                            label: AppLocalizations.of(context)!.adminControlPanel,
+                            label: AppLocalizations.of(
+                              context,
+                            )!.adminControlPanel,
                             onTap: () async {
                               await context.push('/admin-panel');
                               _refreshProfile();
@@ -761,14 +830,16 @@ class _ProfileScreenState extends State<ProfileScreen>
                       _buildActionTile(
                         icon: Icons.verified_rounded,
                         iconColor: Colors.green,
-                        label: AppLocalizations.of(context)!.verifiedLeaderStatus,
+                        label: AppLocalizations.of(
+                          context,
+                        )!.verifiedLeaderStatus,
                         onTap: () {
                           showAdaptiveDialog(
                             context: context,
                             builder: (context) => AlertDialog.adaptive(
                               title: const Text('Verified Leader'),
                               content: const Text(
-                                'Congratulations! You are a verified community leader. You can now post official news announcements to the community feed.'
+                                'Congratulations! You are a verified community leader. You can now post official news announcements to the community feed.',
                               ),
                               actions: [
                                 TextButton(
@@ -788,11 +859,11 @@ class _ProfileScreenState extends State<ProfileScreen>
                 else
                   FutureBuilder<Map<String, dynamic>>(
                     future: _eligibilityFuture,
-                      builder: (context, elSnapshot) {
-                        final data = elSnapshot.data;
-                        final String? reason = data?['reason'];
+                    builder: (context, elSnapshot) {
+                      final data = elSnapshot.data;
+                      final String? reason = data?['reason'];
                       final String? lastStatus = data?['lastStatus'];
-                      
+
                       if (reason == 'pending') {
                         return _buildActionTile(
                           icon: Icons.hourglass_empty_rounded,
@@ -824,27 +895,30 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
                                     child: const Text('Got it'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        isDark: isDark,
-                      );
-                    }
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          isDark: isDark,
+                        );
+                      }
 
                       return _buildActionTile(
                         icon: Icons.verified_user_rounded,
-                        iconColor: lastStatus == 'rejected' ? Colors.redAccent : Colors.blue,
-                        label: lastStatus == 'rejected' 
-                          ? 'Application Rejected - Try Again' 
-                          : (lastStatus == 'approved_pending_sync' 
-                              ? 'Leader Status Approved - Syncing...'
-                              : 'Apply for Leader Status'),
+                        iconColor: lastStatus == 'rejected'
+                            ? Colors.redAccent
+                            : Colors.blue,
+                        label: lastStatus == 'rejected'
+                            ? 'Application Rejected - Try Again'
+                            : (lastStatus == 'approved_pending_sync'
+                                  ? 'Leader Status Approved - Syncing...'
+                                  : 'Apply for Leader Status'),
                         onTap: () async {
                           final result = await showDialog<bool>(
                             context: context,
-                            builder: (context) => const VerificationRequestDialog(),
+                            builder: (context) =>
+                                const VerificationRequestDialog(),
                           );
                           if (result == true) _refreshProfile();
                         },
@@ -869,9 +943,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                     final confirmed = await showAdaptiveDialog<bool>(
                       context: context,
                       builder: (ctx) => AlertDialog.adaptive(
-                        title: Text(AppLocalizations.of(context)!.logoutConfirm),
+                        title: Text(
+                          AppLocalizations.of(context)!.logoutConfirm,
+                        ),
                         content: Text(
-                            AppLocalizations.of(context)!.logoutDescription),
+                          AppLocalizations.of(context)!.logoutDescription,
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
@@ -880,10 +957,13 @@ class _ProfileScreenState extends State<ProfileScreen>
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
                             style: TextButton.styleFrom(
-                                foregroundColor: Colors.red),
+                              foregroundColor: Colors.red,
+                            ),
                             child: Text(
                               AppLocalizations.of(context)!.logout,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],
@@ -937,7 +1017,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: labelColor ??
+                  color:
+                      labelColor ??
                       (isDark ? Colors.white : AppColors.textPrimaryLight),
                 ),
               ),
@@ -983,14 +1064,20 @@ class _ProfileScreenState extends State<ProfileScreen>
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   String _trustLevel(User user) {
-    if (user.role == 'admin' || user.role == 'super_admin') return AppLocalizations.of(context)!.verifiedLeader;
-    if (user.points >= 350 && user.helpCount >= 25) return AppLocalizations.of(context)!.eliteHelper;
-    if (user.points >= 150 && user.helpCount >= 10) return AppLocalizations.of(context)!.trustedHelper;
-    if (user.points >= 50 && user.helpCount >= 2) return AppLocalizations.of(context)!.activeMember;
+    if (user.role == 'admin' || user.role == 'super_admin') {
+      return AppLocalizations.of(context)!.verifiedLeader;
+    }
+    if (user.points >= 350 && user.helpCount >= 25) {
+      return AppLocalizations.of(context)!.eliteHelper;
+    }
+    if (user.points >= 150 && user.helpCount >= 10) {
+      return AppLocalizations.of(context)!.trustedHelper;
+    }
+    if (user.points >= 50 && user.helpCount >= 2) {
+      return AppLocalizations.of(context)!.activeMember;
+    }
     return AppLocalizations.of(context)!.newMember;
   }
-
-
 
   // ─── Badge Gallery ──────────────────────────────────────────────────
 
@@ -1002,10 +1089,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             AppLocalizations.of(context)!.achievements,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
         ),
         const SizedBox(height: 12),
@@ -1013,10 +1097,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           future: SupabaseService().getUserBadges(user.id),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(
-                height: 100,
-                child: AppLoader(),
-              );
+              return const SizedBox(height: 100, child: AppLoader());
             }
             final badges = snapshot.data ?? [];
             if (badges.isEmpty) {
@@ -1044,7 +1125,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.surfaceDark : Colors.white,
+                            color: isDark
+                                ? AppColors.surfaceDark
+                                : Colors.white,
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -1062,7 +1145,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                         const SizedBox(height: 8),
                         Text(
                           badge.name,
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -1081,11 +1167,16 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   IconData _getBadgeIcon(String name) {
     switch (name) {
-      case 'First Responder': return Icons.flash_on_rounded;
-      case 'Community Voice': return Icons.how_to_vote_rounded;
-      case 'Social Butterfly': return Icons.groups_rounded;
-      case 'Century Club': return Icons.military_tech_rounded;
-      default: return Icons.emoji_events_rounded;
+      case 'First Responder':
+        return Icons.flash_on_rounded;
+      case 'Community Voice':
+        return Icons.how_to_vote_rounded;
+      case 'Social Butterfly':
+        return Icons.groups_rounded;
+      case 'Century Club':
+        return Icons.military_tech_rounded;
+      default:
+        return Icons.emoji_events_rounded;
     }
   }
 }

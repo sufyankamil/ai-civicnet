@@ -23,7 +23,11 @@ class Poll extends Equatable {
     this.userVoteOptionId,
   });
 
-  factory Poll.fromJson(Map<String, dynamic> json, {List<PollOption> options = const [], String? userVoteOptionId}) {
+  factory Poll.fromJson(
+    Map<String, dynamic> json, {
+    List<PollOption> options = const [],
+    String? userVoteOptionId,
+  }) {
     return Poll(
       id: json['id'],
       creatorId: json['creator_id'],
@@ -41,7 +45,17 @@ class Poll extends Equatable {
   int get daysLeft => endDate.difference(DateTime.now()).inDays;
 
   @override
-  List<Object?> get props => [id, creatorId, question, description, endDate, createdAt, isActive, options, userVoteOptionId];
+  List<Object?> get props => [
+    id,
+    creatorId,
+    question,
+    description,
+    endDate,
+    createdAt,
+    isActive,
+    options,
+    userVoteOptionId,
+  ];
 }
 
 class PollOption extends Equatable {

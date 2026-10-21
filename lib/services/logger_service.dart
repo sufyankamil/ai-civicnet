@@ -13,10 +13,7 @@ final logger = Logger(
     printEmojis: true,
     dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
   ),
-  output: MultiOutput([
-    ConsoleOutput(),
-    _memoryOutput,
-  ]),
+  output: MultiOutput([ConsoleOutput(), _memoryOutput]),
 );
 
 List<String> getLogHistory() => _memoryOutput.logs;
@@ -40,6 +37,8 @@ class MemoryLogOutput extends LogOutput {
 class ProductionFilter extends LogFilter {
   @override
   bool shouldLog(LogEvent event) {
-    return kDebugMode || event.level == Level.error || event.level == Level.fatal;
+    return kDebugMode ||
+        event.level == Level.error ||
+        event.level == Level.fatal;
   }
 }

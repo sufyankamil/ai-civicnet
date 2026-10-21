@@ -46,8 +46,9 @@ class EncryptionService {
       normalized = normalized.substring(0, 32);
     }
     final key = encrypt.Key.fromUtf8(normalized);
-    _legacyEncrypter =
-        encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+    _legacyEncrypter = encrypt.Encrypter(
+      encrypt.AES(key, mode: encrypt.AESMode.cbc),
+    );
     _legacyAvailable = true;
   }
 
@@ -83,11 +84,15 @@ class EncryptionService {
   Uint8List generateConversationKey() {
     final random = Random.secure();
     return Uint8List.fromList(
-        List<int>.generate(32, (_) => random.nextInt(256)));
+      List<int>.generate(32, (_) => random.nextInt(256)),
+    );
   }
 
   /// Wraps a conversation key for a recipient using their PEM public key.
-  String wrapConversationKey(Uint8List conversationKey, String recipientPublicPem) {
+  String wrapConversationKey(
+    Uint8List conversationKey,
+    String recipientPublicPem,
+  ) {
     final publicKey =
         encrypt.RSAKeyParser().parse(recipientPublicPem) as RSAPublicKey;
     final encrypter = encrypt.Encrypter(
@@ -103,7 +108,9 @@ class EncryptionService {
   /// Unwraps a conversation key with this device's private key.
   Uint8List unwrapConversationKey(String wrappedKeyBase64) {
     if (_privateKey == null) {
-      throw StateError('Identity keys not loaded. Call ensureIdentityKeys first.');
+      throw StateError(
+        'Identity keys not loaded. Call ensureIdentityKeys first.',
+      );
     }
     final encrypter = encrypt.Encrypter(
       encrypt.RSA(
@@ -122,8 +129,9 @@ class EncryptionService {
   String encryptWithKey(String plainText, Uint8List keyBytes) {
     final key = encrypt.Key(keyBytes);
     final iv = encrypt.IV.fromSecureRandom(16);
-    final encrypter =
-        encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+    final encrypter = encrypt.Encrypter(
+      encrypt.AES(key, mode: encrypt.AESMode.cbc),
+    );
     final encrypted = encrypter.encrypt(plainText, iv: iv);
     return base64Encode(iv.bytes + encrypted.bytes);
   }
@@ -136,10 +144,12 @@ class EncryptionService {
     }
     final iv = encrypt.IV(Uint8List.fromList(decodedBytes.sublist(0, 16)));
     final cipher = encrypt.Encrypted(
-        Uint8List.fromList(decodedBytes.sublist(16)));
+      Uint8List.fromList(decodedBytes.sublist(16)),
+    );
     final key = encrypt.Key(keyBytes);
-    final encrypter =
-        encrypt.Encrypter(encrypt.AES(key, mode: encrypt.AESMode.cbc));
+    final encrypter = encrypt.Encrypter(
+      encrypt.AES(key, mode: encrypt.AESMode.cbc),
+    );
     return encrypter.decrypt(cipher, iv: iv);
   }
 
@@ -165,7 +175,8 @@ class EncryptionService {
       if (decodedBytes.length < 16) return encryptedBase64;
       final iv = encrypt.IV(Uint8List.fromList(decodedBytes.sublist(0, 16)));
       final cipher = encrypt.Encrypted(
-          Uint8List.fromList(decodedBytes.sublist(16)));
+        Uint8List.fromList(decodedBytes.sublist(16)),
+      );
       return _legacyEncrypter!.decrypt(cipher, iv: iv);
     } catch (_) {
       return encryptedBase64;
@@ -183,14 +194,17 @@ class EncryptionService {
   AsymmetricKeyPair<PublicKey, PrivateKey> _generateRsaKeyPair() {
     final secureRandom = FortunaRandom();
     final seed = Uint8List.fromList(
-        List<int>.generate(32, (_) => Random.secure().nextInt(256)));
+      List<int>.generate(32, (_) => Random.secure().nextInt(256)),
+    );
     secureRandom.seed(KeyParameter(seed));
 
     final keyGen = RSAKeyGenerator()
-      ..init(ParametersWithRandom(
-        RSAKeyGeneratorParameters(BigInt.parse('65537'), 2048, 64),
-        secureRandom,
-      ));
+      ..init(
+        ParametersWithRandom(
+          RSAKeyGeneratorParameters(BigInt.parse('65537'), 2048, 64),
+          secureRandom,
+        ),
+      );
     return keyGen.generateKeyPair();
   }
 
@@ -210,10 +224,7 @@ class EncryptionService {
       _asn1ObjectIdentifier([1, 2, 840, 113549, 1, 1, 1]), // rsaEncryption
       Uint8List.fromList([0x05, 0x00]), // NULL
     ]);
-    final spki = _asn1Sequence([
-      algorithmIdentifier,
-      _asn1BitString(sequence),
-    ]);
+    final spki = _asn1Sequence([algorithmIdentifier, _asn1BitString(sequence)]);
 
     final b64 = base64Encode(spki);
     final lines = <String>[];
@@ -281,12 +292,20 @@ class EncryptionService {
   }
 
   Uint8List _asn1Integer(Uint8List content) {
-    return Uint8List.fromList([0x02, ..._asn1Length(content.length), ...content]);
+    return Uint8List.fromList([
+      0x02,
+      ..._asn1Length(content.length),
+      ...content,
+    ]);
   }
 
   Uint8List _asn1Sequence(List<Uint8List> elements) {
     final content = Uint8List.fromList(elements.expand((e) => e).toList());
-    return Uint8List.fromList([0x30, ..._asn1Length(content.length), ...content]);
+    return Uint8List.fromList([
+      0x30,
+      ..._asn1Length(content.length),
+      ...content,
+    ]);
   }
 
   Uint8List _asn1BitString(Uint8List content) {
@@ -314,6 +333,10 @@ class EncryptionService {
       }
     }
     final content = Uint8List.fromList([first, ...rest]);
-    return Uint8List.fromList([0x06, ..._asn1Length(content.length), ...content]);
+    return Uint8List.fromList([
+      0x06,
+      ..._asn1Length(content.length),
+      ...content,
+    ]);
   }
 }

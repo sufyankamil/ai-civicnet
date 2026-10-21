@@ -21,7 +21,9 @@ class Badge extends Equatable {
       name: json['name'],
       description: json['description'],
       iconUrl: json['icon_url'],
-      awardedAt: json['awarded_at'] != null ? DateTime.parse(json['awarded_at']) : null,
+      awardedAt: json['awarded_at'] != null
+          ? DateTime.parse(json['awarded_at'])
+          : null,
     );
   }
 

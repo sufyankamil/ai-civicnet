@@ -25,13 +25,13 @@ class Message {
     return Message(
       id: json['id'],
       conversationId: json['conversation_id'],
-        senderId: json['sender_id'],
-        content: json['content'] ?? '',
-        type: json['message_type'] ?? 'text',
-        createdAt: DateTime.parse(json['created_at']),
-        isRead: json['is_read'] ?? false,
-        isDeleted: json['is_deleted'] ?? false,
-        replyToId: json['reply_to_id'],
+      senderId: json['sender_id'],
+      content: json['content'] ?? '',
+      type: json['message_type'] ?? 'text',
+      createdAt: DateTime.parse(json['created_at']),
+      isRead: json['is_read'] ?? false,
+      isDeleted: json['is_deleted'] ?? false,
+      replyToId: json['reply_to_id'],
     );
   }
 }

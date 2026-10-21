@@ -22,7 +22,10 @@ class PollCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasVoted = poll.userVoteOptionId != null;
-    final totalVotes = poll.options.fold<int>(0, (sum, opt) => sum + opt.voteCount);
+    final totalVotes = poll.options.fold<int>(
+      0,
+      (sum, opt) => sum + opt.voteCount,
+    );
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -46,8 +49,11 @@ class PollCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryLight.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
@@ -55,10 +61,16 @@ class PollCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.poll_rounded, color: AppColors.primaryLight, size: 14),
+                        const Icon(
+                          Icons.poll_rounded,
+                          color: AppColors.primaryLight,
+                          size: 14,
+                        ),
                         const SizedBox(width: 6),
                         Text(
-                          AppLocalizations.of(context)!.communityPollLabel.toUpperCase(),
+                          AppLocalizations.of(
+                            context,
+                          )!.communityPollLabel.toUpperCase(),
                           style: const TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.w900,
@@ -73,7 +85,11 @@ class PollCard extends StatelessWidget {
                   if (isCreator)
                     IconButton(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -103,24 +119,31 @@ class PollCard extends StatelessWidget {
               const SizedBox(height: 24),
               ...poll.options.map((option) {
                 final isSelected = poll.userVoteOptionId == option.id;
-                final percentage = totalVotes == 0 ? 0.0 : (option.voteCount / totalVotes);
-    
+                final percentage = totalVotes == 0
+                    ? 0.0
+                    : (option.voteCount / totalVotes);
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: AppHaptic(
-                    onTap: (hasVoted || poll.isExpired) ? null : () => onVote(option.id),
+                    onTap: (hasVoted || poll.isExpired)
+                        ? null
+                        : () => onVote(option.id),
                     child: Container(
                       width: double.infinity,
                       height: 54,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: isSelected 
+                        color: isSelected
                             ? AppColors.primaryLight.withValues(alpha: 0.1)
-                            : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.03),
+                            : (isDark ? Colors.white : Colors.black).withValues(
+                                alpha: 0.03,
+                              ),
                         border: Border.all(
-                          color: isSelected 
-                            ? AppColors.primaryLight.withValues(alpha: 0.3) 
-                            : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                          color: isSelected
+                              ? AppColors.primaryLight.withValues(alpha: 0.3)
+                              : (isDark ? Colors.white : Colors.black)
+                                    .withValues(alpha: 0.05),
                         ),
                       ),
                       child: Stack(
@@ -133,9 +156,23 @@ class PollCard extends StatelessWidget {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     gradient: LinearGradient(
-                                      colors: isSelected 
-                                        ? [AppColors.primaryLight.withValues(alpha: 0.3), AppColors.primaryLight.withValues(alpha: 0.1)]
-                                        : [Colors.grey.withValues(alpha: 0.1), Colors.grey.withValues(alpha: 0.05)],
+                                      colors: isSelected
+                                          ? [
+                                              AppColors.primaryLight.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                              AppColors.primaryLight.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                            ]
+                                          : [
+                                              Colors.grey.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                              Colors.grey.withValues(
+                                                alpha: 0.05,
+                                              ),
+                                            ],
                                     ),
                                   ),
                                 ),
@@ -143,17 +180,26 @@ class PollCard extends StatelessWidget {
                             ),
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       option.optionText,
                                       style: TextStyle(
                                         fontSize: 15,
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                        color: isSelected ? AppColors.primaryLight : (isDark ? Colors.white70 : Colors.black87),
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: isSelected
+                                            ? AppColors.primaryLight
+                                            : (isDark
+                                                  ? Colors.white70
+                                                  : Colors.black87),
                                       ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -164,7 +210,9 @@ class PollCard extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w800,
-                                        color: isSelected ? AppColors.primaryLight : Colors.grey[500],
+                                        color: isSelected
+                                            ? AppColors.primaryLight
+                                            : Colors.grey[500],
                                       ),
                                     ),
                                 ],
@@ -180,7 +228,11 @@ class PollCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.people_alt_rounded, size: 14, color: Colors.grey[500]),
+                  Icon(
+                    Icons.people_alt_rounded,
+                    size: 14,
+                    color: Colors.grey[500],
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     '${AppLocalizations.of(context)!.votesCountSummary(totalVotes)} • ${poll.isExpired ? AppLocalizations.of(context)!.ended : AppLocalizations.of(context)!.daysLeft(poll.daysLeft)}',

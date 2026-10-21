@@ -1,9 +1,4 @@
-
-enum SupportSenderType {
-  user,
-  bot,
-  agent
-}
+enum SupportSenderType { user, bot, agent }
 
 class SupportMessage {
   final String id;
@@ -33,11 +28,11 @@ class SupportMessage {
         orElse: () => SupportSenderType.bot,
       ),
       content: json['content'] as String,
-      options: json['options'] != null 
-          ? List<String>.from(json['options'] as List) 
+      options: json['options'] != null
+          ? List<String>.from(json['options'] as List)
           : null,
-      metadata: json['metadata'] != null 
-          ? Map<String, dynamic>.from(json['metadata'] as Map) 
+      metadata: json['metadata'] != null
+          ? Map<String, dynamic>.from(json['metadata'] as Map)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
     );

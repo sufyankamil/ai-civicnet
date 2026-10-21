@@ -35,13 +35,17 @@ class _AppLoaderState extends State<AppLoader>
 
     _pulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.08)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.08,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 50,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.08, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 1.08,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 50,
       ),
     ]).animate(_controller);
@@ -56,7 +60,9 @@ class _AppLoaderState extends State<AppLoader>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconPath = isDark ? 'assets/icons/app_icon_dark.png' : 'assets/icons/app_icon.png';
+    final iconPath = isDark
+        ? 'assets/icons/app_icon_dark.png'
+        : 'assets/icons/app_icon.png';
     final loaderColor = widget.color ?? Theme.of(context).primaryColor;
 
     final bool effectiveShowRing = widget.showRing && widget.size > 30;

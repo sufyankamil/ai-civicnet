@@ -29,7 +29,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final _descController = TextEditingController();
   final _locationController = TextEditingController();
   LatLng? _selectedLatLng;
-  
+
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 18, minute: 0);
 
@@ -58,23 +58,30 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   }
 
   Future<void> _pickLocationOnMap() async {
-    final result = await context.push<LatLng?>('/location-picker', extra: _selectedLatLng);
+    final result = await context.push<LatLng?>(
+      '/location-picker',
+      extra: _selectedLatLng,
+    );
     if (!mounted) return;
     if (result != null) {
       setState(() {
         _selectedLatLng = result;
       });
-      
+
       try {
-        List<Placemark> placemarks = await placemarkFromCoordinates(result.latitude, result.longitude);
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          result.latitude,
+          result.longitude,
+        );
         if (placemarks.isNotEmpty) {
           final p = placemarks.first;
           final String address = [
             if (p.name != null && p.name!.isNotEmpty) p.name,
-            if (p.subLocality != null && p.subLocality!.isNotEmpty) p.subLocality,
+            if (p.subLocality != null && p.subLocality!.isNotEmpty)
+              p.subLocality,
             if (p.locality != null && p.locality!.isNotEmpty) p.locality,
           ].join(', ');
-          
+
           if (address.isNotEmpty) {
             setState(() {
               _locationController.text = address;
@@ -86,7 +93,10 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       }
 
       if (mounted) {
-        ToastService.showSuccess(context, AppLocalizations.of(context)!.locationSelectedOnMap);
+        ToastService.showSuccess(
+          context,
+          AppLocalizations.of(context)!.locationSelectedOnMap,
+        );
       }
     }
   }
@@ -120,9 +130,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       if (mounted) {
         if (success) {
           context.pop();
-          ToastService.showSuccess(context, AppLocalizations.of(context)!.eventPostedSuccess);
+          ToastService.showSuccess(
+            context,
+            AppLocalizations.of(context)!.eventPostedSuccess,
+          );
         } else {
-          ToastService.showError(context, AppLocalizations.of(context)!.eventPostedError);
+          ToastService.showError(
+            context,
+            AppLocalizations.of(context)!.eventPostedError,
+          );
         }
       }
     }
@@ -132,7 +148,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
@@ -141,10 +157,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
             child: AppBar(
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.7),
+              backgroundColor: Theme.of(
+                context,
+              ).scaffoldBackgroundColor.withValues(alpha: 0.7),
               elevation: 0,
               centerTitle: true,
-              systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+              systemOverlayStyle: isDark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark,
               title: Text(
                 l10n.postAnEventTitle,
                 style: TextStyle(
@@ -160,7 +180,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.1)
+                          : Colors.black.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.close_rounded, size: 20),
@@ -196,9 +218,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 const SizedBox(height: 12),
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor.withValues(alpha: isDark ? 0.5 : 0.8),
+                    color: Theme.of(
+                      context,
+                    ).cardColor.withValues(alpha: isDark ? 0.5 : 0.8),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.grey.withValues(alpha: isDark ? 0.1 : 0.2)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: isDark ? 0.1 : 0.2),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.03),
@@ -212,9 +238,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       CustomTextField(
                         hintText: l10n.eventTitleHint,
                         controller: _titleController,
-                        validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? l10n.required : null,
                       ),
-                      Divider(height: 1, color: Colors.grey.withValues(alpha: 0.1), indent: 16, endIndent: 16),
+                      Divider(
+                        height: 1,
+                        color: Colors.grey.withValues(alpha: 0.1),
+                        indent: 16,
+                        endIndent: 16,
+                      ),
                       TextFormField(
                         controller: _descController,
                         maxLines: 5,
@@ -227,12 +259,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           focusedBorder: InputBorder.none,
                           filled: false,
                         ),
-                        validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? l10n.required : null,
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
                 _buildSectionTitle(l10n.whenAndWhere),
                 const SizedBox(height: 12),
@@ -257,40 +290,57 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor.withValues(alpha: isDark ? 0.5 : 0.8),
+                    color: Theme.of(
+                      context,
+                    ).cardColor.withValues(alpha: isDark ? 0.5 : 0.8),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.grey.withValues(alpha: isDark ? 0.1 : 0.2)),
+                    border: Border.all(
+                      color: Colors.grey.withValues(alpha: isDark ? 0.1 : 0.2),
+                    ),
                   ),
                   child: CustomTextField(
                     hintText: l10n.locationNameHint,
                     controller: _locationController,
-                    validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
+                    validator: (v) =>
+                        (v == null || v.isEmpty) ? l10n.required : null,
                   ),
                 ),
-                
+
                 const SizedBox(height: 12),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: AppHaptic(
                     onTap: _pickLocationOnMap,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primaryLight.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.primaryLight.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: AppColors.primaryLight.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.map_rounded, size: 16, color: AppColors.primaryLight),
+                          Icon(
+                            Icons.map_rounded,
+                            size: 16,
+                            color: AppColors.primaryLight,
+                          ),
                           const SizedBox(width: 8),
                           Text(
-                            (_selectedLatLng == null ? l10n.selectLocationOnMap : l10n.changeLocationOnMap).toUpperCase(),
+                            (_selectedLatLng == null
+                                    ? l10n.selectLocationOnMap
+                                    : l10n.changeLocationOnMap)
+                                .toUpperCase(),
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
@@ -303,14 +353,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                   ),
                 ),
-                
 
                 const SizedBox(height: 48),
-                Obx(() => PrimaryButton(
-                  text: l10n.postAnEvent,
-                  isLoading: _viewModel.isLoading,
-                  onPressed: _submitEvent,
-                )),
+                Obx(
+                  () => PrimaryButton(
+                    text: l10n.postAnEvent,
+                    isLoading: _viewModel.isLoading,
+                    onPressed: _submitEvent,
+                  ),
+                ),
                 const SizedBox(height: 32),
               ],
             ),
@@ -347,9 +398,13 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor.withValues(alpha: isDark ? 0.4 : 0.6),
+          color: Theme.of(
+            context,
+          ).cardColor.withValues(alpha: isDark ? 0.4 : 0.6),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.withValues(alpha: isDark ? 0.05 : 0.1)),
+          border: Border.all(
+            color: Colors.grey.withValues(alpha: isDark ? 0.05 : 0.1),
+          ),
         ),
         child: Row(
           children: [
@@ -368,11 +423,19 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey[400], letterSpacing: 0.5),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.grey[400],
+                      letterSpacing: 0.5,
+                    ),
                   ),
                   Text(
                     value,
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

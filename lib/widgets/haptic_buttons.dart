@@ -18,10 +18,12 @@ class AppHaptic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap == null ? null : () {
-        HapticFeedback.lightImpact();
-        onTap!();
-      },
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onTap!();
+            },
       borderRadius: borderRadius,
       child: child,
     );
@@ -44,10 +46,12 @@ class AppElevatedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed == null ? null : () {
-        HapticFeedback.lightImpact();
-        onPressed!();
-      },
+      onPressed: onPressed == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onPressed!();
+            },
       style: style,
       child: child,
     );
@@ -72,10 +76,12 @@ class AppIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: onPressed == null ? null : () {
-        HapticFeedback.lightImpact();
-        onPressed!();
-      },
+      onPressed: onPressed == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onPressed!();
+            },
       icon: icon,
       tooltip: tooltip,
       color: color,
@@ -99,10 +105,12 @@ class AppTextButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: onPressed == null ? null : () {
-        HapticFeedback.lightImpact();
-        onPressed!();
-      },
+      onPressed: onPressed == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onPressed!();
+            },
       style: style,
       child: child,
     );
@@ -127,10 +135,12 @@ class AppFloatingActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton.extended(
-      onPressed: onPressed == null ? null : () {
-        HapticFeedback.lightImpact();
-        onPressed!();
-      },
+      onPressed: onPressed == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onPressed!();
+            },
       icon: icon,
       label: label,
       backgroundColor: backgroundColor,

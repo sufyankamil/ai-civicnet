@@ -32,7 +32,9 @@ class FirebaseService {
         : 'country_${countryCode.toUpperCase()}';
     if (_countryTopic == nextTopic) return;
     try {
-      if (_countryTopic != null) await _messaging.unsubscribeFromTopic(_countryTopic!);
+      if (_countryTopic != null) {
+        await _messaging.unsubscribeFromTopic(_countryTopic!);
+      }
       if (nextTopic != null) await _messaging.subscribeToTopic(nextTopic);
       _countryTopic = nextTopic;
       logger.i('Updated regional FCM topic: ${nextTopic ?? 'none'}');
@@ -57,11 +59,12 @@ class FirebaseService {
 
     // Set foreground notification presentation options for iOS
     // Set these to false to prevent the OS from showing a banner automatically.
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: false,
-      badge: false,
-      sound: false,
-    );
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: false,
+          badge: false,
+          sound: false,
+        );
 
     // Subscribe to global requests topic to receive new request notifications
     try {
@@ -80,7 +83,7 @@ class FirebaseService {
     } catch (e) {
       logger.e('Error subscribing to global_requests: $e');
     }
-    
+
     // Subscribe to their own user ID topic dynamically so it works even if they log in later
     try {
       String? currentUserTopic;
@@ -89,7 +92,7 @@ class FirebaseService {
       final initialUser = Supabase.instance.client.auth.currentUser;
       if (initialUser != null) {
         final safeTopic = 'user_${initialUser.id}'.replaceAll('-', '_');
-        
+
         bool canSubscribe = true;
         if (Platform.isIOS) {
           final apnsToken = await _messaging.getAPNSToken();
@@ -98,11 +101,13 @@ class FirebaseService {
             logger.w('APNS token not available for personal topic init');
           }
         }
-        
+
         if (canSubscribe) {
           await _messaging.subscribeToTopic(safeTopic);
           currentUserTopic = safeTopic;
-          logger.i('Subscribed to personal FCM topic synchronously on init: $safeTopic');
+          logger.i(
+            'Subscribed to personal FCM topic synchronously on init: $safeTopic',
+          );
         }
         try {
           final profile = await Supabase.instance.client
@@ -122,9 +127,11 @@ class FirebaseService {
           final safeTopic = 'user_${user.id}'.replaceAll('-', '_');
           if (currentUserTopic != safeTopic) {
             if (currentUserTopic != null) {
-              await _messaging.unsubscribeFromTopic(currentUserTopic!).catchError((e) => logger.e('Unsubscribe error: $e'));
+              await _messaging
+                  .unsubscribeFromTopic(currentUserTopic!)
+                  .catchError((e) => logger.e('Unsubscribe error: $e'));
             }
-            
+
             bool canSubscribe = true;
             if (Platform.isIOS) {
               final apnsToken = await _messaging.getAPNSToken();
@@ -137,7 +144,9 @@ class FirebaseService {
             if (canSubscribe) {
               await _messaging.subscribeToTopic(safeTopic);
               currentUserTopic = safeTopic;
-              logger.i('Subscribed to personal FCM topic via listener: $safeTopic');
+              logger.i(
+                'Subscribed to personal FCM topic via listener: $safeTopic',
+              );
             }
           }
         } else if (user == null && currentUserTopic != null) {
@@ -155,7 +164,7 @@ class FirebaseService {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       logger.i('User granted permission');
-      
+
       // Get the token
       try {
         bool canGetToken = true;
@@ -166,16 +175,18 @@ class FirebaseService {
             logger.w('APNS token not available, skipping FCM token retrieval');
           }
         }
-        
+
         if (canGetToken) {
           String? token = await _messaging.getToken();
           logger.i('FCM Token: $token');
         }
       } catch (e) {
         logger.e('FCM Token Error: $e');
-        logger.w('Note: FCM on iOS requires a real device and "Push Notifications" capability in Xcode.');
+        logger.w(
+          'Note: FCM on iOS requires a real device and "Push Notifications" capability in Xcode.',
+        );
       }
-      
+
       // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         logger.i('Got a message whilst in the foreground!');
@@ -183,19 +194,22 @@ class FirebaseService {
 
         // Check if this is a chat message and if we are already viewing this conversation
         final data = message.data;
-        final incomingConversationId = data['conversationId'] ?? data['conversation_id'];
+        final incomingConversationId =
+            data['conversationId'] ?? data['conversation_id'];
         final activeConversationId = NotificationService().activeConversationId;
 
-        if (incomingConversationId != null && 
-            activeConversationId != null && 
+        if (incomingConversationId != null &&
+            activeConversationId != null &&
             incomingConversationId == activeConversationId) {
-          logger.i('Suppressing notification for active conversation: $activeConversationId');
+          logger.i(
+            'Suppressing notification for active conversation: $activeConversationId',
+          );
           return;
         }
 
         // Show notification if it's there, or if it's a chat message with data only
         if (message.notification != null || data['type'] == 'chat') {
-           NotificationService().showNotification(message);
+          NotificationService().showNotification(message);
         }
       });
 
@@ -207,7 +221,9 @@ class FirebaseService {
       });
 
       try {
-        RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage().timeout(const Duration(milliseconds: 500));
+        RemoteMessage? initialMessage = await FirebaseMessaging.instance
+            .getInitialMessage()
+            .timeout(const Duration(milliseconds: 500));
         if (initialMessage != null) {
           logger.i('App opened from terminated state by a notification');
           logger.d('Initial Message data: ${initialMessage.data}');
@@ -221,12 +237,15 @@ class FirebaseService {
     }
   }
 
-  void _handleFCMMessageRouting(RemoteMessage message, {required bool isTerminated}) {
+  void _handleFCMMessageRouting(
+    RemoteMessage message, {
+    required bool isTerminated,
+  }) {
     _refreshHomeFeed();
-    
+
     try {
       if (Get.isRegistered<ChatViewModel>()) {
-         Get.find<ChatViewModel>().fetchConversations();
+        Get.find<ChatViewModel>().fetchConversations();
       }
     } catch (e) {
       logger.e('Error refreshing conversations: $e');
@@ -234,23 +253,36 @@ class FirebaseService {
 
     final data = message.data;
     final type = data['type']?.toString().toLowerCase() ?? '';
-    final relatedId = data['related_id'] ?? data['conversationId'] ?? data['conversation_id'] ?? data['id'] ?? data['requestId'] ?? data['eventId'];
+    final relatedId =
+        data['related_id'] ??
+        data['conversationId'] ??
+        data['conversation_id'] ??
+        data['id'] ??
+        data['requestId'] ??
+        data['eventId'];
 
     if (relatedId != null) {
       // Delay slightly to ensure Router is ready if booting from terminated state
-      final delay = isTerminated ? const Duration(seconds: 3) : const Duration(milliseconds: 300);
+      final delay = isTerminated
+          ? const Duration(seconds: 3)
+          : const Duration(milliseconds: 300);
       Future.delayed(delay, () {
         final context = rootNavigatorKey.currentContext;
         if (context != null && context.mounted) {
           if (type == 'new_request') {
             context.push('/request/$relatedId');
-          } else if (type.contains('chat') || type.contains('message') || data.containsKey('conversationId') || data.containsKey('conversation_id')) {
+          } else if (type.contains('chat') ||
+              type.contains('message') ||
+              data.containsKey('conversationId') ||
+              data.containsKey('conversation_id')) {
             context.push('/chat-detail?id=$relatedId');
           } else if (type == 'event') {
             context.push('/event/$relatedId');
           }
         } else {
-          logger.w('rootNavigatorKey context is null or not mounted when trying to route FCM.');
+          logger.w(
+            'rootNavigatorKey context is null or not mounted when trying to route FCM.',
+          );
         }
       });
     }

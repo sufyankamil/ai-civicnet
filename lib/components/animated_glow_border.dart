@@ -68,7 +68,9 @@ class _AnimatedGlowBorderState extends State<AnimatedGlowBorder>
         return Container(
           padding: EdgeInsets.all(widget.borderWidth),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.borderRadius + widget.borderWidth),
+            borderRadius: BorderRadius.circular(
+              widget.borderRadius + widget.borderWidth,
+            ),
             boxShadow: [
               BoxShadow(
                 color: primaryColor.withValues(alpha: 0.3),

@@ -8,27 +8,27 @@ import '../../../request/domain/entities/help_request_entity.dart';
 
 class AssetsViewModel extends GetxController {
   final SupabaseService _supabaseService = SupabaseService();
-  
+
   final RxList<CommunityAsset> _myAssets = <CommunityAsset>[].obs;
   List<CommunityAsset> get myAssets => _myAssets;
-  
+
   final RxList<CommunityAsset> _publicAssets = <CommunityAsset>[].obs;
   List<CommunityAsset> get publicAssets => _publicAssets;
-  
+
   final RxBool _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
-  
+
   final RxnString _errorMessage = RxnString();
   String? get errorMessage => _errorMessage.value;
-  
+
   void clearError() => _errorMessage.value = null;
-  
+
   @override
   void onInit() {
     super.onInit();
     loadMyAssets();
   }
-  
+
   Future<void> loadMyAssets() async {
     _isLoading.value = true;
     try {
@@ -64,7 +64,7 @@ class AssetsViewModel extends GetxController {
     try {
       final user = await _supabaseService.getCurrentUserProfile();
       if (user == null) return false;
-      
+
       final asset = CommunityAsset(
         id: const Uuid().v4(),
         ownerId: user.id,
@@ -76,7 +76,7 @@ class AssetsViewModel extends GetxController {
         lng: user.lng,
         createdAt: DateTime.now(),
       );
-      
+
       _errorMessage.value = null;
       await _supabaseService.createCommunityAsset(asset, imageFile);
       await loadMyAssets();
@@ -98,7 +98,8 @@ class AssetsViewModel extends GetxController {
     if (errorString.contains('PostgrestException')) {
       return 'Unable to save to database. Please check your connection and try again.';
     }
-    if (errorString.contains('NetworkImage') || errorString.contains('storage')) {
+    if (errorString.contains('NetworkImage') ||
+        errorString.contains('storage')) {
       return 'There was an issue uploading your image. Please try again or skip the image.';
     }
     return 'Something went wrong while listing your asset. Please try again.';
@@ -131,7 +132,9 @@ class AssetsViewModel extends GetxController {
     }
   }
 
-  Future<List<CommunityAsset>> getMatchForRequest(HelpRequestEntity request) async {
+  Future<List<CommunityAsset>> getMatchForRequest(
+    HelpRequestEntity request,
+  ) async {
     try {
       return await _supabaseService.matchAssetsForRequest(request);
     } catch (e) {
