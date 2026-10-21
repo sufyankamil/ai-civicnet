@@ -577,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen>
           ),
 
           // Aura AI Floating Orb
-          const Positioned(right: 18, bottom: 104, child: AuraFloatingOrb()),
+          const Positioned(right: 18, bottom: 128, child: AuraFloatingOrb()),
         ],
       ),
     );
