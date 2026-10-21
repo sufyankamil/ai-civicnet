@@ -1810,6 +1810,32 @@ class SupabaseService {
 
   // --- Support Chat ---
 
+  Future<String> getOrCreateActiveSupportConversation() async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not logged in');
+
+    try {
+      final existing = await _client
+          .from('support_conversations')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'open')
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle()
+          .withServerTimeout();
+
+      if (existing != null && existing['id'] != null) {
+        return existing['id'] as String;
+      }
+
+      return await createSupportConversation();
+    } catch (e) {
+      logger.w('Failed to check active support conversation, creating new: $e');
+      return await createSupportConversation();
+    }
+  }
+
   Future<String> createSupportConversation() async {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not logged in');

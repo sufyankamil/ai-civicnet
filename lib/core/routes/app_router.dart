@@ -28,6 +28,7 @@ import '../../features/discover/presentation/screens/discover_screen.dart';
 import '../../features/activity/presentation/screens/activity_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/chat/presentation/screens/chat_detail_screen.dart';
+import '../../features/chat/presentation/screens/support_chat_screen.dart';
 
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/delete_account_screen.dart';
@@ -364,6 +365,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/active-sessions',
         builder: (context, state) => const ActiveSessionsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/support',
+        builder: (context, state) => const SupportChatScreen(),
       ),
     ],
   );

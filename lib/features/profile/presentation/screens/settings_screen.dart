@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import '../../../../services/rating_service.dart';
 import '../viewmodels/settings_controller.dart';
 import '../../../../core/services/version_service.dart';
-import '../../../chat/presentation/screens/support_chat_screen.dart';
+import '../../../../widgets/haptic_buttons.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -115,13 +115,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             title: Text(l10n.supportChat),
             leading: const Icon(
-              Icons.chat_bubble_outline_rounded,
-              color: Colors.blueAccent,
+              Icons.auto_awesome_rounded,
+              color: AppColors.primaryLight,
             ),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(builder: (_) => const SupportChatScreen()),
-            ),
+            onTap: () {
+              AppHaptic.lightImpact();
+              context.push('/support');
+            },
           ),
           const Divider(),
 

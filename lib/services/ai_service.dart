@@ -526,6 +526,297 @@ class AiService {
       );
     }
   }
+
+  /// Generates a conversational response for CivicNet AI Support Chat.
+  /// Uses Gemini Flash with context memory when available, and falls back to a smart local FAQ knowledge base.
+  Future<AiSupportResponse> generateSupportChatResponse({
+    required String userQuery,
+    List<Content>? history,
+  }) async {
+    final cleanQuery = userQuery.trim();
+    if (cleanQuery.isEmpty) {
+      return const AiSupportResponse(
+        message:
+            'How can I assist you today? Feel free to ask about requests, matching, or community guidelines.',
+        suggestedActions: [
+          'How matching works',
+          'Create a Request',
+          'Safety Tips',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (!_isInitialized || _chatModel == null) {
+      initialize();
+    }
+
+    if (_isInitialized && _chatModel != null) {
+      try {
+        final systemPrompt =
+            'You are the CivicNet AI Support Assistant & Community Guide.\n'
+            'CivicNet is a community-driven platform connecting neighbors in need with neighbors who can help.\n\n'
+            'Platform Knowledge Base:\n'
+            '1. Opportunity Matching: Uses an AI Relevance Score combining GPS proximity (Haversine formula), skillset vector similarity (Gemini embeddings matched via Supabase pgvector), and urgency weighting.\n'
+            '2. Creating Requests: Tap "+" on the home screen or use the Voice AI assistant to speak naturally and auto-fill details.\n'
+            '3. Volunteering & Helping: Browse the Discover tab or Home urgent matches. When a helper accepts a request, private messaging is unlocked.\n'
+            '4. Karma & Badges: Helping others earns Karma points and badges (e.g. Quick Responder, Top Helper, Neighborhood Hero).\n'
+            '5. Safety & Trust: In life-threatening emergencies, immediately call official local emergency services (911/112). Users can report or block inappropriate behavior.\n'
+            '6. Account & Technical Support: Password reset is on the login screen. Profile and skills can be edited in Settings.\n\n'
+            'Instructions:\n'
+            '- Be concise, friendly, and empowering.\n'
+            '- Format with clear bullet points where helpful.\n'
+            '- End with a helpful, friendly closing tone.\n\n';
+
+        final prompt = '$systemPrompt\nUser Question: $cleanQuery';
+
+        String rawResponse;
+        if (history != null && history.isNotEmpty) {
+          final chat = _chatModel!.startChat(history: history);
+          final response = await chat.sendMessage(Content.text(prompt));
+          rawResponse = response.text?.trim() ?? '';
+        } else {
+          final response =
+              await _chatModel!.generateContent([Content.text(prompt)]);
+          rawResponse = response.text?.trim() ?? '';
+        }
+
+        if (rawResponse.isNotEmpty) {
+          final suggested = _extractSuggestedActions(cleanQuery, rawResponse);
+          return AiSupportResponse(
+            message: rawResponse,
+            suggestedActions: suggested,
+            usedAi: true,
+          );
+        }
+      } catch (e) {
+        logger.w(
+          'AiService: Error calling Gemini for support chat, falling back to heuristics: $e',
+        );
+      }
+    }
+
+    // Local knowledge base fallback
+    return _generateSupportResponseHeuristic(cleanQuery);
+  }
+
+  AiSupportResponse _generateSupportResponseHeuristic(String query) {
+    final lower = query.toLowerCase();
+
+    if (lower.contains('match') ||
+        lower.contains('relevance') ||
+        lower.contains('score') ||
+        lower.contains('algorithm')) {
+      return const AiSupportResponse(
+        message:
+            '**How CivicNet AI Matching Works:**\n\n'
+            'Our matching engine calculates an **AI Relevance Score** for every request using 3 factors:\n'
+            '• **Proximity**: GPS location & real-time distance via the Haversine formula.\n'
+            '• **Skill Vector Similarity**: Google Gemini embeddings matched against user skills via Supabase `pgvector`.\n'
+            '• **Urgency Weighting**: Emergency requests receive high priority in neighbor alerts.',
+        suggestedActions: [
+          'Create a Request',
+          'How to help others',
+          'Safety Tips',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('create') ||
+        lower.contains('post') ||
+        lower.contains('ask for help') ||
+        lower.contains('new request')) {
+      return const AiSupportResponse(
+        message:
+            '**How to Create a Help Request:**\n\n'
+            '1. Tap the **"+"** button at the bottom navigation bar or click **New Request**.\n'
+            '2. You can type manually or tap **"AI Voice Assistant"** to describe what you need in your own words—it will auto-detect the title, category, and urgency!\n'
+            '3. Confirm your location and tap **Post Request**. Nearby qualified neighbors will be alerted instantly.',
+        suggestedActions: [
+          'Voice AI Assistant',
+          'How matching works',
+          'Urgency Levels',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('volunteer') ||
+        lower.contains('help') ||
+        lower.contains('neighbor') ||
+        lower.contains('offer')) {
+      return const AiSupportResponse(
+        message:
+            '**How to Help Others in CivicNet:**\n\n'
+            '• Explore the **Discover** tab to view open help requests categorized by Errands, Household, Tech Support, and more.\n'
+            '• Check your **Home** feed for urgent needs nearby.\n'
+            '• Tap **"Offer Help"** on any request. Once the requester accepts, a private chat unlocks so you can coordinate safely.\n'
+            '• Every completed task earns you **Karma points** and unlocks civic badges!',
+        suggestedActions: [
+          'Karma & Badges',
+          'Safety Guidelines',
+          'Update Skills',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('emergency') ||
+        lower.contains('urgent') ||
+        lower.contains('danger') ||
+        lower.contains('911')) {
+      return const AiSupportResponse(
+        message:
+            '⚠️ **Emergency Notice:**\n\n'
+            'CivicNet is a community mutual-aid network and **not a replacement for emergency services**.\n\n'
+            '• If you or someone else is in immediate danger or requires urgent medical attention, **please call 911 (or your local emergency services) immediately**.\n'
+            '• For urgent community tasks (like water leaks or power issues), set the Urgency slider to **Critical** to alert nearby neighbors quickly.',
+        suggestedActions: [
+          'Safety Guidelines',
+          'Create a Request',
+          'Contact Admin',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('karma') ||
+        lower.contains('badge') ||
+        lower.contains('reward') ||
+        lower.contains('points')) {
+      return const AiSupportResponse(
+        message:
+            '**Karma & Community Badges:**\n\n'
+            '• **Karma Points** reflect your reliability and contributions to your neighborhood.\n'
+            '• You earn Karma by completing help requests, participating in community events, and receiving positive ratings.\n'
+            '• You can unlock badges like **Quick Responder**, **Community Pillar**, and **Top Contributor** on your profile!',
+        suggestedActions: [
+          'How to help others',
+          'Create a Request',
+          'Safety Guidelines',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('password') ||
+        lower.contains('email') ||
+        lower.contains('login') ||
+        lower.contains('account')) {
+      return const AiSupportResponse(
+        message:
+            '**Account & Security Help:**\n\n'
+            '• **Forgot Password**: You can reset your password using the "Forgot Password" link on the Login screen.\n'
+            '• **Edit Profile**: Go to Profile > Edit Profile to update your name, bio, and volunteer skills.\n'
+            '• **Security**: CivicNet supports biometric login (Face ID / Fingerprint) configured in Settings.',
+        suggestedActions: [
+          'Safety Guidelines',
+          'How matching works',
+          'Contact Admin',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('location') ||
+        lower.contains('privacy') ||
+        lower.contains('gps')) {
+      return const AiSupportResponse(
+        message:
+            '**Location & Privacy:**\n\n'
+            '• Your exact GPS coordinates are **never shared publicly** with other users.\n'
+            '• We calculate rough distances (e.g. "0.5 miles away") to help connect neighbors close to each other.\n'
+            '• You can change your location permission anytime in device Settings.',
+        suggestedActions: [
+          'Safety Guidelines',
+          'How matching works',
+          'Create a Request',
+        ],
+        usedAi: false,
+      );
+    }
+
+    if (lower.contains('agent') ||
+        lower.contains('human') ||
+        lower.contains('admin') ||
+        lower.contains('ticket')) {
+      return const AiSupportResponse(
+        message:
+            '**Contact Human Support:**\n\n'
+            'Your conversation is recorded in our support logs. Our team reviews unresolved tickets and community reports promptly.\n\n'
+            'Please describe what you need assistance with, or submit feedback upon closing this chat.',
+        suggestedActions: [
+          'How matching works',
+          'Create a Request',
+          'Safety Guidelines',
+        ],
+        usedAi: false,
+      );
+    }
+
+    // General fallback
+    return const AiSupportResponse(
+      message:
+          'Hello! I am your **CivicNet AI Assistant & Community Guide**.\n\n'
+          'I can help you with:\n'
+          '• Finding and posting help requests\n'
+          '• Understanding our AI opportunity matching\n'
+          '• Volunteering and earning Karma points\n'
+          '• Community safety guidelines and account help\n\n'
+          'What would you like to know?',
+      suggestedActions: [
+        'How matching works',
+        'Create a Request',
+        'How to help others',
+        'Safety Guidelines',
+      ],
+      usedAi: false,
+    );
+  }
+
+  List<String> _extractSuggestedActions(String query, String response) {
+    final lower = '$query $response'.toLowerCase();
+    final actions = <String>[];
+
+    if (lower.contains('request') || lower.contains('post')) {
+      actions.add('Create a Request');
+    }
+    if (lower.contains('match') || lower.contains('score')) {
+      actions.add('How matching works');
+    }
+    if (lower.contains('volunteer') || lower.contains('help')) {
+      actions.add('How to help others');
+    }
+    if (lower.contains('emergency') || lower.contains('urgent')) {
+      actions.add('Safety Guidelines');
+    }
+    if (lower.contains('karma') || lower.contains('badge')) {
+      actions.add('Karma & Badges');
+    }
+
+    if (actions.isEmpty) {
+      actions.addAll([
+        'Create a Request',
+        'How matching works',
+        'Safety Guidelines',
+      ]);
+    }
+    return actions.take(3).toList();
+  }
+}
+
+/// Data container for AI Support Chat responses and suggested follow-up chips.
+class AiSupportResponse {
+  final String message;
+  final List<String> suggestedActions;
+  final bool usedAi;
+
+  const AiSupportResponse({
+    required this.message,
+    this.suggestedActions = const [],
+    this.usedAi = true,
+  });
 }
 
 /// Data container for voice recognition and AI task extraction.
