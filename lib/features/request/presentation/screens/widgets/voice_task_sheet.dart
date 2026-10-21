@@ -45,13 +45,41 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
   }
 
   Future<void> _initSpeechAndStart() async {
-    final status = await Permission.microphone.request();
-    if (!status.isGranted) {
+    final micStatus = await Permission.microphone.request();
+    final speechStatus = await Permission.speech.request();
+
+    if (!micStatus.isGranted) {
       if (mounted) {
-        ToastService.showInfo(
-          context,
-          'Microphone permission is needed for voice-to-task',
-        );
+        if (micStatus.isPermanentlyDenied) {
+          ToastService.showInfo(
+            context,
+            'Microphone access is disabled. Please enable it in Settings.',
+          );
+          await openAppSettings();
+        } else {
+          ToastService.showInfo(
+            context,
+            'Microphone permission is needed for voice-to-task',
+          );
+        }
+      }
+      return;
+    }
+
+    if (!speechStatus.isGranted && !speechStatus.isLimited) {
+      if (mounted) {
+        if (speechStatus.isPermanentlyDenied) {
+          ToastService.showInfo(
+            context,
+            'Speech recognition is disabled. Please enable it in Settings.',
+          );
+          await openAppSettings();
+        } else {
+          ToastService.showInfo(
+            context,
+            'Speech recognition permission is needed for voice-to-task',
+          );
+        }
       }
       return;
     }
@@ -248,6 +276,8 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
                           : () {
                               if (_isListening) {
                                 _stopListening();
+                              } else if (!_speechEnabled) {
+                                _initSpeechAndStart();
                               } else {
                                 _startListening();
                               }
