@@ -270,47 +270,135 @@ class _AuraAiSheetState extends State<AuraAiSheet> {
             ),
           ),
 
-          // Expand to full-screen action
-          IconButton(
-            tooltip: 'Expand full screen',
-            icon: Icon(
-              Icons.open_in_full_rounded,
-              size: 20,
-              color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+          // Action Buttons: 3-Dot More Menu ("•••") + Close (X)
+          Theme(
+            data: Theme.of(context).copyWith(
+              popupMenuTheme: PopupMenuThemeData(
+                color: isDark ? AppColors.surfaceDark : Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.08),
+                  ),
+                ),
+                elevation: 10,
+              ),
             ),
-            onPressed: () {
-              AppHaptic.lightImpact();
-              Navigator.pop(context);
-              context.push('/ai-assistant');
-            },
-          ),
-
-          // Clear chat action
-          IconButton(
-            tooltip: 'Clear conversation',
-            icon: Icon(
-              Icons.refresh_rounded,
-              size: 20,
-              color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+            child: PopupMenuButton<String>(
+              tooltip: 'More options',
+              icon: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.04),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.more_horiz_rounded,
+                  size: 20,
+                  color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+                ),
+              ),
+              padding: EdgeInsets.zero,
+              offset: const Offset(0, 40),
+              onSelected: (value) {
+                AppHaptic.lightImpact();
+                if (value == 'fullscreen') {
+                  Navigator.pop(context);
+                  context.push('/ai-assistant');
+                } else if (value == 'clear') {
+                  _viewModel.clearChat();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'fullscreen',
+                  height: 42,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.open_in_full_rounded,
+                        size: 16,
+                        color: isDark
+                            ? Colors.white70
+                            : AppColors.textPrimaryLight,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Open Fullscreen',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isDark
+                              ? Colors.white
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const PopupMenuDivider(height: 1),
+                PopupMenuItem<String>(
+                  value: 'clear',
+                  height: 42,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.refresh_rounded,
+                        size: 17,
+                        color: isDark
+                            ? Colors.white70
+                            : AppColors.textPrimaryLight,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Clear Conversation',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isDark
+                              ? Colors.white
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            onPressed: () {
-              AppHaptic.lightImpact();
-              _viewModel.clearChat();
-            },
           ),
+          const SizedBox(width: 6),
 
           // Close modal action
           IconButton(
-            icon: Icon(
-              Icons.close_rounded,
-              size: 22,
-              color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+            tooltip: 'Close',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            icon: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.04),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+              ),
             ),
             onPressed: () {
               AppHaptic.lightImpact();
               Navigator.pop(context);
             },
           ),
+          const SizedBox(width: 4),
         ],
       ),
     );
