@@ -153,16 +153,22 @@ class UpdateNote {
 class AppUpdates {
   static List<UpdateNote> get currentUpdates => [
     UpdateNote(
-      title: 'Turbo Chat Sync',
+      title: 'Aura AI Assistant',
       description:
-          "Experience lag-free conversations. We've upgraded the chat engine to deliver messages instantly, even on cellular networks.",
-      icon: Icons.bolt_rounded,
+          "Tap the new glowing floating orb on your Home screen for instant neighborhood intelligence, urgent requests, and borrowable items.",
+      icon: Icons.auto_awesome_rounded,
     ),
     UpdateNote(
-      title: 'Pro Notifications',
+      title: 'AI-Assisted Support',
       description:
-          "Stay in the loop with readable notification previews and smarter badge updates that keep your inbox clean.",
-      icon: Icons.notifications_active_rounded,
+          "Get 24/7 intelligent assistance on opportunity matching, request creation, volunteering, and safety directly in Settings.",
+      icon: Icons.support_agent_rounded,
+    ),
+    UpdateNote(
+      title: 'Turbo Chat & Haptics',
+      description:
+          "Experience ultra-smooth messaging with tactile haptic feedback and streamlined single-capsule input styling.",
+      icon: Icons.bolt_rounded,
     ),
   ];
 }
