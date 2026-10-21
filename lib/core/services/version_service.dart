@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:upgrader/upgrader.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../services/logger_service.dart';
 import 'package:flutter/material.dart';
 
@@ -58,6 +60,55 @@ class VersionService {
     } catch (e) {
       logger.e('Error checking store update', error: e);
       return null;
+    }
+  }
+
+  /// Opens the store listing directly on App Store (iOS) or Google Play (Android).
+  /// Falls back gracefully to the web URL if native store schemes cannot be opened (e.g. on Simulator).
+  static Future<bool> openStore() async {
+    try {
+      final isIos = Platform.isIOS;
+      final nativeUri = isIos
+          ? Uri.parse('itms-apps://itunes.apple.com/app/id6761416586')
+          : Uri.parse('market://details?id=com.sufyankamil.communityNet');
+
+      final webUri = isIos
+          ? Uri.parse('https://apps.apple.com/app/id6761416586')
+          : Uri.parse(
+              'https://play.google.com/store/apps/details?id=com.sufyankamil.communityNet',
+            );
+
+      // 1. Try launching native store application scheme
+      if (await canLaunchUrl(nativeUri)) {
+        final launched = await launchUrl(
+          nativeUri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (launched) return true;
+      }
+
+      // 2. Try launching upgrader's resolved listing URL
+      final listingUrl = _upgrader.currentAppStoreListingURL;
+      if (listingUrl != null && listingUrl.isNotEmpty) {
+        final uri = Uri.parse(listingUrl);
+        if (await canLaunchUrl(uri)) {
+          final launched = await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+          if (launched) return true;
+        }
+      }
+
+      // 3. Fallback to HTTPS web browser (works reliably on Simulator and all devices)
+      if (await canLaunchUrl(webUri)) {
+        return await launchUrl(webUri, mode: LaunchMode.externalApplication);
+      }
+
+      return false;
+    } catch (e) {
+      logger.e('Error opening app store listing', error: e);
+      return false;
     }
   }
 

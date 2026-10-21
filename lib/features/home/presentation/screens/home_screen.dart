@@ -237,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen>
     await UpdatePopup.show(
       context,
       newVersion: storeVersion,
-      onUpdate: () => VersionService.upgrader.sendUserToAppStore(),
+      onUpdate: () => VersionService.openStore(),
       onLater: () async {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('deferred_store_update_version', storeVersion);
