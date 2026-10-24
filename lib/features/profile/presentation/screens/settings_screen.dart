@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 import '../../../../services/rating_service.dart';
 import '../viewmodels/settings_controller.dart';
 import '../../../../core/services/version_service.dart';
+import '../../../../services/service_health_service.dart';
+import '../../../../components/service_status_sheet.dart';
 import '../../../../widgets/haptic_buttons.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -122,6 +124,55 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () {
               AppHaptic.lightImpact();
               context.push('/support');
+            },
+          ),
+          ListTile(
+            title: const Text('System Status'),
+            subtitle: const Text('Platform health & live service status'),
+            leading: const Icon(
+              Icons.sensors_rounded,
+              color: Colors.teal,
+            ),
+            trailing: ListenableBuilder(
+              listenable: ServiceHealthService(),
+              builder: (context, _) {
+                final isOperational =
+                    ServiceHealthService().status == ServiceStatus.operational;
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (isOperational
+                                ? const Color(0xFF00B894)
+                                : const Color(0xFFFF9F43))
+                            .withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isOperational ? 'Operational' : 'Investigating',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: isOperational
+                              ? const Color(0xFF00B894)
+                              : const Color(0xFFFF9F43),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right),
+                  ],
+                );
+              },
+            ),
+            onTap: () {
+              AppHaptic.lightImpact();
+              ServiceStatusSheet.show(context);
             },
           ),
           const Divider(),

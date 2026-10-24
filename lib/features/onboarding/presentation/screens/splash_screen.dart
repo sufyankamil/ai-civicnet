@@ -1,85 +1,88 @@
 import 'package:flutter/material.dart';
 
 import '../../../../components/app_loader.dart';
+import '../../../../theme/app_theme.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = Theme.of(context).primaryColor != Colors.blue
-        ? Theme.of(context).primaryColor
-        : const Color(0xFF6750A4);
-
-    final centerColor = baseColor.withValues(alpha: 0.8);
-    final edgeColor = baseColor.withValues(alpha: 1.0);
-
     return Scaffold(
-      backgroundColor: edgeColor,
+      backgroundColor: Colors.black,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
+          color: Colors.black,
           gradient: RadialGradient(
-            center: const Alignment(0, -0.1),
-            radius: 1.0,
-            colors: [centerColor, edgeColor],
-            stops: const [0.3, 1.0],
+            center: Alignment(0, -0.15),
+            radius: 1.1,
+            colors: [
+              Color(0xFF1E1735), // Subtle inner violet aura
+              Color(0xFF000000), // Deep obsidian black edge
+            ],
+            stops: [0.2, 1.0],
           ),
         ),
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Subtle glowing effect behind the icon
+              // Glowing effect behind the logo
               Container(
-                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(28),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.1),
-                      blurRadius: 40,
-                      spreadRadius: 10,
+                      color: AppColors.auraPrimary.withValues(alpha: 0.35),
+                      blurRadius: 50,
+                      spreadRadius: 8,
                     ),
                   ],
                 ),
-                child: const Icon(
-                  Icons.handshake_rounded,
-                  size: 90,
-                  color: Colors.white,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.asset(
+                    'assets/icons/splash_icon_transparent.png',
+                    width: 115,
+                    height: 115,
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               const Text(
                 'Civic Net',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 32,
+                  fontFamily: 'Poppins',
                   fontWeight: FontWeight.w900,
-                  letterSpacing: -1.0,
+                  letterSpacing: -0.5,
                   height: 1.2,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Text(
                 'COMMUNITY IN ACTION',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: Colors.white70,
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 2.5,
                 ),
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 60),
               // Loader styled to fit the premium aesthetic
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: Colors.white.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
-                child: const AppLoader(size: 30, color: Colors.white),
+                child: const AppLoader(size: 28, color: AppColors.primaryDark),
               ),
             ],
           ),
@@ -88,3 +91,4 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
+

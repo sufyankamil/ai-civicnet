@@ -46,6 +46,10 @@ lib/
 
 ## 3. Mandatory Agent Guardrails & Coding Rules
 
+### 📋 GitHub Issues-First Workflow (MANDATORY)
+- **Always Create GitHub Issue First**: Before making, updating, or adding ANY changes to the codebase, ALWAYS create a GitHub issue first using GitHub MCP/tools describing the goal, rationale, and planned changes. Never write or modify code before an issue is created.
+- **Never Commit or Push Directly to `main`**: All development and modifications must occur on a working/feature branch. Do not switch to a new branch for every small change; maintain progress on the active branch, but NEVER commit or push directly to `main`.
+
 ### 🛡️ Security & Environment
 - **Never Hardcode Secrets**: Never expose Supabase keys, Google Maps API keys, or Gemini API keys in Dart code. Always access them via `.env` / `flutter_dotenv`.
 - **Preserve `.env.example`**: If adding a new environment variable, update `.env.example` with a placeholder description.
