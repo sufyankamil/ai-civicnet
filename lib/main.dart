@@ -11,6 +11,7 @@ import 'services/theme_service.dart';
 import 'services/startup_service.dart';
 import 'widgets/connectivity_wrapper.dart';
 import 'widgets/auto_logout_wrapper.dart';
+import 'widgets/service_health_wrapper.dart';
 
 import 'package:toastification/toastification.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -236,7 +237,9 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         builder: (context, child) {
           return AutoLogoutWrapper(
             inactivityDuration: const Duration(hours: 1),
-            child: ConnectivityWrapper(child: child!),
+            child: ConnectivityWrapper(
+              child: ServiceHealthWrapper(child: child!),
+            ),
           );
         },
       ),

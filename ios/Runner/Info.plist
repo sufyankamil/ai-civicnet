@@ -28,6 +28,12 @@
 		<string>$(MAPS_API_KEY)</string>
 		<key>ITSAppUsesNonExemptEncryption</key>
 		<false/>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>itms-apps</string>
+			<string>https</string>
+			<string>http</string>
+		</array>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>NSCameraUsageDescription</key>
@@ -92,11 +98,5 @@
 		</array>
 		<key>io.flutter.embedded_views_preview</key>
 		<true/>
-		<key>LSApplicationQueriesSchemes</key>
-		<array>
-			<string>itms-apps</string>
-			<string>https</string>
-			<string>http</string>
-		</array>
 	</dict>
 </plist>

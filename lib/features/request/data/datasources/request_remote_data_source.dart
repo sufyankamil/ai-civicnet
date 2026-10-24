@@ -34,7 +34,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .from('help_requests')
           .select('*')
           .order('created_at', ascending: false)
-          .withServerTimeout();
+          .withServerTimeout(10, 'GET /help_requests')
+          .trackHealth(operation: 'GET /help_requests');
 
       return await attachSafeProfiles(
         supabaseClient,
@@ -54,7 +55,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .select('*')
           .eq('requester_id', userId)
           .order('created_at', ascending: false)
-          .withServerTimeout();
+          .withServerTimeout(10, 'GET /my_requests')
+          .trackHealth(operation: 'GET /my_requests');
 
       return await attachSafeProfiles(
         supabaseClient,
@@ -74,7 +76,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .select('*')
           .eq('id', id)
           .single()
-          .withServerTimeout();
+          .withServerTimeout(10, 'GET /help_request')
+          .trackHealth(operation: 'GET /help_request');
 
       return await attachSafeProfile(
         supabaseClient,
@@ -112,7 +115,7 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
         'embedding': embedding, // Save the vector
         'created_at': DateTime.now().toUtc().toIso8601String(),
         'status': 'open',
-      }).withServerTimeout();
+      }).withServerTimeout(10, 'POST /help_requests').trackHealth(operation: 'POST /help_requests');
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -128,7 +131,8 @@ class RequestRemoteDataSourceImpl implements RequestRemoteDataSource {
           .from('help_requests')
           .update({'status': status.toString().split('.').last})
           .eq('id', requestId)
-          .withServerTimeout();
+          .withServerTimeout(10, 'UPDATE /help_requests')
+          .trackHealth(operation: 'UPDATE /help_requests');
     } catch (e) {
       throw ServerException(e.toString());
     }

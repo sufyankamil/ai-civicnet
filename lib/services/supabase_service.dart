@@ -297,7 +297,7 @@ class SupabaseService {
       'embedding': embedding, // Save the vector
       'created_at': DateTime.now().toUtc().toIso8601String(),
       'status': 'open',
-    }).withServerTimeout();
+    }).withServerTimeout(10, 'POST /help_requests').trackHealth(operation: 'POST /help_requests');
   }
 
   Future<void> updateHelpRequestStatus(
@@ -308,7 +308,8 @@ class SupabaseService {
         .from('help_requests')
         .update({'status': status.toString().split('.').last})
         .eq('id', requestId)
-        .withServerTimeout();
+        .withServerTimeout(10, 'UPDATE /help_requests')
+        .trackHealth(operation: 'UPDATE /help_requests');
   }
 
   // Fetch requests (real-time stream or list)
@@ -332,7 +333,9 @@ class SupabaseService {
           .select('*')
           .order('created_at', ascending: false);
 
-      final response = await query.withServerTimeout();
+      final response = await query
+          .withServerTimeout(10, 'GET /help_requests')
+          .trackHealth(operation: 'GET /help_requests');
 
       final List<dynamic> data = await attachSafeProfiles(
         _client,
@@ -413,7 +416,8 @@ class SupabaseService {
           .select('*')
           .eq('requester_id', user.id)
           .order('created_at', ascending: false)
-          .withServerTimeout();
+          .withServerTimeout(10, 'GET /my_requests')
+          .trackHealth(operation: 'GET /my_requests');
 
       final List<dynamic> data = await attachSafeProfiles(
         _client,

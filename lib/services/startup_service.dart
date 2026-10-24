@@ -11,6 +11,7 @@ import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:civic_net/services/encryption_service.dart';
 import 'package:civic_net/services/ai_service.dart';
+import 'package:civic_net/services/service_health_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:io';
@@ -70,6 +71,9 @@ class StartupService {
 
     // Schedule the daily notification after other services are up
     await NotificationService().scheduleDailyCheckInNotification();
+
+    // 5. Service Health & Cloud Telemetry Monitor
+    ServiceHealthService().initialize();
 
     logger.i('All Services initialized in ${stopwatch.elapsedMilliseconds}ms');
     _isInitialized = true;
