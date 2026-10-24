@@ -50,6 +50,27 @@ lib/
 - **Always Create GitHub Issue First**: Before making, updating, or adding ANY changes to the codebase, ALWAYS create a GitHub issue first using GitHub MCP/tools describing the goal, rationale, and planned changes. Never write or modify code before an issue is created.
 - **Never Commit or Push Directly to `main`**: All development and modifications must occur on a working/feature branch. Do not switch to a new branch for every small change; maintain progress on the active branch, but NEVER commit or push directly to `main`.
 
+### 🧪 Test-Driven Development (MANDATORY)
+Whenever adding or updating a feature (or fixing a bug), follow the Red → Green → Refactor cycle. Tests come **before** the implementation.
+1. **Red**: Write test cases first that describe the expected behavior (happy path, edge cases, error/null-location paths). Run them and confirm they fail for the right reason.
+2. **Green**: Write the minimum implementation needed to make the tests pass.
+3. **Refactor**: Clean up the code while keeping the tests green.
+
+Rules:
+- Never write implementation code for a feature before its tests exist.
+- Bug fixes start with a failing regression test that reproduces the bug.
+- Put tests under `test/`, mirroring the `lib/` structure (e.g. `lib/features/request/viewmodels/x.dart` → `test/features/request/viewmodels/x_test.dart`). Use widget tests for UI behavior.
+- Business logic in ViewModels and Services must be unit tested. Mock external dependencies (Supabase, Gemini, FCM, location); tests must never hit real network services or use real secrets.
+- When updating existing behavior, update the affected tests first, then change the code.
+- Do not delete or weaken existing tests just to get a change passing.
+
+### 🧠 Feature Memory Log (MANDATORY)
+After completing any feature, update, or bug fix, summarize the changes and append an entry to the **Feature Log** at the bottom of this file, so future agents know what already exists and do not repeat work.
+- **Before starting** any task, read the Feature Log and check whether the work (or something similar) was already done. Extend existing code instead of duplicating it.
+- Add the entry in the same branch/PR as the change, newest entries first.
+- Each entry has: date, short title, issue/PR link (if any), what changed, key files touched, and notes/gotchas (decisions made, things deliberately not done).
+- Keep entries brief (3–6 lines). Record the *what and why*, not a full diff.
+
 ### 🛡️ Security & Environment
 - **Never Hardcode Secrets**: Never expose Supabase keys, Google Maps API keys, or Gemini API keys in Dart code. Always access them via `.env` / `flutter_dotenv`.
 - **Preserve `.env.example`**: If adding a new environment variable, update `.env.example` with a placeholder description.
@@ -98,6 +119,15 @@ dart run flutter_launcher_icons
 dart run flutter_native_splash:create
 ```
 
+### Testing (TDD)
+```zsh
+# Run all tests:
+flutter test
+
+# Run a single test file while developing (Red → Green loop):
+flutter test test/path/to/feature_test.dart
+```
+
 ### Static Analysis & Verification
 ```zsh
 # Verify code health before completing tasks:
@@ -109,7 +139,24 @@ flutter analyze
 ## 5. Agent Verification Checklist
 
 Before considering any task complete:
-1. Run `flutter analyze` and confirm 0 errors or warnings introduced.
-2. Verify cross-platform UI responsiveness (check both iOS and Android layouts).
-3. Ensure no `.env` or sensitive credentials were accidentally staged or committed.
-4. Verify that newly added assets or fonts are declared in `pubspec.yaml`.
+1. Confirm tests were written **before** the implementation and that `flutter test` passes.
+2. Run `flutter analyze` and confirm 0 errors or warnings introduced.
+3. Verify cross-platform UI responsiveness (check both iOS and Android layouts).
+4. Ensure no `.env` or sensitive credentials were accidentally staged or committed.
+5. Verify that newly added assets or fonts are declared in `pubspec.yaml`.
+6. Append a summary entry to the Feature Log below.
+
+---
+
+## 6. Feature Log
+
+Newest first. Format:
+
+```
+### YYYY-MM-DD — Title (#issue / PR link)
+- What changed:
+- Key files:
+- Notes / gotchas:
+```
+
+_No entries yet._
