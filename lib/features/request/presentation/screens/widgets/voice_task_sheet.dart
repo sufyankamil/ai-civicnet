@@ -199,6 +199,13 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
       if (!mounted) return;
       AppHaptic.mediumImpact();
       Navigator.of(context).pop(parsed);
+    } on AiQuotaExceededException {
+      if (!mounted) return;
+      setState(() => _isAnalyzing = false);
+      ToastService.showError(
+        context,
+        "You've used your free AI actions for this month. Subscription plans are coming soon.",
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isAnalyzing = false);

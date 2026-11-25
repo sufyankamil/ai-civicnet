@@ -1,35 +1,41 @@
 import 'dart:convert';
-import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:civic_net/services/ai_gateway.dart';
 import 'package:civic_net/services/logger_service.dart';
+import 'package:flutter/foundation.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 
+export 'package:civic_net/services/ai_gateway.dart'
+    show AiQuotaExceededException, AiGatewayException;
+
+/// All Gemini access goes through [AiGateway] (the `ai-proxy` edge function),
+/// so the API key never ships in the app and quotas are enforced server-side.
 class AiService {
   static final AiService _instance = AiService._internal();
   factory AiService() => _instance;
   AiService._internal();
 
-  GenerativeModel? _embeddingModel;
-  GenerativeModel? _chatModel;
-  bool _isInitialized = false;
+  AiGateway? _gateway;
 
+  AiGateway get _gw => _gateway ??= ProxyAiGateway();
+
+  @visibleForTesting
+  void setGateway(AiGateway gateway) => _gateway = gateway;
+
+  /// Kept for call-site compatibility; there is nothing to set up client-side.
   void initialize() {
-    final apiKey = dotenv.env['GEMINI_API_KEY'];
-    if (apiKey == null || apiKey.isEmpty) {
-      logger.e('AiService: GEMINI_API_KEY not found in .env');
-      return;
-    }
+    logger.i('AiService: Using ai-proxy gateway');
+  }
 
-    // Embedding model for vector search
-    _embeddingModel = GenerativeModel(
-      model: 'gemini-embedding-001',
-      apiKey: apiKey,
-    );
-
-    // Chat model for RAG and interaction
-    _chatModel = GenerativeModel(model: 'gemini-flash-latest', apiKey: apiKey);
-
-    _isInitialized = true;
-    logger.i('AiService: Initialized with Gemini Embedding and Flash models');
+  List<AiHistoryTurn> _toTurns(List<Content>? history) {
+    if (history == null) return const [];
+    return history
+        .map(
+          (c) => AiHistoryTurn(
+            role: c.role ?? 'user',
+            text: c.parts.whereType<TextPart>().map((p) => p.text).join(),
+          ),
+        )
+        .toList();
   }
 
   /// Generates a 768-dimension vector for the given text.
@@ -37,34 +43,13 @@ class AiService {
     String text, {
     TaskType? taskType,
   }) async {
-    if (!_isInitialized || _embeddingModel == null) {
-      if (!_isInitialized) initialize();
-      if (!_isInitialized) {
-        throw Exception(
-          'AI Service failed to initialize. Check GEMINI_API_KEY in .env',
-        );
-      }
-    }
-
     try {
-      final content = Content.text(text);
-      // Specifying taskType helps the model optimize the embedding
-      final result = await _embeddingModel!.embedContent(
-        content,
-        taskType: taskType,
+      final values = await _gw.embed(text, taskType: taskType?.name);
+      if (values.isEmpty) return null;
+      logger.d(
+        'AiService: Generated embedding for text (${text.length} chars)',
       );
-
-      if (result.embedding.values.isNotEmpty) {
-        logger.d(
-          'AiService: Generated embedding for text (${text.length} chars)',
-        );
-        return result.embedding.values
-            .take(768)
-            .map((e) => e.toDouble())
-            .toList();
-      }
-
-      return null;
+      return values.take(768).toList();
     } catch (e) {
       logger.e('AiService: Error generating embedding', error: e);
       throw Exception('AI Error: $e');
@@ -116,8 +101,6 @@ class AiService {
 
   /// Generates a search query for the RAG system based on the user's message.
   Future<String> generateSearchQuery(String userMessage) async {
-    if (!_isInitialized || _chatModel == null) initialize();
-
     final systemPrompt =
         'You are the CivicNet AI Assistant. Helping a community networking app.\n\n';
     final prompt =
@@ -127,8 +110,11 @@ class AiService {
         'Output ONLY the keywords/phrase, nothing else.\n\n'
         'User Message: $userMessage';
 
-    final response = await _chatModel!.generateContent([Content.text(prompt)]);
-    return response.text?.trim() ?? userMessage;
+    final text = await _gw.generateText(
+      feature: AiFeature.assistantSearch,
+      prompt: prompt,
+    );
+    return text.trim().isEmpty ? userMessage : text.trim();
   }
 
   /// Generates a chat response using RAG context.
@@ -137,8 +123,6 @@ class AiService {
     required String context,
     List<Content>? history,
   }) async {
-    if (!_isInitialized || _chatModel == null) initialize();
-
     final systemPrompt =
         'You are Aura AI, the neighborhood intelligence guide for CivicNet. '
         'Your goal is to help users find assistance, discover borrowable assets, find events, and stay informed about their neighborhood. '
@@ -154,25 +138,19 @@ class AiService {
         'If the answer is not in the context, use your general knowledge but mention that this is general information. '
         'Keep the response concise, helpful, and community-oriented.';
 
-    if (_isInitialized && _chatModel != null) {
-      try {
-        final content = [Content.text(prompt)];
-
-        if (history != null && history.isNotEmpty) {
-          final chat = _chatModel!.startChat(history: history);
-          final response = await chat.sendMessage(Content.text(prompt));
-          final text = response.text?.trim();
-          if (text != null && text.isNotEmpty) return text;
-        } else {
-          final response = await _chatModel!.generateContent(content);
-          final text = response.text?.trim();
-          if (text != null && text.isNotEmpty) return text;
-        }
-      } catch (e) {
-        logger.w(
-          'AiService: Gemini API failed, falling back to local synthesis: $e',
-        );
-      }
+    try {
+      final text = await _gw.generateText(
+        feature: AiFeature.assistantChat,
+        prompt: prompt,
+        history: _toTurns(history),
+      );
+      if (text.trim().isNotEmpty) return text.trim();
+    } on AiQuotaExceededException {
+      rethrow;
+    } catch (e) {
+      logger.w(
+        'AiService: Gemini API failed, falling back to local synthesis: $e',
+      );
     }
 
     // Resilient local fallback using retrieved community context
@@ -187,8 +165,6 @@ class AiService {
 
   /// Categorizes a help request based on its title and description.
   Future<String?> categorizeRequest(String title, String description) async {
-    if (!_isInitialized || _chatModel == null) initialize();
-
     final systemPrompt =
         'You are an AI assistant for a local community networking app (CivicNet). '
         'Your task is to categorize a user\'s help request into exactly one of the following categories:\n'
@@ -209,20 +185,22 @@ class AiService {
         'Description: $description';
 
     try {
-      final response = await _chatModel!.generateContent([
-        Content.text(prompt),
-      ]);
-      return response.text?.trim().toUpperCase();
+      final text = await _gw.generateText(
+        feature: AiFeature.categorize,
+        prompt: prompt,
+      );
+      return text.trim().toUpperCase();
     } catch (e) {
       if (e.toString().contains('503') ||
           e.toString().contains('SERVICE_UNAVAILABLE')) {
         // Simple retry once after 2 seconds for 503 during categorization
         await Future.delayed(const Duration(seconds: 2));
         try {
-          final retryResponse = await _chatModel!.generateContent([
-            Content.text(prompt),
-          ]);
-          return retryResponse.text?.trim().toUpperCase();
+          final retryText = await _gw.generateText(
+            feature: AiFeature.categorize,
+            prompt: prompt,
+          );
+          return retryText.trim().toUpperCase();
         } catch (_) {
           /* fall through */
         }
@@ -246,11 +224,7 @@ class AiService {
       );
     }
 
-    if (!_isInitialized || _chatModel == null) {
-      initialize();
-    }
-
-    if (_isInitialized && _chatModel != null) {
+    {
       try {
         final prompt =
             'You are the CivicNet AI Assistant for a community help platform.\n'
@@ -266,10 +240,10 @@ class AiService {
             '}\n'
             'Important: Output ONLY the valid JSON string. Do not wrap in markdown or add explanations.';
 
-        final response = await _chatModel!.generateContent([
-          Content.text(prompt),
-        ]);
-        final text = response.text?.trim() ?? '';
+        final text = (await _gw.generateText(
+          feature: AiFeature.voiceTask,
+          prompt: prompt,
+        )).trim();
 
         String jsonString = text;
         if (jsonString.startsWith('```')) {
@@ -307,6 +281,8 @@ class AiService {
             usedAi: true,
           );
         }
+      } on AiQuotaExceededException {
+        rethrow;
       } catch (e) {
         logger.w(
           'AiService: Gemini voice parse failed, using local heuristic fallback',
@@ -471,8 +447,6 @@ class AiService {
     required List<dynamic> events,
     required dynamic user,
   }) async {
-    if (!_isInitialized || _chatModel == null) initialize();
-
     final timeOfDay = _getTimeOfDayContext();
     final requestsText = requests
         .take(3)
@@ -510,26 +484,36 @@ class AiService {
         'Write the briefing now. Use friendly but professional language. Avoid using "Dear [Name]" at the start, just start with an appropriate greeting like "Good morning", "Good evening", or "Hello, neighbor".';
 
     try {
-      final response = await _chatModel!.generateContent([
-        Content.text(prompt),
-      ]);
-      return response.text?.trim() ??
-          generateLocalBriefing(requests: requests, events: events, user: user);
+      final text = (await _gw.generateText(
+        feature: AiFeature.briefing,
+        prompt: prompt,
+      )).trim();
+      return text.isNotEmpty
+          ? text
+          : generateLocalBriefing(
+              requests: requests,
+              events: events,
+              user: user,
+            );
+    } on AiQuotaExceededException {
+      rethrow;
     } catch (e) {
       if (e.toString().contains('503') ||
           e.toString().contains('SERVICE_UNAVAILABLE')) {
         // Automatic retry once for the briefing
         await Future.delayed(const Duration(seconds: 2));
         try {
-          final retryResponse = await _chatModel!.generateContent([
-            Content.text(prompt),
-          ]);
-          return retryResponse.text?.trim() ??
-              generateLocalBriefing(
-                requests: requests,
-                events: events,
-                user: user,
-              );
+          final retryText = (await _gw.generateText(
+            feature: AiFeature.briefing,
+            prompt: prompt,
+          )).trim();
+          return retryText.isNotEmpty
+              ? retryText
+              : generateLocalBriefing(
+                  requests: requests,
+                  events: events,
+                  user: user,
+                );
         } catch (_) {
           /* fall through */
         }
@@ -563,11 +547,7 @@ class AiService {
       );
     }
 
-    if (!_isInitialized || _chatModel == null) {
-      initialize();
-    }
-
-    if (_isInitialized && _chatModel != null) {
+    {
       try {
         final systemPrompt =
             'You are the CivicNet AI Support Assistant & Community Guide.\n'
@@ -586,17 +566,11 @@ class AiService {
 
         final prompt = '$systemPrompt\nUser Question: $cleanQuery';
 
-        String rawResponse;
-        if (history != null && history.isNotEmpty) {
-          final chat = _chatModel!.startChat(history: history);
-          final response = await chat.sendMessage(Content.text(prompt));
-          rawResponse = response.text?.trim() ?? '';
-        } else {
-          final response = await _chatModel!.generateContent([
-            Content.text(prompt),
-          ]);
-          rawResponse = response.text?.trim() ?? '';
-        }
+        final rawResponse = (await _gw.generateText(
+          feature: AiFeature.support,
+          prompt: prompt,
+          history: _toTurns(history),
+        )).trim();
 
         if (rawResponse.isNotEmpty) {
           final suggested = _extractSuggestedActions(cleanQuery, rawResponse);
@@ -606,6 +580,8 @@ class AiService {
             usedAi: true,
           );
         }
+      } on AiQuotaExceededException {
+        rethrow;
       } catch (e) {
         logger.w(
           'AiService: Error calling Gemini for support chat, falling back to heuristics: $e',

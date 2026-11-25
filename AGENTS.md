@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-25 — Subscriptions phase 1: server-side AI proxy and quota (#74)
+- What changed: all Gemini calls now go through the new `ai-proxy` Supabase edge function (JWT-verified, key kept as a function secret). Metered features (assistant chat, voice task, briefing, support chat) spend a monthly free quota via `consume_ai_quota`; embeddings, categorization and the assistant's search-query step stay unmetered so matching keeps working. `AiService` throws `AiQuotaExceededException` on HTTP 402 and rethrows it past its local fallbacks; callers show a friendly message (home briefing falls back to the local briefing).
+- Key files: `lib/services/ai_gateway.dart`, `lib/services/ai_service.dart`, `supabase/functions/ai-proxy/`, `sql_scripts/subscriptions_schema.sql`, `sql_scripts/tests/subscriptions_quota_test.sql`, tests in `test/services/`.
+- Notes / gotchas: SQL and the function are NOT deployed yet: apply the SQL by hand, run the SQL test on a dev DB, `supabase secrets set GEMINI_API_KEY=...`, deploy `ai-proxy`, ship the app, then rotate the old Gemini key (it is in older builds). The release workflow no longer writes `GEMINI_API_KEY` into `.env`; an old app build still needs the key until it is updated. No refund when Gemini fails after quota is spent, and the home briefing still spends 1 quota per day when it auto-loads (revisit with the paywall UI in phase 3). Billing (RevenueCat), paywall UI and feature gates are phases 2-3.
+
 ### 2026-11-25 — Pin Flutter version in CI (#73)
 - What changed: `.github/workflows/dart.yml` now pins Flutter 3.47.6 instead of the moving `stable` channel.
 - Key files: `.github/workflows/dart.yml`.
