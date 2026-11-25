@@ -30,7 +30,9 @@ import 'features/onboarding/presentation/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'core/utils/adaptive_layout.dart';
 import 'core/utils/custom_timeago.dart';
+import 'widgets/adaptive_content_frame.dart';
 
 SharedPreferences? prefsGlobal;
 
@@ -42,9 +44,13 @@ void main() {
   timeago.setLocaleMessages('en', timeago.EnMessages());
   timeago.setLocaleMessages('en_short', CustomEnShortMessages());
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
-    _,
-  ) {
+  // Phones stay portrait only; large windows (e.g. the iPhone Duo inner
+  // screen) may rotate. AdaptiveContentFrame keeps this in sync afterwards.
+  final view = WidgetsBinding.instance.platformDispatcher.views.first;
+  final shortestSide = view.physicalSize.shortestSide / view.devicePixelRatio;
+  SystemChrome.setPreferredOrientations(
+    AdaptiveLayout.orientationsForShortestSide(shortestSide),
+  ).then((_) {
     runApp(const RootApp());
   });
 }
@@ -128,6 +134,10 @@ class _RootAppState extends State<RootApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        builder: (context, child) => AdaptiveContentFrame(
+          background: Theme.of(context).scaffoldBackgroundColor,
+          child: child!,
+        ),
         home: Scaffold(
           body: Center(
             child: Padding(
@@ -169,6 +179,10 @@ class _RootAppState extends State<RootApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        builder: (context, child) => AdaptiveContentFrame(
+          background: Theme.of(context).scaffoldBackgroundColor,
+          child: child!,
+        ),
         home: const SplashScreen(),
       );
     }
@@ -235,10 +249,13 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         supportedLocales: const [Locale('en'), Locale('hi')],
         routerConfig: _router,
         builder: (context, child) {
-          return AutoLogoutWrapper(
-            inactivityDuration: const Duration(hours: 1),
-            child: ConnectivityWrapper(
-              child: ServiceHealthWrapper(child: child!),
+          return AdaptiveContentFrame(
+            background: Theme.of(context).scaffoldBackgroundColor,
+            child: AutoLogoutWrapper(
+              inactivityDuration: const Duration(hours: 1),
+              child: ConnectivityWrapper(
+                child: ServiceHealthWrapper(child: child!),
+              ),
             ),
           );
         },
