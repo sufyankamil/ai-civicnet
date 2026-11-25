@@ -125,6 +125,24 @@ class _SideStripActionState extends State<SideStripAction> {
       _inStrip ? const SizedBox.shrink() : widget.child;
 }
 
+/// Pads [child] by the right-hand status strip (iPhone Duo) so text and buttons
+/// clear the frosted panel. Use it on a screen's content, not on its header or
+/// background, which should keep running under the panel so there is something
+/// to frost. Adds nothing where there is no strip.
+class SideStripInset extends StatelessWidget {
+  const SideStripInset({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(right: MediaQuery.paddingOf(context).right),
+      child: child,
+    );
+  }
+}
+
 /// Hides a screen's own top-left back/close button while the shared one is shown
 /// in the right-hand status strip (see [AdaptiveContentFrame]).
 class HideOnSideStrip extends StatelessWidget {

@@ -178,208 +178,209 @@ class EventDetailScreen extends StatelessWidget {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: RadialGradient(
-                        center: const Alignment(0.8, -0.2),
-                        radius: 2.0,
-                        colors: [
-                          AppColors.primaryLight.withValues(
-                            alpha: isDark ? 0.05 : 0.03,
-                          ),
-                          Theme.of(context).scaffoldBackgroundColor,
-                        ],
-                        stops: const [0.0, 0.5],
+                  child: SideStripInset(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(0.8, -0.2),
+                          radius: 2.0,
+                          colors: [
+                            AppColors.primaryLight.withValues(
+                              alpha: isDark ? 0.05 : 0.03,
+                            ),
+                            Theme.of(context).scaffoldBackgroundColor,
+                          ],
+                          stops: const [0.0, 0.5],
+                        ),
                       ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 24.0,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primaryLight.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: AppColors.primaryLight.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                  ),
-                                ),
-                                child: Text(
-                                  AppLocalizations.of(
-                                    context,
-                                  )!.communityEvent.toUpperCase(),
-                                  style: const TextStyle(
-                                    color: AppColors.primaryLight,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            event.title,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                              height: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 28),
-                          _buildPremiumInfoRow(
-                            context,
-                            Icons.calendar_today_rounded,
-                            dateFormat.format(event.eventDate),
-                            timeFormat.format(event.eventDate),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildPremiumInfoRow(
-                            context,
-                            Icons.location_on_rounded,
-                            event.locationName,
-                            (event.lat != 0 && event.lng != 0)
-                                ? AppLocalizations.of(context)!.tapToSeeOnMap
-                                : '',
-                            onTap: (event.lat != 0 && event.lng != 0)
-                                ? () async {
-                                    final String url;
-                                    if (Theme.of(context).platform ==
-                                        TargetPlatform.iOS) {
-                                      url =
-                                          'http://maps.apple.com/?q=${event.lat},${event.lng}';
-                                    } else {
-                                      url =
-                                          'https://www.google.com/maps/search/?api=1&query=${event.lat},${event.lng}';
-                                    }
-                                    final uri = Uri.parse(url);
-                                    if (await canLaunchUrl(uri)) {
-                                      await launchUrl(uri);
-                                    }
-                                  }
-                                : null,
-                          ),
-                          const SizedBox(height: 40),
-                          Text(
-                            AppLocalizations.of(context)!.aboutThisEvent,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            event.description,
-                            style: TextStyle(
-                              fontSize: 16,
-                              height: 1.6,
-                              color: isDark ? Colors.white70 : Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                          Text(
-                            AppLocalizations.of(context)!.organizer,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Theme.of(
-                                context,
-                              ).cardColor.withValues(alpha: isDark ? 0.4 : 0.6),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.grey.withValues(
-                                  alpha: isDark ? 0.05 : 0.1,
-                                ),
-                              ),
-                            ),
-                            child: Row(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0,
+                          vertical: 24.0,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
                                 Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                                    color: AppColors.primaryLight.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                       color: AppColors.primaryLight.withValues(
-                                        alpha: 0.3,
+                                        alpha: 0.2,
                                       ),
-                                      width: 2,
                                     ),
                                   ),
-                                  child: CircleAvatar(
-                                    radius: 26,
-                                    backgroundColor: AppColors.primaryLight
-                                        .withValues(alpha: 0.2),
-                                    backgroundImage:
-                                        event.creatorAvatarUrl.isNotEmpty
-                                        ? NetworkImage(event.creatorAvatarUrl)
-                                        : null,
-                                    child: event.creatorAvatarUrl.isEmpty
-                                        ? const Icon(
-                                            Icons.person_rounded,
-                                            size: 28,
-                                            color: AppColors.primaryLight,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        event.creatorName,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.communityMember,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[500],
-                                        ),
-                                      ),
-                                    ],
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.communityEvent.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: AppColors.primaryLight,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.0,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 48),
-                          _buildCommentsSection(context, viewModel, event),
-                          // Extra space to prevent bottom navigation bar overlap
-                          const SizedBox(height: 140),
-                        ],
+                            const SizedBox(height: 16),
+                            Text(
+                              event.title,
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            _buildPremiumInfoRow(
+                              context,
+                              Icons.calendar_today_rounded,
+                              dateFormat.format(event.eventDate),
+                              timeFormat.format(event.eventDate),
+                            ),
+                            const SizedBox(height: 16),
+                            _buildPremiumInfoRow(
+                              context,
+                              Icons.location_on_rounded,
+                              event.locationName,
+                              (event.lat != 0 && event.lng != 0)
+                                  ? AppLocalizations.of(context)!.tapToSeeOnMap
+                                  : '',
+                              onTap: (event.lat != 0 && event.lng != 0)
+                                  ? () async {
+                                      final String url;
+                                      if (Theme.of(context).platform ==
+                                          TargetPlatform.iOS) {
+                                        url =
+                                            'http://maps.apple.com/?q=${event.lat},${event.lng}';
+                                      } else {
+                                        url =
+                                            'https://www.google.com/maps/search/?api=1&query=${event.lat},${event.lng}';
+                                      }
+                                      final uri = Uri.parse(url);
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri);
+                                      }
+                                    }
+                                  : null,
+                            ),
+                            const SizedBox(height: 40),
+                            Text(
+                              AppLocalizations.of(context)!.aboutThisEvent,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              event.description,
+                              style: TextStyle(
+                                fontSize: 16,
+                                height: 1.6,
+                                color: isDark ? Colors.white70 : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 40),
+                            Text(
+                              AppLocalizations.of(context)!.organizer,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardColor.withValues(
+                                  alpha: isDark ? 0.4 : 0.6,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Colors.grey.withValues(
+                                    alpha: isDark ? 0.05 : 0.1,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: AppColors.primaryLight
+                                            .withValues(alpha: 0.3),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 26,
+                                      backgroundColor: AppColors.primaryLight
+                                          .withValues(alpha: 0.2),
+                                      backgroundImage:
+                                          event.creatorAvatarUrl.isNotEmpty
+                                          ? NetworkImage(event.creatorAvatarUrl)
+                                          : null,
+                                      child: event.creatorAvatarUrl.isEmpty
+                                          ? const Icon(
+                                              Icons.person_rounded,
+                                              size: 28,
+                                              color: AppColors.primaryLight,
+                                            )
+                                          : null,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          event.creatorName,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          AppLocalizations.of(
+                                            context,
+                                          )!.communityMember,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 48),
+                            _buildCommentsSection(context, viewModel, event),
+                            // Extra space to prevent bottom navigation bar overlap
+                            const SizedBox(height: 140),
+                          ],
+                        ),
                       ),
                     ),
                   ),

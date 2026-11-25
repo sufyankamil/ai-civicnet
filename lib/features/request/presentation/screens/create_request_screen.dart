@@ -392,7 +392,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 140, 16, 32),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            140,
+            16 + MediaQuery.paddingOf(context).right,
+            32,
+          ),
           child: Form(
             key: _formKey,
             autovalidateMode: AutovalidateMode.onUserInteraction,

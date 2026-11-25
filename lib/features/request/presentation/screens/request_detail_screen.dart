@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../domain/entities/request_enums.dart';
@@ -181,71 +182,74 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               onDelete: _showDeleteConfirmationDialog,
             ),
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    RequestInfoSection(
-                      request: request,
-                      onStatusChange: _updateHelpRequestStatus,
-                    ),
-                    const SizedBox(height: 16),
-                    StatusBannerSection(
-                      applicationStatus: _applicationStatus,
-                      onChat: () => _startChatWithUser(
-                        request.requesterId,
-                        request.requesterName,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    RequesterSection(
-                      request: request,
-                      isStartingChat: _isStartingChat,
-                      onChat: () => _startChatWithUser(
-                        request.requesterId,
-                        request.requesterName,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Divider(height: 1),
-                    const SizedBox(height: 24),
-                    DescriptionSection(description: request.description),
-                    const SizedBox(height: 32),
-                    HelperManagementSection(
-                      potentialHelpers: _viewModel.potentialHelpers,
-                      isLoading: _viewModel.isLoadingHelpers,
-                    ),
-                    const SizedBox(height: 24),
-                    SuggestedToolsSection(
-                      matchedAssets: _matchedAssets,
-                      isLoading: _isLoadingAssets,
-                      onAssetTap: _showAssetDetails,
-                    ),
-                    const SizedBox(height: 32),
-                    if (SupabaseService().currentUserId !=
-                        request.requesterId) ...[
-                      if (_applicationStatus == null &&
-                          request.status == RequestStatusEnum.open)
-                        PrimaryButton(
-                          text: AppLocalizations.of(context)!.imInterested,
-                          isLoading: _isApplying || _isCheckingStatus,
-                          onPressed: _applyToRequest,
-                        ),
-                    ] else ...[
-                      const OwnerActionsSection(),
-                    ],
-                    if (SupabaseService().currentUserId == request.requesterId)
-                      ApplicationsSection(
+              child: SideStripInset(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12),
+                      RequestInfoSection(
                         request: request,
-                        applications: _applications,
-                        isLoading: _isLoadingApplications,
-                        onUpdateStatus: _updateStatus,
-                        onStartChat: _startChatWithUser,
+                        onStatusChange: _updateHelpRequestStatus,
                       ),
-                    const SizedBox(height: 48),
-                  ],
+                      const SizedBox(height: 16),
+                      StatusBannerSection(
+                        applicationStatus: _applicationStatus,
+                        onChat: () => _startChatWithUser(
+                          request.requesterId,
+                          request.requesterName,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      RequesterSection(
+                        request: request,
+                        isStartingChat: _isStartingChat,
+                        onChat: () => _startChatWithUser(
+                          request.requesterId,
+                          request.requesterName,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Divider(height: 1),
+                      const SizedBox(height: 24),
+                      DescriptionSection(description: request.description),
+                      const SizedBox(height: 32),
+                      HelperManagementSection(
+                        potentialHelpers: _viewModel.potentialHelpers,
+                        isLoading: _viewModel.isLoadingHelpers,
+                      ),
+                      const SizedBox(height: 24),
+                      SuggestedToolsSection(
+                        matchedAssets: _matchedAssets,
+                        isLoading: _isLoadingAssets,
+                        onAssetTap: _showAssetDetails,
+                      ),
+                      const SizedBox(height: 32),
+                      if (SupabaseService().currentUserId !=
+                          request.requesterId) ...[
+                        if (_applicationStatus == null &&
+                            request.status == RequestStatusEnum.open)
+                          PrimaryButton(
+                            text: AppLocalizations.of(context)!.imInterested,
+                            isLoading: _isApplying || _isCheckingStatus,
+                            onPressed: _applyToRequest,
+                          ),
+                      ] else ...[
+                        const OwnerActionsSection(),
+                      ],
+                      if (SupabaseService().currentUserId ==
+                          request.requesterId)
+                        ApplicationsSection(
+                          request: request,
+                          applications: _applications,
+                          isLoading: _isLoadingApplications,
+                          onUpdateStatus: _updateStatus,
+                          onStartChat: _startChatWithUser,
+                        ),
+                      const SizedBox(height: 48),
+                    ],
+                  ),
                 ),
               ),
             ),

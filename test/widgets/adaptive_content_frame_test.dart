@@ -94,6 +94,33 @@ void main() {
     );
     expect(calls.last.length, DeviceOrientation.values.length);
   });
+  group('SideStripInset', () {
+    testWidgets('pads content by the strip so it clears the frosted panel', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          tester,
+          const Size(466, 678),
+          rightInset: 84,
+          child: const SideStripInset(child: SizedBox.expand(key: Key('c'))),
+        ),
+      );
+      expect(tester.getSize(find.byKey(const Key('c'))).width, 466 - 84);
+    });
+
+    testWidgets('adds nothing without a strip', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          tester,
+          const Size(390, 844),
+          child: const SideStripInset(child: SizedBox.expand(key: Key('c'))),
+        ),
+      );
+      expect(tester.getSize(find.byKey(const Key('c'))).width, 390);
+    });
+  });
+
   group('side strip back button', () {
     const duo = Size(466, 678);
 

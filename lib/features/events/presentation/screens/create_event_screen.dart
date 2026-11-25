@@ -211,7 +211,12 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 120, 16, 32),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            120,
+            16 + MediaQuery.paddingOf(context).right,
+            32,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
