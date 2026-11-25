@@ -156,7 +156,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get safetyDescription =>
-      'CivicNet is committed to community safety. We never ask for money for requests or events.';
+      'CivicNet is committed to community safety. Requests and events are always free, and we never ask for money for them. Pro is optional and only adds AI features.';
 
   @override
   String get learnMoreSafety => 'Learn More About Safety';

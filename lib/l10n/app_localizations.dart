@@ -371,7 +371,7 @@ abstract class AppLocalizations {
   /// No description provided for @safetyDescription.
   ///
   /// In en, this message translates to:
-  /// **'CivicNet is committed to community safety. We never ask for money for requests or events.'**
+  /// **'CivicNet is committed to community safety. Requests and events are always free, and we never ask for money for them. Pro is optional and only adds AI features.'**
   String get safetyDescription;
 
   /// No description provided for @learnMoreSafety.

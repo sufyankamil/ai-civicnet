@@ -159,6 +159,21 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-25 — Release workflow writes the RevenueCat iOS key into `.env`
+- What changed: `testflight.yml` now adds `REVENUECAT_IOS_API_KEY` (from the GitHub secret of the same name) to `.env` in both jobs, so TestFlight and App Store builds have billing switched on.
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: needs the GitHub repository secret `REVENUECAT_IOS_API_KEY` (the public `appl_` SDK key). Without it the build gets an empty key and billing stays dormant. Android is not wired up yet.
+
+### 2026-11-25 — Community Commitment banner mentions optional Pro
+- What changed: the home "Community Commitment" banner text (`safetyDescription`, English and Hindi) now says requests and events are always free and that Pro is optional and only adds AI features.
+- Key files: `lib/l10n/app_en.arb`, `lib/l10n/app_hi.arb`, `test/features/home/widgets/home_safety_banner_test.dart`.
+- Notes / gotchas: "only adds AI features" is true today; if Pro ever gates other features (radius, request limits), update this text and the Commitment screen. The Hindi is a draft translation.
+
+### 2026-11-25 — GCC national-day greetings: pushes and country-aware banner (#82)
+- What changed: `send-holiday-notification` has a daily mode (`{"daily": true, "countryCodes": [...]}`) that finds today's holidays in each country's own time zone (data in `holidays.ts`) and pushes to `country_<CC>`; the India payload path is unchanged. Fixed-date greetings for UAE (Flag Day Nov 3, National Day Dec 2), Saudi (Founding Day Feb 22, National Day Sep 23), Qatar (Dec 18), Kuwait (Feb 25, Feb 26), Bahrain (Dec 16) and Oman (Nov 18), English title with Arabic message. The home banner is now data-driven and country-aware (India included, same dismiss key).
+- Key files: `supabase/functions/send-holiday-notification/{index,holidays,holidays.test}.ts`, `supabase/holiday_notification_gcc_schedule.sql`, `lib/features/home/models/seasonal_greeting.dart`, `lib/features/home/presentation/widgets/seasonal_greeting_banner.dart`, `home_screen.dart`, tests in `test/features/home/`.
+- Notes / gotchas: NOT deployed or scheduled yet. Steps: deploy the function, make sure the `HOLIDAY_NOTIFICATION_SECRET` function secret and the `holiday_notification_secret` vault secret exist, then run the GCC schedule SQL (two daily jobs, 09:00 local in UTC+4 and UTC+3). The holiday list exists twice (TypeScript for pushes, Dart for the banner); a Flutter test fails if they drift. Run the TS tests with `node --test supabase/functions/send-holiday-notification/holidays.test.ts`. Eid and other Hijri holidays and UAE Commemoration Day are deliberately not included. Dates should be checked against each country's official calendar.
+
 ### 2026-11-25 — GCC countries in the profile country dropdown (#81)
 - What changed: the Edit Profile "Country / region" dropdown now also offers UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman. The list lives in one place (`supportedCountries`) and the dropdown is built from it.
 - Key files: `lib/features/profile/models/supported_countries.dart`, `lib/features/profile/presentation/screens/edit_profile_screen.dart`, `test/features/profile/models/supported_countries_test.dart`.

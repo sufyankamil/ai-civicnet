@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
+import '../../models/seasonal_greeting.dart';
 
 class SeasonalGreetingBanner extends StatelessWidget {
+  final SeasonalGreeting greeting;
   final VoidCallback onDismiss;
 
-  const SeasonalGreetingBanner({super.key, required this.onDismiss});
+  const SeasonalGreetingBanner({
+    super.key,
+    required this.greeting,
+    required this.onDismiss,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,9 +19,8 @@ class SeasonalGreetingBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF9933), Color(0xFFFFFFFF), Color(0xFF138808)],
-          stops: [0, 0.5, 1],
+        gradient: LinearGradient(
+          colors: greeting.colors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -27,24 +32,27 @@ class SeasonalGreetingBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('🇮🇳', style: TextStyle(fontSize: 30)),
+          Text(greeting.flag, style: const TextStyle(fontSize: 30)),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Happy Independence Day!',
-                  style: TextStyle(
+                  greeting.title,
+                  style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 15,
                     color: Color(0xFF102A43),
                   ),
                 ),
-                SizedBox(height: 3),
+                const SizedBox(height: 3),
                 Text(
-                  'स्वतंत्रता दिवस की शुभकामनाएँ',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF102A43)),
+                  greeting.message,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF102A43),
+                  ),
                 ),
               ],
             ),

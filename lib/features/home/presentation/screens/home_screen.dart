@@ -17,6 +17,7 @@ import '../widgets/home_app_bar.dart';
 import '../widgets/home_search_bar.dart';
 import '../widgets/home_filter_bar.dart';
 import '../widgets/home_safety_banner.dart';
+import '../../models/seasonal_greeting.dart';
 import '../widgets/seasonal_greeting_banner.dart';
 import '../widgets/home_requests_list.dart';
 import '../widgets/home_polls_section.dart';
@@ -48,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen>
   final ScrollController _filterScrollController = ScrollController();
   late TabController _tabController;
   bool _showSafetyBanner = false;
-  bool _showSeasonalGreeting = false;
+  SeasonalGreeting? _seasonalGreeting;
   bool _showRegionalUpdateReminder = false;
   bool _showStoreUpdateReminder = false;
   String? _storeUpdateVersion;
@@ -121,23 +122,28 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _checkSeasonalGreeting() async {
     final today = DateTime.now();
-    if (today.month != 8 || today.day != 15) return;
+    // Cheap check first: skip the profile lookup unless some country has a
+    // greeting today.
+    if (seasonalGreetingsOn(today).isEmpty) return;
     final profile = await SupabaseService().getCurrentUserProfile();
-    if (profile?.countryCode != 'IN') return;
+    final greeting = seasonalGreetingFor(profile?.countryCode, today);
+    if (greeting == null) return;
     final prefs = await SharedPreferences.getInstance();
-    final key = 'seasonal_greeting_independence_day_${today.year}_dismissed';
+    final key = seasonalGreetingDismissKey(greeting, today.year);
     if (!(prefs.getBool(key) ?? false) && mounted) {
-      setState(() => _showSeasonalGreeting = true);
+      setState(() => _seasonalGreeting = greeting);
     }
   }
 
   Future<void> _dismissSeasonalGreeting() async {
+    final greeting = _seasonalGreeting;
+    if (greeting == null) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(
-      'seasonal_greeting_independence_day_${DateTime.now().year}_dismissed',
+      seasonalGreetingDismissKey(greeting, DateTime.now().year),
       true,
     );
-    if (mounted) setState(() => _showSeasonalGreeting = false);
+    if (mounted) setState(() => _seasonalGreeting = null);
   }
 
   Future<void> _checkRegionalUpdatePrompt() async {
@@ -559,8 +565,9 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                       if (_showSafetyBanner)
                         HomeSafetyBanner(onDismiss: _dismissSafetyBanner),
-                      if (_showSeasonalGreeting)
+                      if (_seasonalGreeting != null)
                         SeasonalGreetingBanner(
+                          greeting: _seasonalGreeting!,
                           onDismiss: _dismissSeasonalGreeting,
                         ),
                       AnimatedSwitcher(

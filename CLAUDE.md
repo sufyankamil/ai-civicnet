@@ -84,7 +84,7 @@ The code uses **GetX** (`get`, in ~44 files): `GetxController`/`Bindings`, `Get.
 ## Backend
 
 - **Supabase SQL:** `sql_scripts/` (core schemas, vector setup, RLS/security hardening, chat, polls, ratings, karma, points, blocking, guilds, support) and `supabase/` (admin roles, announcements, verification requests, holiday notification scheduling, `config.toml`). `sql_scripts/SECURITY_HARDENING.md` covers hardening notes. There is no numbered migration chain: scripts are applied by hand, so check which ones a database already has.
-- **Edge functions (`supabase/functions/`, Deno):** `notify-new-message`, `notify-new-request`, `notify-interest`, `send-holiday-notification`, `ai-proxy` (all Gemini calls, enforces the monthly free AI quota), `revenuecat-webhook` (syncs RevenueCat subscription events into `subscriptions`).
+- **Edge functions (`supabase/functions/`, Deno):** `notify-new-message`, `notify-new-request`, `notify-interest`, `send-holiday-notification` (India cron payload, or daily mode for GCC national-day greetings), `ai-proxy` (all Gemini calls, enforces the monthly free AI quota), `revenuecat-webhook` (syncs RevenueCat subscription events into `subscriptions`).
 - **`cloudflare_proxy/`:** a Cloudflare Worker that proxies requests (including websockets) to the Supabase project host, which is hard-coded in `index.js`.
 - **`website/`:** static pages (terms, child safety, delete account, reset) deployed with Vercel.
 
