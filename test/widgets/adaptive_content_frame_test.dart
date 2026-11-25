@@ -6,9 +6,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Sizes the test window (1 logical px = 1 physical px) and builds the frame
 /// under a [MediaQuery] taken from that window.
-Widget _host(WidgetTester tester, Size size, {double rightInset = 0}) {
+Widget _host(
+  WidgetTester tester,
+  Size size, {
+  double rightInset = 0,
+  Size? display,
+}) {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
+  tester.view.display.size = display ?? size;
+  tester.view.display.devicePixelRatio = 1;
   tester.view.padding = FakeViewPadding(right: rightInset);
   tester.view.viewPadding = FakeViewPadding(right: rightInset);
   addTearDown(tester.view.reset);
@@ -109,5 +116,32 @@ void main() {
 
     await tester.pumpWidget(_host(tester, const Size(390, 844)));
     expect(calls.last, ['DeviceOrientation.portraitUp']);
+  });
+  testWidgets('portrait window on a large display keeps rotation unlocked', (
+    tester,
+  ) async {
+    final calls = <List<dynamic>>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemChrome.setPreferredOrientations') {
+          calls.add(call.arguments as List<dynamic>);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    // iOS letterboxes a portrait-locked app into a 466x678 window on the Duo
+    // inner screen (951x669). The display is large, so rotation must stay on.
+    await tester.pumpWidget(
+      _host(tester, const Size(466, 678), display: const Size(951, 669)),
+    );
+    expect(calls.last.length, DeviceOrientation.values.length);
   });
 }

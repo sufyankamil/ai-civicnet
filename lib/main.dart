@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -44,10 +45,15 @@ void main() {
   timeago.setLocaleMessages('en', timeago.EnMessages());
   timeago.setLocaleMessages('en_short', CustomEnShortMessages());
 
-  // Phones stay portrait only; large windows (e.g. the iPhone Duo inner
-  // screen) may rotate. AdaptiveContentFrame keeps this in sync afterwards.
+  // Phones stay portrait only; large windows may rotate. AdaptiveContentFrame
+  // keeps this in sync afterwards (non-iOS).
   final view = WidgetsBinding.instance.platformDispatcher.views.first;
-  final shortestSide = view.physicalSize.shortestSide / view.devicePixelRatio;
+  final shortestSide = AdaptiveLayout.displayShortestSide(view);
+  // iOS decides orientations natively (see AppDelegate.swift).
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    runApp(const RootApp());
+    return;
+  }
   SystemChrome.setPreferredOrientations(
     AdaptiveLayout.orientationsForShortestSide(shortestSide),
   ).then((_) {

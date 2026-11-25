@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -30,10 +31,34 @@ class AdaptiveContentFrame extends StatefulWidget {
   State<AdaptiveContentFrame> createState() => _AdaptiveContentFrameState();
 }
 
-class _AdaptiveContentFrameState extends State<AdaptiveContentFrame> {
+class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
+    with WidgetsBindingObserver {
   List<DeviceOrientation>? _applied;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Fires for any platform metric change, including the display changing
+  /// while the window keeps its size (e.g. unfolding a foldable).
+  @override
+  void didChangeMetrics() {
+    if (!mounted) return;
+    _applyOrientations(AdaptiveLayout.displayShortestSide(View.of(context)));
+  }
+
   void _applyOrientations(double shortestSide) {
+    // iOS decides natively (AppDelegate), from the scene's own screen: Flutter
+    // keeps reporting the screen the app launched on after a foldable opens.
+    if (defaultTargetPlatform == TargetPlatform.iOS) return;
     final wanted = AdaptiveLayout.orientationsForShortestSide(shortestSide);
     if (_applied != null &&
         _applied!.length == wanted.length &&
@@ -47,7 +72,10 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    _applyOrientations(media.size.shortestSide);
+    // Decide from the physical display, not the window: a portrait-locked app
+    // gets a small portrait window even on a large screen, and judging by that
+    // window would keep it locked forever.
+    _applyOrientations(AdaptiveLayout.displayShortestSide(View.of(context)));
 
     final width = AdaptiveLayout.contentWidthFor(media.size.width);
     final gutter = (media.size.width - width) / 2;
