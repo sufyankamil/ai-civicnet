@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -81,17 +82,20 @@ class _EventsListScreenState extends State<EventsListScreen>
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 16),
-                  child: AppHaptic(
-                    onTap: () => context.push('/create-event'),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: AppColors.primaryLight,
+                  // On the iPhone Duo this moves into the right-hand status strip.
+                  child: SideStripAction(
+                    child: AppHaptic(
+                      onTap: () => context.push('/create-event'),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryLight.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add_rounded,
+                          color: AppColors.primaryLight,
+                        ),
                       ),
                     ),
                   ),
