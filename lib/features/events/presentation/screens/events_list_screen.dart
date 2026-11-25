@@ -119,81 +119,91 @@ class _EventsListScreenState extends State<EventsListScreen>
             stops: const [0.0, 0.7],
           ),
         ),
-        child: Column(
-          children: [
-            const SizedBox(height: 136),
+        child: SafeArea(
+          top: false,
+          bottom: false,
+          left: false,
+          // Stops before the iPhone Duo status strip; the background keeps
+          // running under it.
+          child: Column(
+            children: [
+              const SizedBox(height: 136),
 
-            // Custom Segmented Control
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              child: Container(
-                height: 50,
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.black.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(16),
+              // Custom Segmented Control
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
                 ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryLight.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
+                child: Container(
+                  height: 50,
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryLight.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    labelColor: Colors.white,
+                    unselectedLabelColor: isDark
+                        ? Colors.grey[400]
+                        : Colors.grey[600],
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13,
+                      letterSpacing: 0.3,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    dividerColor: Colors.transparent,
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    tabs: [
+                      Tab(text: l10n.upcoming.toUpperCase()),
+                      Tab(text: l10n.past.toUpperCase()),
                     ],
                   ),
-                  labelColor: Colors.white,
-                  unselectedLabelColor: isDark
-                      ? Colors.grey[400]
-                      : Colors.grey[600],
-                  labelStyle: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 13,
-                    letterSpacing: 0.3,
-                  ),
-                  unselectedLabelStyle: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                  dividerColor: Colors.transparent,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  tabs: [
-                    Tab(text: l10n.upcoming.toUpperCase()),
-                    Tab(text: l10n.past.toUpperCase()),
+                ),
+              ),
+
+              // Events List
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildEventsList(
+                      context,
+                      viewModel,
+                      viewModel.upcomingEvents,
+                      l10n,
+                      true,
+                    ),
+                    _buildEventsList(
+                      context,
+                      viewModel,
+                      viewModel.pastEvents,
+                      l10n,
+                      false,
+                    ),
                   ],
                 ),
               ),
-            ),
-
-            // Events List
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildEventsList(
-                    context,
-                    viewModel,
-                    viewModel.upcomingEvents,
-                    l10n,
-                    true,
-                  ),
-                  _buildEventsList(
-                    context,
-                    viewModel,
-                    viewModel.pastEvents,
-                    l10n,
-                    false,
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

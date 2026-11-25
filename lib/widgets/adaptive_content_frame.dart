@@ -233,26 +233,16 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     final strip = AdaptiveLayout.hasSideStrip(padding);
     final showBack = strip && widget.canGoBack && widget.onBack != null;
 
-    // With a strip, every screen stops before it so nothing interactive hides
-    // under the panel (some screens ignore the safe area). The structure is
-    // the same either way so the navigator below keeps its state.
-    final inset = strip ? padding.right : 0.0;
-    final media = MediaQuery.of(context);
-    final content = MediaQuery(
-      data: strip
-          ? media.copyWith(
-              size: Size(media.size.width - inset, media.size.height),
-              padding: media.padding.copyWith(right: 0),
-              viewPadding: media.viewPadding.copyWith(right: 0),
-            )
-          : media,
-      child: Padding(
-        padding: EdgeInsets.only(right: inset),
-        child: SideStripScope(
-          controller: _strip,
-          backShown: showBack,
-          child: widget.child,
-        ),
+    // Screens run full width under the strip so the frosted panel has
+    // something to blur, and keep the inset in MediaQuery so SafeArea-aware
+    // screens still stop before it. The structure is the same with or
+    // without a strip so the navigator below keeps its state.
+    final content = Padding(
+      padding: EdgeInsets.zero,
+      child: SideStripScope(
+        controller: _strip,
+        backShown: showBack,
+        child: widget.child,
       ),
     );
     if (!strip) return Stack(children: [content]);
@@ -270,26 +260,21 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     return Stack(
       children: [
         content,
-        // Solid base so the strip never shows the window background.
-        Positioned(
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: padding.right,
-          child: ColoredBox(color: scaffold),
-        ),
-        // Frosted panel over the whole strip so the indicators and buttons
-        // stay legible.
+        // Frosted, translucent panel over the whole strip so the indicators
+        // and buttons stay legible without a flat slab. It absorbs touches so
+        // nothing hidden underneath is triggered by accident.
         Positioned(
           key: const Key('side_strip_blur'),
           right: 0,
           top: 0,
           bottom: 0,
           width: padding.right,
-          child: ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: ColoredBox(color: scaffold.withValues(alpha: 0.6)),
+          child: AbsorbPointer(
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: ColoredBox(color: scaffold.withValues(alpha: 0.35)),
+              ),
             ),
           ),
         ),

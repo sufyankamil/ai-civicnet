@@ -134,22 +134,17 @@ void main() {
       expect(rect.height, 678);
     });
 
-    testWidgets('screen content stops before the strip while it is shown', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _host(tester, duo, rightInset: 84, canGoBack: true, onBack: () {}),
-      );
-      expect(tester.getSize(find.byKey(const Key('probe'))).width, 466 - 84);
-    });
-
-    testWidgets('every screen stops before the strip, back or not', (
+    testWidgets('screens run under the frosted strip but know its inset', (
       tester,
     ) async {
       await tester.pumpWidget(
         _host(tester, duo, rightInset: 84, canGoBack: false, onBack: () {}),
       );
-      expect(tester.getSize(find.byKey(const Key('probe'))).width, 466 - 84);
+      // Full width, so there is something behind the panel to frost...
+      expect(tester.getSize(find.byKey(const Key('probe'))).width, 466);
+      // ...while SafeArea-aware screens still stop before it.
+      final probe = tester.element(find.byKey(const Key('probe')));
+      expect(MediaQuery.paddingOf(probe).right, 84);
       expect(find.byKey(const Key('side_strip_blur')), findsOneWidget);
       expect(find.byKey(const Key('side_strip_back')), findsNothing);
     });
