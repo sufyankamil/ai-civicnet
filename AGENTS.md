@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-25 — Pin Flutter 3.47.6 in the TestFlight workflow (#84)
+- What changed: both Flutter setup steps in `testflight.yml` (analyze and build) now pin `flutter-version: "3.47.6"`, matching `dart.yml`.
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: TestFlight Upload #8 failed in `analyze` with 138 `deprecated_member_use` infos because the job used the moving `stable` channel (same cause as #73, which only fixed `dart.yml`). `app-store-release.yml` has no Flutter step. Bump the pin only together with the migration off `package:flutter/material.dart`.
+
 ### 2026-11-25 — Release workflow writes the RevenueCat iOS key into `.env`
 - What changed: `testflight.yml` now adds `REVENUECAT_IOS_API_KEY` (from the GitHub secret of the same name) to `.env` in both jobs, so TestFlight and App Store builds have billing switched on.
 - Key files: `.github/workflows/testflight.yml`.
