@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -162,12 +163,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: isDark ? Colors.white : Theme.of(context).primaryColor,
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? Colors.white : Theme.of(context).primaryColor,
+            ),
+            onPressed: () => context.pop(),
           ),
-          onPressed: () => context.pop(),
         ),
       ),
       body: AuthBackground(

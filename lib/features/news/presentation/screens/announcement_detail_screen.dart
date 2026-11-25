@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -130,13 +131,15 @@ class _AnnouncementDetailScreenState extends State<AnnouncementDetailScreen> {
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: CircleAvatar(
-                backgroundColor: Colors.black.withValues(alpha: 0.3),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
+            leading: HideOnSideStrip(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black.withValues(alpha: 0.3),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ),
               ),
             ),

@@ -4,17 +4,54 @@ import 'package:flutter/services.dart';
 
 import '../core/utils/adaptive_layout.dart';
 
+/// Hides a screen's own top-left back/close button while the shared one is shown
+/// in the right-hand status strip (see [AdaptiveContentFrame]).
+class HideOnSideStrip extends StatelessWidget {
+  const HideOnSideStrip({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final strip = AdaptiveLayout.hasSideStrip(
+      AdaptiveLayout.windowPadding(View.of(context)),
+    );
+    return strip ? const SizedBox.shrink() : child;
+  }
+}
+
 /// Keeps the allowed orientations in sync with the screen the app is on
 /// (non-iOS only): phones stay portrait, large screens may rotate. The content
 /// itself is never capped: it fills the whole window.
 ///
+/// When the screen has a status strip on the right (iPhone Duo) and there is
+/// somewhere to go back to, it also shows one shared back (or close) button in
+/// that strip, under the system indicators. Screens hide their own top-left
+/// button with [HideOnSideStrip].
+///
+
 /// iOS decides natively (see `AppDelegate.swift`), from the scene's own screen,
 /// because Flutter keeps reporting the screen the app launched on after a
 /// foldable opens.
 class AdaptiveContentFrame extends StatefulWidget {
-  const AdaptiveContentFrame({super.key, required this.child});
+  const AdaptiveContentFrame({
+    super.key,
+    required this.child,
+    this.canGoBack = false,
+    this.isClose = false,
+    this.onBack,
+  });
 
   final Widget child;
+
+  /// Whether the current route can be popped.
+  final bool canGoBack;
+
+  /// Show a close (X) icon instead of a back arrow (create/modal-style routes).
+  final bool isClose;
+
+  /// Called when the strip button is tapped.
+  final VoidCallback? onBack;
 
   @override
   State<AdaptiveContentFrame> createState() => _AdaptiveContentFrameState();
@@ -61,6 +98,44 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     // Judge by the physical display, not the window: a portrait-locked app
     // gets a small portrait window even on a large screen.
     _applyOrientations(AdaptiveLayout.displayShortestSide(View.of(context)));
-    return widget.child;
+
+    final padding = AdaptiveLayout.windowPadding(View.of(context));
+    if (!widget.canGoBack ||
+        widget.onBack == null ||
+        !AdaptiveLayout.hasSideStrip(padding)) {
+      return widget.child;
+    }
+
+    // Below the system indicators: the outer screen stacks camera, time and
+    // wifi (taller) while the inner screen only shows time and wifi.
+    // Judge by the window: Flutter keeps reporting the launch screen for the
+    // display after a foldable opens.
+    final large =
+        MediaQuery.sizeOf(context).shortestSide >=
+        AdaptiveLayout.largeWindowShortestSide;
+    final top = large ? 112.0 : 164.0;
+    const size = 48.0;
+    return Stack(
+      children: [
+        widget.child,
+        Positioned(
+          right: (padding.right - size) / 2,
+          top: top,
+          child: Material(
+            type: MaterialType.transparency,
+            child: IconButton(
+              key: const Key('side_strip_back'),
+              iconSize: 24,
+              constraints: const BoxConstraints.tightFor(
+                width: size,
+                height: size,
+              ),
+              icon: Icon(widget.isClose ? Icons.close : Icons.arrow_back),
+              onPressed: widget.onBack,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }

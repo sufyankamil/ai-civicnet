@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import '../../../../theme/app_theme.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -9,9 +10,11 @@ class ReferralScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
         title: const Text(
           'Refer Friends',

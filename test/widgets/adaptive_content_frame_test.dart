@@ -5,18 +5,36 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Sizes the test window and display (1 logical px = 1 physical px) and builds
 /// the frame under a [MediaQuery] taken from that window.
-Widget _host(WidgetTester tester, Size size, {Size? display}) {
+Widget _host(
+  WidgetTester tester,
+  Size size, {
+  Size? display,
+  double rightInset = 0,
+  bool canGoBack = false,
+  bool isClose = false,
+  VoidCallback? onBack,
+  Widget child = const SizedBox.expand(key: Key('probe')),
+}) {
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = size;
   tester.view.display.size = display ?? size;
   tester.view.display.devicePixelRatio = 1;
+  tester.view.padding = FakeViewPadding(right: rightInset);
+  tester.view.viewPadding = FakeViewPadding(right: rightInset);
   addTearDown(tester.view.reset);
   return Builder(
     builder: (context) => MediaQuery.fromView(
       view: View.of(context),
-      child: const Directionality(
+      child: Directionality(
         textDirection: TextDirection.ltr,
-        child: AdaptiveContentFrame(child: SizedBox.expand(key: Key('probe'))),
+        child: Material(
+          child: AdaptiveContentFrame(
+            canGoBack: canGoBack,
+            isClose: isClose,
+            onBack: onBack,
+            child: child,
+          ),
+        ),
       ),
     ),
   );
@@ -75,5 +93,102 @@ void main() {
       _host(tester, const Size(466, 678), display: const Size(951, 669)),
     );
     expect(calls.last.length, DeviceOrientation.values.length);
+  });
+  group('side strip back button', () {
+    const duo = Size(466, 678);
+
+    testWidgets('shows in the strip when there is a side inset and a back', (
+      tester,
+    ) async {
+      var backs = 0;
+      await tester.pumpWidget(
+        _host(
+          tester,
+          duo,
+          rightInset: 84,
+          canGoBack: true,
+          onBack: () => backs++,
+        ),
+      );
+
+      final button = find.byKey(const Key('side_strip_back'));
+      expect(button, findsOneWidget);
+      // Centred in the 84 px strip at the right edge.
+      expect(tester.getCenter(button).dx, closeTo(466 - 42, 1));
+
+      await tester.tap(button);
+      expect(backs, 1);
+    });
+
+    testWidgets('uses a close icon for close-style routes', (tester) async {
+      await tester.pumpWidget(
+        _host(
+          tester,
+          duo,
+          rightInset: 84,
+          canGoBack: true,
+          isClose: true,
+          onBack: () {},
+        ),
+      );
+      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back), findsNothing);
+    });
+
+    testWidgets('hidden without a side inset (normal phone)', (tester) async {
+      await tester.pumpWidget(
+        _host(tester, const Size(390, 844), canGoBack: true, onBack: () {}),
+      );
+      expect(find.byKey(const Key('side_strip_back')), findsNothing);
+    });
+
+    testWidgets('hidden when there is nothing to go back to', (tester) async {
+      await tester.pumpWidget(
+        _host(tester, duo, rightInset: 84, canGoBack: false, onBack: () {}),
+      );
+      expect(find.byKey(const Key('side_strip_back')), findsNothing);
+    });
+
+    testWidgets(
+      'HideOnSideStrip still hides after a SafeArea consumed the inset',
+      (tester) async {
+        // AppBar wraps its leading widget in a SafeArea, so MediaQuery there
+        // reports no side inset; the window's own padding must be used.
+        const own = Text('own back', key: Key('own_back'));
+        await tester.pumpWidget(
+          _host(
+            tester,
+            duo,
+            rightInset: 84,
+            child: const SafeArea(child: HideOnSideStrip(child: own)),
+          ),
+        );
+        expect(find.byKey(const Key('own_back')), findsNothing);
+      },
+    );
+
+    testWidgets('HideOnSideStrip hides a screen\'s own button in the strip', (
+      tester,
+    ) async {
+      const own = Text('own back', key: Key('own_back'));
+      await tester.pumpWidget(
+        _host(
+          tester,
+          duo,
+          rightInset: 84,
+          child: const HideOnSideStrip(child: own),
+        ),
+      );
+      expect(find.byKey(const Key('own_back')), findsNothing);
+
+      await tester.pumpWidget(
+        _host(
+          tester,
+          const Size(390, 844),
+          child: const HideOnSideStrip(child: own),
+        ),
+      );
+      expect(find.byKey(const Key('own_back')), findsOneWidget);
+    });
   });
 }

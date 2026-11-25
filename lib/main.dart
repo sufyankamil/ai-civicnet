@@ -248,7 +248,8 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         supportedLocales: const [Locale('en'), Locale('hi')],
         routerConfig: _router,
         builder: (context, child) {
-          return AdaptiveContentFrame(
+          return _RouterAwareFrame(
+            router: _router,
             child: AutoLogoutWrapper(
               inactivityDuration: const Duration(hours: 1),
               child: ConnectivityWrapper(
@@ -258,6 +259,51 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Feeds the current route into [AdaptiveContentFrame] so the shared back/close
+/// button in the iPhone Duo status strip follows navigation. Re-reads after the
+/// frame, because the navigator has not applied a push/pop yet when the router
+/// notifies.
+class _RouterAwareFrame extends StatefulWidget {
+  const _RouterAwareFrame({required this.router, required this.child});
+
+  final GoRouter router;
+  final Widget child;
+
+  @override
+  State<_RouterAwareFrame> createState() => _RouterAwareFrameState();
+}
+
+class _RouterAwareFrameState extends State<_RouterAwareFrame> {
+  @override
+  void initState() {
+    super.initState();
+    widget.router.routerDelegate.addListener(_onRouteChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.router.routerDelegate.removeListener(_onRouteChanged);
+    super.dispose();
+  }
+
+  void _onRouteChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final path = widget.router.routerDelegate.currentConfiguration.uri.path;
+    return AdaptiveContentFrame(
+      canGoBack: widget.router.canPop(),
+      isClose: path.startsWith('/create-'),
+      onBack: widget.router.pop,
+      child: widget.child,
     );
   }
 }

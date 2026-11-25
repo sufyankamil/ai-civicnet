@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -56,24 +57,26 @@ class EventDetailScreen extends StatelessWidget {
                   backgroundColor: Theme.of(
                     context,
                   ).scaffoldBackgroundColor.withValues(alpha: 0.9),
-                  leading: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: AppHaptic(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(
-                            alpha: 0.2,
-                          ), // Premium glass subtle
-                          shape: BoxShape.circle,
-                        ),
-                        child: ClipOval(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                            child: const Icon(
-                              Icons.arrow_back_rounded,
-                              color: Colors.white,
-                              size: 22,
+                  leading: HideOnSideStrip(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: AppHaptic(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(
+                              alpha: 0.2,
+                            ), // Premium glass subtle
+                            shape: BoxShape.circle,
+                          ),
+                          child: ClipOval(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                              child: const Icon(
+                                Icons.arrow_back_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
                             ),
                           ),
                         ),

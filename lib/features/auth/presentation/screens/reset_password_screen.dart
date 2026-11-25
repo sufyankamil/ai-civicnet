@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -64,12 +65,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Theme.of(context).primaryColor,
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Theme.of(context).primaryColor,
+            ),
+            onPressed: () => context.go('/login'),
           ),
-          onPressed: () => context.go('/login'),
         ),
       ),
       body: SafeArea(

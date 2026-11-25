@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 
-import 'package:flutter/services.dart';
 import 'dart:ui' show FlutterView;
+
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show EdgeInsets;
 
 /// Pure rules for adapting the app to screens of different sizes, such as the
 /// small outer and large inner screens of the iPhone Duo.
@@ -11,6 +13,27 @@ class AdaptiveLayout {
   /// Screens whose shortest side (in logical pixels) is below this stay
   /// portrait only, like a normal phone.
   static const double largeWindowShortestSide = 600;
+
+  /// A right-hand inset at least this wide is a status strip (the iPhone Duo
+  /// camera, time and wifi column), not a notch or rounded corner.
+  static const double sideStripMinInset = 40;
+
+  static bool hasSideStrip(EdgeInsets padding) =>
+      padding.right >= sideStripMinInset;
+
+  /// The window's own safe-area padding in logical pixels. Unlike
+  /// `MediaQuery.padding` it is not reduced by a `SafeArea` or `AppBar` above
+  /// the caller, which consume the inset for their children.
+  static EdgeInsets windowPadding(FlutterView view) {
+    final p = view.padding;
+    final dpr = view.devicePixelRatio;
+    return EdgeInsets.fromLTRB(
+      p.left / dpr,
+      p.top / dpr,
+      p.right / dpr,
+      p.bottom / dpr,
+    );
+  }
 
   static List<DeviceOrientation> orientationsForShortestSide(
     double shortestSide,

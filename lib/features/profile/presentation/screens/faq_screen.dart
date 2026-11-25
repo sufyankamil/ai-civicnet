@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 
 class FAQScreen extends StatelessWidget {
@@ -39,9 +40,11 @@ class FAQScreen extends StatelessWidget {
         title: Text('FAQ', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
         ),
       ),
       body: ListView.builder(

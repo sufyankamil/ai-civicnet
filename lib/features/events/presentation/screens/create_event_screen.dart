@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -174,18 +175,20 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              leading: Center(
-                child: AppHaptic(
-                  onTap: () => context.pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.black.withValues(alpha: 0.05),
-                      shape: BoxShape.circle,
+              leading: HideOnSideStrip(
+                child: Center(
+                  child: AppHaptic(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close_rounded, size: 20),
                     ),
-                    child: const Icon(Icons.close_rounded, size: 20),
                   ),
                 ),
               ),

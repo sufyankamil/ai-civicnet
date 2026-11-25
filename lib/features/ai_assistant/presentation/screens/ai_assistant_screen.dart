@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -152,20 +153,22 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context, bool isDark) {
     return AppBar(
-      leading: IconButton(
-        icon: Icon(
-          Icons.arrow_back_ios_new_rounded,
-          color: isDark ? Colors.white : AppColors.textPrimaryLight,
-          size: 20,
+      leading: HideOnSideStrip(
+        child: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+            size: 20,
+          ),
+          onPressed: () {
+            AppHaptic.lightImpact();
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
         ),
-        onPressed: () {
-          AppHaptic.lightImpact();
-          if (context.canPop()) {
-            context.pop();
-          } else {
-            context.go('/home');
-          }
-        },
       ),
       title: Row(
         mainAxisSize: MainAxisSize.min,

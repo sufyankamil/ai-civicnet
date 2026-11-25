@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
@@ -199,15 +200,17 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
       stretch: true,
       backgroundColor: isDark ? AppColors.backgroundDark : Colors.white,
       elevation: 0,
-      leading: Container(
-        margin: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.2),
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
+      leading: HideOnSideStrip(
+        child: Container(
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => context.pop(),
+          ),
         ),
       ),
       actions: [

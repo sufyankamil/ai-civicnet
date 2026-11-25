@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
 
@@ -16,9 +17,11 @@ class TermsOfServiceScreen extends StatelessWidget {
           l10n.termsAndConditions,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
         ),
       ),
       body: SingleChildScrollView(
