@@ -96,10 +96,15 @@ class _AuraAiSheetState extends State<AuraAiSheet> {
         : Colors.white;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final media = MediaQuery.of(context);
+    // showModalBottomSheet strips the top padding from MediaQuery, so
+    // media.padding.top is always 0 here. Read the real status bar / Dynamic
+    // Island height from the view instead.
+    final view = View.of(context);
+    final topSafeInset = view.padding.top / view.devicePixelRatio;
     final sheetHeight = auraSheetHeight(
       screenHeight: media.size.height,
       keyboardInset: bottomInset,
-      topSafeInset: media.padding.top,
+      topSafeInset: topSafeInset,
     );
 
     return Padding(
