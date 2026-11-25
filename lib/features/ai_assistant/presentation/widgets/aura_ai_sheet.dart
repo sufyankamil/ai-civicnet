@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,20 @@ import 'package:timeago/timeago.dart' as timeago;
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../viewmodels/ai_assistant_viewmodel.dart';
+
+/// Height of the Aura AI sheet: 75% of the screen, but never so tall that,
+/// together with the keyboard, it pushes the header under the status bar or
+/// Dynamic Island.
+double auraSheetHeight({
+  required double screenHeight,
+  required double keyboardInset,
+  required double topSafeInset,
+  double topGap = 12,
+}) {
+  final preferred = screenHeight * 0.75;
+  final available = screenHeight - keyboardInset - topSafeInset - topGap;
+  return math.max(0, math.min(preferred, available));
+}
 
 /// Modern Liquid Glass Bottom Sheet for quick Aura AI interactions from the Home Screen.
 class AuraAiSheet extends StatefulWidget {
@@ -80,7 +95,17 @@ class _AuraAiSheetState extends State<AuraAiSheet> {
         ? AppColors.surfaceDark.withValues(alpha: 0.95)
         : Colors.white;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final media = MediaQuery.of(context);
+    // showModalBottomSheet strips the top padding from MediaQuery, so
+    // media.padding.top is always 0 here. Read the real status bar / Dynamic
+    // Island height from the view instead.
+    final view = View.of(context);
+    final topSafeInset = view.padding.top / view.devicePixelRatio;
+    final sheetHeight = auraSheetHeight(
+      screenHeight: media.size.height,
+      keyboardInset: bottomInset,
+      topSafeInset: topSafeInset,
+    );
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
@@ -89,7 +114,7 @@ class _AuraAiSheetState extends State<AuraAiSheet> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            height: screenHeight * 0.75,
+            height: sheetHeight,
             decoration: BoxDecoration(
               color: surfaceColor,
               borderRadius: const BorderRadius.vertical(
