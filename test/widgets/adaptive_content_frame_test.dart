@@ -144,4 +144,40 @@ void main() {
     );
     expect(calls.last.length, DeviceOrientation.values.length);
   });
+  testWidgets('exposes the gutter width to descendants', (tester) async {
+    double? wide;
+    double? narrow;
+    Widget probe(void Function(double) save) => Builder(
+      builder: (context) {
+        save(AdaptiveFrameScope.gutterOf(context));
+        return const SizedBox();
+      },
+    );
+
+    tester.view.devicePixelRatio = 1;
+    tester.view.display.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    for (final size in [const Size(951, 669), const Size(390, 844)]) {
+      tester.view.physicalSize = size;
+      tester.view.display.size = size;
+      await tester.pumpWidget(
+        Builder(
+          builder: (context) => MediaQuery.fromView(
+            view: View.of(context),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: AdaptiveContentFrame(
+                background: const Color(0xFF123456),
+                child: probe((g) => size.width > 600 ? wide = g : narrow = g),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    expect(wide, (951 - AdaptiveLayout.maxContentWidth) / 2);
+    expect(narrow, 0);
+  });
 }

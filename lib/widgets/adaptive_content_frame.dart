@@ -4,6 +4,34 @@ import 'package:flutter/services.dart';
 
 import '../core/utils/adaptive_layout.dart';
 
+/// Tells descendants how wide the empty gutters beside the capped content are,
+/// and lets a screen paint its own full-window background behind the content
+/// (the route's overlay clips to the column, so a screen cannot paint into the
+/// gutters itself). See `AuthBackground`.
+class AdaptiveFrameScope extends InheritedWidget {
+  const AdaptiveFrameScope({
+    super.key,
+    required this.gutter,
+    required this.setBackground,
+    required super.child,
+  });
+
+  /// Width of the gutter on each side; 0 when content fills the window.
+  final double gutter;
+
+  /// Sets (or, with null, clears) the widget painted behind the content over
+  /// the whole window. Safe to call after a frame; ignored once disposed.
+  final void Function(Widget? background) setBackground;
+
+  static AdaptiveFrameScope? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AdaptiveFrameScope>();
+
+  static double gutterOf(BuildContext context) => maybeOf(context)?.gutter ?? 0;
+
+  @override
+  bool updateShouldNotify(AdaptiveFrameScope old) => gutter != old.gutter;
+}
+
 /// Wraps the whole app so it adapts to the window it is given:
 ///
 /// * picks the allowed orientations from the window size (phones stay portrait,
@@ -34,6 +62,12 @@ class AdaptiveContentFrame extends StatefulWidget {
 class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     with WidgetsBindingObserver {
   List<DeviceOrientation>? _applied;
+  Widget? _screenBackground;
+
+  void _setScreenBackground(Widget? background) {
+    if (!mounted) return;
+    setState(() => _screenBackground = background);
+  }
 
   @override
   void initState() {
@@ -89,20 +123,30 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
 
     return ColoredBox(
       color: widget.background,
-      child: Center(
-        child: MediaQuery(
-          data: media.copyWith(
-            size: Size(width, media.size.height),
-            padding: trim(media.padding),
-            viewPadding: trim(media.viewPadding),
-            viewInsets: trim(media.viewInsets),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ?_screenBackground,
+          Center(
+            child: MediaQuery(
+              data: media.copyWith(
+                size: Size(width, media.size.height),
+                padding: trim(media.padding),
+                viewPadding: trim(media.viewPadding),
+                viewInsets: trim(media.viewInsets),
+              ),
+              child: SizedBox(
+                width: width,
+                height: double.infinity,
+                child: AdaptiveFrameScope(
+                  gutter: gutter,
+                  setBackground: _setScreenBackground,
+                  child: widget.child,
+                ),
+              ),
+            ),
           ),
-          child: SizedBox(
-            width: width,
-            height: double.infinity,
-            child: widget.child,
-          ),
-        ),
+        ],
       ),
     );
   }
