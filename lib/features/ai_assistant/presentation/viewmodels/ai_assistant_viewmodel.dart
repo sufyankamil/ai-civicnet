@@ -103,6 +103,15 @@ class AiAssistantViewModel extends GetxController {
       // Add to history (User + Model)
       _history.add(Content.text(text));
       _history.add(Content('model', [TextPart(aiResponse)]));
+    } on AiQuotaExceededException {
+      messages.add(
+        AiMessage(
+          text:
+              "You've used your free AI actions for this month. Subscription plans are coming soon.",
+          isUser: false,
+          timestamp: DateTime.now(),
+        ),
+      );
     } catch (e) {
       logger.e('AI Assistant Error: $e');
       messages.add(

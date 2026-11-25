@@ -185,11 +185,21 @@ class HomeViewModel extends GetxController {
       final recentRequests = _allRequests.take(5).toList();
       final upcomingEvents = await SupabaseService().getEvents();
 
-      final briefing = await AiService().generateCommunityBriefing(
-        requests: recentRequests,
-        events: upcomingEvents,
-        user: user,
-      );
+      String briefing;
+      try {
+        briefing = await AiService().generateCommunityBriefing(
+          requests: recentRequests,
+          events: upcomingEvents,
+          user: user,
+        );
+      } on AiQuotaExceededException {
+        // Out of free AI actions: show the free local briefing instead.
+        briefing = AiService().generateLocalBriefing(
+          requests: recentRequests,
+          events: upcomingEvents,
+          user: user,
+        );
+      }
 
       _communityBriefing.value = briefing;
 

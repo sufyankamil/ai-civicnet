@@ -17,7 +17,7 @@ dart format .
 ```
 
 - Localization is generated (`generate: true`, `l10n.yaml`): edit `lib/l10n/app_en.arb` and `app_hi.arb`, then `flutter pub get` regenerates `app_localizations*.dart`.
-- Config comes from `.env` (copy `.env.example`): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`, optional `ENCRYPTION_KEY`. `.env` is git-ignored.
+- Config comes from `.env` (copy `.env.example`): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `GOOGLE_MAPS_API_KEY`, optional `ENCRYPTION_KEY`. `.env` is git-ignored. `GEMINI_API_KEY` is no longer read by the app: it is an `ai-proxy` edge function secret (`supabase secrets set GEMINI_API_KEY=...`).
 - `ios/Runner.xcodeproj/project.pbxproj` gets rewritten by Flutter builds. Do not commit that noise.
 
 ## Startup flow (`lib/main.dart`)
@@ -54,7 +54,7 @@ All are singletons (`Foo()` factory) except where noted.
 | File | Role |
 |---|---|
 | `supabase_service.dart` | Very large (~3,100 lines). Auth, queries, RPCs, realtime, sessions, chat keys |
-| `ai_service.dart` | Gemini: embeddings (request/profile/asset), request categorization, voice-task parsing, search query, chat/support replies, community briefing |
+| `ai_service.dart`, `ai_gateway.dart` | Gemini features (embeddings, categorization, voice-task parsing, search query, chat/support replies, community briefing). All calls go through `AiGateway` to the `ai-proxy` edge function, which enforces the monthly free AI quota; metered methods throw `AiQuotaExceededException` |
 | `startup_service.dart` | One-time app initialization |
 | `encryption_service.dart` | Per-conversation AES with RSA-OAEP wrapped keys (keys in secure storage). Legacy global-key decrypt kept for migration |
 | `notification_service.dart`, `firebase_service.dart` | FCM, local notifications, daily check-in |
@@ -93,7 +93,7 @@ The code uses **GetX** (`get`, in ~44 files): `GetxController`/`Bindings`, `Get.
 
 ## Gotchas
 
-- **`.env` is bundled as a Flutter asset** (`pubspec.yaml` lists `.env` under assets), so everything in it ships inside the app binary. Treat `GEMINI_API_KEY` and `ENCRYPTION_KEY` as exposed to anyone with the app, and do not put server-side secrets there.
+- **`.env` is bundled as a Flutter asset** (`pubspec.yaml` lists `.env` under assets), so everything in it ships inside the app binary. Treat `ENCRYPTION_KEY` as exposed to anyone with the app (Gemini calls now go through the `ai-proxy` edge function, so that key is no longer bundled; remove it from local and CI `.env` files and rotate any key that shipped before), and do not put server-side secrets there.
 - **Portrait only**, set in both `main.dart` and `ios/Runner/Info.plist`.
 - **Tests are thin:** one test file. New work should add tests per AGENTS.md; widget tests need Supabase/Firebase mocked because most screens depend on them.
 - **Theme colors:** `lib/theme/app_theme.dart` holds the palette (primary `#7B61FF`); reuse those constants instead of new hex values.

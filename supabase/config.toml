@@ -90,7 +90,7 @@ openai_api_key = "env(OPENAI_API_KEY)"
 
 # Email testing server. Emails sent with the local dev setup are not actually sent - rather, they
 # are monitored, and you can view the emails that would have been sent from the web interface.
-[inbucket]
+[local_smtp]
 enabled = true
 # Port to use for the email testing server web interface.
 port = 54324
@@ -390,3 +390,10 @@ enabled = true
 verify_jwt = false
 import_map = "./functions/send-holiday-notification/deno.json"
 entrypoint = "./functions/send-holiday-notification/index.ts"
+
+[functions.ai-proxy]
+enabled = true
+# Called by the app as the signed-in user; the function also re-checks the JWT.
+verify_jwt = true
+import_map = "./functions/ai-proxy/deno.json"
+entrypoint = "./functions/ai-proxy/index.ts"

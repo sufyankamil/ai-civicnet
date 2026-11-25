@@ -140,6 +140,11 @@ class SupportViewModel extends GetxController {
         aiResponse.message,
         options: aiResponse.suggestedActions,
       );
+    } on AiQuotaExceededException {
+      await _sendBotMessageContent(
+        "You've used your free AI actions for this month. Subscription plans are coming soon.",
+        options: initialTopics,
+      );
     } catch (e) {
       logger.e('SupportViewModel: Error handling message: $e');
       await _sendBotMessageContent(
