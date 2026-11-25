@@ -122,7 +122,7 @@ void main() {
   });
 
   group('side strip back button', () {
-    const duo = Size(466, 678);
+    const duo = Size(951, 669); // inner screen, open
 
     testWidgets('shows in the strip when there is a side inset and a back', (
       tester,
@@ -141,7 +141,7 @@ void main() {
       final button = find.byKey(const Key('side_strip_back'));
       expect(button, findsOneWidget);
       // Centred in the 84 px strip at the right edge.
-      expect(tester.getCenter(button).dx, closeTo(466 - 42, 1));
+      expect(tester.getCenter(button).dx, closeTo(951 - 42, 1));
 
       await tester.tap(button);
       expect(backs, 1);
@@ -156,9 +156,9 @@ void main() {
       expect(blur, findsOneWidget);
       final rect = tester.getRect(blur);
       expect(rect.width, 84);
-      expect(rect.right, 466);
+      expect(rect.right, 951);
       expect(rect.top, 0);
-      expect(rect.height, 678);
+      expect(rect.height, 669);
     });
 
     testWidgets('screens run under the frosted strip but know its inset', (
@@ -168,12 +168,55 @@ void main() {
         _host(tester, duo, rightInset: 84, canGoBack: false, onBack: () {}),
       );
       // Full width, so there is something behind the panel to frost...
-      expect(tester.getSize(find.byKey(const Key('probe'))).width, 466);
+      expect(tester.getSize(find.byKey(const Key('probe'))).width, 951);
       // ...while SafeArea-aware screens still stop before it.
       final probe = tester.element(find.byKey(const Key('probe')));
       expect(MediaQuery.paddingOf(probe).right, 84);
       expect(find.byKey(const Key('side_strip_blur')), findsOneWidget);
       expect(find.byKey(const Key('side_strip_back')), findsNothing);
+    });
+
+    testWidgets(
+      'closed outer screen: no frost, no strip button, own back stays',
+      (tester) async {
+        // Same system strip, but on the small outer screen (window < 600).
+        const outer = Size(466, 678);
+        await tester.pumpWidget(
+          _host(
+            tester,
+            outer,
+            rightInset: 84,
+            canGoBack: true,
+            onBack: () {},
+            child: const HideOnSideStrip(
+              child: Text('own', key: Key('own_back')),
+            ),
+          ),
+        );
+        expect(find.byKey(const Key('side_strip_blur')), findsNothing);
+        expect(find.byKey(const Key('side_strip_back')), findsNothing);
+        expect(find.byKey(const Key('own_back')), findsOneWidget);
+      },
+    );
+
+    testWidgets('closed outer screen: SideStripAction stays in place', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          tester,
+          const Size(466, 678),
+          rightInset: 84,
+          canGoBack: true,
+          onBack: () {},
+          child: const Align(
+            alignment: Alignment.topLeft,
+            child: SideStripAction(child: Text('+', key: Key('act'))),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(tester.getTopLeft(find.byKey(const Key('act'))).dx, lessThan(100));
     });
 
     testWidgets('a normal phone gets no strip, padding or frost', (
@@ -209,7 +252,7 @@ void main() {
 
       final act = find.byKey(const Key('act'));
       expect(act, findsOneWidget, reason: 'only the strip copy is shown');
-      expect(tester.getCenter(act).dx, closeTo(466 - 42, 2));
+      expect(tester.getCenter(act).dx, closeTo(951 - 42, 2));
       // Stacked below the back button.
       expect(
         tester.getCenter(act).dy,

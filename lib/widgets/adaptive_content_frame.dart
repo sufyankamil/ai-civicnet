@@ -75,9 +75,13 @@ class _SideStripActionState extends State<SideStripAction> {
   SideStripController? _controller;
   bool _registered = false;
 
-  bool get _inStrip => AdaptiveLayout.hasSideStrip(
-    AdaptiveLayout.windowPadding(View.of(context)),
-  );
+  bool get _inStrip {
+    final view = View.of(context);
+    return AdaptiveLayout.showsStripPanel(
+      AdaptiveLayout.windowPadding(view),
+      view.physicalSize / view.devicePixelRatio,
+    );
+  }
 
   void _sync() {
     final controller = _controller;
@@ -248,7 +252,10 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     _applyOrientations(AdaptiveLayout.displayShortestSide(View.of(context)));
 
     final padding = AdaptiveLayout.windowPadding(View.of(context));
-    final strip = AdaptiveLayout.hasSideStrip(padding);
+    final strip = AdaptiveLayout.showsStripPanel(
+      padding,
+      MediaQuery.sizeOf(context),
+    );
     final showBack = strip && widget.canGoBack && widget.onBack != null;
 
     // Screens run full width under the strip so the frosted panel has
@@ -265,14 +272,9 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     );
     if (!strip) return Stack(children: [content]);
 
-    // Below the system indicators: the outer screen stacks camera, time and
-    // wifi (taller) while the inner screen only shows time and wifi. Judge by
-    // the window: Flutter keeps reporting the launch screen for the display
-    // after a foldable opens.
-    final large =
-        MediaQuery.sizeOf(context).shortestSide >=
-        AdaptiveLayout.largeWindowShortestSide;
-    final top = large ? 112.0 : 164.0;
+    // Below the system indicators (time and wifi on the opened inner screen;
+    // an observed value, not an API).
+    const top = 112.0;
     const size = 48.0;
     final scaffold = Theme.of(context).scaffoldBackgroundColor;
     return Stack(

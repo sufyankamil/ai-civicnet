@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' show FlutterView;
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart' show EdgeInsets;
+import 'package:flutter/widgets.dart' show EdgeInsets, Size;
 
 /// Pure rules for adapting the app to screens of different sizes, such as the
 /// small outer and large inner screens of the iPhone Duo.
@@ -20,6 +20,12 @@ class AdaptiveLayout {
 
   static bool hasSideStrip(EdgeInsets padding) =>
       padding.right >= sideStripMinInset;
+
+  /// Whether to show the frosted strip, the shared back button and strip
+  /// actions: only on a large window (the opened Duo), never on the small outer
+  /// screen where the strip is just the system's camera column.
+  static bool showsStripPanel(EdgeInsets padding, Size window) =>
+      hasSideStrip(padding) && window.shortestSide >= largeWindowShortestSide;
 
   /// The window's own safe-area padding in logical pixels. Unlike
   /// `MediaQuery.padding` it is not reduced by a `SafeArea` or `AppBar` above
