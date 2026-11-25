@@ -397,3 +397,11 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/ai-proxy/deno.json"
 entrypoint = "./functions/ai-proxy/index.ts"
+
+[functions.revenuecat-webhook]
+enabled = true
+# RevenueCat cannot send a Supabase JWT. The function checks a shared secret
+# (REVENUECAT_WEBHOOK_SECRET) itself.
+verify_jwt = false
+import_map = "./functions/revenuecat-webhook/deno.json"
+entrypoint = "./functions/revenuecat-webhook/index.ts"

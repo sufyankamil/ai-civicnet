@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/widgets.dart'; // For WidgetsFlutterBinding
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -12,6 +14,7 @@ import 'package:civic_net/services/notification_service.dart';
 import 'package:civic_net/services/encryption_service.dart';
 import 'package:civic_net/services/ai_service.dart';
 import 'package:civic_net/services/service_health_service.dart';
+import 'package:civic_net/services/subscription_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:io';
@@ -63,6 +66,9 @@ class StartupService {
       'Supabase initialized with Device Info: $deviceInfo (${stopwatch.elapsedMilliseconds}ms)',
     );
 
+    // Billing: does not block startup and stays off until an SDK key is set.
+    unawaited(_initBilling());
+
     // 4. Parallel Services (FirebaseService also calls NotificationService().initialize())
     await Future.wait([
       FirebaseService().initialize(),
@@ -77,6 +83,25 @@ class StartupService {
 
     logger.i('All Services initialized in ${stopwatch.elapsedMilliseconds}ms');
     _isInitialized = true;
+  }
+
+  /// Starts RevenueCat and keeps its user in step with the Supabase session.
+  /// The RevenueCat user id must equal the Supabase user id: the
+  /// revenuecat-webhook edge function writes `subscriptions` by that id.
+  Future<void> _initBilling() async {
+    final subscriptions = SubscriptionService();
+    final apiKey = switch (kIsWeb ? null : defaultTargetPlatform) {
+      TargetPlatform.iOS => dotenv.env['REVENUECAT_IOS_API_KEY'],
+      TargetPlatform.android => dotenv.env['REVENUECAT_ANDROID_API_KEY'],
+      _ => null,
+    };
+    await subscriptions.initialize(apiKey: apiKey);
+
+    final auth = Supabase.instance.client.auth;
+    await subscriptions.syncUser(auth.currentUser?.id);
+    auth.onAuthStateChange.listen(
+      (data) => subscriptions.syncUser(data.session?.user.id),
+    );
   }
 
   /// Constructs a custom User-Agent string for device tracking:

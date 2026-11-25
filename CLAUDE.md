@@ -57,6 +57,7 @@ All are singletons (`Foo()` factory) except where noted.
 | `ai_service.dart`, `ai_gateway.dart` | Gemini features (embeddings, categorization, voice-task parsing, search query, chat/support replies, community briefing). All calls go through `AiGateway` to the `ai-proxy` edge function, which enforces the monthly free AI quota; metered methods throw `AiQuotaExceededException` |
 | `startup_service.dart` | One-time app initialization |
 | `encryption_service.dart` | Per-conversation AES with RSA-OAEP wrapped keys (keys in secure storage). Legacy global-key decrypt kept for migration |
+| `subscription_service.dart` | RevenueCat billing (`purchases_flutter`) behind a `BillingClient` seam. Tracks Pro/trial state for the UI, syncs the RevenueCat user id with the Supabase user id, dormant until the RevenueCat SDK keys are in `.env`. The server (`subscriptions` table, `consume_ai_quota`) is the source of truth for AI quota |
 | `notification_service.dart`, `firebase_service.dart` | FCM, local notifications, daily check-in |
 | `service_health_service.dart` | Tracks backend failures/recoveries and drives the status banner. The only unit-tested service |
 | `cache_service.dart`, `storage_service.dart`, `theme_service.dart`, `toast_service.dart`, `pending_toast_service.dart`, `logger_service.dart` | Local cache, storage, theme mode, toasts, logging (`logger`) |
@@ -82,7 +83,7 @@ The code uses **GetX** (`get`, in ~44 files): `GetxController`/`Bindings`, `Get.
 ## Backend
 
 - **Supabase SQL:** `sql_scripts/` (core schemas, vector setup, RLS/security hardening, chat, polls, ratings, karma, points, blocking, guilds, support) and `supabase/` (admin roles, announcements, verification requests, holiday notification scheduling, `config.toml`). `sql_scripts/SECURITY_HARDENING.md` covers hardening notes. There is no numbered migration chain: scripts are applied by hand, so check which ones a database already has.
-- **Edge functions (`supabase/functions/`, Deno):** `notify-new-message`, `notify-new-request`, `notify-interest`, `send-holiday-notification`.
+- **Edge functions (`supabase/functions/`, Deno):** `notify-new-message`, `notify-new-request`, `notify-interest`, `send-holiday-notification`, `ai-proxy` (all Gemini calls, enforces the monthly free AI quota), `revenuecat-webhook` (syncs RevenueCat subscription events into `subscriptions`).
 - **`cloudflare_proxy/`:** a Cloudflare Worker that proxies requests (including websockets) to the Supabase project host, which is hard-coded in `index.js`.
 - **`website/`:** static pages (terms, child safety, delete account, reset) deployed with Vercel.
 
