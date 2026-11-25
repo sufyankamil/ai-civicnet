@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-25 — Subscriptions phase 2: RevenueCat billing and entitlement sync (#78)
+- What changed: new `SubscriptionService` (`purchases_flutter`) tracks Pro/trial state, syncs the RevenueCat user id with the Supabase user id on sign-in/out, and exposes plans, purchase and restore. It stays dormant until `REVENUECAT_IOS_API_KEY` / `REVENUECAT_ANDROID_API_KEY` are set. New `revenuecat-webhook` edge function maps RevenueCat events onto `subscriptions` via `apply_subscription_event` (ignores stale/duplicate events, anonymous users and other entitlements).
+- Key files: `lib/services/subscription_service.dart`, `lib/services/startup_service.dart`, `supabase/functions/revenuecat-webhook/` (`mapping.ts` + `mapping.test.ts`), `sql_scripts/subscriptions_revenuecat.sql`, `test/services/subscription_service_test.dart`.
+- Notes / gotchas: NOT deployed or configured yet. Needs App Store Connect / Play Console subscriptions (7-day intro offer, store-managed so it is once per account), a RevenueCat project with a `pro` entitlement, `supabase secrets set REVENUECAT_WEBHOOK_SECRET=...`, applying the SQL, deploying the function, and a RevenueCat webhook with header `Authorization: Bearer <secret>`. iOS also needs the In-App Purchase capability in Xcode. A normal CANCELLATION is ignored on purpose (access runs to EXPIRATION). Run the webhook tests with `node --test supabase/functions/revenuecat-webhook/mapping.test.ts`. Paywall UI and feature gates are phase 3.
+
 ### 2026-11-25 — Subscriptions phase 1: server-side AI proxy and quota (#74)
 - What changed: all Gemini calls now go through the new `ai-proxy` Supabase edge function (JWT-verified, key kept as a function secret). Metered features (assistant chat, voice task, briefing, support chat) spend a monthly free quota via `consume_ai_quota`; embeddings, categorization and the assistant's search-query step stay unmetered so matching keeps working. `AiService` throws `AiQuotaExceededException` on HTTP 402 and rethrows it past its local fallbacks; callers show a friendly message (home briefing falls back to the local briefing).
 - Key files: `lib/services/ai_gateway.dart`, `lib/services/ai_service.dart`, `supabase/functions/ai-proxy/`, `sql_scripts/subscriptions_schema.sql`, `sql_scripts/tests/subscriptions_quota_test.sql`, tests in `test/services/`.
