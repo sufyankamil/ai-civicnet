@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-25 — Pin Flutter version in CI (#73)
+- What changed: `.github/workflows/dart.yml` now pins Flutter 3.47.6 instead of the moving `stable` channel.
+- Key files: `.github/workflows/dart.yml`.
+- Notes / gotchas: newer stable deprecates `package:flutter/material.dart` (use `material_ui`), which made `flutter analyze` fail with 129 infos. Migrating off the deprecated imports is a separate task; bump the pin only together with that migration.
+
 ### 2026-11-25 — Add CLAUDE.md codebase guide (#71)
 - What changed: new `CLAUDE.md` documenting commands, startup flow, structure, services, routing, state management (GetX), AI matching, backend (SQL scripts, edge functions, Cloudflare proxy), CI, and gotchas.
 - Key files: `CLAUDE.md`.
