@@ -185,10 +185,7 @@ class _RootAppState extends State<RootApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        builder: (context, child) => AdaptiveContentFrame(
-          background: Theme.of(context).scaffoldBackgroundColor,
-          child: child!,
-        ),
+        // Full-bleed on purpose: the splash gradient must fill any window.
         home: const SplashScreen(),
       );
     }
