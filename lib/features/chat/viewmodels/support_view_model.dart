@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../../models/models.dart';
+import '../../../core/utils/paywall_launcher.dart';
 import '../../../services/ai_service.dart';
 import '../../../services/supabase_service.dart';
 import '../../../services/logger_service.dart';
@@ -142,8 +143,8 @@ class SupportViewModel extends GetxController {
       );
     } on AiQuotaExceededException {
       await _sendBotMessageContent(
-        "You've used your free AI actions for this month. Subscription plans are coming soon.",
-        options: initialTopics,
+        "You've used your free AI actions for this month. Upgrade to CivicNet Pro for unlimited AI.",
+        options: ['Upgrade to Pro', ...initialTopics],
       );
     } catch (e) {
       logger.e('SupportViewModel: Error handling message: $e');
@@ -169,6 +170,11 @@ class SupportViewModel extends GetxController {
 
     if (option == 'Back to Chat') {
       cancelFeedback();
+      return;
+    }
+
+    if (option == 'Upgrade to Pro') {
+      openPaywall();
       return;
     }
 

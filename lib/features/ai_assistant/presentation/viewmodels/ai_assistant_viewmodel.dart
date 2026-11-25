@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import '../../../../services/ai_quota_service.dart';
 import '../../../../services/ai_service.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../services/logger_service.dart';
@@ -9,10 +12,14 @@ class AiMessage {
   final bool isUser;
   final DateTime timestamp;
 
+  /// Show a "See Pro plans" button under this message (free quota used up).
+  final bool showUpgrade;
+
   AiMessage({
     required this.text,
     required this.isUser,
     required this.timestamp,
+    this.showUpgrade = false,
   });
 }
 
@@ -107,9 +114,10 @@ class AiAssistantViewModel extends GetxController {
       messages.add(
         AiMessage(
           text:
-              "You've used your free AI actions for this month. Subscription plans are coming soon.",
+              "You've used your free AI actions for this month. Upgrade to CivicNet Pro for unlimited AI.",
           isUser: false,
           timestamp: DateTime.now(),
+          showUpgrade: true,
         ),
       );
     } catch (e) {
@@ -124,6 +132,8 @@ class AiAssistantViewModel extends GetxController {
       );
     } finally {
       isLoading.value = false;
+      // Keep the "free AI actions left" hint current after each message.
+      unawaited(AiQuotaService().refresh());
     }
   }
 

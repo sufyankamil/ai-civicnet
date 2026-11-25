@@ -1000,4 +1000,123 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get vpnWarningDesc =>
       'एक सक्रिय VPN हमें आपके आस-पास के सहायता अनुरोधों को सटीक रूप से खोजने से रोक सकता है। बेहतर अनुभव के लिए, CivicNet का उपयोग करते समय इसे बंद करें।';
+
+  @override
+  String get paywallTitle => 'CivicNet Pro';
+
+  @override
+  String get paywallSubtitle =>
+      'अपने पड़ोस के लिए असीमित AI के साथ और काम करें';
+
+  @override
+  String get paywallBenefitAssistant => 'असीमित Aura AI असिस्टेंट';
+
+  @override
+  String get paywallBenefitVoice => 'AI के साथ आवाज़ से अनुरोध बनाएं';
+
+  @override
+  String get paywallBenefitBriefing => 'रोज़ाना AI कम्युनिटी ब्रीफ़िंग';
+
+  @override
+  String get paywallBenefitSupport => 'ज़्यादा स्मार्ट AI सपोर्ट जवाब';
+
+  @override
+  String get paywallBestValue => 'सबसे किफ़ायती';
+
+  @override
+  String get paywallPerMonth => 'प्रति माह';
+
+  @override
+  String get paywallPerYear => 'प्रति वर्ष';
+
+  @override
+  String paywallPriceLine(String price, String period) {
+    return '$price $period';
+  }
+
+  @override
+  String paywallTrialPriceLine(int days, String price, String period) {
+    return '$days दिन का निःशुल्क ट्रायल, फिर $price $period';
+  }
+
+  @override
+  String get paywallCtaTrial => 'निःशुल्क ट्रायल शुरू करें';
+
+  @override
+  String get paywallCtaSubscribe => 'सब्सक्राइब करें';
+
+  @override
+  String get paywallRestore => 'खरीदारी बहाल करें';
+
+  @override
+  String get paywallDisclosure =>
+      'खरीदारी की पुष्टि होने पर भुगतान आपके Apple ID या Google खाते से लिया जाता है। सब्सक्रिप्शन अपने आप रिन्यू होता है, जब तक कि मौजूदा अवधि खत्म होने से कम से कम 24 घंटे पहले उसे रद्द न किया जाए। खरीदारी के बाद आप अपने खाते की सेटिंग्स में इसे मैनेज या रद्द कर सकते हैं।';
+
+  @override
+  String get paywallUnavailable =>
+      'सब्सक्रिप्शन अभी उपलब्ध नहीं हैं। कृपया बाद में पुनः प्रयास करें।';
+
+  @override
+  String get paywallLoadFailed =>
+      'प्लान लोड नहीं हो सके। अपना कनेक्शन जांचें और फिर कोशिश करें।';
+
+  @override
+  String get paywallRetry => 'फिर कोशिश करें';
+
+  @override
+  String get paywallPurchaseFailed =>
+      'खरीदारी पूरी नहीं हो सकी। कृपया फिर कोशिश करें।';
+
+  @override
+  String get paywallRestoreFailed =>
+      'खरीदारी बहाल नहीं हो सकी। कृपया फिर कोशिश करें।';
+
+  @override
+  String get paywallNothingToRestore => 'कोई पिछली खरीदारी नहीं मिली।';
+
+  @override
+  String get paywallWelcome => 'CivicNet Pro में आपका स्वागत है!';
+
+  @override
+  String get paywallProActive => 'आप CivicNet Pro सदस्य हैं';
+
+  @override
+  String get paywallProTrialing => 'आपका निःशुल्क ट्रायल चालू है';
+
+  @override
+  String paywallRenewsOn(String date) {
+    return '$date को रिन्यू होगा';
+  }
+
+  @override
+  String paywallEndsOn(String date) {
+    return '$date को समाप्त होगा';
+  }
+
+  @override
+  String get paywallManage => 'सब्सक्रिप्शन मैनेज करें';
+
+  @override
+  String get upgradeQuotaMessage =>
+      'आपने इस महीने की निःशुल्क AI क्रियाएं इस्तेमाल कर ली हैं। असीमित AI के लिए CivicNet Pro लें।';
+
+  @override
+  String get upgradeCta => 'Pro प्लान देखें';
+
+  @override
+  String get upgradeNotNow => 'अभी नहीं';
+
+  @override
+  String get settingsProTitle => 'CivicNet Pro';
+
+  @override
+  String get settingsProSubtitleFree => 'असीमित AI असिस्टेंट और बहुत कुछ';
+
+  @override
+  String get settingsProBadge => 'PRO';
+
+  @override
+  String aiQuotaRemaining(int remaining, int limit) {
+    return 'इस महीने $limit में से $remaining निःशुल्क AI क्रियाएं बाकी';
+  }
 }

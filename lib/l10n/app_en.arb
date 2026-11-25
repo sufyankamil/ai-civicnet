@@ -448,6 +448,86 @@
   "confirmLocation": "Confirm Location",
   "beta": "BETA",
   "vpnWarningTitle": "VPN Detected",
-  "vpnWarningDesc": "An active VPN may prevent us from accurately finding help requests near you. For the best experience, consider disabling it while using CivicNet."
+  "vpnWarningDesc": "An active VPN may prevent us from accurately finding help requests near you. For the best experience, consider disabling it while using CivicNet.",
+  "paywallTitle": "CivicNet Pro",
+  "paywallSubtitle": "Unlimited AI to get more done for your neighborhood",
+  "paywallBenefitAssistant": "Unlimited Aura AI assistant",
+  "paywallBenefitVoice": "Create requests by voice with AI",
+  "paywallBenefitBriefing": "Daily AI community briefing",
+  "paywallBenefitSupport": "Smarter AI support replies",
+  "paywallBestValue": "Best value",
+  "paywallPerMonth": "per month",
+  "paywallPerYear": "per year",
+  "paywallPriceLine": "{price} {period}",
+  "@paywallPriceLine": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallTrialPriceLine": "{days}-day free trial, then {price} {period}",
+  "@paywallTrialPriceLine": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "price": {
+        "type": "String"
+      },
+      "period": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallCtaTrial": "Start free trial",
+  "paywallCtaSubscribe": "Subscribe",
+  "paywallRestore": "Restore purchases",
+  "paywallDisclosure": "Payment is charged to your Apple ID or Google account at confirmation of purchase. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. You can manage or cancel it in your account settings after purchase.",
+  "paywallUnavailable": "Subscriptions aren't available right now. Please try again later.",
+  "paywallLoadFailed": "Couldn't load the plans. Check your connection and try again.",
+  "paywallRetry": "Try again",
+  "paywallPurchaseFailed": "The purchase didn't go through. Please try again.",
+  "paywallRestoreFailed": "Couldn't restore purchases. Please try again.",
+  "paywallNothingToRestore": "No previous purchases were found.",
+  "paywallWelcome": "Welcome to CivicNet Pro!",
+  "paywallProActive": "You're a CivicNet Pro member",
+  "paywallProTrialing": "Your free trial is active",
+  "paywallRenewsOn": "Renews on {date}",
+  "@paywallRenewsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallEndsOn": "Ends on {date}",
+  "@paywallEndsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallManage": "Manage subscription",
+  "upgradeQuotaMessage": "You've used your free AI actions for this month. Upgrade to CivicNet Pro for unlimited AI.",
+  "upgradeCta": "See Pro plans",
+  "upgradeNotNow": "Not now",
+  "settingsProTitle": "CivicNet Pro",
+  "settingsProSubtitleFree": "Unlimited AI assistant and more",
+  "settingsProBadge": "PRO",
+  "aiQuotaRemaining": "{remaining} of {limit} free AI actions left this month",
+  "@aiQuotaRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  }
 }
-

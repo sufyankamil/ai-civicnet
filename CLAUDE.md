@@ -58,6 +58,7 @@ All are singletons (`Foo()` factory) except where noted.
 | `startup_service.dart` | One-time app initialization |
 | `encryption_service.dart` | Per-conversation AES with RSA-OAEP wrapped keys (keys in secure storage). Legacy global-key decrypt kept for migration |
 | `subscription_service.dart` | RevenueCat billing (`purchases_flutter`) behind a `BillingClient` seam. Tracks Pro/trial state for the UI, syncs the RevenueCat user id with the Supabase user id, dormant until the RevenueCat SDK keys are in `.env`. The server (`subscriptions` table, `consume_ai_quota`) is the source of truth for AI quota |
+| `ai_quota_service.dart` | Read-only view of the user's monthly AI quota (`get_ai_quota_status` RPC) for the "free AI actions left" hint. Display only: the ai-proxy enforces the quota |
 | `notification_service.dart`, `firebase_service.dart` | FCM, local notifications, daily check-in |
 | `service_health_service.dart` | Tracks backend failures/recoveries and drives the status banner. The only unit-tested service |
 | `cache_service.dart`, `storage_service.dart`, `theme_service.dart`, `toast_service.dart`, `pending_toast_service.dart`, `logger_service.dart` | Local cache, storage, theme mode, toasts, logging (`logger`) |
@@ -69,7 +70,7 @@ All are singletons (`Foo()` factory) except where noted.
 
 - **Redirect rules:** logged out on `/` or `/home` goes to `/onboarding` (first time) or `/login`. Logged out on a protected tab (`/profile*`, `/chat`, `/activity`, `/discover`, `/map`, `/events`) goes to `/login`. Logged in on `/`, `/login`, `/signup` or `/onboarding` goes to `/auth-check`, which decides between the app and `/complete-profile`.
 - **Shell (bottom tabs, `MainScaffold`):** `/home`, `/discover`, `/activity`, `/map`, `/chat`, `/profile`, `/events`.
-- **Full-screen routes:** `/create-request`, `/request/:id`, `/chat-detail`, `/event/:id`, `/create-event`, `/profile/:id`, `/ai-assistant`, `/settings`, `/notifications`, `/my-assets`, `/asset-library`, `/support`, `/admin-panel`, and the legal/account screens.
+- **Full-screen routes:** `/subscription` (paywall; login-protected), `/create-request`, `/request/:id`, `/chat-detail`, `/event/:id`, `/create-event`, `/profile/:id`, `/ai-assistant`, `/settings`, `/notifications`, `/my-assets`, `/asset-library`, `/support`, `/admin-panel`, and the legal/account screens.
 - Adding a screen: add the route here and keep the redirect list in sync if it must be login-protected.
 
 ## State management

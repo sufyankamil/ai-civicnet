@@ -1933,6 +1933,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'An active VPN may prevent us from accurately finding help requests near you. For the best experience, consider disabling it while using CivicNet.'**
   String get vpnWarningDesc;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CivicNet Pro'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI to get more done for your neighborhood'**
+  String get paywallSubtitle;
+
+  /// No description provided for @paywallBenefitAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited Aura AI assistant'**
+  String get paywallBenefitAssistant;
+
+  /// No description provided for @paywallBenefitVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Create requests by voice with AI'**
+  String get paywallBenefitVoice;
+
+  /// No description provided for @paywallBenefitBriefing.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily AI community briefing'**
+  String get paywallBenefitBriefing;
+
+  /// No description provided for @paywallBenefitSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Smarter AI support replies'**
+  String get paywallBenefitSupport;
+
+  /// No description provided for @paywallBestValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Best value'**
+  String get paywallBestValue;
+
+  /// No description provided for @paywallPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'per month'**
+  String get paywallPerMonth;
+
+  /// No description provided for @paywallPerYear.
+  ///
+  /// In en, this message translates to:
+  /// **'per year'**
+  String get paywallPerYear;
+
+  /// No description provided for @paywallPriceLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} {period}'**
+  String paywallPriceLine(String price, String period);
+
+  /// No description provided for @paywallTrialPriceLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{days}-day free trial, then {price} {period}'**
+  String paywallTrialPriceLine(int days, String price, String period);
+
+  /// No description provided for @paywallCtaTrial.
+  ///
+  /// In en, this message translates to:
+  /// **'Start free trial'**
+  String get paywallCtaTrial;
+
+  /// No description provided for @paywallCtaSubscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get paywallCtaSubscribe;
+
+  /// No description provided for @paywallRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get paywallRestore;
+
+  /// No description provided for @paywallDisclosure.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment is charged to your Apple ID or Google account at confirmation of purchase. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. You can manage or cancel it in your account settings after purchase.'**
+  String get paywallDisclosure;
+
+  /// No description provided for @paywallUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscriptions aren\'t available right now. Please try again later.'**
+  String get paywallUnavailable;
+
+  /// No description provided for @paywallLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the plans. Check your connection and try again.'**
+  String get paywallLoadFailed;
+
+  /// No description provided for @paywallRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get paywallRetry;
+
+  /// No description provided for @paywallPurchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase didn\'t go through. Please try again.'**
+  String get paywallPurchaseFailed;
+
+  /// No description provided for @paywallRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t restore purchases. Please try again.'**
+  String get paywallRestoreFailed;
+
+  /// No description provided for @paywallNothingToRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'No previous purchases were found.'**
+  String get paywallNothingToRestore;
+
+  /// No description provided for @paywallWelcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to CivicNet Pro!'**
+  String get paywallWelcome;
+
+  /// No description provided for @paywallProActive.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re a CivicNet Pro member'**
+  String get paywallProActive;
+
+  /// No description provided for @paywallProTrialing.
+  ///
+  /// In en, this message translates to:
+  /// **'Your free trial is active'**
+  String get paywallProTrialing;
+
+  /// No description provided for @paywallRenewsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Renews on {date}'**
+  String paywallRenewsOn(String date);
+
+  /// No description provided for @paywallEndsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends on {date}'**
+  String paywallEndsOn(String date);
+
+  /// No description provided for @paywallManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get paywallManage;
+
+  /// No description provided for @upgradeQuotaMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used your free AI actions for this month. Upgrade to CivicNet Pro for unlimited AI.'**
+  String get upgradeQuotaMessage;
+
+  /// No description provided for @upgradeCta.
+  ///
+  /// In en, this message translates to:
+  /// **'See Pro plans'**
+  String get upgradeCta;
+
+  /// No description provided for @upgradeNotNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get upgradeNotNow;
+
+  /// No description provided for @settingsProTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CivicNet Pro'**
+  String get settingsProTitle;
+
+  /// No description provided for @settingsProSubtitleFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI assistant and more'**
+  String get settingsProSubtitleFree;
+
+  /// No description provided for @settingsProBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO'**
+  String get settingsProBadge;
+
+  /// No description provided for @aiQuotaRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining} of {limit} free AI actions left this month'**
+  String aiQuotaRemaining(int remaining, int limit);
 }
 
 class _AppLocalizationsDelegate

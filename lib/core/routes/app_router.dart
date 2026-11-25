@@ -52,6 +52,7 @@ import '../../features/profile/presentation/screens/account_management_screen.da
 import '../../features/profile/presentation/screens/referral_screen.dart';
 import '../../features/profile/presentation/screens/legal_screen.dart';
 import '../../features/profile/presentation/screens/active_sessions_screen.dart';
+import '../../features/subscription/presentation/screens/paywall_screen.dart';
 import '../presentation/screens/not_found_screen.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -96,7 +97,8 @@ GoRouter createRouter({String initialLocation = '/'}) {
             currentPath == '/activity' ||
             currentPath == '/discover' ||
             currentPath == '/map' ||
-            currentPath == '/events') {
+            currentPath == '/events' ||
+            currentPath == '/subscription') {
           return '/login';
         }
       } else {
@@ -350,6 +352,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/account-management',
         builder: (context, state) => const AccountManagementScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/subscription',
+        builder: (context, state) => const PaywallScreen(),
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,

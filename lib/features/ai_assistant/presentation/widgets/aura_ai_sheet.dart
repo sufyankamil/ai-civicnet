@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+import '../../../../components/ai_quota_hint.dart';
+import '../../../../components/upgrade_prompt.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../widgets/haptic_buttons.dart';
 import '../viewmodels/ai_assistant_viewmodel.dart';
@@ -184,13 +186,19 @@ class _AuraAiSheetState extends State<AuraAiSheet> {
                         }
 
                         final message = _viewModel.messages[index];
-                        return _buildMessageBubble(message, isDark);
+                        final bubble = _buildMessageBubble(message, isDark);
+                        if (!message.showUpgrade) return bubble;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [bubble, const AiUpgradeAction()],
+                        );
                       },
                     );
                   }),
                 ),
 
                 // Single unified Capsule Input Bar
+                const AiQuotaHint(),
                 _buildInputBar(isDark),
               ],
             ),
