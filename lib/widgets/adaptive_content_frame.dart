@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -100,11 +102,30 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     _applyOrientations(AdaptiveLayout.displayShortestSide(View.of(context)));
 
     final padding = AdaptiveLayout.windowPadding(View.of(context));
-    if (!widget.canGoBack ||
-        widget.onBack == null ||
-        !AdaptiveLayout.hasSideStrip(padding)) {
-      return widget.child;
-    }
+    final active =
+        widget.canGoBack &&
+        widget.onBack != null &&
+        AdaptiveLayout.hasSideStrip(padding);
+
+    // While the strip button is shown the screen stops before the strip, so
+    // nothing interactive hides under the frosted panel. The structure is the
+    // same either way so the navigator below keeps its state.
+    final inset = active ? padding.right : 0.0;
+    final media = MediaQuery.of(context);
+    final content = MediaQuery(
+      data: active
+          ? media.copyWith(
+              size: Size(media.size.width - inset, media.size.height),
+              padding: media.padding.copyWith(right: 0),
+              viewPadding: media.viewPadding.copyWith(right: 0),
+            )
+          : media,
+      child: Padding(
+        padding: EdgeInsets.only(right: inset),
+        child: widget.child,
+      ),
+    );
+    if (!active) return Stack(children: [content]);
 
     // Below the system indicators: the outer screen stacks camera, time and
     // wifi (taller) while the inner screen only shows time and wifi.
@@ -117,7 +138,36 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
     const size = 48.0;
     return Stack(
       children: [
-        widget.child,
+        content,
+        // Solid base: the screen no longer extends under the strip, so there
+        // is nothing to blur; this keeps the strip from showing the window
+        // background.
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: padding.right,
+          child: ColoredBox(color: Theme.of(context).scaffoldBackgroundColor),
+        ),
+        // Frosted panel over the whole strip so the button and the system
+        // indicators stay legible over maps, photos and tinted headers.
+        Positioned(
+          key: const Key('side_strip_blur'),
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: padding.right,
+          child: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+              child: ColoredBox(
+                color: Theme.of(
+                  context,
+                ).scaffoldBackgroundColor.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+        ),
         Positioned(
           right: (padding.right - size) / 2,
           top: top,

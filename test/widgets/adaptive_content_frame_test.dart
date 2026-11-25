@@ -120,6 +120,45 @@ void main() {
       expect(backs, 1);
     });
 
+    testWidgets('frosts the whole strip behind the button', (tester) async {
+      await tester.pumpWidget(
+        _host(tester, duo, rightInset: 84, canGoBack: true, onBack: () {}),
+      );
+
+      final blur = find.byKey(const Key('side_strip_blur'));
+      expect(blur, findsOneWidget);
+      final rect = tester.getRect(blur);
+      expect(rect.width, 84);
+      expect(rect.right, 466);
+      expect(rect.top, 0);
+      expect(rect.height, 678);
+    });
+
+    testWidgets('screen content stops before the strip while it is shown', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(tester, duo, rightInset: 84, canGoBack: true, onBack: () {}),
+      );
+      expect(tester.getSize(find.byKey(const Key('probe'))).width, 466 - 84);
+    });
+
+    testWidgets('screen keeps the full width without the strip button', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(tester, duo, rightInset: 84, canGoBack: false, onBack: () {}),
+      );
+      expect(tester.getSize(find.byKey(const Key('probe'))).width, 466);
+    });
+
+    testWidgets('no frost without the strip button', (tester) async {
+      await tester.pumpWidget(
+        _host(tester, duo, rightInset: 84, canGoBack: false, onBack: () {}),
+      );
+      expect(find.byKey(const Key('side_strip_blur')), findsNothing);
+    });
+
     testWidgets('uses a close icon for close-style routes', (tester) async {
       await tester.pumpWidget(
         _host(
