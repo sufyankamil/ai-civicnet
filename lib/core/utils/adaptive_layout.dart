@@ -3,18 +3,14 @@ import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'dart:ui' show FlutterView;
 
-/// Pure rules for adapting the app to windows of different sizes, such as the
+/// Pure rules for adapting the app to screens of different sizes, such as the
 /// small outer and large inner screens of the iPhone Duo.
 class AdaptiveLayout {
   const AdaptiveLayout._();
 
-  /// Windows whose shortest side (in logical pixels) is below this stay
+  /// Screens whose shortest side (in logical pixels) is below this stay
   /// portrait only, like a normal phone.
   static const double largeWindowShortestSide = 600;
-
-  /// Widest the app content is allowed to grow before it is centred with
-  /// gutters on both sides.
-  static const double maxContentWidth = 640;
 
   static List<DeviceOrientation> orientationsForShortestSide(
     double shortestSide,
@@ -32,14 +28,4 @@ class AdaptiveLayout {
     return math.min(display.size.width, display.size.height) /
         display.devicePixelRatio;
   }
-
-  static double contentWidthFor(double windowWidth) =>
-      math.min(windowWidth, maxContentWidth);
-
-  /// What is left of a side [inset] once a [gutter] of the same side already
-  /// sits between the window edge and the content.
-  static double insetAfterGutter({
-    required double inset,
-    required double gutter,
-  }) => math.max(0, inset - gutter);
 }

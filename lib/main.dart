@@ -140,10 +140,6 @@ class _RootAppState extends State<RootApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
-        builder: (context, child) => AdaptiveContentFrame(
-          background: Theme.of(context).scaffoldBackgroundColor,
-          child: child!,
-        ),
         home: Scaffold(
           body: Center(
             child: Padding(
@@ -253,7 +249,6 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         routerConfig: _router,
         builder: (context, child) {
           return AdaptiveContentFrame(
-            background: Theme.of(context).scaffoldBackgroundColor,
             child: AutoLogoutWrapper(
               inactivityDuration: const Duration(hours: 1),
               child: ConnectivityWrapper(
