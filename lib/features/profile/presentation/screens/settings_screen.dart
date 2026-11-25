@@ -10,6 +10,7 @@ import '../../../../services/rating_service.dart';
 import '../viewmodels/settings_controller.dart';
 import '../../../../core/services/version_service.dart';
 import '../../../../services/service_health_service.dart';
+import '../../../../services/subscription_service.dart';
 import '../../../../components/service_status_sheet.dart';
 import '../../../../widgets/haptic_buttons.dart';
 
@@ -180,6 +181,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
 
           // NEW MODULES FROM IMAGE 1
+          ListenableBuilder(
+            listenable: SubscriptionService(),
+            builder: (context, _) {
+              final isPro = SubscriptionService().isPro;
+              return ListTile(
+                leading: const Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 28,
+                  color: AppColors.auraPrimary,
+                ),
+                title: Text(
+                  l10n.settingsProTitle,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: isPro ? null : Text(l10n.settingsProSubtitleFree),
+                trailing: isPro
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.auraPrimary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          l10n.settingsProBadge,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.auraPrimary,
+                          ),
+                        ),
+                      )
+                    : const Icon(Icons.chevron_right),
+                onTap: () => context.push('/subscription'),
+              );
+            },
+          ),
+          const SizedBox(height: 8),
           ListTile(
             leading: const Icon(
               Icons.people_alt_outlined,

@@ -9,6 +9,7 @@ import '../../../../services/logger_service.dart';
 import '../../../../services/firebase_service.dart';
 import '../../../../theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../models/supported_countries.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -308,19 +309,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                         prefixIcon: const Icon(Icons.public_rounded),
                       ),
-                      items: const [
-                        DropdownMenuItem(value: 'IN', child: Text('India')),
-                        DropdownMenuItem(
-                          value: 'US',
-                          child: Text('United States'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'GB',
-                          child: Text('United Kingdom'),
-                        ),
-                        DropdownMenuItem(value: 'CA', child: Text('Canada')),
-                        DropdownMenuItem(value: 'AU', child: Text('Australia')),
-                      ],
+                      items: countryDropdownItems(),
                       onChanged: (value) =>
                           setState(() => _countryCode = value),
                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:permission_handler/permission_handler.dart';
+import '../../../../../components/upgrade_prompt.dart';
 import '../../../../../services/ai_service.dart';
 import '../../../../../services/toast_service.dart';
 import '../../../../../widgets/haptic_buttons.dart';
@@ -202,10 +203,7 @@ class _VoiceTaskSheetState extends State<VoiceTaskSheet>
     } on AiQuotaExceededException {
       if (!mounted) return;
       setState(() => _isAnalyzing = false);
-      ToastService.showError(
-        context,
-        "You've used your free AI actions for this month. Subscription plans are coming soon.",
-      );
+      showUpgradeSheet(context);
     } catch (_) {
       if (!mounted) return;
       setState(() => _isAnalyzing = false);

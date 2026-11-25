@@ -156,7 +156,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get safetyDescription =>
-      'CivicNet is committed to community safety. We never ask for money for requests or events.';
+      'CivicNet is committed to community safety. Requests and events are always free, and we never ask for money for them. Pro is optional and only adds AI features.';
 
   @override
   String get learnMoreSafety => 'Learn More About Safety';
@@ -994,4 +994,123 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vpnWarningDesc =>
       'An active VPN may prevent us from accurately finding help requests near you. For the best experience, consider disabling it while using CivicNet.';
+
+  @override
+  String get paywallTitle => 'CivicNet Pro';
+
+  @override
+  String get paywallSubtitle =>
+      'Unlimited AI to get more done for your neighborhood';
+
+  @override
+  String get paywallBenefitAssistant => 'Unlimited Aura AI assistant';
+
+  @override
+  String get paywallBenefitVoice => 'Create requests by voice with AI';
+
+  @override
+  String get paywallBenefitBriefing => 'Daily AI community briefing';
+
+  @override
+  String get paywallBenefitSupport => 'Smarter AI support replies';
+
+  @override
+  String get paywallBestValue => 'Best value';
+
+  @override
+  String get paywallPerMonth => 'per month';
+
+  @override
+  String get paywallPerYear => 'per year';
+
+  @override
+  String paywallPriceLine(String price, String period) {
+    return '$price $period';
+  }
+
+  @override
+  String paywallTrialPriceLine(int days, String price, String period) {
+    return '$days-day free trial, then $price $period';
+  }
+
+  @override
+  String get paywallCtaTrial => 'Start free trial';
+
+  @override
+  String get paywallCtaSubscribe => 'Subscribe';
+
+  @override
+  String get paywallRestore => 'Restore purchases';
+
+  @override
+  String get paywallDisclosure =>
+      'Payment is charged to your Apple ID or Google account at confirmation of purchase. The subscription renews automatically unless it is cancelled at least 24 hours before the end of the current period. You can manage or cancel it in your account settings after purchase.';
+
+  @override
+  String get paywallUnavailable =>
+      'Subscriptions aren\'t available right now. Please try again later.';
+
+  @override
+  String get paywallLoadFailed =>
+      'Couldn\'t load the plans. Check your connection and try again.';
+
+  @override
+  String get paywallRetry => 'Try again';
+
+  @override
+  String get paywallPurchaseFailed =>
+      'The purchase didn\'t go through. Please try again.';
+
+  @override
+  String get paywallRestoreFailed =>
+      'Couldn\'t restore purchases. Please try again.';
+
+  @override
+  String get paywallNothingToRestore => 'No previous purchases were found.';
+
+  @override
+  String get paywallWelcome => 'Welcome to CivicNet Pro!';
+
+  @override
+  String get paywallProActive => 'You\'re a CivicNet Pro member';
+
+  @override
+  String get paywallProTrialing => 'Your free trial is active';
+
+  @override
+  String paywallRenewsOn(String date) {
+    return 'Renews on $date';
+  }
+
+  @override
+  String paywallEndsOn(String date) {
+    return 'Ends on $date';
+  }
+
+  @override
+  String get paywallManage => 'Manage subscription';
+
+  @override
+  String get upgradeQuotaMessage =>
+      'You\'ve used your free AI actions for this month. Upgrade to CivicNet Pro for unlimited AI.';
+
+  @override
+  String get upgradeCta => 'See Pro plans';
+
+  @override
+  String get upgradeNotNow => 'Not now';
+
+  @override
+  String get settingsProTitle => 'CivicNet Pro';
+
+  @override
+  String get settingsProSubtitleFree => 'Unlimited AI assistant and more';
+
+  @override
+  String get settingsProBadge => 'PRO';
+
+  @override
+  String aiQuotaRemaining(int remaining, int limit) {
+    return '$remaining of $limit free AI actions left this month';
+  }
 }

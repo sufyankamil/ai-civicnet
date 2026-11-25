@@ -75,19 +75,27 @@ class SubscriptionState {
   int get hashCode => Object.hash(isPro, isTrialing, expiresAt, willRenew);
 }
 
-/// A purchasable plan shown on the paywall (Phase 3).
+enum BillingPeriod { monthly, annual, other }
+
+/// A purchasable plan shown on the paywall.
 class BillingPlan {
   const BillingPlan({
     required this.id,
     required this.title,
     required this.priceString,
     required this.hasFreeTrial,
+    this.trialDays,
+    this.period = BillingPeriod.other,
   });
 
   final String id;
   final String title;
   final String priceString;
   final bool hasFreeTrial;
+
+  /// Length of the free trial in days, when the store reports it.
+  final int? trialDays;
+  final BillingPeriod period;
 }
 
 class SubscriptionUnavailableException implements Exception {
@@ -264,16 +272,22 @@ class RevenueCatBillingClient implements BillingClient {
   Future<List<BillingPlan>> fetchPlans() async {
     final offerings = await Purchases.getOfferings();
     _packages = offerings.current?.availablePackages ?? const [];
-    return _packages
-        .map(
-          (p) => BillingPlan(
-            id: p.identifier,
-            title: p.storeProduct.title,
-            priceString: p.storeProduct.priceString,
-            hasFreeTrial: (p.storeProduct.introductoryPrice?.price ?? 1) == 0,
-          ),
-        )
-        .toList();
+    return _packages.map((p) {
+      final intro = p.storeProduct.introductoryPrice;
+      final hasTrial = intro != null && intro.price == 0;
+      return BillingPlan(
+        id: p.identifier,
+        title: p.storeProduct.title,
+        priceString: p.storeProduct.priceString,
+        hasFreeTrial: hasTrial,
+        trialDays: hasTrial ? _trialDays(intro) : null,
+        period: switch (p.packageType) {
+          PackageType.monthly => BillingPeriod.monthly,
+          PackageType.annual => BillingPeriod.annual,
+          _ => BillingPeriod.other,
+        },
+      );
+    }).toList();
   }
 
   @override
@@ -298,6 +312,18 @@ class RevenueCatBillingClient implements BillingClient {
   @override
   Future<EntitlementSnapshot?> restore() async =>
       _snapshot(await Purchases.restorePurchases());
+
+  static int? _trialDays(IntroductoryPrice intro) {
+    final unitDays = switch (intro.periodUnit) {
+      PeriodUnit.day => 1,
+      PeriodUnit.week => 7,
+      PeriodUnit.month => 30,
+      PeriodUnit.year => 365,
+      _ => null,
+    };
+    if (unitDays == null) return null;
+    return unitDays * intro.periodNumberOfUnits * intro.cycles;
+  }
 
   EntitlementSnapshot? _snapshot(CustomerInfo info) {
     final entitlement = info.entitlements.active[proEntitlementId];

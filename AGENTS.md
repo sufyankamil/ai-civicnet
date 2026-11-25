@@ -159,6 +159,31 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-25 — Release workflow writes the RevenueCat iOS key into `.env`
+- What changed: `testflight.yml` now adds `REVENUECAT_IOS_API_KEY` (from the GitHub secret of the same name) to `.env` in both jobs, so TestFlight and App Store builds have billing switched on.
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: needs the GitHub repository secret `REVENUECAT_IOS_API_KEY` (the public `appl_` SDK key). Without it the build gets an empty key and billing stays dormant. Android is not wired up yet.
+
+### 2026-11-25 — Community Commitment banner mentions optional Pro
+- What changed: the home "Community Commitment" banner text (`safetyDescription`, English and Hindi) now says requests and events are always free and that Pro is optional and only adds AI features.
+- Key files: `lib/l10n/app_en.arb`, `lib/l10n/app_hi.arb`, `test/features/home/widgets/home_safety_banner_test.dart`.
+- Notes / gotchas: "only adds AI features" is true today; if Pro ever gates other features (radius, request limits), update this text and the Commitment screen. The Hindi is a draft translation.
+
+### 2026-11-25 — GCC national-day greetings: pushes and country-aware banner (#82)
+- What changed: `send-holiday-notification` has a daily mode (`{"daily": true, "countryCodes": [...]}`) that finds today's holidays in each country's own time zone (data in `holidays.ts`) and pushes to `country_<CC>`; the India payload path is unchanged. Fixed-date greetings for UAE (Flag Day Nov 3, National Day Dec 2), Saudi (Founding Day Feb 22, National Day Sep 23), Qatar (Dec 18), Kuwait (Feb 25, Feb 26), Bahrain (Dec 16) and Oman (Nov 18), English title with Arabic message. The home banner is now data-driven and country-aware (India included, same dismiss key).
+- Key files: `supabase/functions/send-holiday-notification/{index,holidays,holidays.test}.ts`, `supabase/holiday_notification_gcc_schedule.sql`, `lib/features/home/models/seasonal_greeting.dart`, `lib/features/home/presentation/widgets/seasonal_greeting_banner.dart`, `home_screen.dart`, tests in `test/features/home/`.
+- Notes / gotchas: NOT deployed or scheduled yet. Steps: deploy the function, make sure the `HOLIDAY_NOTIFICATION_SECRET` function secret and the `holiday_notification_secret` vault secret exist, then run the GCC schedule SQL (two daily jobs, 09:00 local in UTC+4 and UTC+3). The holiday list exists twice (TypeScript for pushes, Dart for the banner); a Flutter test fails if they drift. Run the TS tests with `node --test supabase/functions/send-holiday-notification/holidays.test.ts`. Eid and other Hijri holidays and UAE Commemoration Day are deliberately not included. Dates should be checked against each country's official calendar.
+
+### 2026-11-25 — GCC countries in the profile country dropdown (#81)
+- What changed: the Edit Profile "Country / region" dropdown now also offers UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman. The list lives in one place (`supportedCountries`) and the dropdown is built from it.
+- Key files: `lib/features/profile/models/supported_countries.dart`, `lib/features/profile/presentation/screens/edit_profile_screen.dart`, `test/features/profile/models/supported_countries_test.dart`.
+- Notes / gotchas: no SQL change (`profiles.country_code` already accepts any two-letter code). Picking a country only subscribes the device to the `country_<CC>` FCM topic. National-day greetings (push cron job and the home banner) exist for India only, so GCC users get nothing yet: that needs per-country cron jobs and a country-aware home banner.
+
+### 2026-11-25 — Subscriptions phase 3: paywall, upgrade prompts and quota hint (#80)
+- What changed: new `/subscription` paywall (plans from the RevenueCat offering, trial price line, Restore, auto-renew disclosure, Terms/Privacy, Pro status with manage link; buy button pinned at the bottom). When the free AI quota runs out, the assistant shows a "See Pro plans" button, support chat offers an "Upgrade to Pro" chip, and the voice sheet opens an upgrade sheet; the home briefing still falls back silently. "CivicNet Pro" entry in Settings, and an "N of 10 free AI actions left" hint above the assistant input, backed by a read-only `get_ai_quota_status` RPC.
+- Key files: `lib/features/subscription/` (`PaywallViewModel`, `PaywallScreen`), `lib/services/ai_quota_service.dart`, `lib/components/upgrade_prompt.dart`, `lib/components/ai_quota_hint.dart`, `lib/core/utils/paywall_launcher.dart`, `sql_scripts/subscriptions_quota_status.sql`, strings in `app_en.arb` / `app_hi.arb`, tests in `test/features/subscription`, `test/components`, `test/services/ai_quota_service_test.dart`, shared `test/helpers/fake_billing_client.dart`.
+- Notes / gotchas: `get_ai_quota_status` is NOT applied yet (apply it by hand after `subscriptions_schema.sql`); until then the hint stays hidden. Plan titles and prices come from the store, so the paywall shows "Couldn't load the plans" until the RevenueCat offering resolves (needs the App Store products to be available). Support-chat and assistant quota messages are still hardcoded English like the rest of those view models. Pro-only feature limits (radius, active requests, assets) were deliberately left out. Needs a full rebuild, not a hot restart, because `purchases_flutter` is a native plugin.
+
 ### 2026-11-25 — Subscriptions phase 2: RevenueCat billing and entitlement sync (#78)
 - What changed: new `SubscriptionService` (`purchases_flutter`) tracks Pro/trial state, syncs the RevenueCat user id with the Supabase user id on sign-in/out, and exposes plans, purchase and restore. It stays dormant until `REVENUECAT_IOS_API_KEY` / `REVENUECAT_ANDROID_API_KEY` are set. New `revenuecat-webhook` edge function maps RevenueCat events onto `subscriptions` via `apply_subscription_event` (ignores stale/duplicate events, anonymous users and other entitlements).
 - Key files: `lib/services/subscription_service.dart`, `lib/services/startup_service.dart`, `supabase/functions/revenuecat-webhook/` (`mapping.ts` + `mapping.test.ts`), `sql_scripts/subscriptions_revenuecat.sql`, `test/services/subscription_service_test.dart`.
