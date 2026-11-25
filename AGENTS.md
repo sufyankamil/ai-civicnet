@@ -159,4 +159,7 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
-_No entries yet._
+### 2026-11-25 — Add CLAUDE.md codebase guide (#71)
+- What changed: new `CLAUDE.md` documenting commands, startup flow, structure, services, routing, state management (GetX), AI matching, backend (SQL scripts, edge functions, Cloudflare proxy), CI, and gotchas.
+- Key files: `CLAUDE.md`.
+- Notes / gotchas: docs only. Records that `.env` is bundled as a Flutter asset (keys ship in the app) and that README/ARCHITECTURE disagree with the code on state management and `.env`; neither was changed here.
