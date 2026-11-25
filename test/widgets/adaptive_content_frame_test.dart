@@ -82,13 +82,37 @@ void main() {
     expect(_Probe.seen!.viewPadding.right, 0);
   });
 
-  testWidgets('wide window: gutters use the background colour', (tester) async {
+  testWidgets('wide window: gutters are a distinct tone with a column edge', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(tester, const Size(951, 669)));
 
-    final colored = tester
+    final gutter = tester
         .widgetList<ColoredBox>(find.byType(ColoredBox))
-        .where((b) => b.color == const Color(0xFF123456));
-    expect(colored, isNotEmpty);
+        .map((b) => b.color)
+        .where((c) => c != const Color(0xFF123456) && c.a == 1)
+        .toList();
+    expect(gutter, isNotEmpty, reason: 'gutter tone differs from the page');
+
+    final shadows = tester
+        .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+        .map((d) => (d.decoration as BoxDecoration).boxShadow)
+        .whereType<List<BoxShadow>>()
+        .where((s) => s.isNotEmpty);
+    expect(shadows, isNotEmpty, reason: 'column edge casts a soft shadow');
+  });
+
+  testWidgets('narrow window: no gutter tone and no column edge', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(tester, const Size(390, 844)));
+
+    final shadows = tester
+        .widgetList<DecoratedBox>(find.byType(DecoratedBox))
+        .map((d) => (d.decoration as BoxDecoration).boxShadow)
+        .whereType<List<BoxShadow>>()
+        .where((s) => s.isNotEmpty);
+    expect(shadows, isEmpty);
   });
 
   testWidgets('orientation policy applies preferred orientations', (

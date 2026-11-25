@@ -121,8 +121,17 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
       right: AdaptiveLayout.insetAfterGutter(inset: e.right, gutter: gutter),
     );
 
+    // A slightly different tone for the gutters plus a soft edge shadow make
+    // the column read as deliberate, so decorations that stop at its edge
+    // (header washes, tinted backdrops) do not look cut off.
+    final isDarkPage = widget.background.computeLuminance() < 0.5;
+    final gutterColor = Color.alphaBlend(
+      (isDarkPage ? Colors.white : Colors.black).withValues(alpha: 0.05),
+      widget.background,
+    );
+
     return ColoredBox(
-      color: widget.background,
+      color: gutterColor,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -135,13 +144,28 @@ class _AdaptiveContentFrameState extends State<AdaptiveContentFrame>
                 viewPadding: trim(media.viewPadding),
                 viewInsets: trim(media.viewInsets),
               ),
-              child: SizedBox(
-                width: width,
-                height: double.infinity,
-                child: AdaptiveFrameScope(
-                  gutter: gutter,
-                  setBackground: _setScreenBackground,
-                  child: widget.child,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: isDarkPage ? 0.45 : 0.10,
+                      ),
+                      blurRadius: 24,
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  width: width,
+                  height: double.infinity,
+                  child: ColoredBox(
+                    color: widget.background,
+                    child: AdaptiveFrameScope(
+                      gutter: gutter,
+                      setBackground: _setScreenBackground,
+                      child: widget.child,
+                    ),
+                  ),
                 ),
               ),
             ),
