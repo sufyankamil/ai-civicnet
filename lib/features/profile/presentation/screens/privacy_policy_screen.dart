@@ -37,7 +37,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Last updated: March 09, 2026',
+              'Last updated: November 26, 2026',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 24),
@@ -54,16 +54,26 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               context,
               '3. Sharing of Information',
-              'We do not share your personal information with third parties except as described in this policy. Your profile information (name, avatar, skills) is visible to other users of the app.',
+              'We do not sell your personal information. We share it with service providers (Supabase, Firebase, Google Maps, Google Gemini and RevenueCat) only as needed to run the app, as described in this policy. Your profile information (name, avatar, skills) is visible to other users of the app.',
             ),
             _buildSection(
               context,
-              '4. Data Security',
+              '4. Subscriptions and Purchases',
+              'If you subscribe to CivicNet Pro, your purchase is processed by Apple or Google; we do not store or see your card or payment details. We keep your subscription status so we can unlock Pro features.',
+            ),
+            _buildSection(
+              context,
+              '5. AI Features',
+              'AI features (the Aura assistant, voice requests, request categorization, search, support replies and the community briefing) send the text you provide, such as your request or message and the transcript of a voice request, through our secure server to Google Gemini to generate a response. We record how many AI actions you use each month to apply the free allowance.',
+            ),
+            _buildSection(
+              context,
+              '6. Data Security',
               'We take reasonable measures to help protect information about you from loss, theft, misuse and unauthorized access, disclosure, alteration and destruction.',
             ),
             _buildSection(
               context,
-              '5. Contact Us',
+              '7. Contact Us',
               'If you have any questions about this Privacy Policy, please contact us at civicnet.app@gmail.com.',
             ),
             const SizedBox(height: 8),
