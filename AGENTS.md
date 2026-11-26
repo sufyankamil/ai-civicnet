@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-26 — Local StoreKit config for the paywall (#94)
+- What changed: added `ios/Runner/CivicNetProducts.storekit` (group `CivicNet Pro`, `civicnet_pro_monthly` $2.99 and `civicnet_pro_annual` $14.99, each with a 7-day free trial) and set it on the shared `Runner` scheme's Run action so the simulator can return prices before App Store Connect products are approved.
+- Key files: `ios/Runner/CivicNetProducts.storekit`, `ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme`.
+- Notes / gotchas: only applies when launched from Xcode (open `Runner.xcworkspace`, Run), not `flutter run`. Prices are placeholders; the real ones live in App Store Connect. Not tested automatically (config only). RevenueCat's Test Store key is an alternative that works with `flutter run`, but never ship a `test_` key.
+
 ### 2026-11-26 — Terms and Privacy Policy cover CivicNet Pro subscriptions (#92)
 - What changed: Terms gained a Subscriptions section (price/period shown at purchase, Apple/Google billing, auto-renewal with the 24-hour cancel rule, trial, refunds via the store, lapse returns to the free AI allowance). Privacy Policy now lists RevenueCat and Google Gemini, purchase/subscription data and AI usage. Dates bumped to November 26, 2026.
 - Key files: `website/terms.html`, `website/index.html` (the privacy policy), `terms_of_service_screen.dart`, `privacy_policy_screen.dart`, `test/features/profile/presentation/screens/legal_screens_subscription_test.dart`.
