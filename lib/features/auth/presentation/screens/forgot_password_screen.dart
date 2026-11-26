@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../components/custom_textfield.dart';
@@ -74,12 +75,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : Theme.of(context).primaryColor,
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: isDark ? Colors.white : Theme.of(context).primaryColor,
+            ),
+            onPressed: () => context.pop(),
           ),
-          onPressed: () => context.pop(),
         ),
       ),
       body: AuthBackground(

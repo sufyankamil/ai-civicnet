@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -108,12 +109,14 @@ class _SignupScreenState extends State<SignupScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: isDark ? Colors.white : Theme.of(context).primaryColor,
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back,
+              color: isDark ? Colors.white : Theme.of(context).primaryColor,
+            ),
+            onPressed: () => context.pop(),
           ),
-          onPressed: () => context.pop(),
         ),
       ),
       body: AuthBackground(

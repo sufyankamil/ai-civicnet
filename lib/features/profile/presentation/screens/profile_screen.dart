@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide Badge;
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -165,71 +166,74 @@ class _ProfileScreenState extends State<ProfileScreen>
                       )
                     else
                       SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 24),
-                            SlideFadeTransition(
-                              delay: const Duration(milliseconds: 100),
-                              child: ImpactDashboard(
-                                user: user,
-                                isDark: isDark,
-                                scrollController: _scrollController,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            SlideFadeTransition(
-                              delay: const Duration(milliseconds: 250),
-                              child: _buildSkillsSection(user, isDark),
-                            ),
-                            const SizedBox(height: 28),
-                            SlideFadeTransition(
-                              delay: const Duration(milliseconds: 400),
-                              child: MilestoneGallery(
-                                user: user,
-                                isDark: isDark,
-                                scrollController: _scrollController,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            SlideFadeTransition(
-                              delay: const Duration(milliseconds: 550),
-                              child: ImpactHeatmap(isDark: isDark),
-                            ),
-                            const SizedBox(height: 28),
-                            SlideFadeTransition(
-                              delay: const Duration(milliseconds: 700),
-                              child: _buildBadgeGallery(user, isDark),
-                            ),
-                            const SizedBox(height: 28),
-
-                            // SlideFadeTransition(
-                            //   delay: const Duration(milliseconds: 850),
-                            //   child: PrivacySettingsSection(isDark: isDark, user: user),
-                            // ),
-                            // const SizedBox(height: 28),
-                            SlideFadeTransition(
-                              delay: const Duration(milliseconds: 1000),
-                              child: _buildActionsSection(
-                                context,
-                                isDark,
-                                user,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: Text(
-                                '"Empowering communities, one connection at a time."',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontStyle: FontStyle.italic,
-                                  color: (isDark ? Colors.white : Colors.black)
-                                      .withValues(alpha: 0.4),
+                        child: SideStripInset(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 24),
+                              SlideFadeTransition(
+                                delay: const Duration(milliseconds: 100),
+                                child: ImpactDashboard(
+                                  user: user,
+                                  isDark: isDark,
+                                  scrollController: _scrollController,
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 60),
-                          ],
+                              const SizedBox(height: 28),
+                              SlideFadeTransition(
+                                delay: const Duration(milliseconds: 250),
+                                child: _buildSkillsSection(user, isDark),
+                              ),
+                              const SizedBox(height: 28),
+                              SlideFadeTransition(
+                                delay: const Duration(milliseconds: 400),
+                                child: MilestoneGallery(
+                                  user: user,
+                                  isDark: isDark,
+                                  scrollController: _scrollController,
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              SlideFadeTransition(
+                                delay: const Duration(milliseconds: 550),
+                                child: ImpactHeatmap(isDark: isDark),
+                              ),
+                              const SizedBox(height: 28),
+                              SlideFadeTransition(
+                                delay: const Duration(milliseconds: 700),
+                                child: _buildBadgeGallery(user, isDark),
+                              ),
+                              const SizedBox(height: 28),
+
+                              // SlideFadeTransition(
+                              //   delay: const Duration(milliseconds: 850),
+                              //   child: PrivacySettingsSection(isDark: isDark, user: user),
+                              // ),
+                              // const SizedBox(height: 28),
+                              SlideFadeTransition(
+                                delay: const Duration(milliseconds: 1000),
+                                child: _buildActionsSection(
+                                  context,
+                                  isDark,
+                                  user,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Center(
+                                child: Text(
+                                  '"Empowering communities, one connection at a time."',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontStyle: FontStyle.italic,
+                                    color:
+                                        (isDark ? Colors.white : Colors.black)
+                                            .withValues(alpha: 0.4),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 60),
+                            ],
+                          ),
                         ),
                       ),
                   ],

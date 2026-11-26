@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import '../../../../theme/app_theme.dart';
 
 // ─── Data Model ─────────────────────────────────────────────────────────────
@@ -179,9 +180,11 @@ class _HowTaskNetWorksScreenState extends State<HowTaskNetWorksScreen>
       snap: true,
       backgroundColor: isDark ? AppColors.backgroundDark : Colors.white,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded),
-        onPressed: () => Navigator.of(context).pop(),
+      leading: HideOnSideStrip(
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       title: Text(
         'How CivicNet Works',

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -181,17 +182,19 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: true,
-      leading: AppHaptic(
-        onTap: () async {
-          final shouldPop = await _onWillPop();
-          if (shouldPop && mounted) {
-            Navigator.of(context).pop();
-          }
-        },
-        child: Icon(
-          Icons.chevron_left_rounded,
-          color: isDark ? Colors.white : AppColors.textPrimaryLight,
-          size: 30,
+      leading: HideOnSideStrip(
+        child: AppHaptic(
+          onTap: () async {
+            final shouldPop = await _onWillPop();
+            if (shouldPop && mounted) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: Icon(
+            Icons.chevron_left_rounded,
+            color: isDark ? Colors.white : AppColors.textPrimaryLight,
+            size: 30,
+          ),
         ),
       ),
       title: Row(

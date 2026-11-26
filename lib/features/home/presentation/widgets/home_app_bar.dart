@@ -23,7 +23,6 @@ class HomeAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SliverAppBar(
       automaticallyImplyLeading: false,
@@ -40,30 +39,9 @@ class HomeAppBar extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Purple radial glow anchored to the header / profile side
-            IgnorePointer(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(0.85, -0.2),
-                    radius: 1.05,
-                    colors: [
-                      AppColors.primaryLight.withValues(
-                        alpha: isDark ? 0.28 : 0.22,
-                      ),
-                      AppColors.primaryLight.withValues(
-                        alpha: isDark ? 0.10 : 0.10,
-                      ),
-                      AppColors.primaryLight.withValues(
-                        alpha: isDark ? 0.03 : 0.03,
-                      ),
-                      Colors.transparent,
-                    ],
-                    stops: const [0.0, 0.35, 0.65, 1.0],
-                  ),
-                ),
-              ),
-            ),
+            // The purple glow behind the header lives in HomeScreen (full
+            // width). A glow drawn here is clipped to the safe area and shows
+            // as a hard-edged rectangle beside a side inset (Duo outer screen).
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Align(

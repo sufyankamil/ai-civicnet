@@ -1,4 +1,5 @@
 import 'dart:ui';
+import '../../../../../widgets/adaptive_content_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
@@ -61,10 +62,12 @@ class RequestHeaderSliver extends StatelessWidget {
       stretch: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 0,
-      leading: _buildGlassIconButton(
-        context,
-        Icons.arrow_back_rounded,
-        () => context.pop(),
+      leading: HideOnSideStrip(
+        child: _buildGlassIconButton(
+          context,
+          Icons.arrow_back_rounded,
+          () => context.pop(),
+        ),
       ),
       actions: [
         if (currentUserId != null && currentUserId != request.requesterId)

@@ -25,7 +25,11 @@ class SplashScreen extends StatelessWidget {
             stops: [0.2, 1.0],
           ),
         ),
+        // Only top/bottom are inset: the content is small and centred, so a
+        // side inset (e.g. the Duo status strip) would just push it off-centre.
         child: SafeArea(
+          left: false,
+          right: false,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

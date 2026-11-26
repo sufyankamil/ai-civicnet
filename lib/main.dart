@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
@@ -30,7 +31,9 @@ import 'features/onboarding/presentation/screens/splash_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'core/utils/adaptive_layout.dart';
 import 'core/utils/custom_timeago.dart';
+import 'widgets/adaptive_content_frame.dart';
 
 SharedPreferences? prefsGlobal;
 
@@ -42,9 +45,18 @@ void main() {
   timeago.setLocaleMessages('en', timeago.EnMessages());
   timeago.setLocaleMessages('en_short', CustomEnShortMessages());
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
-    _,
-  ) {
+  // Phones stay portrait only; large windows may rotate. AdaptiveContentFrame
+  // keeps this in sync afterwards (non-iOS).
+  final view = WidgetsBinding.instance.platformDispatcher.views.first;
+  final shortestSide = AdaptiveLayout.displayShortestSide(view);
+  // iOS decides orientations natively (see AppDelegate.swift).
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    runApp(const RootApp());
+    return;
+  }
+  SystemChrome.setPreferredOrientations(
+    AdaptiveLayout.orientationsForShortestSide(shortestSide),
+  ).then((_) {
     runApp(const RootApp());
   });
 }
@@ -169,6 +181,7 @@ class _RootAppState extends State<RootApp> {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme,
+        // Full-bleed on purpose: the splash gradient must fill any window.
         home: const SplashScreen(),
       );
     }
@@ -235,14 +248,62 @@ class _CommunityHelpAppState extends State<CommunityHelpApp> {
         supportedLocales: const [Locale('en'), Locale('hi')],
         routerConfig: _router,
         builder: (context, child) {
-          return AutoLogoutWrapper(
-            inactivityDuration: const Duration(hours: 1),
-            child: ConnectivityWrapper(
-              child: ServiceHealthWrapper(child: child!),
+          return _RouterAwareFrame(
+            router: _router,
+            child: AutoLogoutWrapper(
+              inactivityDuration: const Duration(hours: 1),
+              child: ConnectivityWrapper(
+                child: ServiceHealthWrapper(child: child!),
+              ),
             ),
           );
         },
       ),
+    );
+  }
+}
+
+/// Feeds the current route into [AdaptiveContentFrame] so the shared back/close
+/// button in the iPhone Duo status strip follows navigation. Re-reads after the
+/// frame, because the navigator has not applied a push/pop yet when the router
+/// notifies.
+class _RouterAwareFrame extends StatefulWidget {
+  const _RouterAwareFrame({required this.router, required this.child});
+
+  final GoRouter router;
+  final Widget child;
+
+  @override
+  State<_RouterAwareFrame> createState() => _RouterAwareFrameState();
+}
+
+class _RouterAwareFrameState extends State<_RouterAwareFrame> {
+  @override
+  void initState() {
+    super.initState();
+    widget.router.routerDelegate.addListener(_onRouteChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.router.routerDelegate.removeListener(_onRouteChanged);
+    super.dispose();
+  }
+
+  void _onRouteChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final path = widget.router.routerDelegate.currentConfiguration.uri.path;
+    return AdaptiveContentFrame(
+      canGoBack: widget.router.canPop(),
+      isClose: path.startsWith('/create-'),
+      onBack: widget.router.pop,
+      child: widget.child,
     );
   }
 }
