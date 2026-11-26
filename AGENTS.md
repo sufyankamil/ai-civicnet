@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-26 — Terms and Privacy Policy cover CivicNet Pro subscriptions (#92)
+- What changed: Terms gained a Subscriptions section (price/period shown at purchase, Apple/Google billing, auto-renewal with the 24-hour cancel rule, trial, refunds via the store, lapse returns to the free AI allowance). Privacy Policy now lists RevenueCat and Google Gemini, purchase/subscription data and AI usage. Dates bumped to November 26, 2026.
+- Key files: `website/terms.html`, `website/index.html` (the privacy policy), `terms_of_service_screen.dart`, `privacy_policy_screen.dart`, `test/features/profile/presentation/screens/legal_screens_subscription_test.dart`.
+- Notes / gotchas: the policy lives in three places: `website/index.html`, the in-app screen, and an older external copy (`privacypolicy-ruddy.vercel.app`, linked from the in-app screen) that this change does not touch, so check it matches or point the link at the website. Prices are not hardcoded (they come from the store). App Store Connect privacy labels (Purchases, User ID) must be updated by hand. Text is English only; the legal screens are not localized.
+
 ### 2026-11-26 — Build TestFlight IPAs with the iOS 27 SDK (#88)
 - What changed: `testflight.yml` build job now selects the newest `/Applications/Xcode_27*.app` and fails if the runner has none (ITMS-90725: iOS 27 SDK required from April 2027). Verified locally: `flutter build ios --release --no-codesign` on Xcode 27.2 succeeds (DTSDKName iphoneos27.2).
 - Key files: `.github/workflows/testflight.yml`.
