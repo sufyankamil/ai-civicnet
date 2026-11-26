@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-26 — Build TestFlight IPAs with the iOS 27 SDK (#88)
+- What changed: `testflight.yml` build job now selects the newest `/Applications/Xcode_27*.app` and fails if the runner has none (ITMS-90725: iOS 27 SDK required from April 2027). Verified locally: `flutter build ios --release --no-codesign` on Xcode 27.2 succeeds (DTSDKName iphoneos27.2).
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: `app-store-release.yml` only submits an existing build, so it is unchanged. If GitHub's `macos-latest` image has no Xcode 27 yet, the job fails loudly; switch `runs-on` to a newer image then. No automated test: this is CI config.
+
 ### 2026-11-25 — Adapt to the iPhone Duo and other large windows (#86 / PR #87)
 - What changed: the app now fills the whole window on large screens (no width cap) and may rotate there; phones stay portrait only. On iOS the orientation rule lives in `AppDelegate.application(_:supportedInterfaceOrientationsFor:)` (screen of the window's own scene: under 600 pt short side = portrait, else all). `Info.plist` declares all four orientations and no longer sets `UIRequiresFullScreen`. Non-iOS keeps a Dart rule in `AdaptiveContentFrame` (display-based). The splash centres on the full screen (no side inset). `HomeAppBar` no longer draws its own purple glow (clipped to the safe area it showed as a rectangle beside the Duo status strip).
 - Key files: `ios/Runner/AppDelegate.swift`, `ios/Runner/Info.plist`, `lib/core/utils/adaptive_layout.dart`, `lib/widgets/adaptive_content_frame.dart`, `lib/main.dart`, `splash_screen.dart`, `home_app_bar.dart`, tests in `test/core/utils/`, `test/widgets/`, `test/features/onboarding/`.
