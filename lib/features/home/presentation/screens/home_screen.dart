@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
@@ -583,8 +584,19 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
 
-          // Aura AI Floating Orb
-          const Positioned(right: 18, bottom: 128, child: AuraFloatingOrb()),
+          // Aura AI Floating Orb. Kept clear of the iPhone Duo status strip, which
+          // is frosted and would hide it.
+          const Positioned.fill(
+            child: SideStripInset(
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: Padding(
+                  padding: EdgeInsets.only(right: 18, bottom: 128),
+                  child: AuraFloatingOrb(),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

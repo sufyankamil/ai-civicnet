@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
@@ -309,18 +310,20 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   color: isDark ? Colors.white : Colors.black,
                 ),
               ),
-              leading: Center(
-                child: AppHaptic(
-                  onTap: () => context.pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.1)
-                          : Colors.black.withValues(alpha: 0.05),
-                      shape: BoxShape.circle,
+              leading: HideOnSideStrip(
+                child: Center(
+                  child: AppHaptic(
+                    onTap: () => context.pop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close_rounded, size: 20),
                     ),
-                    child: const Icon(Icons.close_rounded, size: 20),
                   ),
                 ),
               ),
@@ -389,7 +392,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 140, 16, 32),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            140,
+            16 + MediaQuery.paddingOf(context).right,
+            32,
+          ),
           child: Form(
             key: _formKey,
             autovalidateMode: AutovalidateMode.onUserInteraction,

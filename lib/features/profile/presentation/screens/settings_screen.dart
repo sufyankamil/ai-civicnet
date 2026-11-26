@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -45,9 +46,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+        leading: HideOnSideStrip(
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
         ),
       ),
       body: ListView(
@@ -130,10 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             title: const Text('System Status'),
             subtitle: const Text('Platform health & live service status'),
-            leading: const Icon(
-              Icons.sensors_rounded,
-              color: Colors.teal,
-            ),
+            leading: const Icon(Icons.sensors_rounded, color: Colors.teal),
             trailing: ListenableBuilder(
               listenable: ServiceHealthService(),
               builder: (context, _) {
@@ -148,10 +148,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: (isOperational
-                                ? const Color(0xFF00B894)
-                                : const Color(0xFFFF9F43))
-                            .withValues(alpha: 0.15),
+                        color:
+                            (isOperational
+                                    ? const Color(0xFF00B894)
+                                    : const Color(0xFFFF9F43))
+                                .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

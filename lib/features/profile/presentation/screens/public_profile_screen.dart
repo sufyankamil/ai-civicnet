@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../models/models.dart';
@@ -145,39 +146,43 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
               slivers: [
                 _buildHeroSliver(user, isDark),
                 SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      _buildStatsRow(user, isDark),
-                      const SizedBox(height: 28),
-                      _buildSkillsSection(user, isDark),
-                      const SizedBox(height: 32),
+                  child: SideStripInset(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        _buildStatsRow(user, isDark),
+                        const SizedBox(height: 28),
+                        _buildSkillsSection(user, isDark),
+                        const SizedBox(height: 32),
 
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _isStartingChat
-                                ? null
-                                : () => _startChat(user),
-                            icon: _isStartingChat
-                                ? const AppLoader(size: 20, centered: false)
-                                : const Icon(Icons.chat_bubble_outline),
-                            label: const Text('Send Message'),
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _isStartingChat
+                                  ? null
+                                  : () => _startChat(user),
+                              icon: _isStartingChat
+                                  ? const AppLoader(size: 20, centered: false)
+                                  : const Icon(Icons.chat_bubble_outline),
+                              label: const Text('Send Message'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
 
-                      // Extra clearance
-                      SizedBox(
-                        height: MediaQuery.of(context).padding.bottom + 24,
-                      ),
-                    ],
+                        // Extra clearance
+                        SizedBox(
+                          height: MediaQuery.of(context).padding.bottom + 24,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -199,15 +204,17 @@ class _PublicProfileScreenState extends State<PublicProfileScreen>
       stretch: true,
       backgroundColor: isDark ? AppColors.backgroundDark : Colors.white,
       elevation: 0,
-      leading: Container(
-        margin: const EdgeInsets.all(8.0),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.2),
-          shape: BoxShape.circle,
-        ),
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.pop(),
+      leading: HideOnSideStrip(
+        child: Container(
+          margin: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.2),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => context.pop(),
+          ),
         ),
       ),
       actions: [
