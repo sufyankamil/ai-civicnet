@@ -160,7 +160,7 @@ Newest first. Format:
 ```
 
 ### 2026-11-26 — Local StoreKit config for the paywall (#94)
-- What changed: added `ios/Runner/CivicNetProducts.storekit` (group `CivicNet Pro`, `civicnet_pro_monthly` $9.99 and `civicnet_pro_annual` $79.99, each with a 7-day free trial) and set it on the shared `Runner` scheme's Run action so the simulator can return prices before App Store Connect products are approved.
+- What changed: added `ios/Runner/CivicNetProducts.storekit` (group `CivicNet Pro`, `civicnet_pro_monthly` $2.99 and `civicnet_pro_annual` $79.99, each with a 7-day free trial) and set it on the shared `Runner` scheme's Run action so the simulator can return prices before App Store Connect products are approved.
 - Key files: `ios/Runner/CivicNetProducts.storekit`, `ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme`.
 - Notes / gotchas: only applies when launched from Xcode (open `Runner.xcworkspace`, Run), not `flutter run`. Prices are placeholders; the real ones live in App Store Connect. Not tested automatically (config only). RevenueCat's Test Store key is an alternative that works with `flutter run`, but never ship a `test_` key.
 
