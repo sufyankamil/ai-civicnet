@@ -52,6 +52,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # App Store Connect requires the iOS 27 SDK (Xcode 27+) for uploads from April 2027 (ITMS-90725).
+      - name: Select Xcode 27
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -z "$XCODE" ]; then
+            echo "No Xcode 27 on this runner image. Installed:" >&2
+            ls -d /Applications/Xcode*.app >&2
+            exit 1
+          fi
+          sudo xcode-select -s "$XCODE/Contents/Developer"
+          xcodebuild -version
+          echo "iOS SDK: $(xcrun --sdk iphoneos --show-sdk-version)"
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:

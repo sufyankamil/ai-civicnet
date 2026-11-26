@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-26 — Build TestFlight IPAs with the iOS 27 SDK (#88)
+- What changed: `testflight.yml` build job now selects the newest `/Applications/Xcode_27*.app` and fails if the runner has none (ITMS-90725: iOS 27 SDK required from April 2027). Verified locally: `flutter build ios --release --no-codesign` on Xcode 27.2 succeeds (DTSDKName iphoneos27.2).
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: `app-store-release.yml` only submits an existing build, so it is unchanged. If GitHub's `macos-latest` image has no Xcode 27 yet, the job fails loudly; switch `runs-on` to a newer image then. No automated test: this is CI config.
+
 ### 2026-11-25 — Pin Flutter 3.47.6 in the TestFlight workflow (#84)
 - What changed: both Flutter setup steps in `testflight.yml` (analyze and build) now pin `flutter-version: "3.47.6"`, matching `dart.yml`.
 - Key files: `.github/workflows/testflight.yml`.
