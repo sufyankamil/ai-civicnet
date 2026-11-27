@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CivicNet: ask for help, help a neighbor</title>
+    <script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js');</script>
     <meta name="description"
         content="CivicNet connects people who need a hand with neighbors nearby who have the time, tools or skills to help." />
     <meta name="theme-color" content="#F6F4FF" />
@@ -221,6 +222,31 @@
         .foot-links a { text-decoration: none; }
         .foot-links a:hover { text-decoration: underline; }
 
+
+        /* Motion. Everything below only applies when .js is set, which the head script skips for reduced motion. */
+        .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .12em; margin-bottom: -.12em; }
+        .w > span { display: inline-block; }
+        .js [data-depth] { will-change: translate; }
+        @media (prefers-reduced-motion: no-preference) {
+            .w > span { animation: rise .8s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i) * 90ms + 80ms); }
+        }
+        @keyframes rise { from { transform: translateY(108%); } to { transform: none; } }
+
+        .steps::after {
+            content: ''; position: absolute; left: 19px; top: 8px; width: 2px;
+            height: calc((100% - 16px) * var(--p, 1)); background: var(--violet);
+        }
+        .step-no { transition: background-color .25s, color .25s, border-color .25s; }
+        .js .steps::after { height: calc((100% - 16px) * var(--p, 0)); }
+        .js .steps li .step-no { z-index: 1; }
+        .js .steps li.on .step-no { background: var(--violet-deep); border-color: var(--violet-deep); color: #fff; }
+
+        .js .pro-list .tick { transform: scale(0); }
+        .js .pro-list.in .tick {
+            transform: scale(1); transition: transform .45s cubic-bezier(.3, 1.5, .5, 1);
+            transition-delay: calc(var(--i, 0) * 110ms);
+        }
+
         @media (max-width: 880px) {
             .hero .wrap, .how .wrap, .pro .wrap, .safety .wrap { grid-template-columns: 1fr; gap: 40px; }
             .proximity { margin: 0 auto; max-width: 440px; }
@@ -255,8 +281,8 @@
     <main id="main">
         <div class="hero">
             <div class="wrap">
-                <div>
-                    <h1>Someone nearby can help.</h1>
+                <div data-depth="-0.04">
+                    <h1 aria-label="Someone nearby can help."><span class="w" aria-hidden="true" style="--i:0"><span>Someone</span></span> <span class="w" aria-hidden="true" style="--i:1"><span>nearby</span></span> <span class="w" aria-hidden="true" style="--i:2"><span>can</span></span> <span class="w" aria-hidden="true" style="--i:3"><span>help.</span></span></h1>
                     <p class="lede">CivicNet connects people who need a hand with neighbors who have the time, tools or
                         skills. Post what you need and the people closest to you see it first.</p>
                     <div class="hero-actions">
@@ -268,18 +294,18 @@
 
                 <div class="proximity" role="img"
                     aria-label="Requests around you, shown by distance: a ride to the clinic 300 metres away, a borrowed drill 400 metres away, help with forms 900 metres away, and groceries to carry 650 metres away.">
-                    <div class="ring r3"></div>
-                    <div class="ring r2"></div>
-                    <div class="ring r1"></div>
-                    <span class="ring-label l1">250 m</span>
-                    <span class="ring-label l2">500 m</span>
-                    <span class="ring-label l3">1 km</span>
-                    <div class="you"><img src="icon-256.png" alt=""></div>
+                    <div class="ring r3" data-depth="-0.06"></div>
+                    <div class="ring r2" data-depth="-0.06"></div>
+                    <div class="ring r1" data-depth="-0.06"></div>
+                    <span class="ring-label l1" data-depth="-0.06">250 m</span>
+                    <span class="ring-label l2" data-depth="-0.06">500 m</span>
+                    <span class="ring-label l3" data-depth="-0.06">1 km</span>
+                    <div class="you" data-depth="0.03"><img src="icon-256.png" alt=""></div>
 
-                    <div class="chip urgent c1"><span class="dot"></span><span>Ride to the clinic<small>Urgent, 300 m away</small></span></div>
-                    <div class="chip rev c2"><span class="dot"></span><span>Borrow a drill<small>400 m away</small></span></div>
-                    <div class="chip rev c3"><span class="dot"></span><span>Help with forms in Hindi<small>900 m away</small></span></div>
-                    <div class="chip rev c4"><span class="dot"></span><span>Carry groceries<small>650 m away</small></span></div>
+                    <div class="chip urgent c1" data-depth="0.10"><span class="dot"></span><span>Ride to the clinic<small>Urgent, 300 m away</small></span></div>
+                    <div class="chip rev c2" data-depth="0.07"><span class="dot"></span><span>Borrow a drill<small>400 m away</small></span></div>
+                    <div class="chip rev c3" data-depth="0.14"><span class="dot"></span><span>Help with forms in Hindi<small>900 m away</small></span></div>
+                    <div class="chip rev c4" data-depth="0.09"><span class="dot"></span><span>Carry groceries<small>650 m away</small></span></div>
                 </div>
             </div>
         </div>
@@ -345,10 +371,10 @@
                         <a href="/terms">subscription terms</a>.</p>
                 </div>
                 <ul class="pro-list">
-                    <li><span class="tick" aria-hidden="true"></span>Unlimited Aura AI assistant</li>
-                    <li><span class="tick" aria-hidden="true"></span>Create requests by voice with AI</li>
-                    <li><span class="tick" aria-hidden="true"></span>Daily AI community briefing</li>
-                    <li><span class="tick" aria-hidden="true"></span>Smarter AI support replies</li>
+                    <li style="--i:0"><span class="tick" aria-hidden="true"></span>Unlimited Aura AI assistant</li>
+                    <li style="--i:1"><span class="tick" aria-hidden="true"></span>Create requests by voice with AI</li>
+                    <li style="--i:2"><span class="tick" aria-hidden="true"></span>Daily AI community briefing</li>
+                    <li style="--i:3"><span class="tick" aria-hidden="true"></span>Smarter AI support replies</li>
                 </ul>
             </div>
         </section>
@@ -389,6 +415,82 @@
             </ul>
         </div>
     </footer>
+
+    <script>
+        (function () {
+            var root = document.documentElement;
+            if (!root.classList.contains('js')) return;
+
+            var hero = document.querySelector('.hero');
+            var layers = [].slice.call(document.querySelectorAll('[data-depth]')).map(function (el) {
+                return { el: el, d: parseFloat(el.getAttribute('data-depth')) };
+            });
+            var steps = document.querySelector('.steps');
+            var items = steps ? [].slice.call(steps.children) : [];
+            var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+            var tx = 0, ty = 0, ts = 0, cx = 0, cy = 0, cs = 0, raf = 0;
+
+            function frame() {
+                cx += (tx - cx) * 0.12;
+                cy += (ty - cy) * 0.12;
+                cs += (ts - cs) * 0.18;
+                layers.forEach(function (l) {
+                    var x = -cx * l.d * 140;
+                    var y = -cs * l.d - cy * l.d * 140;
+                    l.el.style.translate = x.toFixed(1) + 'px ' + y.toFixed(1) + 'px';
+                });
+                if (Math.abs(tx - cx) > 0.001 || Math.abs(ty - cy) > 0.001 || Math.abs(ts - cs) > 0.1) {
+                    raf = requestAnimationFrame(frame);
+                } else {
+                    raf = 0;
+                }
+            }
+            function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+            function progress() {
+                if (!steps) return;
+                var vh = window.innerHeight;
+                var r = steps.getBoundingClientRect();
+                var p = Math.max(0, Math.min(1, (vh * 0.65 - r.top) / r.height));
+                steps.style.setProperty('--p', p.toFixed(3));
+                items.forEach(function (li) {
+                    li.classList.toggle('on', li.getBoundingClientRect().top < vh * 0.65);
+                });
+            }
+
+            function onScroll() {
+                ts = Math.min(window.scrollY, hero.offsetHeight * 1.5);
+                kick();
+                progress();
+            }
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+            window.addEventListener('resize', progress);
+            if (fine) {
+                hero.addEventListener('pointermove', function (e) {
+                    tx = e.clientX / window.innerWidth - 0.5;
+                    ty = e.clientY / window.innerHeight - 0.5;
+                    kick();
+                });
+                hero.addEventListener('pointerleave', function () { tx = 0; ty = 0; kick(); });
+            }
+            onScroll();
+
+            var list = document.querySelector('.pro-list');
+            if (list) {
+                if ('IntersectionObserver' in window) {
+                    var io = new IntersectionObserver(function (entries) {
+                        entries.forEach(function (e) {
+                            if (e.isIntersecting) { list.classList.add('in'); io.disconnect(); }
+                        });
+                    }, { threshold: 0.4 });
+                    io.observe(list);
+                } else {
+                    list.classList.add('in');
+                }
+            }
+        })();
+    </script>
 </body>
 
 </html>

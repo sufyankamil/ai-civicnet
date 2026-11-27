@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-27 — Landing page motion: parallax and scroll progress (#100)
+- What changed: `website/index.html` gets restrained motion. Hero headline words rise in once on load. The distance-rings illustration has parallax on scroll (rings and labels drift slower than the page, request chips faster) and, on desktop with a mouse, follows the pointer slightly. The "How a request works" line fills and step markers light up as you scroll. The CivicNet Pro check marks pop in once.
+- Key files: `website/index.html` (CSS block "Motion" and the script at the end of the body).
+- Notes / gotchas: all of it is off under `prefers-reduced-motion` (a head script only adds the `js` class when motion is allowed, so reduced-motion and no-JS visitors get the finished static state). Parallax uses the CSS `translate` property so it composes with the chips' own `transform` anchor. Static site, no automated tests: checked with `wrangler dev` (scroll values, timeline, ticks, console, 375 px overflow). Deploy with `npx wrangler deploy` from `website/`.
+
 ### 2026-11-27 — In-app legal links point at civicnet.app (#98)
 - What changed: new `LegalLinks` (`lib/core/utils/legal_links.dart`) with `https://civicnet.app/privacy` and `/terms`. The privacy screen's "View Full Policy Online" button and the sign-up screen's Terms link use it instead of the old `privacypolicy-ruddy.vercel.app` host.
 - Key files: `lib/core/utils/legal_links.dart`, `privacy_policy_screen.dart`, `signup_screen.dart`, tests in `test/core/utils/legal_links_test.dart` and `test/features/profile/presentation/screens/legal_screens_subscription_test.dart`.
