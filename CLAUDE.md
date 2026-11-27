@@ -86,7 +86,7 @@ The code uses **GetX** (`get`, in ~44 files): `GetxController`/`Bindings`, `Get.
 - **Supabase SQL:** `sql_scripts/` (core schemas, vector setup, RLS/security hardening, chat, polls, ratings, karma, points, blocking, guilds, support) and `supabase/` (admin roles, announcements, verification requests, holiday notification scheduling, `config.toml`). `sql_scripts/SECURITY_HARDENING.md` covers hardening notes. There is no numbered migration chain: scripts are applied by hand, so check which ones a database already has.
 - **Edge functions (`supabase/functions/`, Deno):** `notify-new-message`, `notify-new-request`, `notify-interest`, `send-holiday-notification` (India cron payload, or daily mode for GCC national-day greetings), `ai-proxy` (all Gemini calls, enforces the monthly free AI quota), `revenuecat-webhook` (syncs RevenueCat subscription events into `subscriptions`).
 - **`cloudflare_proxy/`:** a Cloudflare Worker that proxies requests (including websockets) to the Supabase project host, which is hard-coded in `index.js`.
-- **`website/`:** static pages (terms, child safety, delete account, reset) deployed with Vercel.
+- **`website/`:** static site for civicnet.app: landing page (`index.html`), `privacy.html`, `terms.html`, child safety, delete account, password reset (talks to the Supabase proxy Worker), `404.html`. Deployed to Cloudflare (Workers static assets) with `npx wrangler deploy` from `website/` (config in `wrangler.jsonc`, `.assetsignore` keeps config files out of the upload). `vercel.json` is kept for the old Vercel deployment.
 
 ## CI / release (`.github/workflows/`)
 

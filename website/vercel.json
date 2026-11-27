@@ -24,9 +24,37 @@
     {
       "src": "app_icon.png",
       "use": "@vercel/static"
+    },
+    {
+      "src": "privacy.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "404.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "favicon.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "icon-256.png",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "og-icon.png",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/privacy",
+      "dest": "/privacy.html"
+    },
     {
       "src": "/delete",
       "dest": "/delete.html"
@@ -46,6 +74,22 @@
     {
       "src": "/app_icon.png",
       "dest": "/app_icon.png"
+    },
+    {
+      "src": "/favicon.png",
+      "dest": "/favicon.png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "dest": "/apple-touch-icon.png"
+    },
+    {
+      "src": "/icon-256.png",
+      "dest": "/icon-256.png"
+    },
+    {
+      "src": "/og-icon.png",
+      "dest": "/og-icon.png"
     },
     {
       "src": "/(.*)",

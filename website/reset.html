@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reset Password – CivicNet</title>
+    <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
@@ -137,7 +138,7 @@
 
 <body>
     <div class="card" id="card">
-        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <a href="/" aria-label="CivicNet home"><img src="app_icon.png" alt="CivicNet Logo" class="app-logo"></a>
         <div class="spinner"></div>
         <h1>Opening CivicNet…</h1>
         <p>Please wait while we verify your link.</p>
@@ -148,7 +149,7 @@
 
         function showError(msg) {
             document.getElementById('card').innerHTML = `
-        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <a href="/" aria-label="CivicNet home"><img src="app_icon.png" alt="CivicNet Logo" class="app-logo"></a>
         <div class="icon">❌</div>
         <h1>Link Expired</h1>
         <p>${msg}</p>`;
@@ -156,7 +157,7 @@
 
         function showOpen(deepLink) {
             document.getElementById('card').innerHTML = `
-        <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+        <a href="/" aria-label="CivicNet home"><img src="app_icon.png" alt="CivicNet Logo" class="app-logo"></a>
         <div class="icon">✅</div>
         <h1>Almost there!</h1>
         <p>Tap the button below to open CivicNet and set your new password.</p>

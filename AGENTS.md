@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-27 — New civicnet.app website on Cloudflare (#96)
+- What changed: new landing page at `/` (hero with a distance-rings illustration, how a request works, matching, CivicNet Pro, safety, App Store link). The privacy policy moved from `index.html` to `privacy.html` (`/privacy`), content unchanged. Legal and other pages now link home and to each other; the old external privacy link in `delete.html` is gone. Added `404.html`, resized icons, `wrangler.jsonc` (assets from `website/`, custom domains civicnet.app and www) and `.assetsignore`.
+- Key files: `website/index.html`, `website/privacy.html`, `website/wrangler.jsonc`, `website/.assetsignore`, `website/vercel.json` (kept working for the old deployment).
+- Notes / gotchas: deploy needs a one-time `npx wrangler login` by the owner, then `npx wrangler deploy` in `website/`. The App Store listing must use https://civicnet.app/privacy and /terms. The old Vercel deployment stays up for old links and for any Supabase auth email redirect that still points at it; check Supabase Auth URL settings before retiring it. Static site, so no automated tests: checked with `wrangler dev` (all routes 200, 404 page, config files not served) and in the browser at desktop and 375 px widths.
+
 ### 2026-11-26 — Local StoreKit config for the paywall (#94)
 - What changed: added `ios/Runner/CivicNetProducts.storekit` (group `CivicNet Pro`, `civicnet_pro_monthly` $2.99 and `civicnet_pro_annual` $14.99, each with a 7-day free trial) and set it on the shared `Runner` scheme's Run action so the simulator can return prices before App Store Connect products are approved.
 - Key files: `ios/Runner/CivicNetProducts.storekit`, `ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme`.
