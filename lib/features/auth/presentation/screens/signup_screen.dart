@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/utils/legal_links.dart';
 
 import '../../../../components/custom_textfield.dart';
 import '../../../../components/primary_button.dart';
@@ -341,9 +342,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                         Expanded(
                                           child: GestureDetector(
                                             onTap: () => launchUrl(
-                                              Uri.parse(
-                                                'https://privacypolicy-ruddy.vercel.app/terms',
-                                              ),
+                                              LegalLinks.terms,
                                               mode: LaunchMode
                                                   .externalApplication,
                                             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/utils/legal_links.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -79,7 +80,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             const SizedBox(height: 8),
             InkWell(
               onTap: () => launchUrl(
-                Uri.parse('https://privacypolicy-ruddy.vercel.app/'),
+                LegalLinks.privacy,
                 mode: LaunchMode.externalApplication,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -116,7 +117,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'privacypolicy-ruddy.vercel.app',
+                            'civicnet.app/privacy',
                             style: TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],
