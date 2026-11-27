@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-27 — Website v2: dark mode, request demo, FAQ, device-frame showcase (#102)
+- What changed: `website/index.html` gets a dark theme (follows the system, header toggle remembers the choice, `data-theme` on `<html>`), an interactive "Try posting a request" demo (keyword-based category and example helpers, illustration only, built with `textContent` so typed text is never parsed as HTML), a FAQ with `FAQPage` JSON-LD, and a "See it in action" section with three real app screens (`website/shots/`) inside CSS device frames, each at a different scroll-parallax depth (swipeable row on phones).
+- Key files: `website/index.html`, `website/shots/request.png`, `aura.png`, `community.png`.
+- Notes / gotchas: screenshots are from the simulator with the owner's test account; the Aura one has a white strip (`.mask`) over the "free AI actions left" line, which showed 0. Retake the shots whenever the UI changes, ideally with clean demo requests. Capturing live demo requests was tried and dropped: the debug build lags and creating a request fires the `notify-new-request` push webhook to every user, so pause that webhook first if you ever do it. Static site, no automated tests: checked with `wrangler dev` in light, dark and 375 px. Deploy with `npx wrangler deploy` from `website/`.
+
 ### 2026-11-27 — Landing page motion: parallax and scroll progress (#100)
 - What changed: `website/index.html` gets restrained motion. Hero headline words rise in once on load. The distance-rings illustration has parallax on scroll (rings and labels drift slower than the page, request chips faster) and, on desktop with a mouse, follows the pointer slightly. The "How a request works" line fills and step markers light up as you scroll. The CivicNet Pro check marks pop in once.
 - Key files: `website/index.html` (CSS block "Motion" and the script at the end of the body).
