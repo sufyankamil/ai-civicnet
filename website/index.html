@@ -359,8 +359,33 @@
         .faq details[open] summary::after { transform: translateY(-25%) rotate(-135deg); }
         .faq details p { padding: 0 0 20px; color: var(--ink-soft); max-width: 60ch; }
 
+        /* App showcase in device frames */
+        .showcase { padding-top: 24px; }
+        .phones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; align-items: start; }
+        .phone-fig:nth-child(odd) { padding-top: 56px; }
+        .phone {
+            position: relative; width: min(100%, 270px); margin: 0 auto; padding: 10px; border-radius: 46px;
+            background: linear-gradient(145deg, #4A4470, #17122D 45%, #2B2650);
+            box-shadow: 0 34px 60px -24px rgba(30, 23, 64, .5), inset 0 0 0 1px rgba(255, 255, 255, .1);
+        }
+        .phone::before {
+            content: ''; position: absolute; left: -3px; top: 110px; width: 3px; height: 54px;
+            border-radius: 2px 0 0 2px; background: #2B2650; box-shadow: 0 70px 0 #2B2650;
+        }
+        .phone::after {
+            content: ''; position: absolute; right: -3px; top: 150px; width: 3px; height: 84px;
+            border-radius: 0 2px 2px 0; background: #2B2650;
+        }
+        .screen { position: relative; border-radius: 37px; overflow: hidden; background: #fff; aspect-ratio: 629 / 1366; }
+        .screen img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .screen::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .3); pointer-events: none; }
+        .screen .mask { position: absolute; left: 0; right: 0; top: 85.2%; height: 3.8%; background: #fff; }
+        .phone-fig figcaption { text-align: center; color: var(--ink-soft); font-size: .9375rem; max-width: 26ch; margin: 22px auto 0; }
+
         @media (max-width: 880px) {
             .hero .wrap, .how .wrap, .pro .wrap, .safety .wrap, .demo .wrap, .faq .wrap { grid-template-columns: 1fr; gap: 40px; }
+            .phones { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 20px; padding: 0 24px 12px; margin: 40px -24px 0; }
+            .phone-fig, .phone-fig:nth-child(odd) { flex: 0 0 70%; scroll-snap-align: center; padding-top: 0; }
             .proximity { margin: 0 auto; max-width: 440px; }
             .match-grid { grid-template-columns: 1fr; gap: 28px; }
             .match-grid > div, .match-grid > div:first-child { padding: 0; border-left: 0; }
@@ -427,6 +452,37 @@
                 </div>
             </div>
         </div>
+
+        <section class="showcase" id="showcase">
+            <div class="wrap">
+                <h2>See it in action</h2>
+                <p class="section-intro">Post a request, ask Aura AI for help, and keep up with your community, all in one app.</p>
+                <div class="phones">
+                    <figure class="phone-fig" data-float="-0.05">
+                        <div class="phone"><div class="screen">
+                            <img src="shots/request.png" width="629" height="1366" loading="lazy"
+                                alt="A CivicNet request with a map header, a Transport tag, an Open status and the request details.">
+                        </div></div>
+                        <figcaption>Every request has a map, a category and a clear status.</figcaption>
+                    </figure>
+                    <figure class="phone-fig" data-float="0.08">
+                        <div class="phone"><div class="screen">
+                            <img src="shots/aura.png" width="629" height="1366" loading="lazy"
+                                alt="The Aura AI chat sheet greeting you, with quick prompts for urgent requests and borrowing tools.">
+                            <span class="mask" aria-hidden="true"></span>
+                        </div></div>
+                        <figcaption>Ask Aura AI to find urgent requests or tools near you.</figcaption>
+                    </figure>
+                    <figure class="phone-fig" data-float="-0.12">
+                        <div class="phone"><div class="screen">
+                            <img src="shots/community.png" width="629" height="1366" loading="lazy"
+                                alt="The CivicNet Community tab showing active polls and a welcome post.">
+                        </div></div>
+                        <figcaption>Join polls and read news from your community.</figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
 
         <section class="how" id="how">
             <div class="wrap">
@@ -711,14 +767,29 @@
                 });
             }
 
+            var floats = [].slice.call(document.querySelectorAll('[data-float]')).map(function (el) {
+                return { el: el, f: parseFloat(el.getAttribute('data-float')) };
+            });
+            var wide = window.matchMedia('(min-width: 881px)');
+            function floatFrame() {
+                var vh = window.innerHeight;
+                floats.forEach(function (x) {
+                    if (!wide.matches) { x.el.style.translate = ''; return; }
+                    var r = x.el.parentNode.getBoundingClientRect();
+                    var c = r.top + r.height / 2 - vh / 2;
+                    x.el.style.translate = '0 ' + (c * x.f).toFixed(1) + 'px';
+                });
+            }
+
             function onScroll() {
                 ts = Math.min(window.scrollY, hero.offsetHeight * 1.5);
                 kick();
                 progress();
+                floatFrame();
             }
 
             window.addEventListener('scroll', onScroll, { passive: true });
-            window.addEventListener('resize', progress);
+            window.addEventListener('resize', function () { progress(); floatFrame(); });
             if (fine) {
                 hero.addEventListener('pointermove', function (e) {
                     tx = e.clientX / window.innerWidth - 0.5;
