@@ -5,10 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CivicNet: ask for help, help a neighbor</title>
-    <script>if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js');</script>
+    <script>
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('js');
+        try { var t = localStorage.getItem('theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) { }
+    </script>
     <meta name="description"
         content="CivicNet connects people who need a hand with neighbors nearby who have the time, tools or skills to help." />
-    <meta name="theme-color" content="#F6F4FF" />
+    <meta name="theme-color" content="#F6F4FF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#120E26" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="canonical" href="https://civicnet.app/" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -36,8 +41,37 @@
             --violet-deep: #5A42E0;
             --signal: #FFB84D;
             --signal-ink: #6B4100;
+            --night: #1E1740;
             --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
             --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
+        }
+
+        :root { color-scheme: light; }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                color-scheme: dark;
+            --ink: #F1EEFF;
+            --ink-soft: #B9B2E0;
+            --mist: #120E26;
+            --paper: #1B1638;
+            --line: #2E2759;
+            --violet: #8E78FF;
+            --violet-deep: #6B52F0;
+            --signal-ink: #FFD08A;
+            --night: #0B0818;
+            }
+        }
+        :root[data-theme="dark"] {
+            color-scheme: dark;
+            --ink: #F1EEFF;
+            --ink-soft: #B9B2E0;
+            --mist: #120E26;
+            --paper: #1B1638;
+            --line: #2E2759;
+            --violet: #8E78FF;
+            --violet-deep: #6B52F0;
+            --signal-ink: #FFD08A;
+            --night: #0B0818;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -65,7 +99,7 @@
 
         .skip {
             position: absolute; left: -999px; top: 8px;
-            background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 8px; z-index: 10;
+            background: var(--ink); color: var(--mist); padding: 8px 14px; border-radius: 8px; z-index: 10;
         }
         .skip:focus { left: 8px; }
 
@@ -85,6 +119,8 @@
             transition: background .2s;
         }
         .btn:hover { background: #4A33C4; }
+        :root[data-theme="dark"] .btn:hover { background: #7B63FF; }
+        @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn:hover { background: #7B63FF; } }
         .btn-lg { padding: 16px 28px; font-size: 1.0625rem; }
 
         /* Hero */
@@ -97,7 +133,7 @@
         }
         .lede { font-size: 1.25rem; color: var(--ink-soft); max-width: 34ch; margin-bottom: 36px; }
         .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; }
-        .text-link { font-weight: 600; color: var(--violet-deep); text-decoration: underline; text-underline-offset: 4px; }
+        .text-link { font-weight: 600; color: var(--violet); text-decoration: underline; text-underline-offset: 4px; }
         .fine { margin-top: 20px; font-size: .9375rem; color: var(--ink-soft); }
 
         /* Proximity map: the one memorable thing */
@@ -176,7 +212,7 @@
         .steps li:last-child { padding-bottom: 0; }
         .step-no {
             position: absolute; left: 0; top: -2px; width: 40px; height: 40px; border-radius: 50%;
-            background: var(--paper); border: 2px solid var(--violet); color: var(--violet-deep);
+            background: var(--paper); border: 2px solid var(--violet); color: var(--violet);
             font-family: var(--display); font-weight: 800; display: grid; place-items: center;
         }
         .steps h3 { font-family: var(--display); font-weight: 600; font-size: 1.375rem; letter-spacing: -0.01em; margin-bottom: 4px; }
@@ -200,7 +236,7 @@
         }
         .pro .fine { max-width: 46ch; }
 
-        .safety { background: var(--ink); color: #EDEAFF; }
+        .safety { background: var(--night); color: #EDEAFF; }
         .safety h2 { color: #fff; }
         .safety .section-intro { color: #C9C3EC; }
         .safety .wrap { display: grid; grid-template-columns: .85fr 1.15fr; gap: 64px; }
@@ -247,8 +283,84 @@
             transition-delay: calc(var(--i, 0) * 110ms);
         }
 
+        /* Theme toggle */
+        .theme-toggle {
+            width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line);
+            background: var(--paper); color: var(--ink); display: grid; place-items: center; cursor: pointer;
+        }
+        .theme-toggle:hover { border-color: var(--violet); }
+        .theme-toggle .i-sun { display: none; }
+        :root[data-theme="dark"] .theme-toggle .i-sun { display: block; }
+        :root[data-theme="dark"] .theme-toggle .i-moon { display: none; }
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) .theme-toggle .i-sun { display: block; }
+            :root:not([data-theme="light"]) .theme-toggle .i-moon { display: none; }
+        }
+
+        /* Interactive demo */
+        .demo .wrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: 64px; align-items: start; }
+        .demo-form { margin-top: 28px; }
+        .demo-form label { display: block; font-weight: 600; margin-bottom: 8px; }
+        .demo-form input[type="text"] {
+            width: 100%; font: inherit; font-size: 1.0625rem; padding: 14px 16px; border-radius: 14px;
+            border: 1.5px solid var(--line); background: var(--paper); color: var(--ink);
+        }
+        .demo-form input[type="text"]::placeholder { color: var(--ink-soft); opacity: .8; }
+        .demo-try { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+        .demo-try button {
+            font: inherit; font-size: .9375rem; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+            border: 1px solid var(--line); background: var(--paper); color: var(--ink);
+        }
+        .demo-try button:hover { border-color: var(--violet); }
+        .demo-row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px 24px; }
+        .demo-form .check { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 500; }
+        .demo-form .check input { width: 18px; height: 18px; accent-color: var(--violet-deep); }
+        .demo button.btn { border: 0; cursor: pointer; font-family: inherit; }
+        .result { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 26px; min-height: 360px; }
+        .res-empty { color: var(--ink-soft); max-width: 36ch; }
+        .res-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .pill {
+            font-size: .875rem; font-weight: 600; padding: 4px 12px; border-radius: 999px;
+            background: color-mix(in srgb, var(--violet) 16%, transparent); color: var(--violet);
+        }
+        .pill.urgent { background: color-mix(in srgb, var(--signal) 28%, transparent); color: var(--signal-ink); }
+        .res-title { font-family: var(--display); font-weight: 600; font-size: 1.5rem; letter-spacing: -.01em; line-height: 1.2; overflow-wrap: anywhere; }
+        .res-sub { color: var(--ink-soft); margin: 6px 0 14px; }
+        .helpers { list-style: none; }
+        .helper { display: grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
+        .avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: var(--violet-deep); color: #fff;
+            font-family: var(--display); font-weight: 800; display: grid; place-items: center;
+        }
+        .helper b { font-weight: 600; }
+        .helper small { display: block; color: var(--ink-soft); font-size: .9375rem; }
+        .dist { margin-top: 10px; height: 6px; border-radius: 99px; background: var(--line); position: relative; }
+        .dist i {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 99px; background: var(--violet);
+            transition: width .7s cubic-bezier(.2, .7, .2, 1);
+        }
+        .res-note { margin-top: 12px; font-size: .875rem; color: var(--ink-soft); }
+        @media (prefers-reduced-motion: reduce) { .dist i { transition: none; } }
+
+        /* FAQ */
+        .faq .wrap { display: grid; grid-template-columns: .85fr 1.15fr; gap: 64px; }
+        .faq details { border-bottom: 1px solid var(--line); }
+        .faq details:first-of-type { border-top: 1px solid var(--line); }
+        .faq summary {
+            cursor: pointer; list-style: none; position: relative; padding: 18px 36px 18px 0;
+            font-family: var(--display); font-weight: 600; font-size: 1.1875rem;
+        }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq summary::after {
+            content: ''; position: absolute; right: 6px; top: 50%; width: 9px; height: 9px;
+            border: solid var(--violet); border-width: 0 2px 2px 0; transform: translateY(-70%) rotate(45deg);
+            transition: transform .2s;
+        }
+        .faq details[open] summary::after { transform: translateY(-25%) rotate(-135deg); }
+        .faq details p { padding: 0 0 20px; color: var(--ink-soft); max-width: 60ch; }
+
         @media (max-width: 880px) {
-            .hero .wrap, .how .wrap, .pro .wrap, .safety .wrap { grid-template-columns: 1fr; gap: 40px; }
+            .hero .wrap, .how .wrap, .pro .wrap, .safety .wrap, .demo .wrap, .faq .wrap { grid-template-columns: 1fr; gap: 40px; }
             .proximity { margin: 0 auto; max-width: 440px; }
             .match-grid { grid-template-columns: 1fr; gap: 28px; }
             .match-grid > div, .match-grid > div:first-child { padding: 0; border-left: 0; }
@@ -261,6 +373,7 @@
             .chip small { font-size: .75rem; }
         }
     </style>
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is CivicNet?", "acceptedAnswer": {"@type": "Answer", "text": "CivicNet connects people who need help with neighbors nearby who have the time, tools or skills to give it."}}, {"@type": "Question", "name": "Is CivicNet free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. CivicNet is free, with a monthly allowance of AI actions. CivicNet Pro removes that limit and starts with a 7-day free trial."}}, {"@type": "Question", "name": "Who can see my request?", "acceptedAnswer": {"@type": "Answer", "text": "People nearby see the request you post and your public profile (name, photo and skills). Private chat opens only between you and the helper you accept."}}, {"@type": "Question", "name": "How are helpers matched to my request?", "acceptedAnswer": {"@type": "Answer", "text": "By distance, skills and urgency. People close to you see it first, helper profiles are compared with what you asked for, and emergencies are lifted to the top."}}, {"@type": "Question", "name": "How do I cancel CivicNet Pro?", "acceptedAnswer": {"@type": "Answer", "text": "Open your App Store subscription settings and cancel at least 24 hours before the renewal date. You keep Pro until the end of the period you have paid for."}}, {"@type": "Question", "name": "How do I delete my account?", "acceptedAnswer": {"@type": "Answer", "text": "Open Settings in the app, or send a request on our delete account page. Your account and data are removed."}}, {"@type": "Question", "name": "Which languages does CivicNet support?", "acceptedAnswer": {"@type": "Answer", "text": "The app is available in English and Hindi."}}]}</script>
 </head>
 
 <body>
@@ -273,6 +386,11 @@
                 <a href="#how">How it works</a>
                 <a href="#pro">CivicNet Pro</a>
                 <a href="#safety">Safety</a>
+                <a href="#faq">FAQ</a>
+                <button class="theme-toggle" type="button" aria-label="Switch color theme">
+                    <svg class="i-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21 14.5A8.5 8.5 0 0 1 9.5 3a.6.6 0 0 0-.8-.7A10 10 0 1 0 21.7 15.3a.6.6 0 0 0-.7-.8Z"/></svg>
+                    <svg class="i-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6"/></g></svg>
+                </button>
                 <a class="btn" href="https://apps.apple.com/app/id6761416586">Get the app</a>
             </nav>
         </div>
@@ -341,6 +459,34 @@
             </div>
         </section>
 
+        <section class="demo" id="demo">
+            <div class="wrap">
+                <div>
+                    <h2>Try posting a request</h2>
+                    <p class="section-intro">Type what you need and see how CivicNet would sort it and who it would reach
+                        first. This is an illustration, so nothing is sent.</p>
+                    <form class="demo-form" id="demo-form" autocomplete="off">
+                        <label for="demo-input">What do you need help with?</label>
+                        <input id="demo-input" type="text" maxlength="80" required
+                            placeholder="For example: borrow a ladder this weekend">
+                        <div class="demo-try" role="group" aria-label="Example requests">
+                            <button type="button" data-q="Borrow a drill for shelves">Borrow a drill</button>
+                            <button type="button" data-q="Ride to the clinic">Ride to the clinic</button>
+                            <button type="button" data-q="Help filling forms in Hindi">Help with forms</button>
+                            <button type="button" data-q="Carry groceries upstairs">Carry groceries</button>
+                        </div>
+                        <div class="demo-row">
+                            <label class="check"><input type="checkbox" id="demo-urgent"> This is urgent</label>
+                            <button class="btn" type="submit">Find help nearby</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="result" id="demo-result" aria-live="polite">
+                    <p class="res-empty">Your request and the neighbors it would reach will show up here.</p>
+                </div>
+            </div>
+        </section>
+
         <section class="match">
             <div class="wrap">
                 <h2>Matched by distance, skills and urgency</h2>
@@ -395,6 +541,24 @@
             </div>
         </section>
 
+        <section class="faq" id="faq">
+            <div class="wrap">
+                <div>
+                    <h2>Questions people ask</h2>
+                    <p class="section-intro">Still unsure? Write to <a href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a>.</p>
+                </div>
+                <div>
+                    <details><summary>What is CivicNet?</summary><p>CivicNet connects people who need help with neighbors nearby who have the time, tools or skills to give it.</p></details>
+                    <details><summary>Is CivicNet free?</summary><p>Yes. CivicNet is free, with a monthly allowance of AI actions. CivicNet Pro removes that limit and starts with a 7-day free trial.</p></details>
+                    <details><summary>Who can see my request?</summary><p>People nearby see the request you post and your public profile (name, photo and skills). Private chat opens only between you and the helper you accept.</p></details>
+                    <details><summary>How are helpers matched to my request?</summary><p>By distance, skills and urgency. People close to you see it first, helper profiles are compared with what you asked for, and emergencies are lifted to the top.</p></details>
+                    <details><summary>How do I cancel CivicNet Pro?</summary><p>Open your App Store subscription settings and cancel at least 24 hours before the renewal date. You keep Pro until the end of the period you have paid for.</p></details>
+                    <details><summary>How do I delete my account?</summary><p>Open Settings in the app, or send a request on our delete account page. Your account and data are removed.</p></details>
+                    <details><summary>Which languages does CivicNet support?</summary><p>The app is available in English and Hindi.</p></details>
+                </div>
+            </div>
+        </section>
+
         <section class="cta">
             <div class="wrap">
                 <h2>Your neighbors are already nearby.</h2>
@@ -416,6 +580,95 @@
         </div>
     </footer>
 
+
+    <script>
+        (function () {
+            var root = document.documentElement;
+
+            /* Theme toggle */
+            var toggle = document.querySelector('.theme-toggle');
+            function isDark() {
+                var t = root.getAttribute('data-theme');
+                return t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+            }
+            function syncToggle() { toggle.setAttribute('aria-pressed', isDark() ? 'true' : 'false'); }
+            toggle.addEventListener('click', function () {
+                var next = isDark() ? 'light' : 'dark';
+                root.setAttribute('data-theme', next);
+                try { localStorage.setItem('theme', next); } catch (e) { }
+                syncToggle();
+            });
+            syncToggle();
+
+            /* Request demo: an illustration, nothing is sent anywhere */
+            var CATS = [
+                { name: 'Transport', re: /ride|drive|clinic|hospital|airport|station|drop|pick ?up/i,
+                  helpers: [['S', 'Drives past the clinic every morning', 150], ['N', 'Has a car, free in the evenings', 420], ['K', 'Owns a scooter, can do short trips', 690]] },
+                { name: 'Skills and learning', re: /form|hindi|english|translat|tutor|homework|teach|learn|resume|paperwork|letter/i,
+                  helpers: [['P', 'Fluent in Hindi and English', 210], ['D', 'Retired teacher, helps with paperwork', 480], ['F', 'Tutors school subjects', 820]] },
+                { name: 'Moving and carrying', re: /carry|grocer|move|shift|box|furniture|stairs|heavy/i,
+                  helpers: [['R', 'Lives on the ground floor, free now', 90], ['T', 'Has a trolley and a free hour', 330], ['V', 'Helped three neighbors move this year', 740]] },
+                { name: 'Tools and items', re: /drill|ladder|tool|hammer|borrow|lend|saw|pump|iron|cooker/i,
+                  helpers: [['A', 'Has a drill and a ladder', 120], ['R', 'Lends tools on weekends', 340], ['M', 'Runs a small repair workshop', 780]] }
+            ];
+            var FALLBACK = { name: 'General help', helpers: [['J', 'Offers a few hours most weeks', 180], ['L', 'Likes helping with small jobs', 450], ['H', 'New to the area, happy to help', 710]] };
+
+            var form = document.getElementById('demo-form');
+            var input = document.getElementById('demo-input');
+            var urgent = document.getElementById('demo-urgent');
+            var out = document.getElementById('demo-result');
+
+            function el(tag, cls, text) {
+                var e = document.createElement(tag);
+                if (cls) e.className = cls;
+                if (text !== undefined) e.textContent = text;
+                return e;
+            }
+            function show(q, isUrgent) {
+                var cat = FALLBACK;
+                for (var i = 0; i < CATS.length; i++) { if (CATS[i].re.test(q)) { cat = CATS[i]; break; } }
+                out.textContent = '';
+                var head = el('div', 'res-head');
+                head.appendChild(el('span', 'pill', cat.name));
+                if (isUrgent) head.appendChild(el('span', 'pill urgent', 'Urgent'));
+                out.appendChild(head);
+                out.appendChild(el('p', 'res-title', q));
+                out.appendChild(el('p', 'res-sub', isUrgent
+                    ? 'Urgent requests jump to the top and reach nearby people first.'
+                    : 'Seen first by the ' + cat.helpers.length + ' closest neighbors who can help.'));
+                var list = el('ul', 'helpers');
+                var bars = [];
+                cat.helpers.forEach(function (h) {
+                    var li = el('li', 'helper');
+                    li.appendChild(el('span', 'avatar', h[0]));
+                    var box = el('div');
+                    box.appendChild(el('b', '', 'Can help: ' + h[1]));
+                    box.appendChild(el('small', '', h[2] + ' m away'));
+                    var track = el('div', 'dist');
+                    var fill = el('i');
+                    track.appendChild(fill);
+                    box.appendChild(track);
+                    li.appendChild(box);
+                    list.appendChild(li);
+                    bars.push([fill, Math.max(6, h[2] / 10)]);
+                });
+                out.appendChild(list);
+                out.appendChild(el('p', 'res-note', 'Example helpers, for illustration. In the app you choose who to accept, and chat opens after you do.'));
+                setTimeout(function () { bars.forEach(function (b) { b[0].style.width = b[1] + '%'; }); }, 40);
+            }
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var q = input.value.trim();
+                if (q) show(q, urgent.checked);
+            });
+            [].slice.call(document.querySelectorAll('.demo-try button')).forEach(function (b) {
+                b.addEventListener('click', function () {
+                    input.value = b.getAttribute('data-q');
+                    show(input.value, urgent.checked);
+                });
+            });
+        })();
+    </script>
     <script>
         (function () {
             var root = document.documentElement;
