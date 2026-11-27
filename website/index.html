@@ -4,311 +4,391 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Privacy Policy – CivicNet</title>
+    <title>CivicNet: ask for help, help a neighbor</title>
+    <meta name="description"
+        content="CivicNet connects people who need a hand with neighbors nearby who have the time, tools or skills to help." />
+    <meta name="theme-color" content="#F6F4FF" />
+    <link rel="canonical" href="https://civicnet.app/" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CivicNet" />
+    <meta property="og:title" content="CivicNet: ask for help, help a neighbor" />
+    <meta property="og:description"
+        content="Post what you need. The people closest to you see it first." />
+    <meta property="og:url" content="https://civicnet.app/" />
+    <meta property="og:image" content="https://civicnet.app/og-icon.png" />
+    <meta name="twitter:card" content="summary" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary: #7B61FF;
-            --primary-dark: #5A42E0;
-            --bg: #F8F7FF;
-            --text-main: #1F2937;
-            --text-muted: #6B7280;
-            --card-bg: #FFFFFF;
+            --ink: #1E1740;
+            --ink-soft: #4A4468;
+            --mist: #F6F4FF;
+            --paper: #FFFFFF;
+            --line: #DDD8F5;
+            --violet: #7B61FF;
+            --violet-deep: #5A42E0;
+            --signal: #FFB84D;
+            --signal-ink: #6B4100;
+            --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+            --body: 'Figtree', 'Segoe UI', system-ui, sans-serif;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
+            font-family: var(--body);
+            font-size: 1.0625rem;
             line-height: 1.6;
+            color: var(--ink);
+            background: var(--mist);
             -webkit-font-smoothing: antialiased;
         }
 
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            background-attachment: fixed;
-            color: white;
-            padding: 60px 24px 80px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
+        a { color: inherit; }
+
+        :focus-visible {
+            outline: 3px solid var(--violet-deep);
+            outline-offset: 3px;
+            border-radius: 6px;
         }
 
-        /* Subtle Aura Effect */
-        header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
+        .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .skip {
+            position: absolute; left: -999px; top: 8px;
+            background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 8px; z-index: 10;
         }
+        .skip:focus { left: 8px; }
 
-        .logo-container {
-            position: relative;
-            z-index: 1;
-            display: inline-block;
+        /* Header */
+        .site-header { padding: 20px 0; }
+        .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; font-family: var(--display); font-weight: 800; font-size: 1.35rem; letter-spacing: -0.02em; }
+        .brand img { width: 40px; height: 40px; border-radius: 11px; }
+        .nav { display: flex; align-items: center; gap: 28px; }
+        .nav a { text-decoration: none; font-weight: 500; color: var(--ink-soft); }
+        .nav a:hover { color: var(--ink); }
+        .nav a.btn { color: #fff; }
+
+        .btn {
+            display: inline-block; text-decoration: none; font-weight: 600; font-size: 1rem;
+            background: var(--violet-deep); color: #fff; padding: 12px 22px; border-radius: 999px;
+            transition: background .2s;
+        }
+        .btn:hover { background: #4A33C4; }
+        .btn-lg { padding: 16px 28px; font-size: 1.0625rem; }
+
+        /* Hero */
+        .hero { padding: 40px 0 88px; }
+        .hero .wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; }
+        h1 {
+            font-family: var(--display); font-weight: 800;
+            font-size: clamp(2.75rem, 6.4vw, 5rem); line-height: 0.98; letter-spacing: -0.035em;
             margin-bottom: 24px;
         }
+        .lede { font-size: 1.25rem; color: var(--ink-soft); max-width: 34ch; margin-bottom: 36px; }
+        .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; }
+        .text-link { font-weight: 600; color: var(--violet-deep); text-decoration: underline; text-underline-offset: 4px; }
+        .fine { margin-top: 20px; font-size: .9375rem; color: var(--ink-soft); }
 
-        .app-logo {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 22px;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease;
+        /* Proximity map: the one memorable thing */
+        .proximity {
+            position: relative; width: 100%; aspect-ratio: 1; max-width: 520px; margin-left: auto;
         }
-
-        .app-logo:hover {
-            transform: translateY(-5px);
+        .ring {
+            position: absolute; border-radius: 50%; border: 1.5px solid var(--line);
+            background: radial-gradient(circle, rgba(123, 97, 255, 0.06), rgba(123, 97, 255, 0) 70%);
         }
-
-        header h1 {
-            position: relative;
-            z-index: 1;
-            font-size: 2.5rem;
-            font-weight: 900;
-            letter-spacing: -1px;
-            margin-bottom: 8px;
+        .ring.r1 { inset: 33%; }
+        .ring.r2 { inset: 16%; }
+        .ring.r3 { inset: 0; }
+        .ring-label {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: .8125rem; font-weight: 600; color: var(--ink-soft);
+            background: var(--mist); padding: 0 8px;
         }
-
-        header p {
-            position: relative;
-            z-index: 1;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.1rem;
-            font-weight: 500;
-            opacity: 0.9;
+        .ring-label.l1 { top: calc(33% - 11px); }
+        .ring-label.l2 { top: calc(16% - 11px); }
+        .ring-label.l3 { top: -11px; }
+        .you {
+            position: absolute; inset: 41%; border-radius: 28%; overflow: hidden;
+            box-shadow: 0 10px 30px rgba(90, 66, 224, 0.35);
         }
+        .you img { width: 100%; height: 100%; display: block; }
 
-        main {
-            max-width: 800px;
-            margin: -40px auto 60px;
-            padding: 40px;
-            background: var(--card-bg);
-            border-radius: 32px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
-            position: relative;
-            z-index: 2;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+        .chip {
+            position: absolute; display: flex; align-items: center; gap: 10px;
+            background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+            padding: 9px 14px 9px 11px; font-size: .875rem; line-height: 1.25; font-weight: 500;
+            box-shadow: 0 6px 18px rgba(30, 23, 64, 0.08); width: max-content; max-width: 64%;
         }
+        .chip small { display: block; color: var(--ink-soft); font-weight: 500; font-size: .8125rem; }
+        .dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--violet); }
+        .chip.urgent { border-color: var(--signal); }
+        .chip.urgent .dot { background: var(--signal); }
+        .chip.urgent small { color: var(--signal-ink); }
+        /* Each chip is anchored by its dot, so the dot sits at the stated distance from the centre */
+        .chip { transform: translate(-17px, -50%); }
+        .chip.rev { flex-direction: row-reverse; transform: translate(calc(-100% + 17px), -50%); text-align: right; padding: 9px 11px 9px 14px; }
+        .chip.c1 { top: 34%; left: 63%; }
+        .chip.c2 { top: 32.5%; left: 29%; }
+        .chip.c3 { top: 73.5%; left: 90.5%; }
+        .chip.c4 { top: 86.5%; left: 36.7%; }
 
-        @media (max-width: 640px) {
-            header { padding: 40px 20px 60px; }
-            main { margin: -30px 16px 40px; padding: 24px; border-radius: 24px; }
-            header h1 { font-size: 2.2rem; }
+        /* The single orchestrated moment: rings ripple out, then requests appear */
+        @media (prefers-reduced-motion: no-preference) {
+            .ring { animation: ripple .9s cubic-bezier(.2, .7, .2, 1) both; }
+            .ring.r1 { animation-delay: .1s; }
+            .ring.r2 { animation-delay: .3s; }
+            .ring.r3 { animation-delay: .5s; }
+            .chip { animation: appear .5s ease-out both; }
+            .chip.c1 { animation-delay: 1.0s; }
+            .chip.c2 { animation-delay: 1.3s; }
+            .chip.c3 { animation-delay: 1.6s; }
+            .chip.c4 { animation-delay: 1.9s; }
         }
+        @keyframes ripple { from { transform: scale(.35); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
 
-        .updated {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: 40px;
-            font-weight: 500;
-        }
-
+        /* Sections */
+        section { padding: 80px 0; }
         h2 {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin: 40px 0 16px;
-            display: flex;
-            align-items: center;
+            font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.05; letter-spacing: -0.03em; margin-bottom: 16px;
         }
+        .section-intro { color: var(--ink-soft); max-width: 46ch; }
 
-        h2::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 24px;
-            background: var(--primary);
-            margin-right: 12px;
-            border-radius: 2px;
-            opacity: 0.5;
+        .how .wrap { display: grid; grid-template-columns: .85fr 1.15fr; gap: 64px; }
+        .steps { list-style: none; position: relative; }
+        .steps::before {
+            content: ''; position: absolute; left: 19px; top: 8px; bottom: 8px; width: 2px; background: var(--line);
         }
-
-        p, li {
-            font-size: 1rem;
-            color: #4B5563;
-            margin-bottom: 20px;
+        .steps li { position: relative; padding: 0 0 36px 64px; }
+        .steps li:last-child { padding-bottom: 0; }
+        .step-no {
+            position: absolute; left: 0; top: -2px; width: 40px; height: 40px; border-radius: 50%;
+            background: var(--paper); border: 2px solid var(--violet); color: var(--violet-deep);
+            font-family: var(--display); font-weight: 800; display: grid; place-items: center;
         }
+        .steps h3 { font-family: var(--display); font-weight: 600; font-size: 1.375rem; letter-spacing: -0.01em; margin-bottom: 4px; }
+        .steps p { color: var(--ink-soft); max-width: 46ch; }
 
-        ul {
-            padding-left: 16px;
-            list-style: none;
+        .match { background: var(--paper); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .match-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 40px; }
+        .match-grid > div { padding: 0 32px; border-left: 1px solid var(--line); }
+        .match-grid > div:first-child { padding-left: 0; border-left: 0; }
+        .match-grid h3 { font-family: var(--display); font-weight: 600; font-size: 1.375rem; margin-bottom: 8px; }
+        .match-grid p { color: var(--ink-soft); }
+
+        .pro .wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+        .pro-list { list-style: none; }
+        .pro-list li { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); font-weight: 500; }
+        .pro-list li:first-child { border-top: 1px solid var(--line); }
+        .tick { flex: none; width: 22px; height: 22px; margin-top: 2px; border-radius: 50%; background: var(--violet-deep); position: relative; }
+        .tick::after {
+            content: ''; position: absolute; left: 7px; top: 4px; width: 5px; height: 10px;
+            border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
         }
+        .pro .fine { max-width: 46ch; }
 
-        li {
-            position: relative;
-            padding-left: 24px;
-            margin-bottom: 12px;
+        .safety { background: var(--ink); color: #EDEAFF; }
+        .safety h2 { color: #fff; }
+        .safety .section-intro { color: #C9C3EC; }
+        .safety .wrap { display: grid; grid-template-columns: .85fr 1.15fr; gap: 64px; }
+        .safety-list { list-style: none; }
+        .safety-list li { padding: 18px 0; border-bottom: 1px solid #3A3163; }
+        .safety-list li:first-child { border-top: 1px solid #3A3163; }
+        .safety-list strong { display: block; font-family: var(--display); font-weight: 600; font-size: 1.1875rem; color: #fff; margin-bottom: 2px; }
+        .safety-list span { color: #C9C3EC; }
+        .safety a { color: #fff; text-underline-offset: 3px; }
+
+        .cta { text-align: left; }
+        .cta .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 28px; }
+        .cta h2 { margin-bottom: 0; max-width: 16ch; }
+
+        /* Footer */
+        footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--ink-soft); font-size: .9375rem; }
+        footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; }
+        .foot-links { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; }
+        .foot-links a { text-decoration: none; }
+        .foot-links a:hover { text-decoration: underline; }
+
+        @media (max-width: 880px) {
+            .hero .wrap, .how .wrap, .pro .wrap, .safety .wrap { grid-template-columns: 1fr; gap: 40px; }
+            .proximity { margin: 0 auto; max-width: 440px; }
+            .match-grid { grid-template-columns: 1fr; gap: 28px; }
+            .match-grid > div, .match-grid > div:first-child { padding: 0; border-left: 0; }
+            .nav a:not(.btn) { display: none; }
+            section { padding: 56px 0; }
+            .hero { padding-bottom: 56px; }
         }
-
-        li::before {
-            content: '•';
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            border-bottom: 1px solid transparent;
-            transition: border-color 0.2s;
-        }
-
-        a:hover {
-            border-color: var(--primary);
-        }
-
-        footer {
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            padding: 40px 20px;
-            background: white;
-            border-top: 1px solid #E5E7EB;
+        @media (max-width: 480px) {
+            .chip { font-size: .8125rem; padding: 7px 10px 7px 9px; }
+            .chip small { font-size: .75rem; }
         }
     </style>
 </head>
 
 <body>
+    <a class="skip" href="#main">Skip to content</a>
 
-    <header>
-        <div class="logo-container">
-            <img src="app_icon.png" alt="CivicNet Logo" class="app-logo">
+    <header class="site-header">
+        <div class="wrap">
+            <a class="brand" href="/"><img src="icon-256.png" alt="" width="40" height="40">CivicNet</a>
+            <nav class="nav" aria-label="Main">
+                <a href="#how">How it works</a>
+                <a href="#pro">CivicNet Pro</a>
+                <a href="#safety">Safety</a>
+                <a class="btn" href="https://apps.apple.com/app/id6761416586">Get the app</a>
+            </nav>
         </div>
-        <h1>CivicNet</h1>
-        <p>Privacy Policy</p>
     </header>
 
-    <main>
-        <p class="updated">Last updated: November 26, 2026</p>
+    <main id="main">
+        <div class="hero">
+            <div class="wrap">
+                <div>
+                    <h1>Someone nearby can help.</h1>
+                    <p class="lede">CivicNet connects people who need a hand with neighbors who have the time, tools or
+                        skills. Post what you need and the people closest to you see it first.</p>
+                    <div class="hero-actions">
+                        <a class="btn btn-lg" href="https://apps.apple.com/app/id6761416586">Download on the App Store</a>
+                        <a class="text-link" href="#how">See how it works</a>
+                    </div>
+                    <p class="fine">Free to use. CivicNet Pro adds unlimited AI.</p>
+                </div>
 
-        <p>
-            CivicNet ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy
-            explains how we collect, use, and safeguard your information when you use our mobile application.
-        </p>
+                <div class="proximity" role="img"
+                    aria-label="Requests around you, shown by distance: a ride to the clinic 300 metres away, a borrowed drill 400 metres away, help with forms 900 metres away, and groceries to carry 650 metres away.">
+                    <div class="ring r3"></div>
+                    <div class="ring r2"></div>
+                    <div class="ring r1"></div>
+                    <span class="ring-label l1">250 m</span>
+                    <span class="ring-label l2">500 m</span>
+                    <span class="ring-label l3">1 km</span>
+                    <div class="you"><img src="icon-256.png" alt=""></div>
 
-        <h2>1. Information We Collect</h2>
-        <ul>
-            <li><strong>Account Information:</strong> Name, email address, and profile picture provided during sign-up.
-            </li>
-            <li><strong>Location Data:</strong> Your approximate or precise location when you choose to share it, to
-                display nearby community help requests on the map.</li>
-            <li><strong>User-Generated Content:</strong> Help requests, messages, ratings, and profile information you
-                submit.</li>
-            <li><strong>Device Information:</strong> Device type, operating system, and push notification token for
-                sending notifications.</li>
-            <li><strong>Usage Data:</strong> App interactions and crash reports to improve stability.</li>
-            <li><strong>Purchase and Subscription Data:</strong> If you subscribe to CivicNet Pro, your subscription
-                status, plan and renewal date. Payments are processed by Apple or Google; we do not store or see your
-                card or payment details.</li>
-            <li><strong>AI Usage:</strong> The text you send to AI features (your request or message, and the
-                transcript of a voice request) and a count of AI actions used each month to apply the free
-                allowance.</li>
-        </ul>
+                    <div class="chip urgent c1"><span class="dot"></span><span>Ride to the clinic<small>Urgent, 300 m away</small></span></div>
+                    <div class="chip rev c2"><span class="dot"></span><span>Borrow a drill<small>400 m away</small></span></div>
+                    <div class="chip rev c3"><span class="dot"></span><span>Help with forms in Hindi<small>900 m away</small></span></div>
+                    <div class="chip rev c4"><span class="dot"></span><span>Carry groceries<small>650 m away</small></span></div>
+                </div>
+            </div>
+        </div>
 
-        <h2>2. How We Use Your Information</h2>
-        <ul>
-            <li>To display your profile and connect you with community members needing help.</li>
-            <li>To show nearby help requests based on your location.</li>
-            <li>To send push notifications about your requests and responses.</li>
-            <li>To track your help stats (requests completed, points earned).</li>
-            <li>To manage your CivicNet Pro subscription and apply the free AI allowance.</li>
-            <li>To generate AI responses for the features you use.</li>
-            <li>To improve app performance via crash analytics.</li>
-        </ul>
+        <section class="how" id="how">
+            <div class="wrap">
+                <div>
+                    <h2>How a request works</h2>
+                    <p class="section-intro">From asking to saying thanks, in four steps.</p>
+                </div>
+                <ol class="steps">
+                    <li>
+                        <span class="step-no" aria-hidden="true">1</span>
+                        <h3>Post what you need</h3>
+                        <p>Type it or say it out loud. CivicNet adds a category and shows your request to people close by.</p>
+                    </li>
+                    <li>
+                        <span class="step-no" aria-hidden="true">2</span>
+                        <h3>Neighbors offer to help</h3>
+                        <p>People who can help respond with their time, tools or skills. You choose who to accept.</p>
+                    </li>
+                    <li>
+                        <span class="step-no" aria-hidden="true">3</span>
+                        <h3>Chat opens when you accept</h3>
+                        <p>Private messages unlock only between you and the helper you picked.</p>
+                    </li>
+                    <li>
+                        <span class="step-no" aria-hidden="true">4</span>
+                        <h3>Mark it done and say thanks</h3>
+                        <p>Rate the help. Helpers earn points and karma for every request they complete.</p>
+                    </li>
+                </ol>
+            </div>
+        </section>
 
-        <h2>3. Third-Party Services</h2>
-        <p>We use the following trusted third-party services to power CivicNet:</p>
-        <ul>
-            <li><strong>Supabase</strong> – Secure database and authentication. <a href="https://supabase.com/privacy"
-                    target="_blank">Privacy Policy</a></li>
-            <li><strong>Firebase (Google)</strong> – Push notifications and crash reporting. <a
-                    href="https://firebase.google.com/support/privacy" target="_blank">Privacy Policy</a></li>
-            <li><strong>RevenueCat</strong> – Subscription management. <a href="https://www.revenuecat.com/privacy"
-                    target="_blank">Privacy Policy</a></li>
-            <li><strong>Google Gemini</strong> – Powers AI features (assistant, voice requests, categorization, search,
-                support replies, community briefing). Text you provide is sent through our secure server to generate
-                a response. <a href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a></li>
-            <li><strong>Google Maps</strong> – Displaying maps and location services. <a
-                    href="https://policies.google.com/privacy" target="_blank">Privacy Policy</a></li>
-        </ul>
+        <section class="match">
+            <div class="wrap">
+                <h2>Matched by distance, skills and urgency</h2>
+                <div class="match-grid">
+                    <div>
+                        <h3>Distance</h3>
+                        <p>People within walking distance see your request before anyone else.</p>
+                    </div>
+                    <div>
+                        <h3>Skills</h3>
+                        <p>Helper profiles are compared with what you asked for, so a request about forms finds people who do forms.</p>
+                    </div>
+                    <div>
+                        <h3>Urgency</h3>
+                        <p>Emergencies are lifted to the top so they get seen fast.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <h2>4. Data Sharing</h2>
-        <p>
-            We do <strong>not</strong> sell, rent, or trade your personal information.
-            Your data is only shared with third-party providers listed above as necessary to operate the app.
-            Your help requests visible to others on the map only show what you explicitly post.
-        </p>
+        <section class="pro" id="pro">
+            <div class="wrap">
+                <div>
+                    <h2>CivicNet Pro</h2>
+                    <p class="section-intro">CivicNet is free, with a monthly allowance of AI actions. Pro removes the limit.</p>
+                    <p class="fine">Try it free for 7 days, then pay monthly or yearly. The price appears in your own
+                        currency before you confirm, and you can cancel any time in your App Store settings. See the
+                        <a href="/terms">subscription terms</a>.</p>
+                </div>
+                <ul class="pro-list">
+                    <li><span class="tick" aria-hidden="true"></span>Unlimited Aura AI assistant</li>
+                    <li><span class="tick" aria-hidden="true"></span>Create requests by voice with AI</li>
+                    <li><span class="tick" aria-hidden="true"></span>Daily AI community briefing</li>
+                    <li><span class="tick" aria-hidden="true"></span>Smarter AI support replies</li>
+                </ul>
+            </div>
+        </section>
 
-        <h2>5. Data Retention</h2>
-        <p>
-            We retain your data as long as your account is active. You may request deletion of your account
-            and all associated data at any time via the app's settings or by contacting us.
-        </p>
+        <section class="safety" id="safety">
+            <div class="wrap">
+                <div>
+                    <h2>Built for people who live next door</h2>
+                    <p class="section-intro">Asking a stranger for help should feel safe. These are the controls you have.</p>
+                </div>
+                <ul class="safety-list">
+                    <li><strong>You decide who helps</strong><span>Chat opens only after you accept a helper.</span></li>
+                    <li><strong>Messages are encrypted</strong><span>Every conversation has its own key.</span></li>
+                    <li><strong>Block and report</strong><span>Block anyone, and report problems to the CivicNet team.</span></li>
+                    <li><strong>Your data is yours</strong><span>Delete your account from Settings, or <a href="/delete">request deletion online</a>.</span></li>
+                    <li><strong>Child safety standards</strong><span>Read how we protect young people on <a href="/child-safety">our standards page</a>.</span></li>
+                </ul>
+            </div>
+        </section>
 
-        <h2>6. Your Rights</h2>
-        <ul>
-            <li>Access or correct your personal data via the Profile section in the app.</li>
-            <li>Delete your account and all data from the app settings.</li>
-            <li>Revoke location access at any time via your device settings.</li>
-            <li>Opt out of push notifications via your device settings.</li>
-        </ul>
-
-        <h2>7. Children's Privacy</h2>
-        <p>
-            CivicNet is not directed to children under the age of 13. We do not knowingly collect
-            personal information from children under 13.
-        </p>
-
-        <h2>8. Security</h2>
-        <p>
-            We implement industry-standard security measures including encrypted data transmission (HTTPS/TLS),
-            secure authentication, and row-level security policies on our database.
-        </p>
-
-        <h2>9. Changes to This Policy</h2>
-        <p>
-            We may update this Privacy Policy from time to time. We will notify you of any significant
-            changes via a notification in the app or by updating the date at the top of this page.
-        </p>
-
-        <h2>10. Contact Us</h2>
-        <p>
-            If you have any questions about this Privacy Policy, please contact us at:<br />
-            <a href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a>
-        </p>
+        <section class="cta">
+            <div class="wrap">
+                <h2>Your neighbors are already nearby.</h2>
+                <a class="btn btn-lg" href="https://apps.apple.com/app/id6761416586">Download on the App Store</a>
+            </div>
+        </section>
     </main>
 
     <footer>
-        &copy; 2026 CivicNet. All rights reserved.
+        <div class="wrap">
+            <div>&copy; 2026 CivicNet. All rights reserved.</div>
+            <ul class="foot-links">
+                <li><a href="/privacy">Privacy Policy</a></li>
+                <li><a href="/terms">Terms and Conditions</a></li>
+                <li><a href="/child-safety">Child safety</a></li>
+                <li><a href="/delete">Delete account</a></li>
+                <li><a href="mailto:civicnet.app@gmail.com">civicnet.app@gmail.com</a></li>
+            </ul>
+        </div>
     </footer>
-
 </body>
 
 </html>

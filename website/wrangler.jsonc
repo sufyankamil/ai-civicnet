@@ -1,0 +1,14 @@
+{
+  // Static site for civicnet.app. Deploy from this folder: npx wrangler deploy
+  "name": "civicnet-website",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": ".",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "civicnet.app", "custom_domain": true },
+    { "pattern": "www.civicnet.app", "custom_domain": true }
+  ]
+}
