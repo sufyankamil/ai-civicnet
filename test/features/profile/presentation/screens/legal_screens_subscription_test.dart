@@ -58,6 +58,13 @@ void main() {
       );
     });
 
+    testWidgets('links to the full policy on civicnet.app', (tester) async {
+      await pumpScreen(tester, const PrivacyPolicyScreen());
+
+      expect(find.text('civicnet.app/privacy'), findsOneWidget);
+      expect(find.textContaining('vercel.app'), findsNothing);
+    });
+
     testWidgets('has a fresh last-updated date', (tester) async {
       await pumpScreen(tester, const PrivacyPolicyScreen());
       expect(find.text('Last updated: November 26, 2026'), findsOneWidget);

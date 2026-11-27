@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-27 — In-app legal links point at civicnet.app (#98)
+- What changed: new `LegalLinks` (`lib/core/utils/legal_links.dart`) with `https://civicnet.app/privacy` and `/terms`. The privacy screen's "View Full Policy Online" button and the sign-up screen's Terms link use it instead of the old `privacypolicy-ruddy.vercel.app` host.
+- Key files: `lib/core/utils/legal_links.dart`, `privacy_policy_screen.dart`, `signup_screen.dart`, tests in `test/core/utils/legal_links_test.dart` and `test/features/profile/presentation/screens/legal_screens_subscription_test.dart`.
+- Notes / gotchas: the password-reset `redirectTo` in `auth_remote_data_source.dart` still uses the old Vercel host on purpose. Move it to `https://civicnet.app/reset` only after that URL is in Supabase Auth's redirect allow-list, otherwise reset links break.
+
 ### 2026-11-27 — New civicnet.app website on Cloudflare (#96)
 - What changed: new landing page at `/` (hero with a distance-rings illustration, how a request works, matching, CivicNet Pro, safety, App Store link). The privacy policy moved from `index.html` to `privacy.html` (`/privacy`), content unchanged. Legal and other pages now link home and to each other; the old external privacy link in `delete.html` is gone. Added `404.html`, resized icons, `wrangler.jsonc` (assets from `website/`, custom domains civicnet.app and www) and `.assetsignore`.
 - Key files: `website/index.html`, `website/privacy.html`, `website/wrangler.jsonc`, `website/.assetsignore`, `website/vercel.json` (kept working for the old deployment).
