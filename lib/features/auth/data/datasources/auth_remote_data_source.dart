@@ -1,3 +1,4 @@
+import '../../../../services/device_token_service.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
@@ -122,6 +123,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
+      await DeviceTokenService.shared.onSignedOut();
       await supabaseClient.auth.signOut().withServerTimeout();
     } catch (e) {
       throw ServerException(e.toString());

@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:civic_net/services/device_token_service.dart';
 import 'package:civic_net/services/logger_service.dart';
 import 'package:civic_net/services/notification_route.dart';
 import 'package:civic_net/services/notification_service.dart';
@@ -41,6 +42,24 @@ class FirebaseService {
       logger.i('Updated regional FCM topic: ${nextTopic ?? 'none'}');
     } catch (e) {
       logger.e('Could not update regional FCM topic: $e');
+    }
+  }
+
+  /// Registers this device's push token and rough location for nearby-only
+  /// pushes such as SOS. Safe to call often; it throttles and never throws.
+  Future<void> _syncDeviceToken([String? knownToken]) async {
+    try {
+      var token = knownToken;
+      if (token == null) {
+        if (Platform.isIOS && await _messaging.getAPNSToken() == null) return;
+        token = await _messaging.getToken();
+      }
+      await DeviceTokenService.shared.sync(
+        token: token,
+        signedIn: Supabase.instance.client.auth.currentUser != null,
+      );
+    } catch (e) {
+      logger.w('Could not sync device token: $e');
     }
   }
 
@@ -125,6 +144,7 @@ class FirebaseService {
       Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
         final user = data.session?.user;
         if (user != null) {
+          await _syncDeviceToken();
           final safeTopic = 'user_${user.id}'.replaceAll('-', '_');
           if (currentUserTopic != safeTopic) {
             if (currentUserTopic != null) {
@@ -180,6 +200,7 @@ class FirebaseService {
         if (canGetToken) {
           String? token = await _messaging.getToken();
           logger.i('FCM Token: $token');
+          await _syncDeviceToken(token);
         }
       } catch (e) {
         logger.e('FCM Token Error: $e');
@@ -187,6 +208,8 @@ class FirebaseService {
           'Note: FCM on iOS requires a real device and "Push Notifications" capability in Xcode.',
         );
       }
+
+      _messaging.onTokenRefresh.listen(_syncDeviceToken);
 
       // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
