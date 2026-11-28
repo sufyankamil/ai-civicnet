@@ -36,7 +36,7 @@ lib/
 ├── main.dart            entry, init, root widget
 ├── core/                routes/app_router.dart, di/, errors/, usecases/, utils/, services/, presentation/layouts (MainScaffold), screens (NotFound)
 ├── features/            activity, ai_assistant, assets, auth, chat, discover, events, home, map,
-│                        news, notifications, onboarding, profile, request
+│                        news, notifications, onboarding, profile, request, sos
 ├── services/            singleton infrastructure (see below)
 ├── components/          shared widgets: cards, skeletons, dialogs, glass/glow borders, buttons
 ├── widgets/             app-wide wrappers: AutoLogout, Connectivity, ServiceHealth banner/wrapper, haptic buttons
@@ -70,7 +70,7 @@ All are singletons (`Foo()` factory) except where noted.
 
 - **Redirect rules:** logged out on `/` or `/home` goes to `/onboarding` (first time) or `/login`. Logged out on a protected tab (`/profile*`, `/chat`, `/activity`, `/discover`, `/map`, `/events`) goes to `/login`. Logged in on `/`, `/login`, `/signup` or `/onboarding` goes to `/auth-check`, which decides between the app and `/complete-profile`.
 - **Shell (bottom tabs, `MainScaffold`):** `/home`, `/discover`, `/activity`, `/map`, `/chat`, `/profile`, `/events`.
-- **Full-screen routes:** `/subscription` (paywall; login-protected), `/create-request`, `/request/:id`, `/chat-detail`, `/event/:id`, `/create-event`, `/profile/:id`, `/ai-assistant`, `/settings`, `/notifications`, `/my-assets`, `/asset-library`, `/support`, `/admin-panel`, and the legal/account screens.
+- **Full-screen routes:** `/subscription` (paywall; login-protected), `/sos` (Emergency SOS; login-protected, button hidden unless `SOS_ENABLED=true`), `/create-request`, `/request/:id`, `/chat-detail`, `/event/:id`, `/create-event`, `/profile/:id`, `/ai-assistant`, `/settings`, `/notifications`, `/my-assets`, `/asset-library`, `/support`, `/admin-panel`, and the legal/account screens.
 - Adding a screen: add the route here and keep the redirect list in sync if it must be login-protected.
 
 ## State management

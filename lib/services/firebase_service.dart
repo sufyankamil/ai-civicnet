@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:civic_net/services/logger_service.dart';
+import 'package:civic_net/services/notification_route.dart';
 import 'package:civic_net/services/notification_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:get/get.dart';
@@ -251,17 +252,9 @@ class FirebaseService {
       logger.e('Error refreshing conversations: $e');
     }
 
-    final data = message.data;
-    final type = data['type']?.toString().toLowerCase() ?? '';
-    final relatedId =
-        data['related_id'] ??
-        data['conversationId'] ??
-        data['conversation_id'] ??
-        data['id'] ??
-        data['requestId'] ??
-        data['eventId'];
+    final route = routeForNotification(message.data);
 
-    if (relatedId != null) {
+    if (route != null) {
       // Delay slightly to ensure Router is ready if booting from terminated state
       final delay = isTerminated
           ? const Duration(seconds: 3)
@@ -269,16 +262,7 @@ class FirebaseService {
       Future.delayed(delay, () {
         final context = rootNavigatorKey.currentContext;
         if (context != null && context.mounted) {
-          if (type == 'new_request') {
-            context.push('/request/$relatedId');
-          } else if (type.contains('chat') ||
-              type.contains('message') ||
-              data.containsKey('conversationId') ||
-              data.containsKey('conversation_id')) {
-            context.push('/chat-detail?id=$relatedId');
-          } else if (type == 'event') {
-            context.push('/event/$relatedId');
-          }
+          context.push(route);
         } else {
           logger.w(
             'rootNavigatorKey context is null or not mounted when trying to route FCM.',

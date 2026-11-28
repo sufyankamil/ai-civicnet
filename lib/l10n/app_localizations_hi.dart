@@ -1136,4 +1136,98 @@ class AppLocalizationsHi extends AppLocalizations {
   String aiQuotaRemaining(int remaining, int limit) {
     return 'इस महीने $limit में से $remaining निःशुल्क AI क्रियाएं बाकी';
   }
+
+  @override
+  String get sosTooltip => 'आपातकालीन SOS';
+
+  @override
+  String get sosSheetTitle => 'क्या आपको अभी मदद चाहिए?';
+
+  @override
+  String get sosCallFirst =>
+      'अगर आप खतरे में हैं, तो पहले आपातकालीन सेवाओं को कॉल करें।';
+
+  @override
+  String sosCallNumber(String number) {
+    return '$number पर कॉल करें';
+  }
+
+  @override
+  String get sosDisclaimer =>
+      'CivicNet आपको पड़ोसियों से जोड़ता है। यह आपातकालीन सेवा नहीं है, और किसी के जवाब देने की गारंटी नहीं है।';
+
+  @override
+  String get sosNoteLabel => 'क्या हो रहा है? (वैकल्पिक)';
+
+  @override
+  String get sosHoldLabel =>
+      'आस-पास के मददगारों को अलर्ट करने के लिए दबाए रखें';
+
+  @override
+  String get sosHoldHint =>
+      '2 सेकंड तक दबाए रखें। लगभग 2 किमी के भीतर के मददगारों को आपकी लोकेशन के साथ अलर्ट जाएगा।';
+
+  @override
+  String get sosSending => 'आपका अलर्ट भेजा जा रहा है…';
+
+  @override
+  String get sosErrorRateLimited =>
+      'आपने अभी-अभी SOS भेजा था। दूसरा भेजने से पहले कुछ मिनट रुकें।';
+
+  @override
+  String get sosErrorDailyLimit =>
+      'आप 24 घंटे में 3 SOS अलर्ट की सीमा तक पहुँच चुके हैं।';
+
+  @override
+  String get sosErrorAlreadyActive => 'आपका एक SOS पहले से चालू है।';
+
+  @override
+  String get sosErrorNotSignedIn => 'SOS भेजने के लिए कृपया साइन इन करें।';
+
+  @override
+  String get sosErrorLocation =>
+      'हम आपकी लोकेशन नहीं पा सके। CivicNet के लिए लोकेशन चालू करें और फिर कोशिश करें।';
+
+  @override
+  String get sosErrorNetwork =>
+      'हम सर्वर तक नहीं पहुँच सके। अपना कनेक्शन जाँचें और फिर कोशिश करें।';
+
+  @override
+  String get sosActiveTitle => 'आपका SOS चालू है';
+
+  @override
+  String get sosAlerting => 'आपके पास के मददगारों को अलर्ट किया जा रहा है…';
+
+  @override
+  String sosAlertedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'आस-पास के $count मददगारों को अलर्ट गया',
+      one: 'आस-पास के 1 मददगार को अलर्ट गया',
+      zero: 'अभी तक आस-पास किसी मददगार को अलर्ट नहीं गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sosMinutesLeft(int minutes) {
+    return '$minutes मिनट बाकी';
+  }
+
+  @override
+  String get sosSeeHelpers => 'देखें किसने मदद की पेशकश की';
+
+  @override
+  String get sosImSafe => 'मैं सुरक्षित हूँ';
+
+  @override
+  String get sosEndedTitle => 'आपका SOS समाप्त हो गया';
+
+  @override
+  String get sosEndedBody =>
+      'हमें खुशी है कि आप ठीक हैं। आप अपनी गतिविधि से मदद करने वालों को धन्यवाद कह सकते हैं।';
+
+  @override
+  String get sosDone => 'ठीक है';
 }

@@ -1130,4 +1130,97 @@ class AppLocalizationsEn extends AppLocalizations {
   String aiQuotaRemaining(int remaining, int limit) {
     return '$remaining of $limit free AI actions left this month';
   }
+
+  @override
+  String get sosTooltip => 'Emergency SOS';
+
+  @override
+  String get sosSheetTitle => 'Do you need help right now?';
+
+  @override
+  String get sosCallFirst =>
+      'If you are in danger, call the emergency services first.';
+
+  @override
+  String sosCallNumber(String number) {
+    return 'Call $number';
+  }
+
+  @override
+  String get sosDisclaimer =>
+      'CivicNet connects you with neighbors. It is not an emergency service, and nobody is guaranteed to respond.';
+
+  @override
+  String get sosNoteLabel => 'What\'s happening? (optional)';
+
+  @override
+  String get sosHoldLabel => 'Hold to alert nearby helpers';
+
+  @override
+  String get sosHoldHint =>
+      'Hold for 2 seconds. Helpers within about 2 km get an alert with your location.';
+
+  @override
+  String get sosSending => 'Sending your alert…';
+
+  @override
+  String get sosErrorRateLimited =>
+      'You sent an SOS a moment ago. Please wait a few minutes before sending another.';
+
+  @override
+  String get sosErrorDailyLimit =>
+      'You\'ve reached the limit of 3 SOS alerts in 24 hours.';
+
+  @override
+  String get sosErrorAlreadyActive => 'You already have an active SOS.';
+
+  @override
+  String get sosErrorNotSignedIn => 'Please sign in to send an SOS.';
+
+  @override
+  String get sosErrorLocation =>
+      'We couldn\'t get your location. Turn on location for CivicNet and try again.';
+
+  @override
+  String get sosErrorNetwork =>
+      'We couldn\'t reach the server. Check your connection and try again.';
+
+  @override
+  String get sosActiveTitle => 'Your SOS is active';
+
+  @override
+  String get sosAlerting => 'Alerting helpers near you…';
+
+  @override
+  String sosAlertedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count helpers nearby were alerted',
+      one: '1 helper nearby was alerted',
+      zero: 'No helpers nearby have been alerted yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sosMinutesLeft(int minutes) {
+    return '$minutes min left';
+  }
+
+  @override
+  String get sosSeeHelpers => 'See who offered to help';
+
+  @override
+  String get sosImSafe => 'I\'m safe';
+
+  @override
+  String get sosEndedTitle => 'Your SOS has ended';
+
+  @override
+  String get sosEndedBody =>
+      'We\'re glad you\'re okay. You can thank the people who helped from your activity.';
+
+  @override
+  String get sosDone => 'Done';
 }
