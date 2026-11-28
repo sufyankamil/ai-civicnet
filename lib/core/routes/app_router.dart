@@ -1,3 +1,4 @@
+import '../../features/sos/presentation/screens/sos_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
@@ -98,7 +99,8 @@ GoRouter createRouter({String initialLocation = '/'}) {
             currentPath == '/discover' ||
             currentPath == '/map' ||
             currentPath == '/events' ||
-            currentPath == '/subscription') {
+            currentPath == '/subscription' ||
+            currentPath == '/sos') {
           return '/login';
         }
       } else {
@@ -352,6 +354,11 @@ GoRouter createRouter({String initialLocation = '/'}) {
         parentNavigatorKey: rootNavigatorKey,
         path: '/account-management',
         builder: (context, state) => const AccountManagementScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        path: '/sos',
+        builder: (context, state) => const SosScreen(),
       ),
       GoRoute(
         parentNavigatorKey: rootNavigatorKey,

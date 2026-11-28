@@ -2161,6 +2161,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{remaining} of {limit} free AI actions left this month'**
   String aiQuotaRemaining(int remaining, int limit);
+
+  /// No description provided for @sosTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency SOS'**
+  String get sosTooltip;
+
+  /// No description provided for @sosSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you need help right now?'**
+  String get sosSheetTitle;
+
+  /// No description provided for @sosCallFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'If you are in danger, call the emergency services first.'**
+  String get sosCallFirst;
+
+  /// No description provided for @sosCallNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Call {number}'**
+  String sosCallNumber(String number);
+
+  /// No description provided for @sosDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'CivicNet connects you with neighbors. It is not an emergency service, and nobody is guaranteed to respond.'**
+  String get sosDisclaimer;
+
+  /// No description provided for @sosNoteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s happening? (optional)'**
+  String get sosNoteLabel;
+
+  /// No description provided for @sosHoldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold to alert nearby helpers'**
+  String get sosHoldLabel;
+
+  /// No description provided for @sosHoldHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold for 2 seconds. Helpers within about 2 km get an alert with your location.'**
+  String get sosHoldHint;
+
+  /// No description provided for @sosSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending your alert…'**
+  String get sosSending;
+
+  /// No description provided for @sosErrorRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'You sent an SOS a moment ago. Please wait a few minutes before sending another.'**
+  String get sosErrorRateLimited;
+
+  /// No description provided for @sosErrorDailyLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached the limit of 3 SOS alerts in 24 hours.'**
+  String get sosErrorDailyLimit;
+
+  /// No description provided for @sosErrorAlreadyActive.
+  ///
+  /// In en, this message translates to:
+  /// **'You already have an active SOS.'**
+  String get sosErrorAlreadyActive;
+
+  /// No description provided for @sosErrorNotSignedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Please sign in to send an SOS.'**
+  String get sosErrorNotSignedIn;
+
+  /// No description provided for @sosErrorLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t get your location. Turn on location for CivicNet and try again.'**
+  String get sosErrorLocation;
+
+  /// No description provided for @sosErrorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t reach the server. Check your connection and try again.'**
+  String get sosErrorNetwork;
+
+  /// No description provided for @sosActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your SOS is active'**
+  String get sosActiveTitle;
+
+  /// No description provided for @sosAlerting.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerting helpers near you…'**
+  String get sosAlerting;
+
+  /// No description provided for @sosAlertedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No helpers nearby have been alerted yet} =1{1 helper nearby was alerted} other{{count} helpers nearby were alerted}}'**
+  String sosAlertedCount(int count);
+
+  /// No description provided for @sosMinutesLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min left'**
+  String sosMinutesLeft(int minutes);
+
+  /// No description provided for @sosSeeHelpers.
+  ///
+  /// In en, this message translates to:
+  /// **'See who offered to help'**
+  String get sosSeeHelpers;
+
+  /// No description provided for @sosImSafe.
+  ///
+  /// In en, this message translates to:
+  /// **'I\'m safe'**
+  String get sosImSafe;
+
+  /// No description provided for @sosEndedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your SOS has ended'**
+  String get sosEndedTitle;
+
+  /// No description provided for @sosEndedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re glad you\'re okay. You can thank the people who helped from your activity.'**
+  String get sosEndedBody;
+
+  /// No description provided for @sosDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get sosDone;
 }
 
 class _AppLocalizationsDelegate

@@ -1,3 +1,4 @@
+import 'features/sos/di/sos_binding.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -95,6 +96,7 @@ class _RootAppState extends State<RootApp> {
     await initAuthDI();
     HomeBinding().dependencies();
     await initRequestDI();
+    await initSosDI();
     await initMapDI();
     await initChatDI();
     await initEventsDI();
