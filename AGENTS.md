@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — Fix SOS SQL test on databases with real device tokens (#116)
+- What changed: `sql_scripts/tests/sos_test.sql` now counts only the tokens it creates (prefix `tok-`) and names them in the failure message. It used to count every row in `device_tokens`, so on production, where real devices near the test location (Mumbai) were already registered, it failed with "got 2" although `sos_recipient_tokens` was correct.
+- Key files: `sql_scripts/tests/sos_test.sql`.
+- Notes / gotchas: SQL tests that run against a shared database must not assume the tables they read are empty.
+
 ### 2026-11-28 — Privacy Policy and Terms cover Emergency SOS (#114)
 - What changed: Privacy Policy (website and in-app) gains "Emergency SOS and Location": the push token plus approximate location (rounded to about 550 m) used to find people near an SOS, removed on sign-out and ignored after 30 days, and the exact SOS location shown only to the sender and an accepted helper (others see about 110 m); helpers within about 2 km get a push. Terms gain "Emergency SOS": not an emergency service, call local emergency number first, limits, possible suspension for misuse. Dates bumped to November 28, 2026; sections renumbered.
 - Key files: `website/privacy.html`, `website/terms.html`, `privacy_policy_screen.dart`, `terms_of_service_screen.dart`, `legal_screens_subscription_test.dart`.

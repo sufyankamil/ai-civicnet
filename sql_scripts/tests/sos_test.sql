@@ -16,6 +16,7 @@ declare
   v_id2 bigint;
   r record;
   n integer;
+  v_list text;
 begin
   insert into auth.users (id, instance_id, aud, role, email)
   select u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
@@ -71,9 +72,12 @@ begin
     (v_old,  'tok-old',  'ios', 19.077, 72.878, now() - interval '40 days');
   insert into public.blocked_users (blocker_id, blocked_id) values (v_blk, v_a);
 
-  select count(*) into n from public.sos_recipient_tokens(v_id2, 2000);
-  assert n = 1, format('exactly one helper should be alerted, got %s', n);
-  assert exists (select 1 from public.sos_recipient_tokens(v_id2, 2000) where token = 'tok-near'), 'near helper alerted';
+  -- Real devices may already be registered in this database, so look only at
+  -- the tokens this test created (they all start with 'tok-').
+  select count(*), string_agg(token, ', ' order by token) into n, v_list
+  from public.sos_recipient_tokens(v_id2, 2000) where token like 'tok-%';
+  assert n = 1, format('exactly one test helper should be alerted, got %s (%s)', n, v_list);
+  assert v_list = 'tok-near', format('the near helper should be alerted, got %s', v_list);
 
   -- Exact location is hidden from other users and visible to the requester.
   perform set_config('request.jwt.claims', json_build_object('sub', v_near)::text, true);
