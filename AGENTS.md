@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — TestFlight builds can include SOS (#124)
+- What changed: the TestFlight workflow has a new manual-run checkbox `sos_enabled` (default off). The build job writes `SOS_ENABLED=<value>` into the generated `.env`, so a build includes the SOS button only when the box is ticked. Local builds still use the `SOS_ENABLED` line in your own `.env`.
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: the workflow builds its own `.env` from GitHub secrets, so before this change TestFlight/App Store builds could never show SOS. Tick it only after `sos_schema.sql`, `notify-sos`, the website policy and the App Store privacy labels are live. `app-store-release.yml` only submits an existing build and needs no change. CI config, so no automated test; the YAML was parsed to check it is valid.
+
 ### 2026-11-28 — SOS emergency number follows the location country (#120)
 - What changed: the Call button on the SOS form and the running-SOS page now dials the emergency number of the country of the device's last known location (`countryFromLastKnownLocation`: permission already granted, no prompt, no GPS start, then the phone's own geocoder), falling back to the phone's region setting, then 112. `SosViewModel.emergencyNumber` starts from the region and switches when `refreshEmergencyNumber()` returns (once per session, 4 s timeout, any failure keeps the region number). Privacy Policy (website and in-app) says the coordinates go to Apple/Google's place lookup and the result is not stored.
 - Key files: `lib/features/sos/data/sos_country_lookup.dart`, `sos_viewmodel.dart`, `sos_sheet.dart`, `sos_waiting_screen.dart`, `privacy_policy_screen.dart`, `website/privacy.html`, tests in `test/features/sos/`.
