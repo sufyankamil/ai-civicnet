@@ -367,6 +367,12 @@ entrypoint = "./functions/notify-new-request/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/notify-new-request/*.html" ]
 
+[functions.notify-sos]
+enabled = true
+verify_jwt = true
+import_map = "./functions/notify-sos/deno.json"
+entrypoint = "./functions/notify-sos/index.ts"
+
 [functions.notify-interest]
 enabled = true
 verify_jwt = true
