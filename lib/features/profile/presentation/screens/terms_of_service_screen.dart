@@ -40,7 +40,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Last updated: November 26, 2026',
+              'Last updated: November 28, 2026',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 24),
@@ -70,19 +70,25 @@ class TermsOfServiceScreen extends StatelessWidget {
             ),
             _buildSection(
               context,
-              '5. Subscriptions (CivicNet Pro)',
+              '5. Emergency SOS',
+              'The Emergency SOS feature alerts neighbors who are near you. It is not an emergency service, and nobody is guaranteed to see or answer an alert. If you are in danger, call your local emergency number first. You can send a limited number of SOS alerts (one every 10 minutes and three per day). We may limit SOS or suspend an account that misuses it, for example by sending false alarms.',
+              isDark,
+            ),
+            _buildSection(
+              context,
+              '6. Subscriptions (CivicNet Pro)',
               'CivicNet is free to use with a monthly allowance of AI actions. CivicNet Pro is an optional paid subscription that removes that limit. Prices, billing period (monthly or yearly) and any free trial are shown on the subscription screen before you confirm. Payment is charged to your Apple ID or Google Play account when you confirm the purchase, or when a free trial ends. Your subscription renews automatically for the same period unless you cancel at least 24 hours before the end of the current period. You can manage or cancel it at any time in your Apple ID or Google Play subscription settings; cancelling stops future renewals and you keep Pro until the end of the paid period. A free trial is offered once per Apple ID or Google account, and any unused part of it is forfeited when you buy a subscription. Refunds are handled by Apple or Google under their policies; we cannot issue them directly. If your subscription ends, your account stays active and returns to the free AI allowance. We may change prices or plans with notice, and a price change applies only from your next renewal.',
               isDark,
             ),
             _buildSection(
               context,
-              '6. Modifications',
+              '7. Modifications',
               'We reserve the right to modify or replace these terms at any time. We will notify users of any significant changes via the application.',
               isDark,
             ),
             _buildSection(
               context,
-              '7. Contact Information',
+              '8. Contact Information',
               'For any questions regarding these terms, please contact us at civicnet.app@gmail.com.',
               isDark,
             ),
