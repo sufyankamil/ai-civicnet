@@ -133,10 +133,75 @@ void main() {
     expect(find.text('Start free trial'), findsNothing);
   });
 
-  testWidgets('a Pro user on a trial sees the trial status', (tester) async {
-    client.entitlement = active(trial: true, expires: DateTime.utc(2027, 1, 1));
-    await pumpScreen(tester);
+  group('Pro status text', () {
+    final ends = DateTime.utc(2027, 1, 1, 12);
 
-    expect(find.text('Your free trial is active'), findsOneWidget);
+    EntitlementSnapshot snapshot({
+      required bool trial,
+      required bool willRenew,
+    }) => EntitlementSnapshot(
+      isActive: true,
+      isTrial: trial,
+      expiresAt: ends,
+      willRenew: willRenew,
+    );
+
+    testWidgets('trial that will convert says when and that you are charged', (
+      tester,
+    ) async {
+      client.entitlement = snapshot(trial: true, willRenew: true);
+      await pumpScreen(tester);
+
+      expect(find.text('Free trial active'), findsOneWidget);
+      expect(
+        find.text(
+          "Your trial ends on Jan 1, 2027. You'll be charged then unless you cancel.",
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('cancelled trial says you will not be charged', (tester) async {
+      client.entitlement = snapshot(trial: true, willRenew: false);
+      await pumpScreen(tester);
+
+      expect(find.text('Free trial active'), findsOneWidget);
+      expect(
+        find.text("Your trial ends on Jan 1, 2027. You won't be charged."),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('paid subscription shows the renewal date', (tester) async {
+      client.entitlement = snapshot(trial: false, willRenew: true);
+      await pumpScreen(tester);
+
+      expect(find.text('Renews on Jan 1, 2027'), findsOneWidget);
+      expect(find.text('Free trial active'), findsNothing);
+    });
+
+    testWidgets('cancelled paid subscription says Pro lasts until then', (
+      tester,
+    ) async {
+      client.entitlement = snapshot(trial: false, willRenew: false);
+      await pumpScreen(tester);
+
+      expect(
+        find.text('Ends on Jan 1, 2027. You keep Pro until then.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('tells the user where to cancel or change the plan', (
+      tester,
+    ) async {
+      client.entitlement = snapshot(trial: false, willRenew: true);
+      await pumpScreen(tester);
+
+      expect(
+        find.text('Cancel or change your plan in your App Store settings.'),
+        findsOneWidget,
+      );
+    });
   });
 }

@@ -2075,7 +2075,7 @@ abstract class AppLocalizations {
   /// No description provided for @paywallProTrialing.
   ///
   /// In en, this message translates to:
-  /// **'Your free trial is active'**
+  /// **'Free trial active'**
   String get paywallProTrialing;
 
   /// No description provided for @paywallRenewsOn.
@@ -2087,7 +2087,7 @@ abstract class AppLocalizations {
   /// No description provided for @paywallEndsOn.
   ///
   /// In en, this message translates to:
-  /// **'Ends on {date}'**
+  /// **'Ends on {date}. You keep Pro until then.'**
   String paywallEndsOn(String date);
 
   /// No description provided for @paywallManage.
@@ -2095,6 +2095,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage subscription'**
   String get paywallManage;
+
+  /// No description provided for @paywallTrialEndsCharge.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trial ends on {date}. You\'ll be charged then unless you cancel.'**
+  String paywallTrialEndsCharge(String date);
+
+  /// No description provided for @paywallTrialEndsNoCharge.
+  ///
+  /// In en, this message translates to:
+  /// **'Your trial ends on {date}. You won\'t be charged.'**
+  String paywallTrialEndsNoCharge(String date);
+
+  /// No description provided for @paywallManageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel or change your plan in your App Store settings.'**
+  String get paywallManageHint;
 
   /// No description provided for @upgradeQuotaMessage.
   ///
