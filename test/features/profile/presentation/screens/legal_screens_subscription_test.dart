@@ -32,9 +32,22 @@ void main() {
       expect(find.textContaining('free trial'), findsWidgets);
     });
 
+    testWidgets('explains Emergency SOS is not an emergency service', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const TermsOfServiceScreen());
+
+      expect(find.textContaining('Emergency SOS'), findsWidgets);
+      expect(find.textContaining('not an emergency service'), findsOneWidget);
+      expect(
+        find.textContaining('call your local emergency number'),
+        findsOneWidget,
+      );
+    });
+
     testWidgets('has a fresh last-updated date', (tester) async {
       await pumpScreen(tester, const TermsOfServiceScreen());
-      expect(find.text('Last updated: November 26, 2026'), findsOneWidget);
+      expect(find.text('Last updated: November 28, 2026'), findsOneWidget);
     });
   });
 
@@ -58,6 +71,17 @@ void main() {
       );
     });
 
+    testWidgets('says what Emergency SOS collects and who sees it', (
+      tester,
+    ) async {
+      await pumpScreen(tester, const PrivacyPolicyScreen());
+
+      expect(find.textContaining('Emergency SOS and Location'), findsOneWidget);
+      expect(find.textContaining('about 550 m'), findsOneWidget);
+      expect(find.textContaining('exact location'), findsOneWidget);
+      expect(find.textContaining('when you sign out'), findsOneWidget);
+    });
+
     testWidgets('links to the full policy on civicnet.app', (tester) async {
       await pumpScreen(tester, const PrivacyPolicyScreen());
 
@@ -67,7 +91,7 @@ void main() {
 
     testWidgets('has a fresh last-updated date', (tester) async {
       await pumpScreen(tester, const PrivacyPolicyScreen());
-      expect(find.text('Last updated: November 26, 2026'), findsOneWidget);
+      expect(find.text('Last updated: November 28, 2026'), findsOneWidget);
     });
   });
 }
