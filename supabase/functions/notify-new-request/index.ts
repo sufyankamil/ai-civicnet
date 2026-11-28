@@ -22,6 +22,13 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Only INSERT is supported" }), { status: 400 })
     }
 
+    // SOS rows are handled by notify-sos (targeted, not a broadcast to everyone).
+    if (payload.record?.is_sos) {
+      return new Response(JSON.stringify({ skipped: 'SOS is handled by notify-sos' }), {
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
     const { title, category, id, requester_id } = payload.record
 
     const serviceAccountStr = Deno.env.get('FIREBASE_SERVICE_ACCOUNT')
