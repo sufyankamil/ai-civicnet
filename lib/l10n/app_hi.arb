@@ -339,5 +339,6 @@
   "settingsProTitle": "CivicNet Pro",
   "settingsProSubtitleFree": "असीमित AI असिस्टेंट और बहुत कुछ",
   "settingsProBadge": "PRO",
+  "proBadgeLabel": "CivicNet Pro सदस्य",
   "aiQuotaRemaining": "इस महीने {limit} में से {remaining} निःशुल्क AI क्रियाएं बाकी"
 }
