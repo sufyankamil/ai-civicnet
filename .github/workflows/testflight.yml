@@ -16,6 +16,11 @@ on:
         required: false
         default: "Bug fixes and performance improvements"
         type: string
+      sos_enabled:
+        description: "Include the Emergency SOS button in this build (only after sql_scripts/sos_schema.sql, notify-sos and the website policy are live)"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   analyze:
@@ -78,6 +83,7 @@ jobs:
           echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
           echo "GOOGLE_MAPS_API_KEY=${{ secrets.GOOGLE_MAPS_API_KEY }}" >> .env
           echo "REVENUECAT_IOS_API_KEY=${{ secrets.REVENUECAT_IOS_API_KEY }}" >> .env
+          echo "SOS_ENABLED=${{ inputs.sos_enabled }}" >> .env
 
       - name: Restore GoogleService-Info.plist
         run: |

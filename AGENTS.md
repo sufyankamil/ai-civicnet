@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — TestFlight builds can include SOS (#124)
+- What changed: the TestFlight workflow has a new manual-run checkbox `sos_enabled` (default off). The build job writes `SOS_ENABLED=<value>` into the generated `.env`, so a build includes the SOS button only when the box is ticked. Local builds still use the `SOS_ENABLED` line in your own `.env`.
+- Key files: `.github/workflows/testflight.yml`.
+- Notes / gotchas: the workflow builds its own `.env` from GitHub secrets, so before this change TestFlight/App Store builds could never show SOS. Tick it only after `sos_schema.sql`, `notify-sos`, the website policy and the App Store privacy labels are live. `app-store-release.yml` only submits an existing build and needs no change. CI config, so no automated test; the YAML was parsed to check it is valid.
+
 ### 2026-11-28 — SOS: tokens now register with a location (#122)
 - What changed: a two-simulator test found an SOS alerting nobody (`{"alerted":0,"total":0}`) because the helper's `device_tokens` row had NULL lat/lng. `lastKnownDeviceLocation` and the country lookup only read `Geolocator.getLastKnownPosition()`, which is empty on iOS until something else asks for location. New `approximateDeviceLocation()` (`lib/services/approximate_location.dart`): never prompts; with permission it uses the known position, otherwise takes one low-accuracy fix (5 s timeout, no GPS). Used for token registration and for the emergency-number country lookup (renamed `countryFromApproximateLocation`). `DeviceLocation` moved there and is still exported from `device_token_service.dart`. Privacy wording changed from "last known location" to "approximate location".
 - Key files: `lib/services/approximate_location.dart`, `device_token_service.dart`, `sos_country_lookup.dart`, `sos_viewmodel.dart`, `privacy_policy_screen.dart`, `website/privacy.html`, `test/services/approximate_location_test.dart`.
