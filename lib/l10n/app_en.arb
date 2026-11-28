@@ -495,7 +495,7 @@
   "paywallNothingToRestore": "No previous purchases were found.",
   "paywallWelcome": "Welcome to CivicNet Pro!",
   "paywallProActive": "You're a CivicNet Pro member",
-  "paywallProTrialing": "Your free trial is active",
+  "paywallProTrialing": "Free trial active",
   "paywallRenewsOn": "Renews on {date}",
   "@paywallRenewsOn": {
     "placeholders": {
@@ -504,7 +504,7 @@
       }
     }
   },
-  "paywallEndsOn": "Ends on {date}",
+  "paywallEndsOn": "Ends on {date}. You keep Pro until then.",
   "@paywallEndsOn": {
     "placeholders": {
       "date": {
@@ -513,6 +513,23 @@
     }
   },
   "paywallManage": "Manage subscription",
+  "paywallTrialEndsCharge": "Your trial ends on {date}. You'll be charged then unless you cancel.",
+  "@paywallTrialEndsCharge": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallTrialEndsNoCharge": "Your trial ends on {date}. You won't be charged.",
+  "@paywallTrialEndsNoCharge": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "paywallManageHint": "Cancel or change your plan in your App Store settings.",
   "upgradeQuotaMessage": "You've used your free AI actions for this month. Upgrade to CivicNet Pro for unlimited AI.",
   "upgradeCta": "See Pro plans",
   "upgradeNotNow": "Not now",

@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — Clearer Pro status text on the subscription screen (#106)
+- What changed: the status block a Pro user sees on `/subscription` now says what happens on which date. Trial that will convert: "Free trial active" + "Your trial ends on <date>. You'll be charged then unless you cancel." Cancelled trial: "…You won't be charged." Paid and renewing: "Renews on <date>". Paid and cancelled: "Ends on <date>. You keep Pro until then." A hint under Manage subscription says to cancel or change the plan in App Store settings. English and Hindi.
+- Key files: `paywall_screen.dart` (`_statusLine`), `app_en.arb`, `app_hi.arb`, `paywall_screen_test.dart`.
+- Notes / gotchas: for a trial the expiry date is the trial end, so the date shown is the day the first charge happens. The app does not know the plan price at this point (`SubscriptionState` has no plan), so the price is not shown; add it to `SubscriptionState` if wanted.
+
 ### 2026-11-27 — Pro badge on the profile (#104)
 - What changed: new `ProBadge` (`lib/components/pro_badge.dart`), a small white "PRO" pill with a medal icon that listens to `SubscriptionService` and draws nothing for free users. It shows next to the name in the profile header and in the collapsed app bar, for active Pro and free-trial users, and updates live when the subscription changes. New l10n key `proBadgeLabel` (en, hi) for the accessibility label; the "PRO" text reuses `settingsProBadge`.
 - Key files: `lib/components/pro_badge.dart`, `profile_screen.dart`, `app_en.arb`, `app_hi.arb`, `test/components/pro_badge_test.dart`.

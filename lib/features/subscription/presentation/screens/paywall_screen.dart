@@ -497,16 +497,37 @@ class _ProStatus extends StatelessWidget {
         if (date != null) ...[
           const SizedBox(height: 6),
           Text(
-            state.willRenew
-                ? l10n.paywallRenewsOn(date)
-                : l10n.paywallEndsOn(date),
+            _statusLine(l10n, state, date),
+            textAlign: TextAlign.center,
             style: TextStyle(fontSize: 13, color: secondary),
           ),
         ],
         const SizedBox(height: 20),
         OutlinedButton(onPressed: onManage, child: Text(l10n.paywallManage)),
+        const SizedBox(height: 10),
+        Text(
+          l10n.paywallManageHint,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 12, color: secondary),
+        ),
       ],
     );
+  }
+
+  /// One line that says which date matters and what happens on it.
+  String _statusLine(
+    AppLocalizations l10n,
+    SubscriptionState state,
+    String date,
+  ) {
+    if (state.isTrialing) {
+      return state.willRenew
+          ? l10n.paywallTrialEndsCharge(date)
+          : l10n.paywallTrialEndsNoCharge(date);
+    }
+    return state.willRenew
+        ? l10n.paywallRenewsOn(date)
+        : l10n.paywallEndsOn(date);
   }
 }
 

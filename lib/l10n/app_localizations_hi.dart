@@ -1081,7 +1081,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get paywallProActive => 'आप CivicNet Pro सदस्य हैं';
 
   @override
-  String get paywallProTrialing => 'आपका निःशुल्क ट्रायल चालू है';
+  String get paywallProTrialing => 'निःशुल्क ट्रायल चालू है';
 
   @override
   String paywallRenewsOn(String date) {
@@ -1090,11 +1090,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String paywallEndsOn(String date) {
-    return '$date को समाप्त होगा';
+    return '$date को समाप्त होगा। तब तक आपके पास Pro रहेगा।';
   }
 
   @override
   String get paywallManage => 'सब्सक्रिप्शन मैनेज करें';
+
+  @override
+  String paywallTrialEndsCharge(String date) {
+    return 'आपका ट्रायल $date को समाप्त होगा। रद्द न करने पर उसके बाद आपसे शुल्क लिया जाएगा।';
+  }
+
+  @override
+  String paywallTrialEndsNoCharge(String date) {
+    return 'आपका ट्रायल $date को समाप्त होगा। आपसे कोई शुल्क नहीं लिया जाएगा।';
+  }
+
+  @override
+  String get paywallManageHint =>
+      'अपनी App Store सेटिंग्स में प्लान रद्द करें या बदलें।';
 
   @override
   String get upgradeQuotaMessage =>

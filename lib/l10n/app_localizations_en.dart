@@ -1075,7 +1075,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get paywallProActive => 'You\'re a CivicNet Pro member';
 
   @override
-  String get paywallProTrialing => 'Your free trial is active';
+  String get paywallProTrialing => 'Free trial active';
 
   @override
   String paywallRenewsOn(String date) {
@@ -1084,11 +1084,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String paywallEndsOn(String date) {
-    return 'Ends on $date';
+    return 'Ends on $date. You keep Pro until then.';
   }
 
   @override
   String get paywallManage => 'Manage subscription';
+
+  @override
+  String paywallTrialEndsCharge(String date) {
+    return 'Your trial ends on $date. You\'ll be charged then unless you cancel.';
+  }
+
+  @override
+  String paywallTrialEndsNoCharge(String date) {
+    return 'Your trial ends on $date. You won\'t be charged.';
+  }
+
+  @override
+  String get paywallManageHint =>
+      'Cancel or change your plan in your App Store settings.';
 
   @override
   String get upgradeQuotaMessage =>
