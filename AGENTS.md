@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — SOS button moved out of the Home header (#118)
+- What changed: the red SOS pill in the Home header overflowed the row (by 0.64 px on an iPhone Air, worse on smaller phones or with both update reminders). It is gone from the header; `SosFloatingButton` (`lib/features/home/presentation/widgets/sos_floating_button.dart`) is a 56 px round red button at the bottom left of Home (same height as the Aura orb on the right), shown only with `SOS_ENABLED=true`. It only opens `/sos`.
+- Key files: `sos_floating_button.dart`, `home_screen.dart`, `home_app_bar.dart`, `test/features/home/widgets/sos_floating_button_test.dart`.
+- Notes / gotchas: the header row has little spare width (greeting, history, update reminders, avatar); do not add more buttons to it.
+
 ### 2026-11-28 — Fix SOS SQL test on databases with real device tokens (#116)
 - What changed: `sql_scripts/tests/sos_test.sql` now counts only the tokens it creates (prefix `tok-`) and names them in the failure message. It used to count every row in `device_tokens`, so on production, where real devices near the test location (Mumbai) were already registered, it failed with "got 2" although `sos_recipient_tokens` was correct.
 - Key files: `sql_scripts/tests/sos_test.sql`.

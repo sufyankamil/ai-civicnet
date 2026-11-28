@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../core/config/feature_flags.dart';
 import '../../../../theme/app_theme.dart';
 import '../../../../services/supabase_service.dart';
 import '../../../../widgets/haptic_buttons.dart';
@@ -104,10 +103,6 @@ class HomeAppBar extends StatelessWidget {
         ),
         Row(
           children: [
-            if (FeatureFlags.sosEnabled) ...[
-              _SosHeaderButton(onTap: () => context.push('/sos')),
-              const SizedBox(width: 8),
-            ],
             _buildHeaderIconButton(
               context,
               Icons.history_rounded,
@@ -254,42 +249,6 @@ class _HeaderReminderState extends State<_HeaderReminder>
               shape: BoxShape.circle,
             ),
             child: Icon(widget.icon, size: 22, color: Colors.white),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Red "SOS" pill in the home header. Opens `/sos`.
-class _SosHeaderButton extends StatelessWidget {
-  const _SosHeaderButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Semantics(
-      button: true,
-      label: l10n.sosTooltip,
-      excludeSemantics: true,
-      child: AppHaptic(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.red[700],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            'SOS',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.8,
-            ),
           ),
         ),
       ),
