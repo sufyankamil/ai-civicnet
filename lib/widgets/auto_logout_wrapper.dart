@@ -1,3 +1,4 @@
+import '../services/device_token_service.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -91,6 +92,7 @@ class _AutoLogoutWrapperState extends State<AutoLogoutWrapper>
 
   Future<void> _logOutUser({bool isRemoteRevocation = false}) async {
     if (_isLoggedIn) {
+      await DeviceTokenService.shared.onSignedOut();
       await Supabase.instance.client.auth.signOut();
 
       // Attempt to show a toast, but this might require a valid context.

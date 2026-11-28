@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — SOS part 2: device token registration (#108, part 2 of 3)
+- What changed: `DeviceTokenService` (`lib/services/device_token_service.dart`) registers this device's FCM token and last-known location (no prompts, no GPS start) with the `register_device_token` RPC from part 1. It re-sends only when the token changes, after 6 hours, or after moving more than 500 m, never throws, and removes the token before sign-out (`onSignedOut`) at the three sign-out sites. `FirebaseService` syncs after getting the token, on `onTokenRefresh` and when a user signs in.
+- Key files: `lib/services/device_token_service.dart`, `firebase_service.dart`, `supabase_service.dart`, `auth_remote_data_source.dart`, `auto_logout_wrapper.dart`, `test/services/device_token_service_test.dart` (10 tests).
+- Notes / gotchas: needs `sql_scripts/sos_schema.sql` (PR for part 1) applied first, otherwise the RPC call fails quietly (logged as a warning, never shown to the user). The token must be removed while still signed in, because after sign-out the server cannot tell whose it is; any new sign-out path must call `DeviceTokenService.shared.onSignedOut()` first. Registering this also lets us later replace the all-users `global_requests` topic with distance-based pushes.
+
 ### 2026-11-28 — Clearer Pro status text on the subscription screen (#106)
 - What changed: the status block a Pro user sees on `/subscription` now says what happens on which date. Trial that will convert: "Free trial active" + "Your trial ends on <date>. You'll be charged then unless you cancel." Cancelled trial: "…You won't be charged." Paid and renewing: "Renews on <date>". Paid and cancelled: "Ends on <date>. You keep Pro until then." A hint under Manage subscription says to cancel or change the plan in App Store settings. English and Hindi.
 - Key files: `paywall_screen.dart` (`_statusLine`), `app_en.arb`, `app_hi.arb`, `paywall_screen_test.dart`.
