@@ -164,6 +164,11 @@ Newest first. Format:
 - Key files: `paywall_screen.dart` (`_statusLine`), `app_en.arb`, `app_hi.arb`, `paywall_screen_test.dart`.
 - Notes / gotchas: for a trial the expiry date is the trial end, so the date shown is the day the first charge happens. The app does not know the plan price at this point (`SubscriptionState` has no plan), so the price is not shown; add it to `SubscriptionState` if wanted.
 
+### 2026-11-27 — Pro badge on the profile (#104)
+- What changed: new `ProBadge` (`lib/components/pro_badge.dart`), a small white "PRO" pill with a medal icon that listens to `SubscriptionService` and draws nothing for free users. It shows next to the name in the profile header and in the collapsed app bar, for active Pro and free-trial users, and updates live when the subscription changes. New l10n key `proBadgeLabel` (en, hi) for the accessibility label; the "PRO" text reuses `settingsProBadge`.
+- Key files: `lib/components/pro_badge.dart`, `profile_screen.dart`, `app_en.arb`, `app_hi.arb`, `test/components/pro_badge_test.dart`.
+- Notes / gotchas: only the signed-in user's own profile shows it. Showing it on other people's profiles needs a server-side field others can read (the `subscriptions` table is private to its owner), e.g. an `is_pro` flag kept in sync by the `revenuecat-webhook` function; not done.
+
 ### 2026-11-27 — Website v2: dark mode, request demo, FAQ, device-frame showcase (#102)
 - What changed: `website/index.html` gets a dark theme (follows the system, header toggle remembers the choice, `data-theme` on `<html>`), an interactive "Try posting a request" demo (keyword-based category and example helpers, illustration only, built with `textContent` so typed text is never parsed as HTML), a FAQ with `FAQPage` JSON-LD, and a "See it in action" section with three real app screens (`website/shots/`) inside CSS device frames, each at a different scroll-parallax depth (swipeable row on phones).
 - Key files: `website/index.html`, `website/shots/request.png`, `aura.png`, `community.png`.

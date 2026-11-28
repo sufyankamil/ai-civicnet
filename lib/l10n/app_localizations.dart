@@ -2150,6 +2150,12 @@ abstract class AppLocalizations {
   /// **'PRO'**
   String get settingsProBadge;
 
+  /// No description provided for @proBadgeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'CivicNet Pro member'**
+  String get proBadgeLabel;
+
   /// No description provided for @aiQuotaRemaining.
   ///
   /// In en, this message translates to:

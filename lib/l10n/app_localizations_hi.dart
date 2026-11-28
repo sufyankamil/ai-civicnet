@@ -1130,6 +1130,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get settingsProBadge => 'PRO';
 
   @override
+  String get proBadgeLabel => 'CivicNet Pro सदस्य';
+
+  @override
   String aiQuotaRemaining(int remaining, int limit) {
     return 'इस महीने $limit में से $remaining निःशुल्क AI क्रियाएं बाकी';
   }

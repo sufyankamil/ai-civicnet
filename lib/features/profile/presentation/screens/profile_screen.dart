@@ -1,3 +1,4 @@
+import '../../../../components/pro_badge.dart';
 import 'package:flutter/material.dart' hide Badge;
 import '../../../../widgets/adaptive_content_frame.dart';
 import 'package:go_router/go_router.dart';
@@ -372,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
               ),
               const SizedBox(width: 10),
-              Expanded(
+              Flexible(
                 child: Text(
                   displayName,
                   style: TextStyle(
@@ -384,6 +385,8 @@ class _ProfileScreenState extends State<ProfileScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              const SizedBox(width: 8),
+              const ProBadge(compact: true),
             ],
           ),
         ),
@@ -574,17 +577,26 @@ class _ProfileScreenState extends State<ProfileScreen>
                       ),
                       const SizedBox(height: 16),
                       // Text center
-                      Text(
-                        displayName,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800, // Premium Bold
-                          color: Colors.white,
-                          letterSpacing: -0.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              displayName,
+                              style: const TextStyle(
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800, // Premium Bold
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const ProBadge(),
+                        ],
                       ),
                       if (user.email.isNotEmpty) ...[
                         const SizedBox(height: 2),

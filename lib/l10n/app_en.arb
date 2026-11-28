@@ -536,6 +536,7 @@
   "settingsProTitle": "CivicNet Pro",
   "settingsProSubtitleFree": "Unlimited AI assistant and more",
   "settingsProBadge": "PRO",
+  "proBadgeLabel": "CivicNet Pro member",
   "aiQuotaRemaining": "{remaining} of {limit} free AI actions left this month",
   "@aiQuotaRemaining": {
     "placeholders": {
