@@ -161,4 +161,87 @@ void main() {
     expect(vm.isActive, isTrue);
     expect(vm.error.value, SosFailureType.network);
   });
+
+  group('emergency number', () {
+    SosViewModel build({String? region, Future<String?> Function()? lookup}) =>
+        SosViewModel(
+          dataSource: data,
+          position: () async => position,
+          now: () => now,
+          deviceRegion: () => region,
+          countryLookup: lookup,
+        );
+
+    test('starts from the phone region', () {
+      expect(build(region: 'AE').emergencyNumber.value, '999');
+      expect(build(region: 'US').emergencyNumber.value, '911');
+    });
+
+    test('falls back to 112 with no region', () {
+      expect(build(region: null).emergencyNumber.value, '112');
+    });
+
+    test('switches to the country of the location when it is known', () async {
+      final model = build(region: 'IN', lookup: () async => 'AE');
+      expect(model.emergencyNumber.value, '112');
+
+      await model.refreshEmergencyNumber();
+
+      expect(model.emergencyNumber.value, '999');
+    });
+
+    test('ignores letter case from the lookup', () async {
+      final model = build(region: 'IN', lookup: () async => 'ae');
+      await model.refreshEmergencyNumber();
+
+      expect(model.emergencyNumber.value, '999');
+    });
+
+    test('keeps the phone region when there is no location', () async {
+      final model = build(region: 'GB', lookup: () async => null);
+      await model.refreshEmergencyNumber();
+
+      expect(model.emergencyNumber.value, '999');
+    });
+
+    test('keeps the phone region when the lookup fails', () async {
+      final model = build(
+        region: 'US',
+        lookup: () async => throw Exception('no network'),
+      );
+      await model.refreshEmergencyNumber();
+
+      expect(model.emergencyNumber.value, '911');
+    });
+
+    test('a slow lookup does not hold things up', () async {
+      final model = build(
+        region: 'US',
+        lookup: () =>
+            Future<String?>.delayed(const Duration(seconds: 30), () => 'AE'),
+      );
+      final watch = Stopwatch()..start();
+      await model.refreshEmergencyNumber(
+        timeout: const Duration(milliseconds: 50),
+      );
+
+      expect(watch.elapsed, lessThan(const Duration(seconds: 2)));
+      expect(model.emergencyNumber.value, '911');
+    });
+
+    test('looks the country up once, not on every open', () async {
+      var calls = 0;
+      final model = build(
+        region: 'IN',
+        lookup: () async {
+          calls++;
+          return 'AE';
+        },
+      );
+      await model.refreshEmergencyNumber();
+      await model.refreshEmergencyNumber();
+
+      expect(calls, 1);
+    });
+  });
 }

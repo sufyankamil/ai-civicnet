@@ -28,6 +28,7 @@ class _SosWaitingScreenBodyState extends State<SosWaitingScreenBody> {
   @override
   void initState() {
     super.initState();
+    if (widget.countryCode == null) _vm.refreshEmergencyNumber();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       _ticks++;
@@ -55,9 +56,10 @@ class _SosWaitingScreenBodyState extends State<SosWaitingScreenBody> {
 
   Widget _active(BuildContext context, int id) {
     final l10n = AppLocalizations.of(context)!;
-    final number = emergencyNumberFor(
-      widget.countryCode ?? deviceCountryCode(),
-    );
+    final live = _vm.emergencyNumber.value;
+    final number = widget.countryCode != null
+        ? emergencyNumberFor(widget.countryCode)
+        : live;
     final count = _vm.status.value?.alertCount;
     final minutes = _vm.remaining.inMinutes;
 

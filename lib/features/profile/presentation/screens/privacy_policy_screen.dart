@@ -70,7 +70,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
             _buildSection(
               context,
               '6. Emergency SOS and Location',
-              'To find people near an SOS, we store your device\'s push notification token with an approximate location (rounded to about 550 m) while you are signed in and have allowed notifications and location. We remove the token when you sign out, and we ignore tokens that have not been refreshed for 30 days. If you send an SOS, your exact location is stored privately and shown only to you and to a helper you accept; other users see a rounded area (about 110 m). Helpers within about 2 km receive a push notification. You can stop this at any time by turning off location or notifications for CivicNet in your device settings.',
+              'To find people near an SOS, we store your device\'s push notification token with an approximate location (rounded to about 550 m) while you are signed in and have allowed notifications and location. We remove the token when you sign out, and we ignore tokens that have not been refreshed for 30 days. If you send an SOS, your exact location is stored privately and shown only to you and to a helper you accept; other users see a rounded area (about 110 m). Helpers within about 2 km receive a push notification. To show the right emergency phone number, we look up the country of your last known location using your phone\'s built-in place lookup (Apple or Google), which receives those coordinates; we do not store the result. You can stop this at any time by turning off location or notifications for CivicNet in your device settings.',
             ),
             _buildSection(
               context,

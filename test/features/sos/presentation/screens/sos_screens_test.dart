@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:civic_net/features/sos/data/sos_remote_data_source.dart';
 import 'package:civic_net/features/sos/domain/sos_failure.dart';
 import 'package:civic_net/features/sos/domain/sos_models.dart';
@@ -67,6 +69,77 @@ void main() {
     );
     await tester.pump();
   }
+
+  group('emergency number from location', () {
+    testWidgets('the sheet shows the number of the location country', (
+      tester,
+    ) async {
+      Get.reset();
+      final answer = Completer<String?>();
+      Get.put(
+        SosViewModel(
+          dataSource: data,
+          position: () async => const SosPosition(25.2, 55.3),
+          deviceRegion: () => 'IN',
+          countryLookup: () => answer.future,
+        ),
+      );
+      await pump(tester, const SosSheet());
+      expect(find.text('Call 112'), findsOneWidget);
+
+      answer.complete('AE');
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Call 999'), findsOneWidget);
+      expect(find.text('Call 112'), findsNothing);
+    });
+
+    testWidgets('the running SOS page also uses the location country', (
+      tester,
+    ) async {
+      Get.reset();
+      final model = SosViewModel(
+        dataSource: data,
+        position: () async => const SosPosition(25.2, 55.3),
+        deviceRegion: () => 'IN',
+        countryLookup: () async => 'AE',
+      );
+      Get.put(model);
+      await model.start();
+      await pump(
+        tester,
+        const SizedBox(height: 900, child: SosWaitingScreenBody()),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.text('Call 999'), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+    });
+
+    testWidgets('opening the sheet looks the country up', (tester) async {
+      Get.reset();
+      var looked = 0;
+      Get.put(
+        SosViewModel(
+          dataSource: data,
+          position: () async => null,
+          deviceRegion: () => 'IN',
+          countryLookup: () async {
+            looked++;
+            return 'GB';
+          },
+        ),
+      );
+      await pump(tester, const SosSheet());
+      await tester.pump();
+      await tester.pump();
+
+      expect(looked, 1);
+      expect(find.text('Call 999'), findsOneWidget);
+    });
+  });
 
   group('SosSheet', () {
     testWidgets('puts the national emergency number first', (tester) async {

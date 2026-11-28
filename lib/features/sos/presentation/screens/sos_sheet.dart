@@ -39,9 +39,24 @@ class _SosSheetState extends State<SosSheet> {
   late final SosViewModel _vm = Get.find<SosViewModel>();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.countryCode == null) _vm.refreshEmergencyNumber();
+  }
+
+  @override
   void dispose() {
     _note.dispose();
     super.dispose();
+  }
+
+  /// A fixed region (tests) wins; otherwise the number follows the location.
+  /// Always reads the observable so an Obx around it is valid either way.
+  String get _numberToShow {
+    final live = _vm.emergencyNumber.value;
+    return widget.countryCode != null
+        ? emergencyNumberFor(widget.countryCode)
+        : live;
   }
 
   Future<void> _send() async {
@@ -53,9 +68,6 @@ class _SosSheetState extends State<SosSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final number = emergencyNumberFor(
-      widget.countryCode ?? deviceCountryCode(),
-    );
     final secondary = Theme.of(context).textTheme.bodySmall?.color;
 
     return Padding(
@@ -75,13 +87,14 @@ class _SosSheetState extends State<SosSheet> {
             width: double.infinity,
             child: OutlinedButton.icon(
               icon: const Icon(Icons.call_rounded),
-              label: Text(l10n.sosCallNumber(number)),
+              label: Obx(() => Text(l10n.sosCallNumber(_numberToShow))),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 foregroundColor: Colors.red[800],
                 side: BorderSide(color: Colors.red.shade800),
               ),
-              onPressed: () => launchUrl(Uri(scheme: 'tel', path: number)),
+              onPressed: () =>
+                  launchUrl(Uri(scheme: 'tel', path: _numberToShow)),
             ),
           ),
           const SizedBox(height: 10),
