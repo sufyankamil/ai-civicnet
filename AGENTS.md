@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — SOS backend: schema, RPCs and notify-sos (#108, part 1 of 3)
+- What changed: `sql_scripts/sos_schema.sql` adds `help_requests.is_sos/sos_expires_at/sos_notified_at/sos_alert_count`, `sos_locations` (exact location, readable only by the requester and an accepted helper), `device_tokens` (location rounded to about 550 m) with `register_device_token`/`unregister_device_token`, `create_sos` (hold-to-confirm happens in the app; server limits: one active SOS, 1 per 10 min, 3 per 24 h; public lat/lng rounded to about 110 m), `end_sos`, and `sos_recipient_tokens` (service role only; radius, 30-day freshness, block-aware). New edge function `notify-sos` sends the push to those tokens only, claims the SOS first so a repeated webhook cannot double-send, and requires an `x-webhook-secret` header. `notify-new-request` now skips SOS rows so SOS is not broadcast to everyone.
+- Key files: `sql_scripts/sos_schema.sql`, `sql_scripts/tests/sos_test.sql`, `supabase/functions/notify-sos/`, `supabase/functions/notify-new-request/index.ts`, `supabase/config.toml`.
+- Notes / gotchas: nothing here is applied or deployed by the PR: the owner applies the SQL, deploys both functions, sets `NOTIFY_SOS_SECRET` and creates the `notify_on_sos` webhook (steps at the top of `sos_schema.sql`). The SQL and edge function were not run (no Postgres or Deno in the dev environment; only syntax-checked), so run `tests/sos_test.sql` on a DEV project first. Parts 2 and 3: Flutter device-token registration, then the SOS screens.
+
 ### 2026-11-28 — Design note for Emergency SOS and Offers board (#108, #109)
 - What changed: `docs/design/sos-and-offers.md` proposes both features, SOS first. No code yet.
 - Key files: `docs/design/sos-and-offers.md`.
