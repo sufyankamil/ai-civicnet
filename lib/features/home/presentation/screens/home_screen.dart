@@ -17,7 +17,9 @@ import '../viewmodels/home_viewmodel.dart';
 import '../widgets/home_app_bar.dart';
 import '../widgets/home_search_bar.dart';
 import '../widgets/home_filter_bar.dart';
+import '../../../../core/config/feature_flags.dart';
 import '../widgets/home_safety_banner.dart';
+import '../widgets/sos_floating_button.dart';
 import '../../models/seasonal_greeting.dart';
 import '../widgets/seasonal_greeting_banner.dart';
 import '../widgets/home_requests_list.dart';
@@ -583,6 +585,20 @@ class _HomeScreenState extends State<HomeScreen>
               ],
             ),
           ),
+
+          // Emergency SOS. Hidden unless SOS_ENABLED=true in .env.
+          if (FeatureFlags.sosEnabled)
+            const Positioned.fill(
+              child: SideStripInset(
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 18, bottom: 128),
+                    child: SosFloatingButton(),
+                  ),
+                ),
+              ),
+            ),
 
           // Aura AI Floating Orb. Kept clear of the iPhone Duo status strip, which
           // is frosted and would hide it.
