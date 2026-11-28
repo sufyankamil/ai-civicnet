@@ -164,6 +164,11 @@ Newest first. Format:
 - Key files: `sql_scripts/sos_schema.sql`, `sql_scripts/tests/sos_test.sql`, `supabase/functions/notify-sos/`, `supabase/functions/notify-new-request/index.ts`, `supabase/config.toml`.
 - Notes / gotchas: nothing here is applied or deployed by the PR: the owner applies the SQL, deploys both functions, sets `NOTIFY_SOS_SECRET` and creates the `notify_on_sos` webhook (steps at the top of `sos_schema.sql`). The SQL and edge function were not run (no Postgres or Deno in the dev environment; only syntax-checked), so run `tests/sos_test.sql` on a DEV project first. Parts 2 and 3: Flutter device-token registration, then the SOS screens.
 
+### 2026-11-28 — Design note for Emergency SOS and Offers board (#108, #109)
+- What changed: `docs/design/sos-and-offers.md` proposes both features, SOS first. No code yet.
+- Key files: `docs/design/sos-and-offers.md`.
+- Notes / gotchas: findings that shape the work: push is topic-only (`global_requests`, `user_<id>`) and no device tokens are stored, so SOS needs a `device_tokens` table and a new geo-targeted edge function; items to lend are already covered by `community_assets`, so Offers is for time and skills; every new request currently pings all users.
+
 ### 2026-11-28 — Clearer Pro status text on the subscription screen (#106)
 - What changed: the status block a Pro user sees on `/subscription` now says what happens on which date. Trial that will convert: "Free trial active" + "Your trial ends on <date>. You'll be charged then unless you cancel." Cancelled trial: "…You won't be charged." Paid and renewing: "Renews on <date>". Paid and cancelled: "Ends on <date>. You keep Pro until then." A hint under Manage subscription says to cancel or change the plan in App Store settings. English and Hindi.
 - Key files: `paywall_screen.dart` (`_statusLine`), `app_en.arb`, `app_hi.arb`, `paywall_screen_test.dart`.
