@@ -80,6 +80,10 @@ void main() {
       expect(find.textContaining('about 550 m'), findsOneWidget);
       expect(find.textContaining('exact location'), findsOneWidget);
       expect(find.textContaining('when you sign out'), findsOneWidget);
+      expect(
+        find.textContaining('country of your last known location'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('links to the full policy on civicnet.app', (tester) async {

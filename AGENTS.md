@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — SOS emergency number follows the location country (#120)
+- What changed: the Call button on the SOS form and the running-SOS page now dials the emergency number of the country of the device's last known location (`countryFromLastKnownLocation`: permission already granted, no prompt, no GPS start, then the phone's own geocoder), falling back to the phone's region setting, then 112. `SosViewModel.emergencyNumber` starts from the region and switches when `refreshEmergencyNumber()` returns (once per session, 4 s timeout, any failure keeps the region number). Privacy Policy (website and in-app) says the coordinates go to Apple/Google's place lookup and the result is not stored.
+- Key files: `lib/features/sos/data/sos_country_lookup.dart`, `sos_viewmodel.dart`, `sos_sheet.dart`, `sos_waiting_screen.dart`, `privacy_policy_screen.dart`, `website/privacy.html`, tests in `test/features/sos/`.
+- Notes / gotchas: a fixed `countryCode` passed to `SosSheet`/`SosWaitingScreenBody` still overrides it (used by tests). An `Obx` must always read an observable, so the number getter reads `emergencyNumber.value` even when overridden. The number table in `emergency_numbers.dart` still needs a check before release. Redeploy the website after merging.
+
 ### 2026-11-28 — SOS button moved out of the Home header (#118)
 - What changed: the red SOS pill in the Home header overflowed the row (by 0.64 px on an iPhone Air, worse on smaller phones or with both update reminders). It is gone from the header; `SosFloatingButton` (`lib/features/home/presentation/widgets/sos_floating_button.dart`) is a 56 px round red button at the bottom left of Home (same height as the Aura orb on the right), shown only with `SOS_ENABLED=true`. It only opens `/sos`.
 - Key files: `sos_floating_button.dart`, `home_screen.dart`, `home_app_bar.dart`, `test/features/home/widgets/sos_floating_button_test.dart`.
