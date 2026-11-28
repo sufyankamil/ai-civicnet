@@ -23,7 +23,7 @@ class SosViewModel extends GetxController {
        _deviceRegion =
            deviceRegion ??
            (() => PlatformDispatcher.instance.locale.countryCode),
-       _countryLookup = countryLookup ?? countryFromLastKnownLocation {
+       _countryLookup = countryLookup ?? countryFromApproximateLocation {
     emergencyNumber.value = emergencyNumberFor(_deviceRegion());
   }
 

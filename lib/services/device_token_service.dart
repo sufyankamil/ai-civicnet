@@ -1,18 +1,13 @@
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
-import 'package:geolocator/geolocator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'approximate_location.dart';
 import 'logger_service.dart';
 
-/// A position in degrees.
-class DeviceLocation {
-  const DeviceLocation(this.lat, this.lng);
-
-  final double lat;
-  final double lng;
-}
+// Existing code and tests import DeviceLocation from here.
+export 'approximate_location.dart' show DeviceLocation;
 
 /// Where device tokens are stored. A seam so tests do not need Supabase.
 abstract class DeviceTokenBackend {
@@ -61,23 +56,6 @@ class SupabaseDeviceTokenBackend implements DeviceTokenBackend {
   }
 }
 
-/// The last position the device already knows, if the user has allowed
-/// location. Never prompts and never starts the GPS.
-Future<DeviceLocation?> lastKnownDeviceLocation() async {
-  try {
-    final permission = await Geolocator.checkPermission();
-    if (permission != LocationPermission.whileInUse &&
-        permission != LocationPermission.always) {
-      return null;
-    }
-    final position = await Geolocator.getLastKnownPosition();
-    if (position == null) return null;
-    return DeviceLocation(position.latitude, position.longitude);
-  } catch (_) {
-    return null;
-  }
-}
-
 /// Keeps the server's copy of this device's push token and rough location
 /// current, so nearby-only pushes such as SOS can find the device.
 ///
@@ -96,7 +74,7 @@ class DeviceTokenService {
   static final DeviceTokenService shared = DeviceTokenService(
     backend: SupabaseDeviceTokenBackend(),
     platform: Platform.isIOS ? 'ios' : 'android',
-    location: lastKnownDeviceLocation,
+    location: approximateDeviceLocation,
   );
 
   /// How far the user must move before the location is sent again.

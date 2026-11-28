@@ -81,7 +81,7 @@ void main() {
       expect(find.textContaining('exact location'), findsOneWidget);
       expect(find.textContaining('when you sign out'), findsOneWidget);
       expect(
-        find.textContaining('country of your last known location'),
+        find.textContaining('country of your approximate location'),
         findsOneWidget,
       );
     });
