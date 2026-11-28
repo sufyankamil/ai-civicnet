@@ -1,3 +1,4 @@
+import 'device_token_service.dart';
 import 'dart:async';
 import 'dart:math' show cos, sin, sqrt, asin;
 import 'dart:io';
@@ -148,6 +149,7 @@ class SupabaseService {
   }
 
   Future<void> signOut() async {
+    await DeviceTokenService.shared.onSignedOut();
     await _client.auth.signOut().withServerTimeout();
     _conversationKeyCache.clear();
     _conversationWrapCache.clear();
