@@ -159,6 +159,11 @@ Newest first. Format:
 - Notes / gotchas:
 ```
 
+### 2026-11-28 — Fix SOS SQL test on databases with real device tokens (#116)
+- What changed: `sql_scripts/tests/sos_test.sql` now counts only the tokens it creates (prefix `tok-`) and names them in the failure message. It used to count every row in `device_tokens`, so on production, where real devices near the test location (Mumbai) were already registered, it failed with "got 2" although `sos_recipient_tokens` was correct.
+- Key files: `sql_scripts/tests/sos_test.sql`.
+- Notes / gotchas: SQL tests that run against a shared database must not assume the tables they read are empty.
+
 ### 2026-11-28 — SOS part 3: the SOS screens (#108, part 3 of 3)
 - What changed: new `lib/features/sos/` (domain, data, presentation, di). A red SOS pill in the home header opens one page, `/sos`: the alert form (national emergency number first with a Call button, the "not an emergency service" notice, an optional note, and a press-and-hold-2-seconds button, `HoldToConfirmButton`) or, once an SOS runs, the live page (helpers alerted, minutes left, "See who offered to help" to the existing `/request/:id`, "I'm safe"). Server errors (10-minute limit, 3 per day, already active, not signed in) and a missing location are shown in plain words. English and Hindi. `SosViewModel` is a GetX controller registered in `main.dart` via `initSosDI`.
 - Key files: `lib/features/sos/**`, `lib/core/config/feature_flags.dart`, `home_app_bar.dart`, `app_router.dart` (`/sos`, login-protected), `main.dart`, `.env.example`, tests in `test/features/sos/` (32+).
